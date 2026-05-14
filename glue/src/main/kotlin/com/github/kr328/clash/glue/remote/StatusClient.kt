@@ -24,4 +24,20 @@ class StatusClient(private val context: Context) {
       null
     }
   }
+
+  fun serviceState(): ClashServiceState {
+    return try {
+      val result =
+        context.contentResolver.call(uri, StatusProvider.METHOD_CURRENT_PROFILE, null, null)
+
+      clashServiceStateFromCurrentProfileResult(
+        hasResult = result != null,
+        profileName = result?.getString("name"),
+      )
+    } catch (e: Exception) {
+      Log.w("Query service state: $e", e)
+
+      ClashServiceState.Stopped
+    }
+  }
 }

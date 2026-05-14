@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.glue.remote.ClashServiceState
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.vm.HomeViewModel
 import com.github.kr328.clash.ui.component.Spacer
@@ -74,7 +75,7 @@ internal fun HomeScreen(
   onOpenSettings: () -> Unit,
   onOpenHelp: () -> Unit,
 ) {
-  val clashRunning by viewModel.clashRunning.collectAsStateWithLifecycle()
+  val clashServiceState by viewModel.clashServiceState.collectAsStateWithLifecycle()
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val eventState by viewModel.eventState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
@@ -113,7 +114,7 @@ internal fun HomeScreen(
   HomeContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    clashRunning = clashRunning,
+    clashServiceState = clashServiceState,
     forwarded = uiState.forwarded,
     mode = uiState.mode,
     profileName = uiState.profileName,
@@ -135,7 +136,7 @@ internal fun HomeScreen(
 private fun HomeContent(
   modifier: Modifier = Modifier,
   snackbarHostState: SnackbarHostState,
-  clashRunning: Boolean,
+  clashServiceState: ClashServiceState,
   forwarded: String?,
   mode: String?,
   profileName: String?,
@@ -153,6 +154,8 @@ private fun HomeContent(
 ) {
   val darkTheme = isSystemInDarkTheme()
   val stoppedColor = if (darkTheme) TabbyDarkSurface else TabbyLightStopped
+  val clashRunning = clashServiceState == ClashServiceState.Running
+  val clashActive = clashServiceState != ClashServiceState.Stopped
 
   TabbyScaffold(
     title = "",
@@ -186,13 +189,20 @@ private fun HomeContent(
 
       HomeActionCard(
         modifier = Modifier.padding(vertical = cardMarginVertical),
-        icon = if (clashRunning) TabbyIcons.OutlineCheckCircle else TabbyIcons.OutlineNotInterested,
-        text = stringResource(if (clashRunning) CommonR.string.running else R.string.stopped),
+        icon = if (clashActive) TabbyIcons.OutlineCheckCircle else TabbyIcons.OutlineNotInterested,
+        text =
+          stringResource(
+            when (clashServiceState) {
+              ClashServiceState.Loading -> CommonR.string.loading
+              ClashServiceState.Running -> CommonR.string.running
+              ClashServiceState.Stopped -> R.string.stopped
+            }
+          ),
         subtext =
           if (clashRunning && forwarded != null)
             stringResource(R.string.format_traffic_forwarded, forwarded)
-          else stringResource(CommonR.string.tap_to_start),
-        backgroundColor = if (clashRunning) MaterialTheme.colorScheme.primary else stoppedColor,
+          else if (!clashActive) stringResource(CommonR.string.tap_to_start) else null,
+        backgroundColor = if (clashActive) MaterialTheme.colorScheme.primary else stoppedColor,
         contentColor = TabbyOnPrimary,
         onClick = onToggleStatus,
       )
@@ -363,7 +373,7 @@ private val actionIconSize = 30.dp
 private fun HomeContentRunningPreview() {
   HomeContent(
     snackbarHostState = SnackbarHostState(),
-    clashRunning = true,
+    clashServiceState = ClashServiceState.Running,
     forwarded = "1.23 GB",
     mode = "Rule",
     profileName = "My Profile",
@@ -384,10 +394,34 @@ private fun HomeContentRunningPreview() {
 @PreviewWrapper(TabbyThemeWrapper::class)
 @PreviewTabby
 @Composable
+private fun HomeContentLoadingPreview() {
+  HomeContent(
+    snackbarHostState = SnackbarHostState(),
+    clashServiceState = ClashServiceState.Loading,
+    forwarded = null,
+    mode = null,
+    profileName = "My Profile",
+    hasProviders = false,
+    aboutVersionName = null,
+    onDismissAbout = {},
+    onToggleStatus = {},
+    onOpenProxy = {},
+    onOpenProfiles = {},
+    onOpenProviders = {},
+    onOpenLogs = {},
+    onOpenSettings = {},
+    onOpenHelp = {},
+    onOpenAbout = {},
+  )
+}
+
+@PreviewWrapper(TabbyThemeWrapper::class)
+@PreviewTabby
+@Composable
 private fun HomeContentStoppedPreview() {
   HomeContent(
     snackbarHostState = SnackbarHostState(),
-    clashRunning = false,
+    clashServiceState = ClashServiceState.Stopped,
     forwarded = null,
     mode = null,
     profileName = null,

@@ -47,6 +47,10 @@ fun Context.sendServiceRecreated() {
   sendBroadcastSelf(Intent(Intents.ACTION_SERVICE_RECREATED))
 }
 
+fun Context.sendClashLoading() {
+  sendBroadcastSelf(Intent(Intents.ACTION_CLASH_LOADING))
+}
+
 fun Context.sendClashStarted() {
   sendBroadcastSelf(Intent(Intents.ACTION_CLASH_STARTED))
 }

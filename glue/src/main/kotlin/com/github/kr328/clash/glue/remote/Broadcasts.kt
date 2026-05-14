@@ -19,6 +19,8 @@ class Broadcasts(private val context: Application) {
   sealed interface Event {
     data object ServiceRecreated : Event
 
+    data object Loading : Event
+
     data object Started : Event
 
     data class Stopped(val cause: String?) : Event
@@ -35,14 +37,21 @@ class Broadcasts(private val context: Application) {
   val clashRunningFlow: StateFlow<Boolean>
     field = MutableStateFlow(false)
 
+  val clashServiceStateFlow: StateFlow<ClashServiceState>
+    field = MutableStateFlow<ClashServiceState>(ClashServiceState.Stopped)
+
   val event: SharedFlow<Event>
     field = MutableSharedFlow(extraBufferCapacity = 64)
 
-  var clashRunning: Boolean
-    get() = clashRunningFlow.value
+  var clashServiceState: ClashServiceState
+    get() = clashServiceStateFlow.value
     private set(value) {
-      clashRunningFlow.value = value
+      clashServiceStateFlow.value = value
+      clashRunningFlow.value = value != ClashServiceState.Stopped
     }
+
+  val clashRunning: Boolean
+    get() = clashServiceState != ClashServiceState.Stopped
 
   private var registered = false
   private val broadcastReceiver =
@@ -52,15 +61,19 @@ class Broadcasts(private val context: Application) {
 
         when (intent?.action) {
           Intents.ACTION_SERVICE_RECREATED -> {
-            clashRunning = false
+            clashServiceState = ClashServiceState.Stopped
             event.tryEmit(Event.ServiceRecreated)
           }
+          Intents.ACTION_CLASH_LOADING -> {
+            clashServiceState = ClashServiceState.Loading
+            event.tryEmit(Event.Loading)
+          }
           Intents.ACTION_CLASH_STARTED -> {
-            clashRunning = true
+            clashServiceState = ClashServiceState.Running
             event.tryEmit(Event.Started)
           }
           Intents.ACTION_CLASH_STOPPED -> {
-            clashRunning = false
+            clashServiceState = ClashServiceState.Stopped
             event.tryEmit(Event.Stopped(intent.getStringExtra(Intents.EXTRA_STOP_REASON)))
           }
           Intents.ACTION_PROFILE_CHANGED -> event.tryEmit(Event.ProfileChanged)
@@ -75,7 +88,10 @@ class Broadcasts(private val context: Application) {
                 intent.getStringExtra(Intents.EXTRA_FAIL_REASON),
               )
             )
-          Intents.ACTION_PROFILE_LOADED -> event.tryEmit(Event.ProfileLoaded)
+          Intents.ACTION_PROFILE_LOADED -> {
+            clashServiceState = ClashServiceState.Running
+            event.tryEmit(Event.ProfileLoaded)
+          }
         }
       }
     }
@@ -88,6 +104,7 @@ class Broadcasts(private val context: Application) {
         broadcastReceiver,
         IntentFilter().apply {
           addAction(Intents.ACTION_SERVICE_RECREATED)
+          addAction(Intents.ACTION_CLASH_LOADING)
           addAction(Intents.ACTION_CLASH_STARTED)
           addAction(Intents.ACTION_CLASH_STOPPED)
           addAction(Intents.ACTION_PROFILE_CHANGED)
@@ -98,7 +115,7 @@ class Broadcasts(private val context: Application) {
       )
       registered = true
 
-      clashRunning = StatusClient(context).currentProfile() != null
+      clashServiceState = StatusClient(context).serviceState()
     } catch (e: Exception) {
       Log.w("Register global receiver: $e", e)
     }

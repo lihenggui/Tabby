@@ -11,6 +11,7 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.bridge.Bridge
 import com.github.kr328.clash.core.util.trafficTotal
+import com.github.kr328.clash.glue.remote.ClashServiceState
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
@@ -32,7 +33,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   private var trafficPollingJob: Job? = null
   private var fetchJob: Job? = null
 
-  val clashRunning: StateFlow<Boolean> = Remote.broadcasts.clashRunningFlow
+  val clashServiceState: StateFlow<ClashServiceState> = Remote.broadcasts.clashServiceStateFlow
 
   val uiState: StateFlow<UiState>
     field = MutableStateFlow(UiState())
@@ -46,6 +47,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
       Remote.broadcasts.event.collect { event ->
         when (event) {
           ServiceRecreated,
+          Loading,
           Started,
           ProfileChanged,
           ProfileLoaded -> fetch()
@@ -70,7 +72,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   }
 
   fun toggleStatus() {
-    if (clashRunning.value) {
+    if (clashServiceState.value != ClashServiceState.Stopped) {
       application.stopClashService()
     } else {
       startClash()
@@ -104,19 +106,23 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   private fun fetch() {
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
-      val state = withClash { queryTunnelState() }
-      val providers = withClash { queryProviders() }
+      val serviceState = clashServiceState.value
+      val clashRunning = serviceState == ClashServiceState.Running
       val mode =
-        when (state.mode) {
-          Direct -> application.getString(CommonR.string.direct_mode)
-          Global -> application.getString(CommonR.string.global_mode)
-          Rule -> application.getString(CommonR.string.rule_mode)
-        }
+        if (clashRunning) {
+          when (withClash { queryTunnelState() }.mode) {
+            Direct -> application.getString(CommonR.string.direct_mode)
+            Global -> application.getString(CommonR.string.global_mode)
+            Rule -> application.getString(CommonR.string.rule_mode)
+          }
+        } else null
+      val providers = if (clashRunning) withClash { queryProviders() } else emptyList()
       val profileName = withProfile { queryActive()?.name }
 
-      uiState.update {
-        it.copy(
-          mode = if (clashRunning.value) mode else null,
+      uiState.update { current ->
+        current.copy(
+          forwarded = current.forwarded.takeIf { clashRunning },
+          mode = mode,
           hasProviders = providers.isNotEmpty(),
           profileName = profileName,
         )
@@ -129,7 +135,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     trafficPollingJob = viewModelScope.launch {
       while (isActive) {
         delay(1.seconds)
-        if (clashRunning.value) {
+        if (clashServiceState.value == ClashServiceState.Running) {
           val total = withClash { queryTrafficTotal() }
           uiState.update { it.copy(forwarded = total.trafficTotal()) }
         }

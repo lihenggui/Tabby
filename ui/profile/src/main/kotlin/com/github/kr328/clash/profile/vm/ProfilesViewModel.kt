@@ -44,6 +44,7 @@ internal class ProfilesViewModel(app: Application) :
           Started,
           ProfileChanged,
           ProfileLoaded -> fetch()
+          Loading,
           is Stopped -> Unit
           is ProfileUpdateCompleted -> {
             event.uuid?.let { uuid -> showProfileUpdateCompleted(uuid) }

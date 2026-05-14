@@ -10,6 +10,7 @@ import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.SelectionDao
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.service.util.importedDir
+import com.github.kr328.clash.service.util.sendClashStarted
 import com.github.kr328.clash.service.util.sendProfileLoaded
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.channels.Channel
@@ -28,6 +29,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
     }
 
     var loaded: Uuid? = null
+    var started = false
 
     reload.trySend(Unit)
 
@@ -62,6 +64,11 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
         SelectionDao().removeSelections(active.uuid, remove)
 
         StatusProvider.currentProfile = active.name
+
+        if (!started) {
+          started = true
+          service.sendClashStarted()
+        }
 
         service.sendProfileLoaded(current)
 

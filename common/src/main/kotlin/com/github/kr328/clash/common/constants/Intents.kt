@@ -17,6 +17,7 @@ object Intents {
 
   // Self
   val ACTION_SERVICE_RECREATED = "$packageName.intent.action.CLASH_RECREATED"
+  val ACTION_CLASH_LOADING = "$packageName.intent.action.CLASH_LOADING"
   val ACTION_CLASH_STARTED = "$packageName.intent.action.CLASH_STARTED"
   val ACTION_CLASH_STOPPED = "$packageName.intent.action.CLASH_STOPPED"
   val ACTION_CLASH_REQUEST_STOP = "$packageName.intent.action.CLASH_REQUEST_STOP"

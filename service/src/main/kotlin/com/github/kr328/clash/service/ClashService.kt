@@ -15,7 +15,7 @@ import com.github.kr328.clash.service.clash.module.SuspendModule
 import com.github.kr328.clash.service.clash.module.TimeZoneModule
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.service.util.cancelAndJoinBlocking
-import com.github.kr328.clash.service.util.sendClashStarted
+import com.github.kr328.clash.service.util.sendClashLoading
 import com.github.kr328.clash.service.util.sendClashStopped
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
@@ -70,17 +70,18 @@ class ClashService : BaseService() {
 
     if (StatusProvider.serviceRunning) return stopSelf()
 
+    StatusProvider.currentProfile = null
     StatusProvider.serviceRunning = true
 
     StaticNotificationModule.createNotificationChannel(this)
     StaticNotificationModule.notifyLoadingNotification(this)
 
+    sendClashLoading()
+
     runtime.launch()
   }
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    sendClashStarted()
-
     return START_STICKY
   }
 
@@ -89,6 +90,7 @@ class ClashService : BaseService() {
   }
 
   override fun onDestroy() {
+    StatusProvider.currentProfile = null
     StatusProvider.serviceRunning = false
 
     sendClashStopped(reason)

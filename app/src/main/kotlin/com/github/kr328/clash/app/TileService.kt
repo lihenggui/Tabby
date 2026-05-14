@@ -10,6 +10,7 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.compat.registerReceiverCompat
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.constants.Permissions
+import com.github.kr328.clash.glue.remote.ClashServiceState
 import com.github.kr328.clash.glue.remote.StatusClient
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
@@ -37,6 +38,7 @@ class TileService : android.service.quicksettings.TileService() {
     registerReceiverCompat(
       receiver,
       IntentFilter().apply {
+        addAction(Intents.ACTION_CLASH_LOADING)
         addAction(Intents.ACTION_CLASH_STARTED)
         addAction(Intents.ACTION_CLASH_STOPPED)
         addAction(Intents.ACTION_PROFILE_LOADED)
@@ -46,9 +48,11 @@ class TileService : android.service.quicksettings.TileService() {
       null,
     )
 
-    val name = StatusClient(this).currentProfile()
+    val statusClient = StatusClient(this)
+    val serviceState = statusClient.serviceState()
+    val name = statusClient.currentProfile()
 
-    clashRunning = name != null
+    clashRunning = serviceState != ClashServiceState.Stopped
     currentProfile = name.orEmpty()
 
     updateTile()
@@ -76,10 +80,15 @@ class TileService : android.service.quicksettings.TileService() {
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
         when (intent?.action) {
-          Intents.ACTION_CLASH_STARTED -> {
+          Intents.ACTION_CLASH_LOADING -> {
             clashRunning = true
 
             currentProfile = ""
+          }
+          Intents.ACTION_CLASH_STARTED -> {
+            clashRunning = true
+
+            currentProfile = StatusClient(this@TileService).currentProfile().orEmpty()
           }
           Intents.ACTION_CLASH_STOPPED,
           Intents.ACTION_SERVICE_RECREATED -> {
@@ -88,6 +97,8 @@ class TileService : android.service.quicksettings.TileService() {
             currentProfile = ""
           }
           Intents.ACTION_PROFILE_LOADED -> {
+            clashRunning = true
+
             currentProfile = StatusClient(this@TileService).currentProfile().orEmpty()
           }
         }
