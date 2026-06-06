@@ -35,6 +35,39 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesCommitValidationRejectsBlankName() {
+    assertEquals(
+      PropertiesCommitValidationResult.EmptyName,
+      validatePropertiesCommit(profile(name = "   ")),
+    )
+  }
+
+  @Test
+  fun propertiesCommitValidationRejectsBlankSourceForRemoteProfiles() {
+    assertEquals(
+      PropertiesCommitValidationResult.EmptySource,
+      validatePropertiesCommit(profile(type = Profile.Type.Url, source = "   ")),
+    )
+    assertEquals(
+      PropertiesCommitValidationResult.EmptySource,
+      validatePropertiesCommit(profile(type = Profile.Type.External, source = "")),
+    )
+  }
+
+  @Test
+  fun propertiesCommitValidationAllowsBlankSourceForFileProfiles() {
+    assertEquals(
+      PropertiesCommitValidationResult.Valid,
+      validatePropertiesCommit(profile(type = Profile.Type.File, source = "")),
+    )
+  }
+
+  @Test
+  fun propertiesCommitValidationAcceptsValidRemoteProfile() {
+    assertEquals(PropertiesCommitValidationResult.Valid, validatePropertiesCommit(profile()))
+  }
+
+  @Test
   fun mapsPropertiesProgressState() {
     assertEquals(
       PropertiesProgressState(
@@ -251,13 +284,14 @@ class PropertiesStateMapperTest {
 
   private fun profile(
     name: String = "Profile",
+    type: Profile.Type = Profile.Type.Url,
     source: String = "https://example.com/config.yaml",
     interval: Long = 0,
   ): Profile {
     return Profile(
       uuid = Uuid.parse("00000000-0000-0000-0000-000000000001"),
       name = name,
-      type = Profile.Type.Url,
+      type = type,
       source = source,
       active = false,
       interval = interval,

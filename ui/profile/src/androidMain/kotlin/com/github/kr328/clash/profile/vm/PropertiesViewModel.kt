@@ -13,7 +13,11 @@ import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptyName
+import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptySource
+import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.Valid
 import com.github.kr328.clash.profile.ui.PropertiesUiState
+import com.github.kr328.clash.profile.ui.validatePropertiesCommit
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
@@ -111,14 +115,16 @@ internal class PropertiesViewModel(app: Application) :
   fun onCommit() {
     val profile = uiState.value.profile ?: return
 
-    if (profile.name.isBlank()) {
-      eventState.value = EventState.ShowMessage(application.getString(R.string.empty_name))
-      return
-    }
-
-    if (profile.type != File && profile.source.isBlank()) {
-      eventState.value = EventState.ShowMessage(application.getString(R.string.invalid_url))
-      return
+    when (validatePropertiesCommit(profile)) {
+      Valid -> Unit
+      EmptyName -> {
+        eventState.value = EventState.ShowMessage(application.getString(R.string.empty_name))
+        return
+      }
+      EmptySource -> {
+        eventState.value = EventState.ShowMessage(application.getString(R.string.invalid_url))
+        return
+      }
     }
 
     viewModelScope.launch {

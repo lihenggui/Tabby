@@ -11,12 +11,27 @@ internal data class PropertiesUiState(
   val hasUnsavedChanges: Boolean = false,
 )
 
+internal enum class PropertiesCommitValidationResult {
+  Valid,
+  EmptyName,
+  EmptySource,
+}
+
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {
   if (original == null) return false
 
   return profile.name != original.name ||
     profile.source != original.source ||
     profile.interval != original.interval
+}
+
+internal fun validatePropertiesCommit(profile: Profile): PropertiesCommitValidationResult {
+  if (profile.name.isBlank()) return PropertiesCommitValidationResult.EmptyName
+  if (profile.type != Profile.Type.File && profile.source.isBlank()) {
+    return PropertiesCommitValidationResult.EmptySource
+  }
+
+  return PropertiesCommitValidationResult.Valid
 }
 
 internal fun PropertiesUiState.withLoadedProfile(profile: Profile): PropertiesUiState {
