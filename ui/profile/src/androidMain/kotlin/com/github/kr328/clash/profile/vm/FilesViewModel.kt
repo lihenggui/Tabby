@@ -12,11 +12,13 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
+import com.github.kr328.clash.profile.ui.ProfileFileExportAction
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
+import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
@@ -152,10 +154,23 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onExportResult(uri: Uri?, sourceConfigFile: ConfigFile?) {
-    if (uri == null || sourceConfigFile == null) return
+    val outputUri = uri
+    val action =
+      profileFileExportAction(
+        outputSelected = outputUri != null,
+        sourceDocumentId = sourceConfigFile?.id,
+      )
+
+    if (action == ProfileFileExportAction.Ignore) return
+    val selectedOutputUri = checkNotNull(outputUri)
+
     viewModelScope.launch {
       try {
-        client.copyDocument(uri, sourceConfigFile.id)
+        when (action) {
+          is ProfileFileExportAction.ExportFile ->
+            client.copyDocument(selectedOutputUri, action.sourceDocumentId)
+          ProfileFileExportAction.Ignore -> Unit
+        }
       } catch (e: Exception) {
         Log.e("Export file failed: ${e.message}", e)
         eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
