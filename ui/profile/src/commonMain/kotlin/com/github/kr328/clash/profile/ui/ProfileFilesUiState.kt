@@ -48,3 +48,43 @@ internal fun profileFilesErrorEventState(
 ): ProfileFilesEventState<Nothing, Nothing> {
   return ProfileFilesEventState.ShowMessage(message ?: unknownMessage)
 }
+
+internal fun profileFilesLoadedEventState(
+  action: ProfileFilesLoadedAction
+): ProfileFilesEventState<Nothing, Nothing>? {
+  return when (action) {
+    is ProfileFilesLoadedAction.LoadFiles -> null
+    ProfileFilesLoadedAction.Finish -> ProfileFilesEventState.Finish
+  }
+}
+
+internal fun profileFilesBackEventState(
+  action: ProfileFilesBackAction
+): ProfileFilesEventState<Nothing, Nothing>? {
+  return when (action) {
+    is ProfileFilesBackAction.LeaveDirectory -> null
+    ProfileFilesBackAction.Finish -> ProfileFilesEventState.Finish
+  }
+}
+
+internal fun <OpenFileT> profileFileOpenEventState(
+  action: ProfileFileOpenAction,
+  openFile: OpenFileT,
+): ProfileFilesEventState<Nothing, OpenFileT>? {
+  return when (action) {
+    is ProfileFileOpenAction.EnterDirectory -> null
+    is ProfileFileOpenAction.OpenFile -> ProfileFilesEventState.OpenFile(openFile)
+  }
+}
+
+internal fun <ConfigFileT> profileFileImportRequestEventState(
+  targetConfigFile: ConfigFileT?
+): ProfileFilesEventState<ConfigFileT, Nothing> {
+  return ProfileFilesEventState.RequestImport(targetConfigFile)
+}
+
+internal fun <ConfigFileT> profileFileExportRequestEventState(
+  sourceConfigFile: ConfigFileT
+): ProfileFilesEventState<ConfigFileT, Nothing> {
+  return ProfileFilesEventState.RequestExport(sourceConfigFile)
+}

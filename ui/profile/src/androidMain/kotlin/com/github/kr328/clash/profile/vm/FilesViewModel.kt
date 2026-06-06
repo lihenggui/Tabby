@@ -23,13 +23,18 @@ import com.github.kr328.clash.profile.ui.ProfileFilesLoadedAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.profileFileExportAction
+import com.github.kr328.clash.profile.ui.profileFileExportRequestEventState
 import com.github.kr328.clash.profile.ui.profileFileImportAction
+import com.github.kr328.clash.profile.ui.profileFileImportRequestEventState
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
+import com.github.kr328.clash.profile.ui.profileFileOpenEventState
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
+import com.github.kr328.clash.profile.ui.profileFilesBackEventState
 import com.github.kr328.clash.profile.ui.profileFilesErrorEventState
 import com.github.kr328.clash.profile.ui.profileFilesFetchAction
 import com.github.kr328.clash.profile.ui.profileFilesInitAction
 import com.github.kr328.clash.profile.ui.profileFilesLoadedAction
+import com.github.kr328.clash.profile.ui.profileFilesLoadedEventState
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -64,7 +69,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
           uiState.update { it.withConfigurationEditable(action.configurationEditable) }
           fetch()
         }
-        ProfileFilesLoadedAction.Finish -> eventState.value = ProfileFilesEventState.Finish
+        ProfileFilesLoadedAction.Finish ->
+          profileFilesLoadedEventState(action)?.let { eventState.value = it }
       }
     }
   }
@@ -85,7 +91,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         location = action.location
         fetch()
       }
-      ProfileFilesBackAction.Finish -> eventState.value = ProfileFilesEventState.Finish
+      ProfileFilesBackAction.Finish ->
+        profileFilesBackEventState(action)?.let { eventState.value = it }
     }
   }
 
@@ -97,7 +104,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
       }
       is ProfileFileOpenAction.OpenFile -> {
         val uri = client.buildDocumentUri(action.documentId)
-        eventState.value = ProfileFilesEventState.OpenFile(uri)
+        profileFileOpenEventState(action, uri)?.let { eventState.value = it }
       }
     }
   }
@@ -127,7 +134,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onRequestImport(configFile: ConfigFile?) {
-    eventState.value = ProfileFilesEventState.RequestImport(configFile)
+    eventState.value = profileFileImportRequestEventState(configFile)
   }
 
   fun onImportResult(uri: Uri?, targetConfigFile: ConfigFile?) {
@@ -161,7 +168,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onRequestExport(configFile: ConfigFile) {
-    eventState.value = ProfileFilesEventState.RequestExport(configFile)
+    eventState.value = profileFileExportRequestEventState(configFile)
   }
 
   fun onExportResult(uri: Uri?, sourceConfigFile: ConfigFile?) {

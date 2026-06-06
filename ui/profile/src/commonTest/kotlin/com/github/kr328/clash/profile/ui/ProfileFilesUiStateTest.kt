@@ -77,6 +77,72 @@ class ProfileFilesUiStateTest {
     )
   }
 
+  @Test
+  fun loadedEventStateFinishesOnlyWhenProfileIsMissing() {
+    assertEquals(
+      null,
+      profileFilesLoadedEventState(
+        ProfileFilesLoadedAction.LoadFiles(configurationEditable = true)
+      ),
+    )
+    assertEquals(
+      ProfileFilesEventState.Finish,
+      profileFilesLoadedEventState(ProfileFilesLoadedAction.Finish),
+    )
+  }
+
+  @Test
+  fun backEventStateFinishesOnlyWhenLeavingTheRootDirectory() {
+    assertEquals(
+      null,
+      profileFilesBackEventState(
+        ProfileFilesBackAction.LeaveDirectory(ProfileFilesLocation().initialize("root"))
+      ),
+    )
+    assertEquals(
+      ProfileFilesEventState.Finish,
+      profileFilesBackEventState(ProfileFilesBackAction.Finish),
+    )
+  }
+
+  @Test
+  fun openEventStateOpensFilesOnlyForOpenFileActions() {
+    val openFile = "content://profile/config.yaml"
+
+    assertEquals(
+      null,
+      profileFileOpenEventState(
+        action = ProfileFileOpenAction.EnterDirectory("providers"),
+        openFile = openFile,
+      ),
+    )
+    assertEquals(
+      ProfileFilesEventState.OpenFile(openFile),
+      profileFileOpenEventState(
+        action = ProfileFileOpenAction.OpenFile("config.yaml"),
+        openFile = openFile,
+      ),
+    )
+  }
+
+  @Test
+  fun importAndExportRequestEventStatesCarryGenericPayloads() {
+    val targetFile = testFile("config.yaml")
+
+    assertEquals(
+      ProfileFilesEventState.RequestImport(targetFile),
+      profileFileImportRequestEventState(targetFile),
+    )
+    assertEquals(
+      ProfileFilesEventState.RequestImport(null),
+      profileFileImportRequestEventState<TestFile>(null),
+    )
+    assertEquals(
+      ProfileFilesEventState.RequestExport(targetFile),
+      profileFileExportRequestEventState(targetFile),
+    )
+  }
+
   private fun testFile(name: String): TestFile {
     return TestFile(name)
   }
