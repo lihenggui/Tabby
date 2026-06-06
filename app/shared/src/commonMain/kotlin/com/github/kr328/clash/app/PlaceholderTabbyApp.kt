@@ -10,14 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
-import com.github.kr328.clash.home.HomeRoute
 import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
@@ -33,7 +30,7 @@ fun PlaceholderTabbyApp(
   darkMode: DarkMode = DarkMode.Auto,
   modifier: Modifier = Modifier,
 ) {
-  val backStack = remember { mutableStateListOf<NavKey>(HomeRoute.Home) }
+  val backStack = remember { tabbyInitialBackStack() }
   val tunnelState by engineEnvironment.engineController.state.collectAsState()
   val entryProvider =
     remember(tunnelState.mode) {

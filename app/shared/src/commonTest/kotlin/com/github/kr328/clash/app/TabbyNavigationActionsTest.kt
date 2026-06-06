@@ -13,6 +13,16 @@ import kotlin.uuid.Uuid
 
 class TabbyNavigationActionsTest {
   @Test
+  fun tabbyInitialBackStackStartsAtHomeRoute() {
+    val backStack = tabbyInitialBackStack()
+
+    assertEquals(listOf<NavKey>(HomeRoute.Home), backStack)
+
+    backStack.add(ProxyRoute.Proxy)
+    assertEquals(listOf<NavKey>(HomeRoute.Home, ProxyRoute.Proxy), backStack)
+  }
+
+  @Test
   fun tabbyNavigationActionsAppendFeatureRoutesWithoutDuplicatingLastRoute() {
     val backStack = mutableListOf<NavKey>(HomeRoute.Home)
     val actions = tabbyNavigationActions(backStack)

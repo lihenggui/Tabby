@@ -21,7 +21,6 @@ import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -48,7 +47,6 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
-import com.github.kr328.clash.home.HomeRoute
 import java.util.Locale
 import kotlinx.coroutines.launch
 
@@ -220,7 +218,7 @@ class MainActivity : ComponentActivity() {
   }
 
   private class ViewModel(application: Application) : AndroidViewModel(application) {
-    val backStack = mutableStateListOf<NavKey>(HomeRoute.Home)
+    val backStack = tabbyInitialBackStack()
     private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
     fun handleInstallConfigUri(uri: Uri) {
