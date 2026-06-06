@@ -144,6 +144,88 @@ class TabbyExternalQuickActionShortcutTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyExternalQuickActionShortcutPlatformSpecsMapInstallPlanToPlatformSpecs() {
+    assertEquals(
+      listOf(
+        TabbyExternalQuickActionShortcutPlatformSpec(
+          id = "toggle_clash",
+          shortLabel = 1,
+          longLabel = 2,
+          icon = 3,
+          intentAction = "toggle",
+          intentFlags = 0b111,
+          rank = 0,
+        ),
+        TabbyExternalQuickActionShortcutPlatformSpec(
+          id = "start_clash",
+          shortLabel = 4,
+          longLabel = 5,
+          icon = 6,
+          intentAction = "start",
+          intentFlags = 0b111,
+          rank = 1,
+        ),
+        TabbyExternalQuickActionShortcutPlatformSpec(
+          id = "stop_clash",
+          shortLabel = 7,
+          longLabel = 8,
+          icon = 9,
+          intentAction = "stop",
+          intentFlags = 0b111,
+          rank = 2,
+        ),
+      ),
+      tabbyExternalQuickActionShortcutPlatformSpecs(
+        plan =
+          TabbyExternalQuickActionShortcutPlan.Install(
+            shortcuts = expectedQuickActionShortcuts,
+            launchOptions = expectedQuickActionShortcutLaunchOptions,
+          ),
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+        openInNewTaskFlag = 0b001,
+        excludeFromRecentsFlag = 0b010,
+        noAnimationFlag = 0b100,
+        toggleShortLabel = 1,
+        toggleLongLabel = 2,
+        toggleIcon = 3,
+        startShortLabel = 4,
+        startLongLabel = 5,
+        startIcon = 6,
+        stopShortLabel = 7,
+        stopLongLabel = 8,
+        stopIcon = 9,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalQuickActionShortcutPlatformSpecsSkipHiddenAppIconPlan() {
+    assertEquals(
+      null,
+      tabbyExternalQuickActionShortcutPlatformSpecs(
+        plan = TabbyExternalQuickActionShortcutPlan.Skip,
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+        openInNewTaskFlag = 0b001,
+        excludeFromRecentsFlag = 0b010,
+        noAnimationFlag = 0b100,
+        toggleShortLabel = 1,
+        toggleLongLabel = 2,
+        toggleIcon = 3,
+        startShortLabel = 4,
+        startLongLabel = 5,
+        startIcon = 6,
+        stopShortLabel = 7,
+        stopLongLabel = 8,
+        stopIcon = 9,
+      ),
+    )
+  }
 }
 
 private val expectedQuickActionShortcutLaunchOptions =
