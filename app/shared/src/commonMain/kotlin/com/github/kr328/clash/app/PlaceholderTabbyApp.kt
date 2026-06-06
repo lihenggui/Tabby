@@ -24,6 +24,7 @@ import com.github.kr328.clash.log.logsEntries
 import com.github.kr328.clash.log.ui.LogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
+import com.github.kr328.clash.profile.ui.ProvidersRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
@@ -97,7 +98,7 @@ fun PlaceholderTabbyApp(
                 },
               )
             },
-            providersContent = { PlaceholderScreen("Providers") },
+            providersContent = { ProvidersRouteContent() },
           )
         },
         logsEntries = {
