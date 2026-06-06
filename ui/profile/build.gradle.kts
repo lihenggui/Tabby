@@ -11,6 +11,7 @@ kotlin {
       implementation(projects.core.common)
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
+      implementation(libs.kotlinx.datetime)
     }
 
     androidMain {
