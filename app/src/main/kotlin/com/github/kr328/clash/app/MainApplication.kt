@@ -30,10 +30,9 @@ class MainApplication : Application() {
 
     Log.d("Process $processName started")
 
-    if (processName == packageName) {
-      Remote.launch()
-    } else {
-      sendServiceRecreated()
+    when (tabbyProcessStartupAction(processName, packageName)) {
+      TabbyProcessStartupAction.StartMainProcess -> Remote.launch()
+      TabbyProcessStartupAction.NotifyServiceRecreated -> sendServiceRecreated()
     }
   }
 
