@@ -120,4 +120,44 @@ class TabbyGeoAssetTest {
       tabbyGeoFileDeletedAction(fileExistsAfterDelete = true),
     )
   }
+
+  @Test
+  fun tabbyGeoFileUpdateActionAfterStaleDeleteExtractsWhenStaleDeleteRemovedTheFile() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.ExtractMissingFile,
+      tabbyGeoFileUpdateActionAfterStaleDelete(
+        initialAction = TabbyGeoFileUpdateAction.DeleteStaleFile,
+        fileExistsAfterDelete = false,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyGeoFileUpdateActionAfterStaleDeleteIgnoresWhenStaleDeleteDidNotRemoveTheFile() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.Ignore,
+      tabbyGeoFileUpdateActionAfterStaleDelete(
+        initialAction = TabbyGeoFileUpdateAction.DeleteStaleFile,
+        fileExistsAfterDelete = true,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyGeoFileUpdateActionAfterStaleDeleteKeepsNonDeleteActions() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.ExtractMissingFile,
+      tabbyGeoFileUpdateActionAfterStaleDelete(
+        initialAction = TabbyGeoFileUpdateAction.ExtractMissingFile,
+        fileExistsAfterDelete = true,
+      ),
+    )
+    assertEquals(
+      TabbyGeoFileUpdateAction.Ignore,
+      tabbyGeoFileUpdateActionAfterStaleDelete(
+        initialAction = TabbyGeoFileUpdateAction.Ignore,
+        fileExistsAfterDelete = false,
+      ),
+    )
+  }
 }

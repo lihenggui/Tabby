@@ -58,3 +58,14 @@ fun tabbyGeoFileDeletedAction(fileExistsAfterDelete: Boolean): TabbyGeoFileUpdat
   } else {
     TabbyGeoFileUpdateAction.Ignore
   }
+
+fun tabbyGeoFileUpdateActionAfterStaleDelete(
+  initialAction: TabbyGeoFileUpdateAction,
+  fileExistsAfterDelete: Boolean,
+): TabbyGeoFileUpdateAction =
+  when (initialAction) {
+    TabbyGeoFileUpdateAction.DeleteStaleFile ->
+      tabbyGeoFileDeletedAction(fileExistsAfterDelete = fileExistsAfterDelete)
+    TabbyGeoFileUpdateAction.ExtractMissingFile -> TabbyGeoFileUpdateAction.ExtractMissingFile
+    TabbyGeoFileUpdateAction.Ignore -> TabbyGeoFileUpdateAction.Ignore
+  }
