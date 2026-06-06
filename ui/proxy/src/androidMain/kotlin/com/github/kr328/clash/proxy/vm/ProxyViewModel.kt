@@ -18,6 +18,8 @@ import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
+import com.github.kr328.clash.proxy.ui.withDelayTestFinished
+import com.github.kr328.clash.proxy.ui.withDelayTestStarted
 import com.github.kr328.clash.proxy.ui.withExcludeNotSelectable
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withOverrideMode
@@ -25,8 +27,10 @@ import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyLine
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
+import com.github.kr328.clash.proxy.ui.withProxySelectionRefreshed
 import com.github.kr328.clash.proxy.ui.withProxySort
 import com.github.kr328.clash.proxy.ui.withSelectedProxy
+import com.github.kr328.clash.proxy.ui.withUrlTestStarted
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -142,7 +146,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     val names = uiState.value.groupNames
     if (names.isEmpty() || index !in names.indices) return
 
-    updateGroupState(index) { it.copy(urlTesting = true) }
+    updateGroupState(index) { it.withUrlTestStarted() }
 
     viewModelScope.launch {
       engineController.healthCheck(names[index])
@@ -157,8 +161,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     viewModelScope.launch {
       engineController.patchSelector(names[index], name)
       selectedProxies.update { it.withSelectedProxy(index, name) }
-      // trigger refresh version to redraw
-      updateGroupState(index) { it.copy(refreshVersion = it.refreshVersion + 1) }
+      updateGroupState(index) { it.withProxySelectionRefreshed() }
     }
   }
 
@@ -166,21 +169,14 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     val names = uiState.value.groupNames
     if (index !in names.indices) return
 
-    updateGroupState(index) {
-      it.copy(delayTestingKeys = it.delayTestingKeys + name, refreshVersion = it.refreshVersion + 1)
-    }
+    updateGroupState(index) { it.withDelayTestStarted(name) }
 
     viewModelScope.launch {
       try {
         engineController.healthCheckProxy(names[index], name)
         reload(index)
       } finally {
-        updateGroupState(index) {
-          it.copy(
-            delayTestingKeys = it.delayTestingKeys - name,
-            refreshVersion = it.refreshVersion + 1,
-          )
-        }
+        updateGroupState(index) { it.withDelayTestFinished(name) }
       }
     }
   }
@@ -199,9 +195,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
       val group = reloadLock.withPermit { engineController.queryProxyGroup(names[index], sort) }
 
-      selectedProxies.update { list ->
-        list.toMutableList().apply { set(index, SelectedProxy(group.now)) }
-      }
+      selectedProxies.update { it.withSelectedProxy(index, group.now) }
 
       val sources =
         withContext(Dispatchers.Default) { group.toProxyItemSources(groupNames = names) }

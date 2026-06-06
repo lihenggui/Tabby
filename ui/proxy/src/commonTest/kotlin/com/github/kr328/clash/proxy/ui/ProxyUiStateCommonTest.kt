@@ -128,6 +128,43 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun startsUrlTestingWithoutRefreshingGroupVersion() {
+    val state = ProxyGroupUiState(urlTesting = false, refreshVersion = 4).withUrlTestStarted()
+
+    assertEquals(true, state.urlTesting)
+    assertEquals(4, state.refreshVersion)
+  }
+
+  @Test
+  fun refreshesProxySelectionGroupState() {
+    val state =
+      ProxyGroupUiState(
+          delayTestingKeys = setOf("Direct"),
+          refreshVersion = 4,
+        )
+        .withProxySelectionRefreshed()
+
+    assertEquals(setOf("Direct"), state.delayTestingKeys)
+    assertEquals(5, state.refreshVersion)
+  }
+
+  @Test
+  fun startsAndFinishesDelayTesting() {
+    val started =
+      ProxyGroupUiState(delayTestingKeys = setOf("Proxy"), refreshVersion = 4)
+        .withDelayTestStarted("Direct")
+    val finished = started.withDelayTestFinished("Proxy")
+    val finishedMissing = finished.withDelayTestFinished("Missing")
+
+    assertEquals(setOf("Proxy", "Direct"), started.delayTestingKeys)
+    assertEquals(5, started.refreshVersion)
+    assertEquals(setOf("Direct"), finished.delayTestingKeys)
+    assertEquals(6, finished.refreshVersion)
+    assertEquals(setOf("Direct"), finishedMissing.delayTestingKeys)
+    assertEquals(7, finishedMissing.refreshVersion)
+  }
+
+  @Test
   fun createsAndUpdatesSelectedProxies() {
     val selected = initialSelectedProxies(size = 2)
     val updated = selected.withSelectedProxy(index = 1, name = "Direct")

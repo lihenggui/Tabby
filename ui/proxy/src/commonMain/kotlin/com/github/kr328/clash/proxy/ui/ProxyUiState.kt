@@ -155,6 +155,28 @@ internal fun ProxyUiState.withProxyGroupState(
   return copy(groups = newGroups)
 }
 
+internal fun ProxyGroupUiState.withUrlTestStarted(): ProxyGroupUiState {
+  return copy(urlTesting = true)
+}
+
+internal fun ProxyGroupUiState.withProxySelectionRefreshed(): ProxyGroupUiState {
+  return copy(refreshVersion = refreshVersion + 1)
+}
+
+internal fun ProxyGroupUiState.withDelayTestStarted(name: String): ProxyGroupUiState {
+  return copy(
+    delayTestingKeys = delayTestingKeys + name,
+    refreshVersion = refreshVersion + 1,
+  )
+}
+
+internal fun ProxyGroupUiState.withDelayTestFinished(name: String): ProxyGroupUiState {
+  return copy(
+    delayTestingKeys = delayTestingKeys - name,
+    refreshVersion = refreshVersion + 1,
+  )
+}
+
 internal fun initialSelectedProxies(size: Int): List<SelectedProxy> {
   return List(size) { SelectedProxy("?") }
 }
