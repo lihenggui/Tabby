@@ -73,4 +73,33 @@ class GeoFileImportPlanTest {
       geoFileImportAction(displayName = "geoip.txt", importType = GeoFileImportType.GeoIp),
     )
   }
+
+  @Test
+  fun importStartedAndFailedResultsMapToCommonStates() {
+    assertEquals(GeoFileImportResult.InProgress, geoFileImportStartedResult())
+    assertEquals(GeoFileImportResult.Failed, geoFileImportFailedResult())
+  }
+
+  @Test
+  fun importActionResultMapsUnsupportedFormatToResult() {
+    assertEquals(
+      GeoFileImportResult.UnsupportedFormat(".metadb/.db/.dat/.mmdb"),
+      geoFileImportResult(GeoFileImportAction.UnsupportedFormat(".metadb/.db/.dat/.mmdb")),
+    )
+  }
+
+  @Test
+  fun importActionResultMapsCopyOutcomeToResult() {
+    val action =
+      GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+
+    assertEquals(
+      GeoFileImportResult.Success("GeoSite.DAT"),
+      geoFileImportResult(action, copySucceeded = true),
+    )
+    assertEquals(
+      GeoFileImportResult.Failed,
+      geoFileImportResult(action, copySucceeded = false),
+    )
+  }
 }

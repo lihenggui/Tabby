@@ -60,3 +60,24 @@ internal fun geoFileImportAction(
       GeoFileImportAction.UnsupportedFormat(plan.supportedExtensionsSummary)
   }
 }
+
+internal fun geoFileImportStartedResult(): GeoFileImportResult {
+  return GeoFileImportResult.InProgress
+}
+
+internal fun geoFileImportFailedResult(): GeoFileImportResult {
+  return GeoFileImportResult.Failed
+}
+
+internal fun geoFileImportResult(
+  action: GeoFileImportAction,
+  copySucceeded: Boolean = true,
+): GeoFileImportResult {
+  return when (action) {
+    is GeoFileImportAction.Copy ->
+      if (copySucceeded) GeoFileImportResult.Success(action.displayName)
+      else GeoFileImportResult.Failed
+    is GeoFileImportAction.UnsupportedFormat ->
+      GeoFileImportResult.UnsupportedFormat(action.summary)
+  }
+}

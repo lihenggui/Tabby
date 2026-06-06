@@ -21,6 +21,9 @@ import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.geoFileImportAction
+import com.github.kr328.clash.settings.ui.geoFileImportFailedResult
+import com.github.kr328.clash.settings.ui.geoFileImportResult
+import com.github.kr328.clash.settings.ui.geoFileImportStartedResult
 import com.github.kr328.clash.settings.ui.overridePersistAction
 import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
 import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
@@ -77,18 +80,18 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
 
   fun importGeoFile(uri: Uri?, importType: GeoFileImportType) {
     viewModelScope.launch(Dispatchers.IO) {
-      importResult.value = GeoFileImportResult.InProgress
+      importResult.value = geoFileImportStartedResult()
       try {
         val resolver = appContext.contentResolver
         val cursor: Cursor =
           uri?.let { resolver.query(it, null, null, null, null, null) }
             ?: run {
-              importResult.value = GeoFileImportResult.Failed
+              importResult.value = geoFileImportFailedResult()
               return@launch
             }
 
         importResult.value = cursor.use {
-          if (!it.moveToFirst()) return@use GeoFileImportResult.Failed
+          if (!it.moveToFirst()) return@use geoFileImportFailedResult()
 
           val columnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
           val displayName = if (columnIndex != -1) it.getString(columnIndex).orEmpty() else ""
@@ -96,21 +99,21 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
           when (
             val action = geoFileImportAction(displayName = displayName, importType = importType)
           ) {
-            is GeoFileImportAction.UnsupportedFormat ->
-              return@use GeoFileImportResult.UnsupportedFormat(action.summary)
+            is GeoFileImportAction.UnsupportedFormat -> return@use geoFileImportResult(action)
             is GeoFileImportAction.Copy -> {
               val outputFile = appContext.clashDir.resolve(action.outputFileName)
               outputFile.parentFile?.mkdirs()
               val inputStream =
-                resolver.openInputStream(uri) ?: return@use GeoFileImportResult.Failed
+                resolver.openInputStream(uri)
+                  ?: return@use geoFileImportResult(action, copySucceeded = false)
               inputStream.use { ins -> outputFile.outputStream().use { outs -> ins.copyTo(outs) } }
-              return@use GeoFileImportResult.Success(action.displayName)
+              return@use geoFileImportResult(action, copySucceeded = true)
             }
           }
         }
       } catch (e: Exception) {
         Log.e("Import geo database failed: ${e.message}", e)
-        importResult.value = GeoFileImportResult.Failed
+        importResult.value = geoFileImportFailedResult()
       }
     }
   }
