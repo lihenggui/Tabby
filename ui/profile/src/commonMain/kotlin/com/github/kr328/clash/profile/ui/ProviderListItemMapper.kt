@@ -16,3 +16,18 @@ internal fun Provider.toProviderListItem(
     updating = updating,
   )
 }
+
+internal fun ProvidersUiState.toProviderListItems(
+  formatType: (Provider) -> String,
+  formatElapsedMillis: (Long) -> String,
+): List<ProviderListItem> {
+  return providers.map { state ->
+    state.provider.toProviderListItem(
+      currentTime = currentTime,
+      updatedAt = state.updatedAt,
+      updating = state.updating,
+      formatType = formatType,
+      formatElapsedMillis = formatElapsedMillis,
+    )
+  }
+}

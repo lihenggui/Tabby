@@ -27,6 +27,31 @@ class ProviderListItemMapperTest {
     assertEquals(false, item.updating)
   }
 
+  @Test
+  fun mapsProviderUiStateProvidersInOrderUsingStateFields() {
+    val first = Provider("Proxy Provider", Provider.Type.Proxy, Provider.VehicleType.HTTP, 100)
+    val second = Provider("Rule Provider", Provider.Type.Rule, Provider.VehicleType.File, 500)
+
+    val items =
+      ProvidersUiState(
+          providers =
+            listOf(
+              ProviderItemState(provider = first, updatedAt = 900, updating = true),
+              ProviderItemState(provider = second, updatedAt = 700, updating = false),
+            ),
+          currentTime = 1000,
+        )
+        .toProviderListItems(
+          formatType = { "${it.type}/${it.vehicleType}" },
+          formatElapsedMillis = { "elapsed:$it" },
+        )
+
+    assertEquals(listOf(first, second), items.map(ProviderListItem::provider))
+    assertEquals(listOf("Proxy/HTTP", "Rule/File"), items.map(ProviderListItem::typeText))
+    assertEquals(listOf("elapsed:100", "elapsed:300"), items.map(ProviderListItem::updatedAtText))
+    assertEquals(listOf(true, false), items.map(ProviderListItem::updating))
+  }
+
   private fun Provider.toProviderListItem(
     currentTime: Long,
     updatedAt: Long,

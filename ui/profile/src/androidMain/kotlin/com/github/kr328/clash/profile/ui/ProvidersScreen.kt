@@ -37,15 +37,10 @@ internal fun ProvidersScreen(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     providers =
-      uiState.providers.map { state ->
-        state.provider.toProviderListItem(
-          currentTime = uiState.currentTime,
-          updatedAt = state.updatedAt,
-          updating = state.updating,
-          formatType = { provider -> provider.type(context) },
-          formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
-        )
-      },
+      uiState.toProviderListItems(
+        formatType = { provider -> provider.type(context) },
+        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+      ),
     onUpdateAll = viewModel::onUpdateAll,
     onUpdate = { _, provider -> viewModel.onUpdate(provider) },
   )

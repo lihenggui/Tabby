@@ -61,18 +61,15 @@ internal fun ProfilesScreen(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     profiles =
-      uiState.profiles.map { profile ->
-        profile.toProfileListItem(
-          currentTime = uiState.currentTime,
-          formatType = { type -> type.toString(context) },
-          formatUnsavedType = { typeText ->
-            context.getString(R.string.format_type_unsaved, typeText)
-          },
-          formatBytes = { bytes -> bytes.binaryBytes.toString() },
-          formatExpire = { expire -> expire.toDateStr() },
-          formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
-        )
-      },
+      uiState.toProfileListItems(
+        formatType = { type -> type.toString(context) },
+        formatUnsavedType = { typeText ->
+          context.getString(R.string.format_type_unsaved, typeText)
+        },
+        formatBytes = { bytes -> bytes.binaryBytes.toString() },
+        formatExpire = { expire -> expire.toDateStr() },
+        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+      ),
     allUpdating = uiState.allUpdating,
     hasUpdatableProfile = uiState.hasUpdatableProfile,
     onUpdateAll = viewModel::onUpdateAll,

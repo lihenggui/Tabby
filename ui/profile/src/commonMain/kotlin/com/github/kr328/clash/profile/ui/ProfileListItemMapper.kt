@@ -29,6 +29,25 @@ internal fun Profile.toProfileListItem(
   )
 }
 
+internal fun ProfilesUiState.toProfileListItems(
+  formatType: (Profile.Type) -> String,
+  formatUnsavedType: (String) -> String,
+  formatBytes: (Long) -> String,
+  formatExpire: (Long) -> String,
+  formatElapsedMillis: (Long) -> String,
+): List<ProfileListItem> {
+  return profiles.map { profile ->
+    profile.toProfileListItem(
+      currentTime = currentTime,
+      formatType = formatType,
+      formatUnsavedType = formatUnsavedType,
+      formatBytes = formatBytes,
+      formatExpire = formatExpire,
+      formatElapsedMillis = formatElapsedMillis,
+    )
+  }
+}
+
 private fun Profile.showsTrafficUsage(): Boolean {
   return download >= MIN_DOWNLOAD_BYTES_FOR_USAGE && total > MIN_TOTAL_BYTES_FOR_USAGE
 }

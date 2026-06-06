@@ -61,6 +61,26 @@ class ProfileListItemMapperTest {
     assertEquals(1000, item.trafficProgress)
   }
 
+  @Test
+  fun mapsProfileUiStateProfilesInOrderUsingStateCurrentTime() {
+    val first = profile(type = Profile.Type.File, updatedAt = 900)
+    val second = profile(type = Profile.Type.Url, pending = true, updatedAt = 700)
+
+    val items =
+      ProfilesUiState(profiles = listOf(first, second), currentTime = 1000)
+        .toProfileListItems(
+          formatType = Profile.Type::name,
+          formatUnsavedType = { "$it (Unsaved)" },
+          formatBytes = { "${it}B" },
+          formatExpire = { "expire:$it" },
+          formatElapsedMillis = { "elapsed:$it" },
+        )
+
+    assertEquals(listOf(first, second), items.map(ProfileListItem::profile))
+    assertEquals(listOf("File", "Url (Unsaved)"), items.map(ProfileListItem::typeText))
+    assertEquals(listOf("elapsed:100", "elapsed:300"), items.map(ProfileListItem::updatedAtText))
+  }
+
   private fun Profile.toProfileListItem(currentTime: Long): ProfileListItem {
     return toProfileListItem(
       currentTime = currentTime,
