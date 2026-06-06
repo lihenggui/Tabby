@@ -39,9 +39,27 @@ internal enum class HomeTrafficPollAction {
   Ignore,
 }
 
+internal sealed interface HomeEventState<out VpnPermissionT> {
+  data object Idle : HomeEventState<Nothing>
+
+  data class RequestVpnPermission<out VpnPermissionT>(val permissionRequest: VpnPermissionT) :
+    HomeEventState<VpnPermissionT>
+
+  data object ShowNoProfileMessage : HomeEventState<Nothing>
+
+  data class ShowMessage(val message: String) : HomeEventState<Nothing>
+}
+
 internal fun homeStartAction(activeProfile: Profile?): HomeStartAction {
   return if (activeProfile?.imported == true) HomeStartAction.StartEngine
   else HomeStartAction.ShowNoProfileMessage
+}
+
+internal fun homeStartEventState(action: HomeStartAction): HomeEventState<Nothing>? {
+  return when (action) {
+    HomeStartAction.StartEngine -> null
+    HomeStartAction.ShowNoProfileMessage -> HomeEventState.ShowNoProfileMessage
+  }
 }
 
 internal fun homeBroadcastAction(

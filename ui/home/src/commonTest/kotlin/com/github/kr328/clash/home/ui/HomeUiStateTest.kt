@@ -27,6 +27,23 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeStartEventStateShowsNoProfileMessageOnlyWhenProfileIsMissing() {
+    assertEquals(null, homeStartEventState(HomeStartAction.StartEngine))
+    assertEquals(
+      HomeEventState.ShowNoProfileMessage,
+      homeStartEventState(HomeStartAction.ShowNoProfileMessage),
+    )
+  }
+
+  @Test
+  fun homeEventStateCarriesVpnPermissionPayloadAsGenericValue() {
+    val permissionRequest = "vpn-permission-intent"
+    val event: HomeEventState<String> = HomeEventState.RequestVpnPermission(permissionRequest)
+
+    assertEquals(HomeEventState.RequestVpnPermission(permissionRequest), event)
+  }
+
+  @Test
   fun homeBroadcastActionFetchesForStateChangingEvents() {
     listOf(
         HomeBroadcastEventKind.ServiceRecreated,

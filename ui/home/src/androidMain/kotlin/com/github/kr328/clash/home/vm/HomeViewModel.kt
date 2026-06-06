@@ -18,8 +18,7 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.home.ui.HomeBroadcastEventKind
-import com.github.kr328.clash.home.ui.HomeStartAction.ShowNoProfileMessage
-import com.github.kr328.clash.home.ui.HomeStartAction.StartEngine
+import com.github.kr328.clash.home.ui.HomeEventState
 import com.github.kr328.clash.home.ui.HomeToggleAction.StartClash
 import com.github.kr328.clash.home.ui.HomeToggleAction.StopClash
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
@@ -27,6 +26,7 @@ import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
 import com.github.kr328.clash.home.ui.homeBroadcastAction
 import com.github.kr328.clash.home.ui.homeStartAction
+import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeToggleAction
 import com.github.kr328.clash.home.ui.homeTrafficPollAction
 import com.github.kr328.clash.home.ui.withFetchedHomeState
@@ -52,8 +52,8 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   val uiState: StateFlow<HomeUiState>
     field = MutableStateFlow(HomeUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<HomeEventState<Intent>>
+    field = MutableStateFlow<HomeEventState<Intent>>(HomeEventState.Idle)
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()
@@ -62,7 +62,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         val action = event.toHomeBroadcastAction()
 
         action.stoppedMessage?.let { message ->
-          eventState.update { EventState.ShowMessage(message) }
+          eventState.update { HomeEventState.ShowMessage(message) }
         }
         if (action.shouldFetch) fetch()
       }
@@ -90,7 +90,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = HomeEventState.Idle
   }
 
   private fun fetch() {
@@ -135,10 +135,10 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 
   private fun startClash() {
     viewModelScope.launch {
-      when (homeStartAction(profileRepository.queryActive())) {
-        StartEngine -> startEngine()
-        ShowNoProfileMessage -> eventState.value = EventState.ShowNoProfileMessage
-      }
+      val action = homeStartAction(profileRepository.queryActive())
+      val event = homeStartEventState(action)
+
+      if (event != null) eventState.value = event else startEngine()
     }
   }
 
@@ -146,11 +146,11 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     try {
       engineController.start()
     } catch (e: VpnPermissionRequiredException) {
-      eventState.value = EventState.RequestVpnPermission(e.prepareIntent)
+      eventState.value = HomeEventState.RequestVpnPermission(e.prepareIntent)
     } catch (e: Exception) {
       Log.e("Start clash service failed: ${e.message}", e)
       eventState.value =
-        EventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
+        HomeEventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
     }
   }
 
@@ -168,14 +168,4 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateFailed)
       Broadcasts.Event.ProfileLoaded -> homeBroadcastAction(HomeBroadcastEventKind.ProfileLoaded)
     }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data class RequestVpnPermission(val intent: Intent) : EventState
-
-    data object ShowNoProfileMessage : EventState
-
-    data class ShowMessage(val message: String) : EventState
-  }
 }
