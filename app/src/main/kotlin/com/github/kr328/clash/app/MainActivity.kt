@@ -248,13 +248,13 @@ private fun TabbyExternalQuickAction.intentAction(): String =
     stopClashAction = Intents.ACTION_STOP_CLASH,
   )
 
-private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): Int {
-  var flags = 0
-  if (openInNewTask) flags = flags or Intent.FLAG_ACTIVITY_NEW_TASK
-  if (excludeFromRecents) flags = flags or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-  if (noAnimation) flags = flags or Intent.FLAG_ACTIVITY_NO_ANIMATION
-  return flags
-}
+private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): Int =
+  tabbyExternalQuickActionShortcutLaunchFlags(
+    launchOptions = this,
+    openInNewTaskFlag = Intent.FLAG_ACTIVITY_NEW_TASK,
+    excludeFromRecentsFlag = Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS,
+    noAnimationFlag = Intent.FLAG_ACTIVITY_NO_ANIMATION,
+  )
 
 private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =
   tabbyExternalQuickActionFromString(

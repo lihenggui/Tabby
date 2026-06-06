@@ -38,6 +38,51 @@ class TabbyExternalQuickActionShortcutTest {
       tabbyExternalQuickActionShortcutLaunchOptions(),
     )
   }
+
+  @Test
+  fun tabbyExternalQuickActionShortcutLaunchFlagsCombinesEnabledPlatformFlags() {
+    assertEquals(
+      0b111,
+      tabbyExternalQuickActionShortcutLaunchFlags(
+        launchOptions = expectedQuickActionShortcutLaunchOptions,
+        openInNewTaskFlag = 0b001,
+        excludeFromRecentsFlag = 0b010,
+        noAnimationFlag = 0b100,
+      ),
+    )
+    assertEquals(
+      0b101,
+      tabbyExternalQuickActionShortcutLaunchFlags(
+        launchOptions =
+          TabbyExternalQuickActionShortcutLaunchOptions(
+            openInNewTask = true,
+            excludeFromRecents = false,
+            noAnimation = true,
+          ),
+        openInNewTaskFlag = 0b001,
+        excludeFromRecentsFlag = 0b010,
+        noAnimationFlag = 0b100,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalQuickActionShortcutLaunchFlagsReturnsZeroWhenAllOptionsAreDisabled() {
+    assertEquals(
+      0,
+      tabbyExternalQuickActionShortcutLaunchFlags(
+        launchOptions =
+          TabbyExternalQuickActionShortcutLaunchOptions(
+            openInNewTask = false,
+            excludeFromRecents = false,
+            noAnimation = false,
+          ),
+        openInNewTaskFlag = 0b001,
+        excludeFromRecentsFlag = 0b010,
+        noAnimationFlag = 0b100,
+      ),
+    )
+  }
 }
 
 private val expectedQuickActionShortcutLaunchOptions =

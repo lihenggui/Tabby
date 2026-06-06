@@ -57,6 +57,19 @@ fun tabbyExternalQuickActionShortcutLaunchOptions(): TabbyExternalQuickActionSho
     noAnimation = true,
   )
 
+fun tabbyExternalQuickActionShortcutLaunchFlags(
+  launchOptions: TabbyExternalQuickActionShortcutLaunchOptions,
+  openInNewTaskFlag: Int,
+  excludeFromRecentsFlag: Int,
+  noAnimationFlag: Int,
+): Int {
+  var flags = 0
+  if (launchOptions.openInNewTask) flags = flags or openInNewTaskFlag
+  if (launchOptions.excludeFromRecents) flags = flags or excludeFromRecentsFlag
+  if (launchOptions.noAnimation) flags = flags or noAnimationFlag
+  return flags
+}
+
 fun tabbyExternalQuickActionShortcutPlan(
   appIconHidden: Boolean
 ): TabbyExternalQuickActionShortcutPlan =
