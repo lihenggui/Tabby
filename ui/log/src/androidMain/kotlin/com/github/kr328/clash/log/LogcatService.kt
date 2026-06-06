@@ -159,9 +159,11 @@ internal class LogcatService :
             mainIntent {
               action = Intents.ACTION_LOGCAT
               setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                  Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                  Intent.FLAG_ACTIVITY_CLEAR_TOP
+                logcatStatusLaunchFlags(
+                  newTaskFlag = Intent.FLAG_ACTIVITY_NEW_TASK,
+                  singleTopFlag = Intent.FLAG_ACTIVITY_SINGLE_TOP,
+                  clearTopFlag = Intent.FLAG_ACTIVITY_CLEAR_TOP,
+                )
               )
             },
             pendingIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT),
