@@ -89,6 +89,12 @@ internal data class ProxyItemUiState(
 
 internal data class SelectedProxy(val name: String)
 
+internal sealed interface ProxyGroupSelectionAction {
+  data class SelectGroup(val name: String) : ProxyGroupSelectionAction
+
+  data object Ignore : ProxyGroupSelectionAction
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -123,6 +129,15 @@ internal fun ProxyUiState.withInitialProxyGroups(
 
 internal fun ProxyUiState.withCurrentPage(index: Int): ProxyUiState {
   return copy(currentPage = index)
+}
+
+internal fun proxyGroupSelectionAction(
+  groupNames: List<String>,
+  index: Int,
+): ProxyGroupSelectionAction {
+  val name = groupNames.getOrNull(index) ?: return ProxyGroupSelectionAction.Ignore
+
+  return ProxyGroupSelectionAction.SelectGroup(name)
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

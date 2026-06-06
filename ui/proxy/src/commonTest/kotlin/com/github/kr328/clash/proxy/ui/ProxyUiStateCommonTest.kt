@@ -189,4 +189,28 @@ class ProxyUiStateCommonTest {
     assertEquals(ProxySort.Title, state.proxySort)
     assertEquals(TunnelState.Mode.Direct, state.overrideMode)
   }
+
+  @Test
+  fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
+    assertEquals(
+      ProxyGroupSelectionAction.SelectGroup("Auto"),
+      proxyGroupSelectionAction(listOf("Proxy", "Auto"), index = 1),
+    )
+  }
+
+  @Test
+  fun proxyGroupSelectionActionIgnoresMissingIndex() {
+    assertEquals(
+      ProxyGroupSelectionAction.Ignore,
+      proxyGroupSelectionAction(listOf("Proxy"), index = 1),
+    )
+  }
+
+  @Test
+  fun proxyGroupSelectionActionIgnoresEmptyGroupNames() {
+    assertEquals(
+      ProxyGroupSelectionAction.Ignore,
+      proxyGroupSelectionAction(emptyList(), index = 0),
+    )
+  }
 }

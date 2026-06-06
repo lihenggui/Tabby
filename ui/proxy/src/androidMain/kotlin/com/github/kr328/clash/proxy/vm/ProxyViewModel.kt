@@ -12,10 +12,12 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.proxy.ui.ProxyEventState
+import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
+import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
@@ -115,7 +117,10 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   fun onPageChanged(index: Int) {
     val names = uiState.value.groupNames
     uiState.update { it.withCurrentPage(index) }
-    names.getOrNull(index)?.let { uiStore.proxyLastGroup = it }
+    when (val action = proxyGroupSelectionAction(names, index)) {
+      is ProxyGroupSelectionAction.SelectGroup -> uiStore.proxyLastGroup = action.name
+      ProxyGroupSelectionAction.Ignore -> Unit
+    }
   }
 
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
@@ -143,37 +148,46 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onUrlTest(index: Int) {
-    val names = uiState.value.groupNames
-    if (names.isEmpty() || index !in names.indices) return
+    val groupName =
+      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
+        is ProxyGroupSelectionAction.SelectGroup -> action.name
+        ProxyGroupSelectionAction.Ignore -> return
+      }
 
     updateGroupState(index) { it.withUrlTestStarted() }
 
     viewModelScope.launch {
-      engineController.healthCheck(names[index])
+      engineController.healthCheck(groupName)
       reload(index)
     }
   }
 
   fun onProxySelected(index: Int, name: String) {
-    val names = uiState.value.groupNames
-    if (index !in names.indices) return
+    val groupName =
+      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
+        is ProxyGroupSelectionAction.SelectGroup -> action.name
+        ProxyGroupSelectionAction.Ignore -> return
+      }
 
     viewModelScope.launch {
-      engineController.patchSelector(names[index], name)
+      engineController.patchSelector(groupName, name)
       selectedProxies.update { it.withSelectedProxy(index, name) }
       updateGroupState(index) { it.withProxySelectionRefreshed() }
     }
   }
 
   fun onProxyDelayTest(index: Int, name: String) {
-    val names = uiState.value.groupNames
-    if (index !in names.indices) return
+    val groupName =
+      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
+        is ProxyGroupSelectionAction.SelectGroup -> action.name
+        ProxyGroupSelectionAction.Ignore -> return
+      }
 
     updateGroupState(index) { it.withDelayTestStarted(name) }
 
     viewModelScope.launch {
       try {
-        engineController.healthCheckProxy(names[index], name)
+        engineController.healthCheckProxy(groupName, name)
         reload(index)
       } finally {
         updateGroupState(index) { it.withDelayTestFinished(name) }
@@ -189,11 +203,15 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   private fun reload(index: Int) {
     viewModelScope.launch {
       val names = uiState.value.groupNames
-      if (index !in names.indices) return@launch
+      val groupName =
+        when (val action = proxyGroupSelectionAction(names, index)) {
+          is ProxyGroupSelectionAction.SelectGroup -> action.name
+          ProxyGroupSelectionAction.Ignore -> return@launch
+        }
 
       val sort = uiStore.proxySort
 
-      val group = reloadLock.withPermit { engineController.queryProxyGroup(names[index], sort) }
+      val group = reloadLock.withPermit { engineController.queryProxyGroup(groupName, sort) }
 
       selectedProxies.update { it.withSelectedProxy(index, group.now) }
 
