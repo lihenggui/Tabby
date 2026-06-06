@@ -113,23 +113,22 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun Intent.handleExternalQuickAction(): Boolean {
-    return when (action) {
-      Intents.ACTION_TOGGLE_CLASH -> {
-        if (Remote.broadcasts.clashRunning) stopClash() else startClash()
-        true
+    val quickAction =
+      when (action) {
+        Intents.ACTION_TOGGLE_CLASH -> TabbyExternalQuickAction.ToggleClash
+        Intents.ACTION_START_CLASH -> TabbyExternalQuickAction.StartClash
+        Intents.ACTION_STOP_CLASH -> TabbyExternalQuickAction.StopClash
+        else -> return false
       }
-      Intents.ACTION_START_CLASH -> {
-        if (!Remote.broadcasts.clashRunning) startClash()
-        else toast(R.string.external_control_already_started)
-        true
-      }
-      Intents.ACTION_STOP_CLASH -> {
-        if (Remote.broadcasts.clashRunning) stopClash()
-        else toast(R.string.external_control_already_stopped)
-        true
-      }
-      else -> false
+    when (tabbyExternalQuickActionPlan(quickAction, Remote.broadcasts.clashRunning)) {
+      TabbyExternalQuickActionPlan.StartClash -> startClash()
+      TabbyExternalQuickActionPlan.StopClash -> stopClash()
+      TabbyExternalQuickActionPlan.ShowAlreadyStarted ->
+        toast(R.string.external_control_already_started)
+      TabbyExternalQuickActionPlan.ShowAlreadyStopped ->
+        toast(R.string.external_control_already_stopped)
     }
+    return true
   }
 
   private fun startClash() {
