@@ -13,8 +13,11 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProviderItemState
-import com.github.kr328.clash.profile.ui.mergeProviderItemStates
-import com.github.kr328.clash.profile.ui.updateProviderItemState
+import com.github.kr328.clash.profile.ui.ProvidersUiState
+import com.github.kr328.clash.profile.ui.providersPendingUpdate
+import com.github.kr328.clash.profile.ui.withCurrentTime
+import com.github.kr328.clash.profile.ui.withFetchedProviders
+import com.github.kr328.clash.profile.ui.withProviderState
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,8 +34,8 @@ internal class ProvidersViewModel(app: Application) :
   private var elapsedJob: Job? = null
   private var fetchJob: Job? = null
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<ProvidersUiState>
+    field = MutableStateFlow(ProvidersUiState(currentTime = System.currentTimeMillis()))
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -64,10 +67,7 @@ internal class ProvidersViewModel(app: Application) :
   }
 
   fun onUpdateAll() {
-    uiState.value.providers.forEach { state ->
-      if (state.updating || state.provider.vehicleType == Inline) return@forEach
-      onUpdate(state.provider)
-    }
+    uiState.value.providersPendingUpdate().forEach(::onUpdate)
   }
 
   fun onUpdate(provider: Provider) {
@@ -99,18 +99,14 @@ internal class ProvidersViewModel(app: Application) :
     provider: Provider,
     transform: (ProviderItemState) -> ProviderItemState,
   ) {
-    uiState.update { current ->
-      current.copy(providers = current.providers.updateProviderItemState(provider, transform))
-    }
+    uiState.update { current -> current.withProviderState(provider, transform) }
   }
 
   private fun fetch() {
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
       val providers = engineController.queryProviders().sorted()
-      uiState.update { current ->
-        current.copy(providers = mergeProviderItemStates(current.providers, providers))
-      }
+      uiState.update { current -> current.withFetchedProviders(providers) }
     }
   }
 
@@ -119,15 +115,10 @@ internal class ProvidersViewModel(app: Application) :
     elapsedJob = viewModelScope.launch {
       while (isActive) {
         delay(1.minutes)
-        uiState.update { it.copy(currentTime = System.currentTimeMillis()) }
+        uiState.update { it.withCurrentTime(System.currentTimeMillis()) }
       }
     }
   }
-
-  data class UiState(
-    val providers: List<ProviderItemState> = emptyList(),
-    val currentTime: Long = System.currentTimeMillis(),
-  )
 
   sealed interface EventState {
     data object Idle : EventState
