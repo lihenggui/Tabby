@@ -22,7 +22,7 @@ internal fun NetworkSettingsScreen(
 
   NetworkSettingsContent(
     clashRunning = clashRunning,
-    uiState = uiState.toNetworkSettingsUiState(),
+    uiState = uiState,
     onEnableVpnChange = viewModel::updateEnableVpn,
     onBypassPrivateNetworkChange = viewModel::updateBypassPrivateNetwork,
     onDnsHijackingChange = viewModel::updateDnsHijacking,
@@ -33,20 +33,6 @@ internal fun NetworkSettingsScreen(
     onAccessControlModeChange = viewModel::updateAccessControlMode,
     onAccessControlPackagesClick = onStartAccessControlList,
     modifier = modifier,
-  )
-}
-
-private fun NetworkSettingsViewModel.UiState.toNetworkSettingsUiState(): NetworkSettingsUiState {
-  return NetworkSettingsUiState(
-    hasSystemProxyOption = hasSystemProxyOption,
-    enableVpn = enableVpn,
-    bypassPrivateNetwork = bypassPrivateNetwork,
-    dnsHijacking = dnsHijacking,
-    allowBypass = allowBypass,
-    allowIpv6 = allowIpv6,
-    systemProxy = systemProxy,
-    tunStackMode = tunStackMode,
-    accessControlMode = accessControlMode,
   )
 }
 

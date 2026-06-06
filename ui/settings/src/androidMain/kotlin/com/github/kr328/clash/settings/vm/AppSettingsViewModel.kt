@@ -12,6 +12,12 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.ApplicationObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.settings.ui.AppSettingsUiState
+import com.github.kr328.clash.settings.ui.updateAppSettingsAutoRestart
+import com.github.kr328.clash.settings.ui.updateAppSettingsDarkMode
+import com.github.kr328.clash.settings.ui.updateAppSettingsDynamicNotification
+import com.github.kr328.clash.settings.ui.updateAppSettingsHideAppIcon
+import com.github.kr328.clash.settings.ui.updateAppSettingsHideFromRecents
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -24,10 +30,10 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
 
   val clashRunning: StateFlow<Boolean> = Remote.broadcasts.clashRunningFlow
 
-  val uiState: StateFlow<UiState>
+  val uiState: StateFlow<AppSettingsUiState>
     field =
       MutableStateFlow(
-        UiState(
+        AppSettingsUiState(
           autoRestart = autoRestartValue,
           darkMode = uiStore.darkMode,
           hideAppIcon = uiStore.hideAppIcon,
@@ -38,29 +44,29 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
 
   fun updateAutoRestart(value: Boolean) {
     autoRestartValue = value
-    uiState.update { it.copy(autoRestart = value) }
+    uiState.update { updateAppSettingsAutoRestart(it, value) }
   }
 
   fun updateDarkMode(value: DarkMode) {
     uiStore.darkMode = value
-    uiState.update { it.copy(darkMode = value) }
+    uiState.update { updateAppSettingsDarkMode(it, value) }
   }
 
   fun updateHideAppIcon(value: Boolean) {
     hideAppIcon(value)
     uiStore.hideAppIcon = value
-    uiState.update { it.copy(hideAppIcon = value) }
+    uiState.update { updateAppSettingsHideAppIcon(it, value) }
   }
 
   fun updateHideFromRecents(value: Boolean) {
     ApplicationObserver.createdActivities.forEach { it.recreate() }
     uiStore.hideFromRecents = value
-    uiState.update { it.copy(hideFromRecents = value) }
+    uiState.update { updateAppSettingsHideFromRecents(it, value) }
   }
 
   fun updateDynamicNotification(value: Boolean) {
     serviceStore.dynamicNotification = value
-    uiState.update { it.copy(dynamicNotification = value) }
+    uiState.update { updateAppSettingsDynamicNotification(it, value) }
   }
 
   private var autoRestartValue: Boolean
@@ -93,12 +99,4 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
       PackageManager.DONT_KILL_APP,
     )
   }
-
-  data class UiState(
-    val autoRestart: Boolean,
-    val darkMode: DarkMode,
-    val hideAppIcon: Boolean,
-    val hideFromRecents: Boolean,
-    val dynamicNotification: Boolean,
-  )
 }

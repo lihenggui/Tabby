@@ -21,23 +21,13 @@ internal fun AppSettingsScreen(
 
   AppSettingsContent(
     clashRunning = clashRunning,
-    uiState = uiState.toAppSettingsUiState(),
+    uiState = uiState,
     onAutoRestartChange = viewModel::updateAutoRestart,
     onDarkModeChange = viewModel::updateDarkMode,
     onHideAppIconChange = viewModel::updateHideAppIcon,
     onHideFromRecentsChange = viewModel::updateHideFromRecents,
     onDynamicNotificationChange = viewModel::updateDynamicNotification,
     modifier = modifier,
-  )
-}
-
-private fun AppSettingsViewModel.UiState.toAppSettingsUiState(): AppSettingsUiState {
-  return AppSettingsUiState(
-    autoRestart = autoRestart,
-    darkMode = darkMode,
-    hideAppIcon = hideAppIcon,
-    hideFromRecents = hideFromRecents,
-    dynamicNotification = dynamicNotification,
   )
 }
 
