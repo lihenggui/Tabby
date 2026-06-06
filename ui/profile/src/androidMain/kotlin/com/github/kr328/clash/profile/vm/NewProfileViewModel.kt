@@ -15,7 +15,9 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
+import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.decodeProfileQrSource
+import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +30,8 @@ import kotlinx.coroutines.withContext
 internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<NewProfileUiState<ProfileProvider>>
+    field = MutableStateFlow(NewProfileUiState())
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -143,11 +145,9 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
             ProfileProvider.QR(application),
           ) + externalProviders
         }
-      uiState.update { it.copy(providers = providers) }
+      uiState.update { it.withNewProfileProviders(providers) }
     }
   }
-
-  data class UiState(val providers: List<ProfileProvider> = emptyList())
 
   sealed interface EventState {
     data object Idle : EventState
