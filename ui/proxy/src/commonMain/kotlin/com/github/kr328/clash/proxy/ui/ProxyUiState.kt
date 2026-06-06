@@ -102,6 +102,16 @@ internal data class ProxyInitialStateAction(
   val selectedProxies: List<SelectedProxy>,
 )
 
+internal data class ProxyReloadResultAction(
+  val state: ProxyUiState,
+  val selectedProxies: List<SelectedProxy>,
+)
+
+internal data class ProxySelectedPatchAction(
+  val state: ProxyUiState,
+  val selectedProxies: List<SelectedProxy>,
+)
+
 internal sealed interface ProxyGroupSelectionAction {
   data class SelectGroup(val name: String) : ProxyGroupSelectionAction
 
@@ -315,6 +325,19 @@ internal fun proxyReloadUiState(
   return state.withProxyGroupState(index) { it.withProxyGroup(group, sources) }
 }
 
+internal fun proxyReloadResultAction(
+  state: ProxyUiState,
+  selectedProxies: List<SelectedProxy>,
+  index: Int,
+  group: ProxyGroup,
+  sources: List<ProxyItemSource>,
+): ProxyReloadResultAction {
+  return ProxyReloadResultAction(
+    state = proxyReloadUiState(state, index, group, sources),
+    selectedProxies = proxyReloadSelectedProxies(selectedProxies, index, group),
+  )
+}
+
 internal fun proxyPageChangedAction(
   state: ProxyUiState,
   index: Int,
@@ -447,6 +470,18 @@ internal fun proxySelectedUiState(
   index: Int,
 ): ProxyUiState {
   return state.withProxyGroupState(index) { it.withProxySelectionRefreshed() }
+}
+
+internal fun proxySelectedPatchAction(
+  state: ProxyUiState,
+  selectedProxies: List<SelectedProxy>,
+  index: Int,
+  name: String,
+): ProxySelectedPatchAction {
+  return ProxySelectedPatchAction(
+    state = proxySelectedUiState(state, index),
+    selectedProxies = proxySelectedProxies(selectedProxies, index, name),
+  )
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

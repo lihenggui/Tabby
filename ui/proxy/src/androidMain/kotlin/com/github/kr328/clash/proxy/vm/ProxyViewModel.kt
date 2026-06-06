@@ -46,11 +46,9 @@ import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.proxyPreferenceChangeEventState
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxyReloadAction
-import com.github.kr328.clash.proxy.ui.proxyReloadSelectedProxies
-import com.github.kr328.clash.proxy.ui.proxyReloadUiState
+import com.github.kr328.clash.proxy.ui.proxyReloadResultAction
 import com.github.kr328.clash.proxy.ui.proxySelectedAction
-import com.github.kr328.clash.proxy.ui.proxySelectedProxies
-import com.github.kr328.clash.proxy.ui.proxySelectedUiState
+import com.github.kr328.clash.proxy.ui.proxySelectedPatchAction
 import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
@@ -204,27 +202,21 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
             engineController.queryProxyGroup(action.groupName, action.sort)
           }
 
-          selectedProxies.update { current ->
-            proxyReloadSelectedProxies(
-              selectedProxies = current,
-              index = action.index,
-              group = group,
-            )
-          }
-
           val sources =
             withContext(Dispatchers.Default) {
               group.toProxyItemSources(groupNames = action.groupNames)
             }
 
-          uiState.update { current ->
-            proxyReloadUiState(
-              state = current,
+          val result =
+            proxyReloadResultAction(
+              state = uiState.value,
+              selectedProxies = selectedProxies.value,
               index = action.index,
               group = group,
               sources = sources,
             )
-          }
+          selectedProxies.value = result.selectedProxies
+          uiState.value = result.state
         }
       ProxyReloadAction.Ignore -> Unit
     }
@@ -340,14 +332,15 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   private fun applyProxySelectedPatch(index: Int, name: String) {
-    selectedProxies.update { current ->
-      proxySelectedProxies(
-        selectedProxies = current,
+    val action =
+      proxySelectedPatchAction(
+        state = uiState.value,
+        selectedProxies = selectedProxies.value,
         index = index,
         name = name,
       )
-    }
-    uiState.update { current -> proxySelectedUiState(current, index) }
+    selectedProxies.value = action.selectedProxies
+    uiState.value = action.state
   }
 
   private fun updateGroupState(

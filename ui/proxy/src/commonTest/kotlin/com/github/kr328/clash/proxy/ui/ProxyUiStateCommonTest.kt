@@ -676,6 +676,104 @@ class ProxyUiStateCommonTest {
     assertEquals(sources, updated.groups[1].sources)
     assertSame(state, unchanged)
   }
+
+  @Test
+  fun proxyReloadResultActionUpdatesSelectedProxyAndUiState() {
+    val group =
+      proxyGroup(
+        type = Proxy.Type.Selector,
+        now = "Direct",
+        proxies = listOf(proxy("Direct")),
+      )
+    val sources = listOf(ProxyItemSource(proxy("Direct"), linkIndex = -1))
+    val state =
+      ProxyUiState(
+        groups =
+          listOf(
+            ProxyGroupUiState(refreshVersion = 1),
+            ProxyGroupUiState(
+              urlTesting = true,
+              delayTestingKeys = setOf("Direct", "Removed"),
+              refreshVersion = 3,
+            ),
+          )
+      )
+    val selected = listOf(SelectedProxy("?"), SelectedProxy("Proxy"))
+
+    val action =
+      proxyReloadResultAction(
+        state = state,
+        selectedProxies = selected,
+        index = 1,
+        group = group,
+        sources = sources,
+      )
+
+    assertEquals(listOf(SelectedProxy("?"), SelectedProxy("Direct")), action.selectedProxies)
+    assertEquals(false, action.state.groups[1].urlTesting)
+    assertEquals(setOf("Direct"), action.state.groups[1].delayTestingKeys)
+    assertEquals(4, action.state.groups[1].refreshVersion)
+    assertEquals(sources, action.state.groups[1].sources)
+  }
+
+  @Test
+  fun proxyReloadResultActionPreservesStateAndSelectionForMissingIndex() {
+    val state = ProxyUiState(groups = listOf(ProxyGroupUiState(refreshVersion = 1)))
+    val selected = listOf(SelectedProxy("Proxy"))
+
+    val action =
+      proxyReloadResultAction(
+        state = state,
+        selectedProxies = selected,
+        index = 3,
+        group = proxyGroup(now = "Direct"),
+        sources = listOf(ProxyItemSource(proxy("Direct"), linkIndex = -1)),
+      )
+
+    assertSame(state, action.state)
+    assertSame(selected, action.selectedProxies)
+  }
+
+  @Test
+  fun proxySelectedPatchActionUpdatesSelectedProxyAndRefreshesGroup() {
+    val state =
+      ProxyUiState(
+        groups =
+          listOf(
+            ProxyGroupUiState(refreshVersion = 2),
+            ProxyGroupUiState(refreshVersion = 4),
+          )
+      )
+    val selected = listOf(SelectedProxy("?"), SelectedProxy("Proxy"))
+
+    val action =
+      proxySelectedPatchAction(
+        state = state,
+        selectedProxies = selected,
+        index = 1,
+        name = "Direct",
+      )
+
+    assertEquals(listOf(SelectedProxy("?"), SelectedProxy("Direct")), action.selectedProxies)
+    assertEquals(listOf(2, 5), action.state.groups.map(ProxyGroupUiState::refreshVersion))
+  }
+
+  @Test
+  fun proxySelectedPatchActionPreservesStateAndSelectionForMissingIndex() {
+    val state = ProxyUiState(groups = listOf(ProxyGroupUiState(refreshVersion = 2)))
+    val selected = listOf(SelectedProxy("Proxy"))
+
+    val action =
+      proxySelectedPatchAction(
+        state = state,
+        selectedProxies = selected,
+        index = 3,
+        name = "Direct",
+      )
+
+    assertSame(state, action.state)
+    assertSame(selected, action.selectedProxies)
+  }
 }
 
 private fun proxyGroup(
