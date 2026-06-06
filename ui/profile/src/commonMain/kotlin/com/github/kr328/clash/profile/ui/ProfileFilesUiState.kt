@@ -49,6 +49,10 @@ internal fun profileFilesErrorEventState(
   return ProfileFilesEventState.ShowMessage(message ?: unknownMessage)
 }
 
+internal fun profileFilesConsumedEventState(): ProfileFilesEventState<Nothing, Nothing> {
+  return ProfileFilesEventState.Idle
+}
+
 internal fun profileFilesLoadedEventState(
   action: ProfileFilesLoadedAction
 ): ProfileFilesEventState<Nothing, Nothing>? {

@@ -22,6 +22,7 @@ import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
+import com.github.kr328.clash.profile.ui.newProfileConsumedEventState
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.newProfileCreateEventState
 import com.github.kr328.clash.profile.ui.newProfileDetailAction
@@ -54,7 +55,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun consumeEvent() {
-    eventState.value = NewProfileEventState.Idle
+    eventState.value = newProfileConsumedEventState()
   }
 
   fun onCreate(provider: ProfileProvider) {

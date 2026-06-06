@@ -79,3 +79,7 @@ internal fun providerUpdateFailureEventState(
 ): ProvidersEventState {
   return ProvidersEventState.ShowMessage(formatUpdateFailure(providerName, errorMessage))
 }
+
+internal fun providersConsumedEventState(): ProvidersEventState {
+  return ProvidersEventState.Idle
+}

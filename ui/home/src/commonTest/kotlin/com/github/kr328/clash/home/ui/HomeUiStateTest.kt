@@ -66,6 +66,13 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    val event: HomeEventState<String> = homeConsumedEventState()
+
+    assertEquals(HomeEventState.Idle, event)
+  }
+
+  @Test
   fun homeBroadcastActionFetchesForStateChangingEvents() {
     listOf(
         HomeBroadcastEventKind.ServiceRecreated,

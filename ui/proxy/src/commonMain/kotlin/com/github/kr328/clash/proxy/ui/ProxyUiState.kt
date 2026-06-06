@@ -561,3 +561,7 @@ internal fun proxyOverrideModeEventState(effect: ProxyOverrideModeEffect): Proxy
     is ProxyOverrideModeEffect.ShowTipsAndPatchMode -> ProxyEventState.ShowModeSwitchTips
   }
 }
+
+internal fun proxyConsumedEventState(): ProxyEventState {
+  return ProxyEventState.Idle
+}

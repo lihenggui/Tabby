@@ -295,6 +295,13 @@ class NewProfileUiStateTest {
     )
   }
 
+  @Test
+  fun consumedEventStateResetsToIdle() {
+    val event: NewProfileEventState<String, String> = newProfileConsumedEventState()
+
+    assertEquals(NewProfileEventState.Idle, event)
+  }
+
   private fun testProvider(id: String): TestProvider {
     return testProvider(id, detail = false)
   }

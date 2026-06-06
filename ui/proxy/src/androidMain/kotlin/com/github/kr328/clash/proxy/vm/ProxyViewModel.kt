@@ -29,6 +29,7 @@ import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
+import com.github.kr328.clash.proxy.ui.proxyConsumedEventState
 import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
@@ -126,7 +127,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun consumeEvent() {
-    eventState.value = ProxyEventState.Idle
+    eventState.value = proxyConsumedEventState()
   }
 
   private suspend fun fetchInitialState() {

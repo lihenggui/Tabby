@@ -209,6 +209,11 @@ class ProvidersUiStateTest {
     assertEquals(ProvidersEventState.ShowMessage("Remote: network failed"), event)
   }
 
+  @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(ProvidersEventState.Idle, providersConsumedEventState())
+  }
+
   private fun provider(
     name: String,
     type: Provider.Type = Provider.Type.Proxy,

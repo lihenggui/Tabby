@@ -572,6 +572,11 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(ProxyEventState.Idle, proxyConsumedEventState())
+  }
+
+  @Test
   fun proxyGroupReloadIndexesReturnsIndexesForGroupNames() {
     assertEquals(
       listOf(0, 1, 2),

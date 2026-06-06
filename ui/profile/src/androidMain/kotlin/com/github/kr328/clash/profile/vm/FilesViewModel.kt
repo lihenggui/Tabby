@@ -30,6 +30,7 @@ import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFileOpenEventState
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
 import com.github.kr328.clash.profile.ui.profileFilesBackEventState
+import com.github.kr328.clash.profile.ui.profileFilesConsumedEventState
 import com.github.kr328.clash.profile.ui.profileFilesErrorEventState
 import com.github.kr328.clash.profile.ui.profileFilesFetchAction
 import com.github.kr328.clash.profile.ui.profileFilesInitAction
@@ -76,7 +77,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun consumeEvent() {
-    eventState.value = ProfileFilesEventState.Idle
+    eventState.value = profileFilesConsumedEventState()
   }
 
   override fun onStart(owner: LifecycleOwner) {

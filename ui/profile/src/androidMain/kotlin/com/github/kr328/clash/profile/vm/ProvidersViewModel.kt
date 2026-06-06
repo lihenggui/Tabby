@@ -20,6 +20,7 @@ import com.github.kr328.clash.profile.ui.ProvidersUiState
 import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
 import com.github.kr328.clash.profile.ui.providerUpdateFailureEventState
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
+import com.github.kr328.clash.profile.ui.providersConsumedEventState
 import com.github.kr328.clash.profile.ui.providersUpdateAllAction
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withFetchedProviders
@@ -71,7 +72,7 @@ internal class ProvidersViewModel(app: Application) :
   }
 
   fun consumeEvent() {
-    eventState.value = ProvidersEventState.Idle
+    eventState.value = providersConsumedEventState()
   }
 
   fun onUpdateAll() {

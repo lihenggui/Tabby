@@ -102,4 +102,9 @@ class HelpUpdateCheckActionTest {
       helpUpdateCheckFailureEventState(updateCheckFailedMessage = "failed"),
     )
   }
+
+  @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(HelpEventState.Idle, helpConsumedEventState())
+  }
 }

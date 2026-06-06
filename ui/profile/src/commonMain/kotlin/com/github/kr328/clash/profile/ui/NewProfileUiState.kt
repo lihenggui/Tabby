@@ -158,3 +158,7 @@ internal fun newProfileErrorEventState(
 ): NewProfileEventState<Nothing, Nothing> {
   return NewProfileEventState.ShowMessage(message ?: unknownMessage)
 }
+
+internal fun newProfileConsumedEventState(): NewProfileEventState<Nothing, Nothing> {
+  return NewProfileEventState.Idle
+}

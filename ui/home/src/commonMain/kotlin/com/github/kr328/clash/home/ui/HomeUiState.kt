@@ -76,6 +76,10 @@ internal fun homeStartFailureEventState(message: String): HomeEventState<Nothing
   return HomeEventState.ShowMessage(message)
 }
 
+internal fun homeConsumedEventState(): HomeEventState<Nothing> {
+  return HomeEventState.Idle
+}
+
 internal fun homeBroadcastAction(
   kind: HomeBroadcastEventKind,
   stoppedMessage: String? = null,

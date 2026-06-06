@@ -14,6 +14,7 @@ import com.github.kr328.clash.home.ui.HelpContentState
 import com.github.kr328.clash.home.ui.HelpEventState
 import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
+import com.github.kr328.clash.home.ui.helpConsumedEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckAction
 import com.github.kr328.clash.home.ui.helpUpdateCheckEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckFailureEventState
@@ -81,7 +82,7 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun consumeEvent() {
-    eventState.value = HelpEventState.Idle
+    eventState.value = helpConsumedEventState()
   }
 
   private fun loadVersionInfo() {

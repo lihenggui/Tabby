@@ -78,6 +78,13 @@ class ProfileFilesUiStateTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    val event: ProfileFilesEventState<TestFile, String> = profileFilesConsumedEventState()
+
+    assertEquals(ProfileFilesEventState.Idle, event)
+  }
+
+  @Test
   fun loadedEventStateFinishesOnlyWhenProfileIsMissing() {
     assertEquals(
       null,

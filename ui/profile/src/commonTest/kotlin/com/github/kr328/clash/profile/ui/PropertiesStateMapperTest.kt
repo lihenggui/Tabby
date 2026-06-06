@@ -216,6 +216,11 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(PropertiesEventState.Idle, propertiesConsumedEventState())
+  }
+
+  @Test
   fun propertiesAutoSaveActionSavesUnsavedProfileWhenNotCanceled() {
     val profile = profile(name = "Changed")
     val state = PropertiesUiState(profile = profile, hasUnsavedChanges = true)

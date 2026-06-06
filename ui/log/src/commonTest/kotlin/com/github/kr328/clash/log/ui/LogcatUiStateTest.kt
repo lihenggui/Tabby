@@ -61,6 +61,11 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(LogcatEventState.Idle, logcatConsumedEventState())
+  }
+
+  @Test
   fun logcatCloseActionStopsStreamingAndOpensLogsWhenStreaming() {
     assertEquals(
       LogcatCloseAction.StopStreamingAndOpenLogs,

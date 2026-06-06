@@ -29,6 +29,7 @@ import com.github.kr328.clash.log.ui.LogcatPollAction
 import com.github.kr328.clash.log.ui.LogcatUiState
 import com.github.kr328.clash.log.ui.logcatCloseAction
 import com.github.kr328.clash.log.ui.logcatCloseEventState
+import com.github.kr328.clash.log.ui.logcatConsumedEventState
 import com.github.kr328.clash.log.ui.logcatDeleteAction
 import com.github.kr328.clash.log.ui.logcatDeleteEventState
 import com.github.kr328.clash.log.ui.logcatExportAction
@@ -157,7 +158,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   }
 
   fun consumeEvent() {
-    eventState.value = LogcatEventState.Idle
+    eventState.value = logcatConsumedEventState()
   }
 
   override fun onStart(owner: LifecycleOwner) {

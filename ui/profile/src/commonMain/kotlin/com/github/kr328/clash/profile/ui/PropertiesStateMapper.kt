@@ -139,6 +139,10 @@ internal fun propertiesErrorEventState(
   return PropertiesEventState.ShowMessage(message ?: unknownMessage)
 }
 
+internal fun propertiesConsumedEventState(): PropertiesEventState {
+  return PropertiesEventState.Idle
+}
+
 internal fun propertiesAutoSaveAction(
   canceled: Boolean,
   state: PropertiesUiState,

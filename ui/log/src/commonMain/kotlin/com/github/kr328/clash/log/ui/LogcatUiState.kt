@@ -110,6 +110,10 @@ internal fun logcatStartStreamingFailureEventState(): LogcatEventState {
   return LogcatEventState.OpenLogs
 }
 
+internal fun logcatConsumedEventState(): LogcatEventState {
+  return LogcatEventState.Idle
+}
+
 internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {
   return currentFile?.let(LogcatDeleteAction::DeleteFile) ?: LogcatDeleteAction.Ignore
 }

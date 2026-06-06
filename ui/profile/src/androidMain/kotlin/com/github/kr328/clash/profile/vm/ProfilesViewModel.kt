@@ -29,6 +29,7 @@ import com.github.kr328.clash.profile.ui.profileUpdateCompletedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
+import com.github.kr328.clash.profile.ui.profilesConsumedEventState
 import com.github.kr328.clash.profile.ui.profilesOpenCreateEventState
 import com.github.kr328.clash.profile.ui.profilesOpenEditEventState
 import com.github.kr328.clash.profile.ui.withAllUpdating
@@ -83,7 +84,7 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun consumeEvent() {
-    eventState.value = ProfilesEventState.Idle
+    eventState.value = profilesConsumedEventState()
   }
 
   fun onOpenCreate() {

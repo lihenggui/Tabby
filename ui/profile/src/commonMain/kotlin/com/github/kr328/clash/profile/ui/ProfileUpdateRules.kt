@@ -61,6 +61,10 @@ internal fun profileUpdateFailedEventState(
   return ProfilesEventState.ShowEditableMessage(message, uuid)
 }
 
+internal fun profilesConsumedEventState(): ProfilesEventState {
+  return ProfilesEventState.Idle
+}
+
 internal fun profileUpdateAllAction(state: ProfilesUiState): ProfileUpdateAllAction {
   return if (state.allUpdating) ProfileUpdateAllAction.Ignore
   else ProfileUpdateAllAction.QueryProfiles

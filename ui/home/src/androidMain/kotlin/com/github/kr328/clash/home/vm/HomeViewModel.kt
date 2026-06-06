@@ -26,6 +26,7 @@ import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
 import com.github.kr328.clash.home.ui.homeBroadcastAction
 import com.github.kr328.clash.home.ui.homeBroadcastEventState
+import com.github.kr328.clash.home.ui.homeConsumedEventState
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeStartFailureEventState
@@ -91,7 +92,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   }
 
   fun consumeEvent() {
-    eventState.value = HomeEventState.Idle
+    eventState.value = homeConsumedEventState()
   }
 
   private fun fetch() {

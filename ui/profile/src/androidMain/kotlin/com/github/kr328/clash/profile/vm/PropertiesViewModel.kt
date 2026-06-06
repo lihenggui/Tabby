@@ -29,6 +29,7 @@ import com.github.kr328.clash.profile.ui.propertiesBrowseFilesAction
 import com.github.kr328.clash.profile.ui.propertiesBrowseFilesEventState
 import com.github.kr328.clash.profile.ui.propertiesCommitAction
 import com.github.kr328.clash.profile.ui.propertiesCommitValidationEventState
+import com.github.kr328.clash.profile.ui.propertiesConsumedEventState
 import com.github.kr328.clash.profile.ui.propertiesErrorEventState
 import com.github.kr328.clash.profile.ui.propertiesFinishEventState
 import com.github.kr328.clash.profile.ui.propertiesInitAction
@@ -75,7 +76,7 @@ internal class PropertiesViewModel(app: Application) :
   }
 
   fun consumeEvent() {
-    eventState.value = PropertiesEventState.Idle
+    eventState.value = propertiesConsumedEventState()
   }
 
   override fun onStop(owner: LifecycleOwner) {

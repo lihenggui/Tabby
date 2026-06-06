@@ -77,6 +77,11 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(ProfilesEventState.Idle, profilesConsumedEventState())
+  }
+
+  @Test
   fun updateAllActionQueriesProfilesOnlyWhenNotAlreadyUpdating() {
     assertEquals(
       ProfileUpdateAllAction.QueryProfiles,
