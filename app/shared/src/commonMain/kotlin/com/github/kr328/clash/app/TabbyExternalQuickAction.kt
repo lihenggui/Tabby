@@ -35,6 +35,31 @@ sealed interface TabbyStopClashResultAction {
   data object ShowStopped : TabbyStopClashResultAction
 }
 
+fun tabbyExternalQuickActionString(
+  action: TabbyExternalQuickAction,
+  toggleClashAction: String,
+  startClashAction: String,
+  stopClashAction: String,
+): String =
+  when (action) {
+    TabbyExternalQuickAction.ToggleClash -> toggleClashAction
+    TabbyExternalQuickAction.StartClash -> startClashAction
+    TabbyExternalQuickAction.StopClash -> stopClashAction
+  }
+
+fun tabbyExternalQuickActionFromString(
+  action: String?,
+  toggleClashAction: String,
+  startClashAction: String,
+  stopClashAction: String,
+): TabbyExternalQuickAction? =
+  when (action) {
+    toggleClashAction -> TabbyExternalQuickAction.ToggleClash
+    startClashAction -> TabbyExternalQuickAction.StartClash
+    stopClashAction -> TabbyExternalQuickAction.StopClash
+    else -> null
+  }
+
 fun tabbyExternalQuickActionPlan(
   action: TabbyExternalQuickAction,
   clashRunning: Boolean,

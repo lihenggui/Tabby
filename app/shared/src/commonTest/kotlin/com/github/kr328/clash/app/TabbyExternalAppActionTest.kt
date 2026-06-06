@@ -6,6 +6,102 @@ import kotlin.uuid.Uuid
 
 class TabbyExternalAppActionTest {
   @Test
+  fun tabbyExternalAppActionFromStringParsesInstallProfileAction() {
+    assertEquals(
+      TabbyExternalAppAction.InstallProfile(requestAvailable = true),
+      tabbyExternalAppActionFromString(
+        action = "view",
+        requestAvailable = true,
+        profilePropertiesUuid = null,
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalAppActionFromStringParsesProfilePropertiesAction() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000002")
+
+    assertEquals(
+      TabbyExternalAppAction.OpenProfileProperties(uuid),
+      tabbyExternalAppActionFromString(
+        action = "properties",
+        requestAvailable = false,
+        profilePropertiesUuid = uuid,
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalAppActionFromStringParsesRouteActions() {
+    assertEquals(
+      TabbyExternalAppAction.OpenLogs,
+      tabbyExternalAppActionFromString(
+        action = "logs",
+        requestAvailable = false,
+        profilePropertiesUuid = null,
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+    assertEquals(
+      TabbyExternalAppAction.OpenAppCrashed,
+      tabbyExternalAppActionFromString(
+        action = "crashed",
+        requestAvailable = false,
+        profilePropertiesUuid = null,
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+    assertEquals(
+      TabbyExternalAppAction.OpenApkBroken,
+      tabbyExternalAppActionFromString(
+        action = "apk-broken",
+        requestAvailable = false,
+        profilePropertiesUuid = null,
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalAppActionFromStringIgnoresUnknownActions() {
+    assertEquals(
+      null,
+      tabbyExternalAppActionFromString(
+        action = "unknown",
+        requestAvailable = true,
+        profilePropertiesUuid = Uuid.parse("00000000-0000-0000-0000-000000000003"),
+        installProfileAction = "view",
+        profilePropertiesAction = "properties",
+        logsAction = "logs",
+        appCrashedAction = "crashed",
+        apkBrokenAction = "apk-broken",
+      ),
+    )
+  }
+
+  @Test
   fun tabbyExternalAppActionPlanInstallsProfileWhenRequestIsAvailable() {
     assertEquals(
       TabbyExternalAppActionPlan.InstallProfile,

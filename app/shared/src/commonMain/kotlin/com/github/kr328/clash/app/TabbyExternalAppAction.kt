@@ -22,6 +22,25 @@ sealed interface TabbyExternalAppActionPlan {
   data object Ignore : TabbyExternalAppActionPlan
 }
 
+fun tabbyExternalAppActionFromString(
+  action: String?,
+  requestAvailable: Boolean,
+  profilePropertiesUuid: Uuid?,
+  installProfileAction: String,
+  profilePropertiesAction: String,
+  logsAction: String,
+  appCrashedAction: String,
+  apkBrokenAction: String,
+): TabbyExternalAppAction? =
+  when (action) {
+    installProfileAction -> TabbyExternalAppAction.InstallProfile(requestAvailable)
+    profilePropertiesAction -> TabbyExternalAppAction.OpenProfileProperties(profilePropertiesUuid)
+    logsAction -> TabbyExternalAppAction.OpenLogs
+    appCrashedAction -> TabbyExternalAppAction.OpenAppCrashed
+    apkBrokenAction -> TabbyExternalAppAction.OpenApkBroken
+    else -> null
+  }
+
 fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction?): TabbyExternalAppActionPlan =
   when (action) {
     is TabbyExternalAppAction.InstallProfile ->

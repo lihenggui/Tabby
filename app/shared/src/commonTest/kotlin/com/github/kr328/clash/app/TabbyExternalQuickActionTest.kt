@@ -5,6 +5,90 @@ import kotlin.test.assertEquals
 
 class TabbyExternalQuickActionTest {
   @Test
+  fun tabbyExternalQuickActionStringMapsActionsToPlatformStrings() {
+    assertEquals(
+      "toggle",
+      tabbyExternalQuickActionString(
+        action = TabbyExternalQuickAction.ToggleClash,
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+    assertEquals(
+      "start",
+      tabbyExternalQuickActionString(
+        action = TabbyExternalQuickAction.StartClash,
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+    assertEquals(
+      "stop",
+      tabbyExternalQuickActionString(
+        action = TabbyExternalQuickAction.StopClash,
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalQuickActionFromStringParsesKnownPlatformStrings() {
+    assertEquals(
+      TabbyExternalQuickAction.ToggleClash,
+      tabbyExternalQuickActionFromString(
+        action = "toggle",
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+    assertEquals(
+      TabbyExternalQuickAction.StartClash,
+      tabbyExternalQuickActionFromString(
+        action = "start",
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+    assertEquals(
+      TabbyExternalQuickAction.StopClash,
+      tabbyExternalQuickActionFromString(
+        action = "stop",
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalQuickActionFromStringIgnoresUnknownPlatformStrings() {
+    assertEquals(
+      null,
+      tabbyExternalQuickActionFromString(
+        action = "unknown",
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyExternalQuickActionFromString(
+        action = null,
+        toggleClashAction = "toggle",
+        startClashAction = "start",
+        stopClashAction = "stop",
+      ),
+    )
+  }
+
+  @Test
   fun tabbyExternalQuickActionPlanTogglesBasedOnCurrentRunningState() {
     assertEquals(
       TabbyExternalQuickActionPlan.StartClash,

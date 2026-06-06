@@ -241,11 +241,12 @@ private data class AndroidShortcutResources(
 )
 
 private fun TabbyExternalQuickAction.intentAction(): String =
-  when (this) {
-    TabbyExternalQuickAction.ToggleClash -> Intents.ACTION_TOGGLE_CLASH
-    TabbyExternalQuickAction.StartClash -> Intents.ACTION_START_CLASH
-    TabbyExternalQuickAction.StopClash -> Intents.ACTION_STOP_CLASH
-  }
+  tabbyExternalQuickActionString(
+    action = this,
+    toggleClashAction = Intents.ACTION_TOGGLE_CLASH,
+    startClashAction = Intents.ACTION_START_CLASH,
+    stopClashAction = Intents.ACTION_STOP_CLASH,
+  )
 
 private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): Int {
   var flags = 0
@@ -256,22 +257,24 @@ private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): 
 }
 
 private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =
-  when (action) {
-    Intents.ACTION_TOGGLE_CLASH -> TabbyExternalQuickAction.ToggleClash
-    Intents.ACTION_START_CLASH -> TabbyExternalQuickAction.StartClash
-    Intents.ACTION_STOP_CLASH -> TabbyExternalQuickAction.StopClash
-    else -> null
-  }
+  tabbyExternalQuickActionFromString(
+    action = action,
+    toggleClashAction = Intents.ACTION_TOGGLE_CLASH,
+    startClashAction = Intents.ACTION_START_CLASH,
+    stopClashAction = Intents.ACTION_STOP_CLASH,
+  )
 
 private fun Intent.tabbyExternalAppAction(): TabbyExternalAppAction? =
-  when (action) {
-    Intent.ACTION_VIEW -> TabbyExternalAppAction.InstallProfile(requestAvailable = data != null)
-    Intents.ACTION_PROPERTIES -> TabbyExternalAppAction.OpenProfileProperties(uuid)
-    Intents.ACTION_LOGCAT -> TabbyExternalAppAction.OpenLogs
-    Intents.ACTION_APP_CRASHED -> TabbyExternalAppAction.OpenAppCrashed
-    Intents.ACTION_APK_BROKEN -> TabbyExternalAppAction.OpenApkBroken
-    else -> null
-  }
+  tabbyExternalAppActionFromString(
+    action = action,
+    requestAvailable = data != null,
+    profilePropertiesUuid = uuid,
+    installProfileAction = Intent.ACTION_VIEW,
+    profilePropertiesAction = Intents.ACTION_PROPERTIES,
+    logsAction = Intents.ACTION_LOGCAT,
+    appCrashedAction = Intents.ACTION_APP_CRASHED,
+    apkBrokenAction = Intents.ACTION_APK_BROKEN,
+  )
 
 private fun TabbyExternalQuickActionShortcutPresentation.androidResources():
   AndroidShortcutResources =
