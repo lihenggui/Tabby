@@ -24,6 +24,53 @@ internal fun newProfileBuiltInProviderKinds(): List<NewProfileProviderKind> {
   )
 }
 
+internal enum class NewProfileProviderTextToken {
+  File,
+  Url,
+  Qr,
+  ImportFromFile,
+  ImportFromUrl,
+  ImportFromQr,
+}
+
+internal enum class NewProfileProviderGraphicToken {
+  File,
+  Url,
+  Qr,
+}
+
+internal data class NewProfileBuiltInProviderPresentation(
+  val nameToken: NewProfileProviderTextToken,
+  val summaryToken: NewProfileProviderTextToken,
+  val graphicToken: NewProfileProviderGraphicToken,
+)
+
+internal fun newProfileBuiltInProviderPresentation(
+  kind: NewProfileProviderKind
+): NewProfileBuiltInProviderPresentation? {
+  return when (kind) {
+    NewProfileProviderKind.File ->
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.File,
+        summaryToken = NewProfileProviderTextToken.ImportFromFile,
+        graphicToken = NewProfileProviderGraphicToken.File,
+      )
+    NewProfileProviderKind.Url ->
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.Url,
+        summaryToken = NewProfileProviderTextToken.ImportFromUrl,
+        graphicToken = NewProfileProviderGraphicToken.Url,
+      )
+    NewProfileProviderKind.QR ->
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.Qr,
+        summaryToken = NewProfileProviderTextToken.ImportFromQr,
+        graphicToken = NewProfileProviderGraphicToken.Qr,
+      )
+    NewProfileProviderKind.External -> null
+  }
+}
+
 internal fun <T> newProfileProviderList(
   externalProviders: Iterable<T>,
   builtInProvider: (NewProfileProviderKind) -> T?,

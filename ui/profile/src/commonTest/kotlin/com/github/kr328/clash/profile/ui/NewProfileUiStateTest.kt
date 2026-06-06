@@ -53,6 +53,39 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun builtInProviderPresentationsMapDefaultTextAndGraphicTokens() {
+    assertEquals(
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.File,
+        summaryToken = NewProfileProviderTextToken.ImportFromFile,
+        graphicToken = NewProfileProviderGraphicToken.File,
+      ),
+      newProfileBuiltInProviderPresentation(NewProfileProviderKind.File),
+    )
+    assertEquals(
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.Url,
+        summaryToken = NewProfileProviderTextToken.ImportFromUrl,
+        graphicToken = NewProfileProviderGraphicToken.Url,
+      ),
+      newProfileBuiltInProviderPresentation(NewProfileProviderKind.Url),
+    )
+    assertEquals(
+      NewProfileBuiltInProviderPresentation(
+        nameToken = NewProfileProviderTextToken.Qr,
+        summaryToken = NewProfileProviderTextToken.ImportFromQr,
+        graphicToken = NewProfileProviderGraphicToken.Qr,
+      ),
+      newProfileBuiltInProviderPresentation(NewProfileProviderKind.QR),
+    )
+  }
+
+  @Test
+  fun builtInProviderPresentationIgnoresExternalProviderKind() {
+    assertEquals(null, newProfileBuiltInProviderPresentation(NewProfileProviderKind.External))
+  }
+
+  @Test
   fun providerListKeepsBuiltInProvidersBeforeExternalProviders() {
     val externalProviders = listOf(testProvider("external-a"), testProvider("external-b"))
 

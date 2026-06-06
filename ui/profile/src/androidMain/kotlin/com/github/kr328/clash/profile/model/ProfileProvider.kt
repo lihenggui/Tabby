@@ -5,48 +5,21 @@ import android.content.Intent
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.NewProfileProviderGraphicToken
 import com.github.kr328.clash.profile.ui.NewProfileProviderKind
+import com.github.kr328.clash.profile.ui.NewProfileProviderTextToken
+import com.github.kr328.clash.profile.ui.newProfileBuiltInProviderPresentation
 import com.github.kr328.clash.ui.icon.BaselineAttachFile
 import com.github.kr328.clash.ui.icon.BaselineCloudDownload
 import com.github.kr328.clash.ui.icon.BaselineQrCodeScanner
 import com.github.kr328.clash.ui.icon.TabbyIcons
 
 internal sealed class ProfileProvider {
-  class File(private val context: Context) : ProfileProvider() {
-    override val kind: NewProfileProviderKind = NewProfileProviderKind.File
+  class File(context: Context) : BuiltIn(context, NewProfileProviderKind.File)
 
-    override val name: String
-      get() = context.getString(CommonR.string.file)
+  class Url(context: Context) : BuiltIn(context, NewProfileProviderKind.Url)
 
-    override val summary: String
-      get() = context.getString(R.string.import_from_file)
-
-    override val icon: ImageVector = TabbyIcons.BaselineAttachFile
-  }
-
-  class Url(private val context: Context) : ProfileProvider() {
-    override val kind: NewProfileProviderKind = NewProfileProviderKind.Url
-
-    override val name: String
-      get() = context.getString(CommonR.string.url)
-
-    override val summary: String
-      get() = context.getString(R.string.import_from_url)
-
-    override val icon: ImageVector = TabbyIcons.BaselineCloudDownload
-  }
-
-  class QR(private val context: Context) : ProfileProvider() {
-    override val kind: NewProfileProviderKind = NewProfileProviderKind.QR
-
-    override val name: String
-      get() = context.getString(R.string.qr)
-
-    override val summary: String
-      get() = context.getString(R.string.import_from_qr)
-
-    override val icon: ImageVector = TabbyIcons.BaselineQrCodeScanner
-  }
+  class QR(context: Context) : BuiltIn(context, NewProfileProviderKind.QR)
 
   class External(
     override val name: String,
@@ -61,4 +34,39 @@ internal sealed class ProfileProvider {
   abstract val name: String
   abstract val summary: String
   abstract val icon: Any?
+
+  abstract class BuiltIn(
+    private val context: Context,
+    final override val kind: NewProfileProviderKind,
+  ) : ProfileProvider() {
+    private val presentation = checkNotNull(newProfileBuiltInProviderPresentation(kind))
+
+    override val name: String
+      get() = presentation.nameToken.androidString(context)
+
+    override val summary: String
+      get() = presentation.summaryToken.androidString(context)
+
+    override val icon: ImageVector
+      get() = presentation.graphicToken.androidIcon()
+  }
+}
+
+private fun NewProfileProviderTextToken.androidString(context: Context): String {
+  return when (this) {
+    NewProfileProviderTextToken.File -> context.getString(CommonR.string.file)
+    NewProfileProviderTextToken.Url -> context.getString(CommonR.string.url)
+    NewProfileProviderTextToken.Qr -> context.getString(R.string.qr)
+    NewProfileProviderTextToken.ImportFromFile -> context.getString(R.string.import_from_file)
+    NewProfileProviderTextToken.ImportFromUrl -> context.getString(R.string.import_from_url)
+    NewProfileProviderTextToken.ImportFromQr -> context.getString(R.string.import_from_qr)
+  }
+}
+
+private fun NewProfileProviderGraphicToken.androidIcon(): ImageVector {
+  return when (this) {
+    NewProfileProviderGraphicToken.File -> TabbyIcons.BaselineAttachFile
+    NewProfileProviderGraphicToken.Url -> TabbyIcons.BaselineCloudDownload
+    NewProfileProviderGraphicToken.Qr -> TabbyIcons.BaselineQrCodeScanner
+  }
 }
