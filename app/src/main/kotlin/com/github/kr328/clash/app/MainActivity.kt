@@ -129,12 +129,11 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun startClash() {
-    val vpnRequest = startClashService()
-    if (vpnRequest != null) {
-      toast(CommonR.string.unable_to_start_vpn)
-      return
+    when (tabbyStartClashResultAction(vpnPermissionRequired = startClashService() != null)) {
+      TabbyStartClashResultAction.ShowVpnPermissionRequired ->
+        toast(CommonR.string.unable_to_start_vpn)
+      TabbyStartClashResultAction.ShowStarted -> toast(R.string.external_control_started)
     }
-    toast(R.string.external_control_started)
   }
 
   private fun stopClash() {

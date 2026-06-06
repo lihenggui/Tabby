@@ -57,4 +57,20 @@ class TabbyExternalQuickActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyStartClashResultActionShowsVpnPermissionWhenRequired() {
+    assertEquals(
+      TabbyStartClashResultAction.ShowVpnPermissionRequired,
+      tabbyStartClashResultAction(vpnPermissionRequired = true),
+    )
+  }
+
+  @Test
+  fun tabbyStartClashResultActionShowsStartedWhenNoVpnPermissionIsRequired() {
+    assertEquals(
+      TabbyStartClashResultAction.ShowStarted,
+      tabbyStartClashResultAction(vpnPermissionRequired = false),
+    )
+  }
 }

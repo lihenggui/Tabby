@@ -18,6 +18,12 @@ sealed interface TabbyExternalQuickActionPlan {
   data object ShowAlreadyStopped : TabbyExternalQuickActionPlan
 }
 
+sealed interface TabbyStartClashResultAction {
+  data object ShowVpnPermissionRequired : TabbyStartClashResultAction
+
+  data object ShowStarted : TabbyStartClashResultAction
+}
+
 fun tabbyExternalQuickActionPlan(
   action: TabbyExternalQuickAction,
   clashRunning: Boolean,
@@ -32,4 +38,11 @@ fun tabbyExternalQuickActionPlan(
     TabbyExternalQuickAction.StopClash ->
       if (clashRunning) TabbyExternalQuickActionPlan.StopClash
       else TabbyExternalQuickActionPlan.ShowAlreadyStopped
+  }
+
+fun tabbyStartClashResultAction(vpnPermissionRequired: Boolean): TabbyStartClashResultAction =
+  if (vpnPermissionRequired) {
+    TabbyStartClashResultAction.ShowVpnPermissionRequired
+  } else {
+    TabbyStartClashResultAction.ShowStarted
   }
