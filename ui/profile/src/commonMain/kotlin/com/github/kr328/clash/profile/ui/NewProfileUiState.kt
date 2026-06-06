@@ -24,6 +24,13 @@ internal fun newProfileBuiltInProviderKinds(): List<NewProfileProviderKind> {
   )
 }
 
+internal fun <T> newProfileProviderList(
+  externalProviders: Iterable<T>,
+  builtInProvider: (NewProfileProviderKind) -> T?,
+): List<T> {
+  return newProfileBuiltInProviderKinds().mapNotNull(builtInProvider) + externalProviders
+}
+
 internal sealed interface NewProfileCreateAction {
   data class CreateProfile(val type: Profile.Type) : NewProfileCreateAction
 

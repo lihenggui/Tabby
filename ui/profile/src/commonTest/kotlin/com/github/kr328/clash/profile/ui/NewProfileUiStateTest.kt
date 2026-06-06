@@ -53,6 +53,41 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun providerListKeepsBuiltInProvidersBeforeExternalProviders() {
+    val externalProviders = listOf(testProvider("external-a"), testProvider("external-b"))
+
+    val providers =
+      newProfileProviderList(externalProviders = externalProviders) { kind ->
+        when (kind) {
+          NewProfileProviderKind.File -> testProvider("file")
+          NewProfileProviderKind.Url -> testProvider("url")
+          NewProfileProviderKind.QR -> testProvider("qr")
+          NewProfileProviderKind.External -> null
+        }
+      }
+
+    assertEquals(
+      listOf("file", "url", "qr", "external-a", "external-b"),
+      providers.map(TestProvider::id),
+    )
+  }
+
+  @Test
+  fun providerListOmitsUnavailableBuiltInProviders() {
+    val providers =
+      newProfileProviderList(externalProviders = listOf(testProvider("external"))) { kind ->
+        when (kind) {
+          NewProfileProviderKind.File -> testProvider("file")
+          NewProfileProviderKind.Url -> null
+          NewProfileProviderKind.QR -> testProvider("qr")
+          NewProfileProviderKind.External -> error("External is not a built-in provider")
+        }
+      }
+
+    assertEquals(listOf("file", "qr", "external"), providers.map(TestProvider::id))
+  }
+
+  @Test
   fun newProfileCreateActionCreatesFileProfile() {
     assertEquals(
       NewProfileCreateAction.CreateProfile(Profile.Type.File),
