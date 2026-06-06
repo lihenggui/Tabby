@@ -24,6 +24,11 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
+import com.github.kr328.clash.settings.ui.exportAccessControlPackages
+import com.github.kr328.clash.settings.ui.importAccessControlPackages
+import com.github.kr328.clash.settings.ui.invertAccessControlPackages
+import com.github.kr328.clash.settings.ui.selectAllAccessControlPackages
+import com.github.kr328.clash.settings.ui.toggleAccessControlPackage
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -95,21 +100,16 @@ internal class AccessControlViewModel(app: Application) :
 
   override fun toggleApp(packageName: String) {
     uiState.update { state ->
-      val selected =
-        if (packageName in state.selected) {
-          state.selected - packageName
-        } else {
-          state.selected + packageName
-        }
-
-      state.copy(selected = selected)
+      state.copy(selected = toggleAccessControlPackage(state.selected, packageName))
     }
   }
 
   override fun selectAll() {
     viewModelScope.launch {
       val all =
-        withContext(Dispatchers.Default) { uiState.value.apps.map(AppInfo::packageName).toSet() }
+        withContext(Dispatchers.Default) {
+          selectAllAccessControlPackages(uiState.value.apps.map(AppInfo::packageName))
+        }
       uiState.update { it.copy(selected = all) }
     }
   }
@@ -120,9 +120,15 @@ internal class AccessControlViewModel(app: Application) :
 
   override fun selectInvert() {
     viewModelScope.launch {
-      val all =
-        withContext(Dispatchers.Default) { uiState.value.apps.map(AppInfo::packageName).toSet() }
-      uiState.update { state -> state.copy(selected = all - state.selected) }
+      val selected =
+        withContext(Dispatchers.Default) {
+          val state = uiState.value
+          invertAccessControlPackages(
+            selected = state.selected,
+            packageNames = state.apps.map(AppInfo::packageName),
+          )
+        }
+      uiState.update { it.copy(selected = selected) }
     }
   }
 
@@ -131,24 +137,20 @@ internal class AccessControlViewModel(app: Application) :
     val data = clipboard?.primaryClip
 
     if (data != null && data.itemCount > 0) {
-      val packages =
-        data
-          .getItemAt(0)
-          .text
-          ?.toString()
-          ?.lineSequence()
-          ?.map { it.trim() }
-          ?.filter { it.isNotEmpty() }
-          ?.toSet()
-          .orEmpty()
-      val all = uiState.value.apps.map(AppInfo::packageName).toSet()
-      uiState.update { it.copy(selected = all.intersect(packages)) }
+      val state = uiState.value
+      val selected =
+        importAccessControlPackages(
+          clipboardText = data.getItemAt(0).text?.toString(),
+          installedPackageNames = state.apps.map(AppInfo::packageName),
+        )
+      uiState.update { it.copy(selected = selected) }
     }
   }
 
   override fun exportToClipboard() {
     val clipboard = appContext.getSystemService<ClipboardManager>()
-    val data = ClipData.newPlainText("packages", uiState.value.selected.sorted().joinToString("\n"))
+    val data =
+      ClipData.newPlainText("packages", exportAccessControlPackages(uiState.value.selected))
     clipboard?.setPrimaryClip(data)
   }
 
