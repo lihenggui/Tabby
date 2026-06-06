@@ -18,8 +18,14 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.home.ui.HomeStartAction.ShowNoProfileMessage
 import com.github.kr328.clash.home.ui.HomeStartAction.StartEngine
+import com.github.kr328.clash.home.ui.HomeToggleAction.StartClash
+import com.github.kr328.clash.home.ui.HomeToggleAction.StopClash
+import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
+import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
 import com.github.kr328.clash.home.ui.homeStartAction
+import com.github.kr328.clash.home.ui.homeToggleAction
+import com.github.kr328.clash.home.ui.homeTrafficPollAction
 import com.github.kr328.clash.home.ui.withFetchedHomeState
 import com.github.kr328.clash.home.ui.withForwardedTraffic
 import kotlin.time.Duration.Companion.seconds
@@ -76,10 +82,9 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   }
 
   fun toggleStatus() {
-    if (clashRunning.value) {
-      viewModelScope.launch { engineController.stop() }
-    } else {
-      startClash()
+    when (homeToggleAction(clashRunning.value)) {
+      StartClash -> startClash()
+      StopClash -> viewModelScope.launch { engineController.stop() }
     }
   }
 
@@ -120,9 +125,12 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     trafficPollingJob = viewModelScope.launch {
       while (isActive) {
         delay(1.seconds)
-        if (clashRunning.value) {
-          val total = engineController.queryTraffic()
-          uiState.update { it.withForwardedTraffic(total.trafficTotal()) }
+        when (homeTrafficPollAction(clashRunning.value)) {
+          QueryTraffic -> {
+            val total = engineController.queryTraffic()
+            uiState.update { it.withForwardedTraffic(total.trafficTotal()) }
+          }
+          Ignore -> Unit
         }
       }
     }

@@ -14,9 +14,27 @@ internal enum class HomeStartAction {
   ShowNoProfileMessage,
 }
 
+internal enum class HomeToggleAction {
+  StartClash,
+  StopClash,
+}
+
+internal enum class HomeTrafficPollAction {
+  QueryTraffic,
+  Ignore,
+}
+
 internal fun homeStartAction(activeProfile: Profile?): HomeStartAction {
   return if (activeProfile?.imported == true) HomeStartAction.StartEngine
   else HomeStartAction.ShowNoProfileMessage
+}
+
+internal fun homeToggleAction(clashRunning: Boolean): HomeToggleAction {
+  return if (clashRunning) HomeToggleAction.StopClash else HomeToggleAction.StartClash
+}
+
+internal fun homeTrafficPollAction(clashRunning: Boolean): HomeTrafficPollAction {
+  return if (clashRunning) HomeTrafficPollAction.QueryTraffic else HomeTrafficPollAction.Ignore
 }
 
 internal fun HomeUiState.withFetchedHomeState(

@@ -27,6 +27,30 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeToggleActionStopsRunningClashAndStartsStoppedClash() {
+    assertEquals(
+      HomeToggleAction.StopClash,
+      homeToggleAction(clashRunning = true),
+    )
+    assertEquals(
+      HomeToggleAction.StartClash,
+      homeToggleAction(clashRunning = false),
+    )
+  }
+
+  @Test
+  fun homeTrafficPollActionQueriesOnlyWhenClashIsRunning() {
+    assertEquals(
+      HomeTrafficPollAction.QueryTraffic,
+      homeTrafficPollAction(clashRunning = true),
+    )
+    assertEquals(
+      HomeTrafficPollAction.Ignore,
+      homeTrafficPollAction(clashRunning = false),
+    )
+  }
+
+  @Test
   fun fetchedStateShowsModeWhenClashIsRunningAndKeepsForwardedTraffic() {
     val state =
       HomeUiState(forwarded = "10 MB")
