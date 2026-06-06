@@ -72,6 +72,7 @@ androidComponents {
 
 dependencies {
   implementation(project(":app:shared"))
+  implementation(projects.core.engineAndroid)
   implementation(projects.glue)
   implementation(projects.ui.shared)
   implementation(projects.ui.crash)

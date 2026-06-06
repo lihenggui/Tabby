@@ -43,11 +43,12 @@ import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.crash.CrashRoute
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
-import com.github.kr328.clash.glue.util.withProfile
 import com.github.kr328.clash.home.HomeRoute
 import com.github.kr328.clash.log.LogRoute
 import com.github.kr328.clash.profile.ProfilesRoute
@@ -225,21 +226,21 @@ class MainActivity : ComponentActivity() {
 
   private class ViewModel(application: Application) : AndroidViewModel(application) {
     val backStack = mutableStateListOf<NavKey>(HomeRoute.Home)
+    private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
     fun handleInstallConfigUri(uri: Uri) {
       val url = uri.getQueryParameter("url") ?: return
       viewModelScope.launch {
-        val uuid = withProfile {
-          val type =
-            when (uri.getQueryParameter("type")?.lowercase(Locale.getDefault())) {
-              "url" -> Profile.Type.Url
-              "file" -> Profile.Type.File
-              else -> Profile.Type.Url
-            }
-          val name =
-            uri.getQueryParameter("name") ?: application.getString(CommonR.string.new_profile)
-          create(type, name).also { patch(it, name, url, 0) }
-        }
+        val type =
+          when (uri.getQueryParameter("type")?.lowercase(Locale.getDefault())) {
+            "url" -> Profile.Type.Url
+            "file" -> Profile.Type.File
+            else -> Profile.Type.Url
+          }
+        val name =
+          uri.getQueryParameter("name") ?: application.getString(CommonR.string.new_profile)
+        val uuid =
+          profileRepository.create(type, name).also { profileRepository.patch(it, name, url, 0) }
         backStack.addIfNotLast(ProfilesRoute.Profiles(openPropertyUuid = uuid))
       }
     }
