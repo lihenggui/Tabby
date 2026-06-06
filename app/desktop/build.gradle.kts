@@ -39,7 +39,7 @@ private data class DesktopMihomoAsset(
   }
 }
 
-private val DESKTOP_MIHOMO_VERSION = "v1.19.25"
+private val DESKTOP_MIHOMO_VERSION = "v1.19.27"
 
 @DisableCachingByDefault(because = "Downloads official mihomo release assets for desktop packages.")
 abstract class PrepareDesktopMihomoResourcesTask : DefaultTask() {
@@ -149,34 +149,34 @@ private val desktopMihomoAssets =
   listOf(
     DesktopMihomoAsset(
       resourceDirectory = "macos-x64",
-      archiveName = "mihomo-darwin-amd64-compatible-v1.19.25.gz",
-      sha256 = "a742ee98e203c25f0876664a3695c2b9cd5e18019a5da236dcd628cd2df9d482",
+      archiveName = "mihomo-darwin-amd64-compatible-v1.19.27.gz",
+      sha256 = "ddfafe6993e0adf97420d126d5ce7868113174630ccbf36d4a1bee2784085172",
     ),
     DesktopMihomoAsset(
       resourceDirectory = "macos-arm64",
-      archiveName = "mihomo-darwin-arm64-v1.19.25.gz",
-      sha256 = "0478c9619d327fcb2b8e9998ac278142db931ba2087f1929a84b816a3f570836",
+      archiveName = "mihomo-darwin-arm64-v1.19.27.gz",
+      sha256 = "3617c9d8a5a55aecfe1ebd0f55ff59f2706c8ad68fd65c6c4e5f7cf2b74263f1",
     ),
     DesktopMihomoAsset(
       resourceDirectory = "linux-x64",
-      archiveName = "mihomo-linux-amd64-compatible-v1.19.25.gz",
-      sha256 = "8d14bf2edbf2911db004abaed12754d63041eaf87e565af6f1e589883cd93ec8",
+      archiveName = "mihomo-linux-amd64-compatible-v1.19.27.gz",
+      sha256 = "36850c946615f5c712946b62dbbbd06f6941d6d8a7543b315198bcb24ada3ea9",
     ),
     DesktopMihomoAsset(
       resourceDirectory = "linux-arm64",
-      archiveName = "mihomo-linux-arm64-v1.19.25.gz",
-      sha256 = "0d2f19c4bf30121feff4ca51a1a5ddd7837ee1f9faaf930ca83533bca51e8b34",
+      archiveName = "mihomo-linux-arm64-v1.19.27.gz",
+      sha256 = "87db0c6660a9557a901b5750f997967e71d8c0af07ea1d1dd4d04c28da7f7e6f",
     ),
     DesktopMihomoAsset(
       resourceDirectory = "windows-x64",
-      archiveName = "mihomo-windows-amd64-compatible-v1.19.25.zip",
-      sha256 = "e4bc371cd449028e65e7f8b4d63b1ac4cdfa3cd008f05af5d42a77d63935f94b",
+      archiveName = "mihomo-windows-amd64-compatible-v1.19.27.zip",
+      sha256 = "9cddc00240ed90d0bbd8333c1ff2b83152eb03c6bcddfbb5a17714a3272c1e88",
       executableName = "mihomo.exe",
     ),
     DesktopMihomoAsset(
       resourceDirectory = "windows-arm64",
-      archiveName = "mihomo-windows-arm64-v1.19.25.zip",
-      sha256 = "8139fc8670ad5da32a10a13bac1d59846fc1f2aa29f8e086e5df40705f645838",
+      archiveName = "mihomo-windows-arm64-v1.19.27.zip",
+      sha256 = "dcbfe6f81a72dfb6b8b549f1aec32eb47644e592ac7dffefc026b15e9c25213a",
       executableName = "mihomo.exe",
     ),
   )
