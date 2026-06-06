@@ -86,6 +86,62 @@ class AppNetworkSettingsStateTest {
   }
 
   @Test
+  fun mapsAppSettingsComponentStateToAndFromPlatformValues() {
+    assertEquals(
+      AppComponentEnabledState.Enabled,
+      appComponentEnabledStateFromPlatformState(
+        state = 10,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+    assertEquals(
+      AppComponentEnabledState.Disabled,
+      appComponentEnabledStateFromPlatformState(
+        state = 20,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+    assertEquals(
+      AppComponentEnabledState.Unspecified,
+      appComponentEnabledStateFromPlatformState(
+        state = 30,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+
+    assertEquals(
+      10,
+      appComponentEnabledStateToPlatformState(
+        state = AppComponentEnabledState.Enabled,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+    assertEquals(
+      20,
+      appComponentEnabledStateToPlatformState(
+        state = AppComponentEnabledState.Disabled,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+    assertEquals(
+      30,
+      appComponentEnabledStateToPlatformState(
+        state = AppComponentEnabledState.Unspecified,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+  }
+
+  @Test
   fun createsInitialNetworkSettingsState() {
     assertEquals(
       networkSettingsUiState(),

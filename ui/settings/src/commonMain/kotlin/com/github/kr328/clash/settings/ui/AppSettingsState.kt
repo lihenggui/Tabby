@@ -28,6 +28,31 @@ internal fun appSettingsHideAppIconComponentState(hideAppIcon: Boolean): AppComp
   }
 }
 
+internal fun appComponentEnabledStateFromPlatformState(
+  state: Int,
+  enabledState: Int,
+  disabledState: Int,
+): AppComponentEnabledState {
+  return when (state) {
+    enabledState -> AppComponentEnabledState.Enabled
+    disabledState -> AppComponentEnabledState.Disabled
+    else -> AppComponentEnabledState.Unspecified
+  }
+}
+
+internal fun appComponentEnabledStateToPlatformState(
+  state: AppComponentEnabledState,
+  enabledState: Int,
+  disabledState: Int,
+  defaultState: Int,
+): Int {
+  return when (state) {
+    AppComponentEnabledState.Enabled -> enabledState
+    AppComponentEnabledState.Disabled -> disabledState
+    AppComponentEnabledState.Unspecified -> defaultState
+  }
+}
+
 internal fun updateAppSettingsAutoRestart(
   uiState: AppSettingsUiState,
   autoRestart: Boolean,

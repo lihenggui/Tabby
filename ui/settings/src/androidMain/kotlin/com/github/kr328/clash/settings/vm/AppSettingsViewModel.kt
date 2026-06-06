@@ -14,6 +14,8 @@ import com.github.kr328.clash.glue.util.ApplicationObserver
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AppComponentEnabledState
 import com.github.kr328.clash.settings.ui.AppSettingsUiState
+import com.github.kr328.clash.settings.ui.appComponentEnabledStateFromPlatformState
+import com.github.kr328.clash.settings.ui.appComponentEnabledStateToPlatformState
 import com.github.kr328.clash.settings.ui.appSettingsAutoRestartComponentState
 import com.github.kr328.clash.settings.ui.appSettingsHideAppIconComponentState
 import com.github.kr328.clash.settings.ui.appSettingsInitialUiState
@@ -100,17 +102,18 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 private fun Int.toAppComponentEnabledState(): AppComponentEnabledState {
-  return when (this) {
-    PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> AppComponentEnabledState.Enabled
-    PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> AppComponentEnabledState.Disabled
-    else -> AppComponentEnabledState.Unspecified
-  }
+  return appComponentEnabledStateFromPlatformState(
+    state = this,
+    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+  )
 }
 
 private fun AppComponentEnabledState.toPackageManagerComponentState(): Int {
-  return when (this) {
-    AppComponentEnabledState.Enabled -> PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-    AppComponentEnabledState.Disabled -> PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-    AppComponentEnabledState.Unspecified -> PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
-  }
+  return appComponentEnabledStateToPlatformState(
+    state = this,
+    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+    defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+  )
 }
