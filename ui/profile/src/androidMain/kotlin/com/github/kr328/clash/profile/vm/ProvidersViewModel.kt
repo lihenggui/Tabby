@@ -14,6 +14,7 @@ import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastAction
+import com.github.kr328.clash.profile.ui.ProvidersBroadcastEvent
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProvidersEventState
 import com.github.kr328.clash.profile.ui.ProvidersUiState
@@ -56,7 +57,7 @@ internal class ProvidersViewModel(app: Application) :
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (event.toProvidersBroadcastAction()) {
+        when (providersBroadcastAction(event.toProvidersBroadcastEvent())) {
           ProvidersBroadcastAction.FetchProviders -> fetch()
           ProvidersBroadcastAction.Ignore -> Unit
         }
@@ -132,20 +133,20 @@ internal class ProvidersViewModel(app: Application) :
     }
   }
 
-  private fun Broadcasts.Event.toProvidersBroadcastAction(): ProvidersBroadcastAction {
+  private fun Broadcasts.Event.toProvidersBroadcastEvent(): ProvidersBroadcastEvent {
     return when (this) {
       Broadcasts.Event.ServiceRecreated ->
-        providersBroadcastAction(ProvidersBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started -> providersBroadcastAction(ProvidersBroadcastEventKind.Started)
-      is Broadcasts.Event.Stopped -> providersBroadcastAction(ProvidersBroadcastEventKind.Stopped)
+        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started -> ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped -> ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Stopped)
       Broadcasts.Event.ProfileChanged ->
-        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileChanged)
+        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileChanged)
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileUpdateCompleted)
+        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateCompleted)
       is Broadcasts.Event.ProfileUpdateFailed ->
-        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileUpdateFailed)
+        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateFailed)
       Broadcasts.Event.ProfileLoaded ->
-        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileLoaded)
+        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileLoaded)
     }
   }
 }

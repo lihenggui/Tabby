@@ -10,6 +10,10 @@ class ProvidersBroadcastActionTest {
       ProvidersBroadcastAction.FetchProviders,
       providersBroadcastAction(ProvidersBroadcastEventKind.ProfileLoaded),
     )
+    assertEquals(
+      ProvidersBroadcastAction.FetchProviders,
+      providersBroadcastAction(ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileLoaded)),
+    )
   }
 
   @Test
@@ -24,6 +28,10 @@ class ProvidersBroadcastActionTest {
       )
       .forEach { kind ->
         assertEquals(ProvidersBroadcastAction.Ignore, providersBroadcastAction(kind))
+        assertEquals(
+          ProvidersBroadcastAction.Ignore,
+          providersBroadcastAction(ProvidersBroadcastEvent(kind)),
+        )
       }
   }
 }

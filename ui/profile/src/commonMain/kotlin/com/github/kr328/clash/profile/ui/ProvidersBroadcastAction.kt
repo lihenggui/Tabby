@@ -10,9 +10,15 @@ internal enum class ProvidersBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal data class ProvidersBroadcastEvent(val kind: ProvidersBroadcastEventKind)
+
 internal enum class ProvidersBroadcastAction {
   FetchProviders,
   Ignore,
+}
+
+internal fun providersBroadcastAction(event: ProvidersBroadcastEvent): ProvidersBroadcastAction {
+  return providersBroadcastAction(event.kind)
 }
 
 internal fun providersBroadcastAction(kind: ProvidersBroadcastEventKind): ProvidersBroadcastAction {
