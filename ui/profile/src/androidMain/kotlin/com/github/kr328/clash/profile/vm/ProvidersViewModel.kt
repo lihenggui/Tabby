@@ -12,12 +12,13 @@ import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
-import com.github.kr328.clash.profile.ui.ProviderItemState
 import com.github.kr328.clash.profile.ui.ProvidersUiState
 import com.github.kr328.clash.profile.ui.providersPendingUpdate
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withFetchedProviders
-import com.github.kr328.clash.profile.ui.withProviderState
+import com.github.kr328.clash.profile.ui.withProviderUpdateFailed
+import com.github.kr328.clash.profile.ui.withProviderUpdateStarted
+import com.github.kr328.clash.profile.ui.withProviderUpdateSucceeded
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -71,17 +72,17 @@ internal class ProvidersViewModel(app: Application) :
   }
 
   fun onUpdate(provider: Provider) {
-    updateProviderState(provider) { it.copy(updating = true) }
+    uiState.update { current -> current.withProviderUpdateStarted(provider) }
 
     viewModelScope.launch {
       try {
         engineController.updateProvider(provider.type, provider.name)
-        updateProviderState(provider) {
-          it.copy(updating = false, updatedAt = System.currentTimeMillis())
+        uiState.update { current ->
+          current.withProviderUpdateSucceeded(provider, updatedAt = System.currentTimeMillis())
         }
       } catch (e: Exception) {
         Log.e("Update provider ${provider.name} failed: ${e.message}", e)
-        updateProviderState(provider) { it.copy(updating = false) }
+        uiState.update { current -> current.withProviderUpdateFailed(provider) }
         val errorMessage = e.localizedMessage ?: e.message ?: e.toString()
         eventState.value =
           EventState.ShowMessage(
@@ -93,13 +94,6 @@ internal class ProvidersViewModel(app: Application) :
           )
       }
     }
-  }
-
-  private fun updateProviderState(
-    provider: Provider,
-    transform: (ProviderItemState) -> ProviderItemState,
-  ) {
-    uiState.update { current -> current.withProviderState(provider, transform) }
   }
 
   private fun fetch() {

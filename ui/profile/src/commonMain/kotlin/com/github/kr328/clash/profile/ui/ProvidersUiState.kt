@@ -24,6 +24,23 @@ internal fun ProvidersUiState.withProviderState(
   return copy(providers = providers.updateProviderItemState(provider, transform))
 }
 
+internal fun ProvidersUiState.withProviderUpdateStarted(provider: Provider): ProvidersUiState {
+  return withProviderState(provider) { state -> state.copy(updating = true) }
+}
+
+internal fun ProvidersUiState.withProviderUpdateSucceeded(
+  provider: Provider,
+  updatedAt: Long,
+): ProvidersUiState {
+  return withProviderState(provider) { state ->
+    state.copy(updating = false, updatedAt = updatedAt)
+  }
+}
+
+internal fun ProvidersUiState.withProviderUpdateFailed(provider: Provider): ProvidersUiState {
+  return withProviderState(provider) { state -> state.copy(updating = false) }
+}
+
 internal fun ProvidersUiState.withCurrentTime(currentTime: Long): ProvidersUiState {
   return copy(currentTime = currentTime)
 }

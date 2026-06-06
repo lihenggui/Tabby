@@ -66,6 +66,72 @@ class ProvidersUiStateTest {
   }
 
   @Test
+  fun providerUpdateStartedMarksMatchingProviderUpdatingOnly() {
+    val proxy = provider(name = "Shared", type = Provider.Type.Proxy)
+    val rule = provider(name = "Shared", type = Provider.Type.Rule)
+    val state =
+      ProvidersUiState(
+          providers =
+            listOf(
+              ProviderItemState(provider = proxy, updatedAt = 10, updating = false),
+              ProviderItemState(provider = rule, updatedAt = 20, updating = false),
+            ),
+          currentTime = 123,
+        )
+        .withProviderUpdateStarted(proxy)
+
+    assertEquals(true, state.providers[0].updating)
+    assertEquals(10, state.providers[0].updatedAt)
+    assertEquals(false, state.providers[1].updating)
+    assertEquals(20, state.providers[1].updatedAt)
+    assertEquals(123, state.currentTime)
+  }
+
+  @Test
+  fun providerUpdateSucceededMarksMatchingProviderFinishedAndReplacesUpdatedAt() {
+    val proxy = provider(name = "Shared", type = Provider.Type.Proxy)
+    val rule = provider(name = "Shared", type = Provider.Type.Rule)
+    val state =
+      ProvidersUiState(
+          providers =
+            listOf(
+              ProviderItemState(provider = proxy, updatedAt = 10, updating = true),
+              ProviderItemState(provider = rule, updatedAt = 20, updating = true),
+            ),
+          currentTime = 123,
+        )
+        .withProviderUpdateSucceeded(proxy, updatedAt = 30)
+
+    assertEquals(false, state.providers[0].updating)
+    assertEquals(30, state.providers[0].updatedAt)
+    assertEquals(true, state.providers[1].updating)
+    assertEquals(20, state.providers[1].updatedAt)
+    assertEquals(123, state.currentTime)
+  }
+
+  @Test
+  fun providerUpdateFailedMarksMatchingProviderFinishedOnly() {
+    val proxy = provider(name = "Shared", type = Provider.Type.Proxy)
+    val rule = provider(name = "Shared", type = Provider.Type.Rule)
+    val state =
+      ProvidersUiState(
+          providers =
+            listOf(
+              ProviderItemState(provider = proxy, updatedAt = 10, updating = true),
+              ProviderItemState(provider = rule, updatedAt = 20, updating = true),
+            ),
+          currentTime = 123,
+        )
+        .withProviderUpdateFailed(proxy)
+
+    assertEquals(false, state.providers[0].updating)
+    assertEquals(10, state.providers[0].updatedAt)
+    assertEquals(true, state.providers[1].updating)
+    assertEquals(20, state.providers[1].updatedAt)
+    assertEquals(123, state.currentTime)
+  }
+
+  @Test
   fun currentTimeUpdatePreservesProviders() {
     val states = listOf(ProviderItemState(provider("Remote"), updatedAt = 100, updating = false))
 
