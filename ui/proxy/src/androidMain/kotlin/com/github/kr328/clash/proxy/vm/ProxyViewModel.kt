@@ -35,7 +35,10 @@ import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeEventState
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
+import com.github.kr328.clash.proxy.ui.proxyInitialEventState
+import com.github.kr328.clash.proxy.ui.proxyInitialSelectedProxies
 import com.github.kr328.clash.proxy.ui.proxyInitialStateAction
+import com.github.kr328.clash.proxy.ui.proxyInitialUiState
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeEventState
@@ -74,13 +77,13 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   private val reloadLock = Semaphore(10)
 
   val uiState: StateFlow<ProxyUiState>
-    field = MutableStateFlow(ProxyUiState())
+    field = MutableStateFlow(proxyInitialUiState())
 
   val eventState: StateFlow<ProxyEventState>
-    field = MutableStateFlow<ProxyEventState>(ProxyEventState.Idle)
+    field = MutableStateFlow(proxyInitialEventState())
 
   val selectedProxies: StateFlow<List<SelectedProxy>>
-    field = MutableStateFlow(emptyList())
+    field = MutableStateFlow(proxyInitialSelectedProxies())
 
   init {
     uiState.update {

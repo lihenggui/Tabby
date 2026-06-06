@@ -17,6 +17,10 @@ internal data class ProxyUiState(
   val initialPage: Int = 0,
 )
 
+internal fun proxyInitialUiState(): ProxyUiState {
+  return ProxyUiState()
+}
+
 internal data class ProxyGroupUiState(
   val selectable: Boolean = false,
   val urlTesting: Boolean = false,
@@ -88,6 +92,10 @@ internal data class ProxyItemUiState(
 )
 
 internal data class SelectedProxy(val name: String)
+
+internal fun proxyInitialSelectedProxies(): List<SelectedProxy> {
+  return emptyList()
+}
 
 internal data class ProxyInitialStateAction(
   val state: ProxyUiState,
@@ -536,6 +544,10 @@ internal sealed interface ProxyEventState {
   data object ReLaunch : ProxyEventState
 
   data object ShowModeSwitchTips : ProxyEventState
+}
+
+internal fun proxyInitialEventState(): ProxyEventState {
+  return ProxyEventState.Idle
 }
 
 internal fun proxyGroupNamesChangeEventState(

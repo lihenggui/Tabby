@@ -10,6 +10,21 @@ import kotlin.test.assertSame
 
 class ProxyUiStateCommonTest {
   @Test
+  fun createsInitialProxyUiState() {
+    assertEquals(ProxyUiState(), proxyInitialUiState())
+  }
+
+  @Test
+  fun createsInitialProxyEventState() {
+    assertEquals(ProxyEventState.Idle, proxyInitialEventState())
+  }
+
+  @Test
+  fun createsInitialSelectedProxies() {
+    assertEquals(emptyList(), proxyInitialSelectedProxies())
+  }
+
+  @Test
   fun appliesProxyPreferences() {
     val state =
       ProxyUiState()
