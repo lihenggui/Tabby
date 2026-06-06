@@ -55,7 +55,12 @@ class TileService : android.service.quicksettings.TileService() {
     val tile = qsTile ?: return
     val presentation = tabbyTilePresentation(tileState)
 
-    tile.state = if (presentation.active) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+    tile.state =
+      tabbyTilePresentationPlatformState(
+        presentation = presentation,
+        activeState = Tile.STATE_ACTIVE,
+        inactiveState = Tile.STATE_INACTIVE,
+      )
 
     tile.label = presentation.profileName ?: getText(CommonR.string.tabby)
 

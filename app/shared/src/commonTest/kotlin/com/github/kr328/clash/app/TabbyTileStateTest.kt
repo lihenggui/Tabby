@@ -212,6 +212,26 @@ class TabbyTileStateTest {
   }
 
   @Test
+  fun tabbyTilePresentationPlatformStateMapsActivePresentationToPlatformState() {
+    assertEquals(
+      2,
+      tabbyTilePresentationPlatformState(
+        presentation = TabbyTilePresentation(active = true, profileName = "profile-a"),
+        activeState = 2,
+        inactiveState = 1,
+      ),
+    )
+    assertEquals(
+      1,
+      tabbyTilePresentationPlatformState(
+        presentation = TabbyTilePresentation(active = false, profileName = null),
+        activeState = 2,
+        inactiveState = 1,
+      ),
+    )
+  }
+
+  @Test
   fun tabbyTileBroadcastPlanReducesDirectTileEvents() {
     assertEquals(
       TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStarted),

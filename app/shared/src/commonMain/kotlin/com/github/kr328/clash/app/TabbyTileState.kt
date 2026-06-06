@@ -119,6 +119,14 @@ fun tabbyTilePresentation(state: TabbyTileState): TabbyTilePresentation =
     profileName = state.currentProfile.ifEmpty { null },
   )
 
+fun tabbyTilePresentationPlatformState(
+  presentation: TabbyTilePresentation,
+  activeState: Int,
+  inactiveState: Int,
+): Int {
+  return if (presentation.active) activeState else inactiveState
+}
+
 fun tabbyTileBroadcastPlan(action: TabbyTileBroadcastAction?): TabbyTileBroadcastPlan =
   when (action) {
     TabbyTileBroadcastAction.ClashStarted ->
