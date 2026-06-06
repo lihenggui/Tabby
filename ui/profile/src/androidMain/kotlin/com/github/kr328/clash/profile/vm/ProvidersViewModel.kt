@@ -16,8 +16,9 @@ import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastAction
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProvidersUiState
+import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
-import com.github.kr328.clash.profile.ui.providersPendingUpdate
+import com.github.kr328.clash.profile.ui.providersUpdateAllAction
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withFetchedProviders
 import com.github.kr328.clash.profile.ui.withProviderUpdateFailed
@@ -72,7 +73,10 @@ internal class ProvidersViewModel(app: Application) :
   }
 
   fun onUpdateAll() {
-    uiState.value.providersPendingUpdate().forEach(::onUpdate)
+    when (val action = providersUpdateAllAction(uiState.value)) {
+      is ProvidersUpdateAllAction.UpdateProviders -> action.providers.forEach(::onUpdate)
+      ProvidersUpdateAllAction.Ignore -> Unit
+    }
   }
 
   fun onUpdate(provider: Provider) {

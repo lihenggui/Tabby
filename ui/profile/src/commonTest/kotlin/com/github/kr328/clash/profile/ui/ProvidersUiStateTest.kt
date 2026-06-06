@@ -159,6 +159,43 @@ class ProvidersUiStateTest {
     assertEquals(listOf(remote), state.providersPendingUpdate())
   }
 
+  @Test
+  fun updateAllActionUpdatesPendingProvidersOnly() {
+    val remote = provider(name = "Remote")
+    val inline = provider(name = "Inline", vehicleType = Provider.VehicleType.Inline)
+    val updating = provider(name = "Updating")
+    val state =
+      ProvidersUiState(
+        providers =
+          listOf(
+            ProviderItemState(provider = remote, updatedAt = 0, updating = false),
+            ProviderItemState(provider = inline, updatedAt = 0, updating = false),
+            ProviderItemState(provider = updating, updatedAt = 0, updating = true),
+          )
+      )
+
+    assertEquals(
+      ProvidersUpdateAllAction.UpdateProviders(listOf(remote)),
+      providersUpdateAllAction(state),
+    )
+  }
+
+  @Test
+  fun updateAllActionIgnoresWhenNoProvidersArePending() {
+    val inline = provider(name = "Inline", vehicleType = Provider.VehicleType.Inline)
+    val updating = provider(name = "Updating")
+    val state =
+      ProvidersUiState(
+        providers =
+          listOf(
+            ProviderItemState(provider = inline, updatedAt = 0, updating = false),
+            ProviderItemState(provider = updating, updatedAt = 0, updating = true),
+          )
+      )
+
+    assertEquals(ProvidersUpdateAllAction.Ignore, providersUpdateAllAction(state))
+  }
+
   private fun provider(
     name: String,
     type: Provider.Type = Provider.Type.Proxy,

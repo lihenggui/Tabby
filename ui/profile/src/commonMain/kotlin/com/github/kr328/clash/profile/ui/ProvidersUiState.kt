@@ -7,6 +7,12 @@ internal data class ProvidersUiState(
   val currentTime: Long = 0,
 )
 
+internal sealed interface ProvidersUpdateAllAction {
+  data class UpdateProviders(val providers: List<Provider>) : ProvidersUpdateAllAction
+
+  data object Ignore : ProvidersUpdateAllAction
+}
+
 internal fun sortProvidersForDisplay(providers: List<Provider>): List<Provider> {
   return providers.sorted()
 }
@@ -51,4 +57,11 @@ internal fun ProvidersUiState.providersPendingUpdate(): List<Provider> {
       state.updating || state.provider.vehicleType == Provider.VehicleType.Inline
     }
     .map { state -> state.provider }
+}
+
+internal fun providersUpdateAllAction(state: ProvidersUiState): ProvidersUpdateAllAction {
+  val providers = state.providersPendingUpdate()
+
+  return if (providers.isEmpty()) ProvidersUpdateAllAction.Ignore
+  else ProvidersUpdateAllAction.UpdateProviders(providers)
 }
