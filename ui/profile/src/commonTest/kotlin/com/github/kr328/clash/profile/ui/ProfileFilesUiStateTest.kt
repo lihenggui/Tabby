@@ -49,6 +49,34 @@ class ProfileFilesUiStateTest {
     assertTrue(state.currentInBaseDir)
   }
 
+  @Test
+  fun eventStateCarriesPlatformPayloadsAsGenericValues() {
+    val targetFile = testFile("config.yaml")
+    val fileUri = "content://profile/config.yaml"
+    val openFileEvent: ProfileFilesEventState<TestFile, String> =
+      ProfileFilesEventState.OpenFile(fileUri)
+    val importEvent: ProfileFilesEventState<TestFile, String> =
+      ProfileFilesEventState.RequestImport(targetFile)
+    val exportEvent: ProfileFilesEventState<TestFile, String> =
+      ProfileFilesEventState.RequestExport(targetFile)
+
+    assertEquals(ProfileFilesEventState.OpenFile(fileUri), openFileEvent)
+    assertEquals(ProfileFilesEventState.RequestImport(targetFile), importEvent)
+    assertEquals(ProfileFilesEventState.RequestExport(targetFile), exportEvent)
+  }
+
+  @Test
+  fun errorEventStateFallsBackToUnknownMessage() {
+    assertEquals(
+      ProfileFilesEventState.ShowMessage("delete failed"),
+      profileFilesErrorEventState("delete failed", "Unknown error"),
+    )
+    assertEquals(
+      ProfileFilesEventState.ShowMessage("Unknown error"),
+      profileFilesErrorEventState(null, "Unknown error"),
+    )
+  }
+
   private fun testFile(name: String): TestFile {
     return TestFile(name)
   }

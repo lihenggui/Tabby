@@ -16,6 +16,7 @@ import com.github.kr328.clash.profile.ui.ProfileFileExportAction
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
+import com.github.kr328.clash.profile.ui.ProfileFilesEventState
 import com.github.kr328.clash.profile.ui.ProfileFilesFetchAction
 import com.github.kr328.clash.profile.ui.ProfileFilesInitAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLoadedAction
@@ -25,6 +26,7 @@ import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
+import com.github.kr328.clash.profile.ui.profileFilesErrorEventState
 import com.github.kr328.clash.profile.ui.profileFilesFetchAction
 import com.github.kr328.clash.profile.ui.profileFilesInitAction
 import com.github.kr328.clash.profile.ui.profileFilesLoadedAction
@@ -47,8 +49,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   val uiState: StateFlow<ProfileFilesUiState<ConfigFile>>
     field = MutableStateFlow(ProfileFilesUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<ProfileFilesEventState<ConfigFile, Uri>>
+    field = MutableStateFlow<ProfileFilesEventState<ConfigFile, Uri>>(ProfileFilesEventState.Idle)
 
   fun init(uuid: Uuid) {
     when (val action = profileFilesInitAction(location, uuid.toString())) {
@@ -62,13 +64,13 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
           uiState.update { it.withConfigurationEditable(action.configurationEditable) }
           fetch()
         }
-        ProfileFilesLoadedAction.Finish -> eventState.value = EventState.Finish
+        ProfileFilesLoadedAction.Finish -> eventState.value = ProfileFilesEventState.Finish
       }
     }
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = ProfileFilesEventState.Idle
   }
 
   override fun onStart(owner: LifecycleOwner) {
@@ -83,7 +85,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         location = action.location
         fetch()
       }
-      ProfileFilesBackAction.Finish -> eventState.value = EventState.Finish
+      ProfileFilesBackAction.Finish -> eventState.value = ProfileFilesEventState.Finish
     }
   }
 
@@ -95,7 +97,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
       }
       is ProfileFileOpenAction.OpenFile -> {
         val uri = client.buildDocumentUri(action.documentId)
-        eventState.value = EventState.OpenFile(uri)
+        eventState.value = ProfileFilesEventState.OpenFile(uri)
       }
     }
   }
@@ -106,7 +108,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         client.deleteDocument(configFile.id)
       } catch (e: Exception) {
         Log.e("Delete file failed: ${e.message}", e)
-        eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
+        eventState.value = profileFilesErrorEventState(e.message, "Unknown error")
       }
       fetch()
     }
@@ -118,14 +120,14 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         client.renameDocument(configFile.id, newName)
       } catch (e: Exception) {
         Log.e("Rename file failed: ${e.message}", e)
-        eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
+        eventState.value = profileFilesErrorEventState(e.message, "Unknown error")
       }
       fetch()
     }
   }
 
   fun onRequestImport(configFile: ConfigFile?) {
-    eventState.value = EventState.RequestImport(configFile)
+    eventState.value = ProfileFilesEventState.RequestImport(configFile)
   }
 
   fun onImportResult(uri: Uri?, targetConfigFile: ConfigFile?) {
@@ -152,14 +154,14 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         }
       } catch (e: Exception) {
         Log.e("Import file failed: ${e.message}", e)
-        eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
+        eventState.value = profileFilesErrorEventState(e.message, "Unknown error")
       }
       fetch()
     }
   }
 
   fun onRequestExport(configFile: ConfigFile) {
-    eventState.value = EventState.RequestExport(configFile)
+    eventState.value = ProfileFilesEventState.RequestExport(configFile)
   }
 
   fun onExportResult(uri: Uri?, sourceConfigFile: ConfigFile?) {
@@ -182,7 +184,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         }
       } catch (e: Exception) {
         Log.e("Export file failed: ${e.message}", e)
-        eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
+        eventState.value = profileFilesErrorEventState(e.message, "Unknown error")
       }
       fetch()
     }
@@ -213,22 +215,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         }
       } catch (e: Exception) {
         Log.e("List files failed: ${e.message}", e)
-        eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
+        eventState.value = profileFilesErrorEventState(e.message, "Unknown error")
       }
     }
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data object Finish : EventState
-
-    data class OpenFile(val uri: Uri) : EventState
-
-    data class RequestImport(val targetConfigFile: ConfigFile?) : EventState
-
-    data class RequestExport(val sourceConfigFile: ConfigFile) : EventState
-
-    data class ShowMessage(val message: String) : EventState
   }
 }
