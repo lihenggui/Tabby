@@ -2,12 +2,96 @@ package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.Profile
 
+internal data class PropertiesUiState(
+  val profile: Profile? = null,
+  val originalProfile: Profile? = null,
+  val processing: Boolean = false,
+  val progress: PropertiesProgressState = PropertiesProgressState(),
+  val hasUnsavedChanges: Boolean = false,
+)
+
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {
   if (original == null) return false
 
   return profile.name != original.name ||
     profile.source != original.source ||
     profile.interval != original.interval
+}
+
+internal fun PropertiesUiState.withLoadedProfile(profile: Profile): PropertiesUiState {
+  return copy(profile = profile, originalProfile = profile.copy(), hasUnsavedChanges = false)
+}
+
+internal fun PropertiesUiState.withSavedProfile(profile: Profile): PropertiesUiState {
+  return copy(originalProfile = profile.copy(), hasUnsavedChanges = false)
+}
+
+internal fun PropertiesUiState.withProfileName(name: String): PropertiesUiState {
+  val updated = profile?.copy(name = name) ?: return this
+  return copy(
+    profile = updated,
+    hasUnsavedChanges = hasProfilePropertiesChanges(updated, originalProfile),
+  )
+}
+
+internal fun PropertiesUiState.withProfileSource(source: String): PropertiesUiState {
+  val updated = profile?.copy(source = source) ?: return this
+  return copy(
+    profile = updated,
+    hasUnsavedChanges = hasProfilePropertiesChanges(updated, originalProfile),
+  )
+}
+
+internal fun PropertiesUiState.withProfileInterval(interval: Long): PropertiesUiState {
+  val updated = profile?.copy(interval = interval) ?: return this
+  return copy(
+    profile = updated,
+    hasUnsavedChanges = hasProfilePropertiesChanges(updated, originalProfile),
+  )
+}
+
+internal fun PropertiesUiState.withProcessingStarted(initialText: String): PropertiesUiState {
+  return copy(
+    processing = true,
+    progress =
+      PropertiesProgressState(
+        visible = true,
+        isIndeterminate = true,
+        text = initialText,
+        progress = 0,
+        max = 0,
+      ),
+  )
+}
+
+internal fun PropertiesUiState.withProcessingFinished(): PropertiesUiState {
+  return copy(processing = false, progress = progress.copy(visible = false, text = null))
+}
+
+internal fun PropertiesUiState.withProgress(progress: PropertiesProgressState): PropertiesUiState {
+  return copy(progress = progress)
+}
+
+internal fun PropertiesProgressState.withFetchConfigurationProgress(
+  text: String
+): PropertiesProgressState {
+  return copy(text = text, isIndeterminate = true)
+}
+
+internal fun PropertiesProgressState.withFetchProvidersProgress(
+  text: String,
+  max: Int,
+  progress: Int,
+): PropertiesProgressState {
+  return copy(text = text, isIndeterminate = false, max = max, progress = progress)
+}
+
+internal fun PropertiesProgressState.withVerifyingProgress(
+  text: String,
+  max: Int,
+  progress: Int,
+): PropertiesProgressState {
+  return copy(text = text, isIndeterminate = false, max = max, progress = progress)
 }
 
 internal fun toPropertiesProgressState(

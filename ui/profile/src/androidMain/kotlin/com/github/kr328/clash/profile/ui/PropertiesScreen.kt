@@ -73,7 +73,7 @@ internal fun PropertiesScreen(
       snackbarHostState = snackbarHostState,
       profile = profile,
       processing = uiState.processing,
-      progressState = uiState.progress.toPropertiesProgressState(),
+      progressState = uiState.progress,
       showExitWithoutSavingDialog = showExitWithoutSavingDialog,
       tipsProperties = AnnotatedString.fromHtml(stringResource(R.string.tips_properties)),
       onBack = onBack,
@@ -86,16 +86,6 @@ internal fun PropertiesScreen(
       onIntervalChanged = viewModel::onIntervalChanged,
     )
   }
-}
-
-private fun PropertiesViewModel.ProgressState.toPropertiesProgressState(): PropertiesProgressState {
-  return toPropertiesProgressState(
-    visible = visible,
-    isIndeterminate = isIndeterminate,
-    text = text,
-    progress = progress,
-    max = max,
-  )
 }
 
 @PreviewWrapper(TabbyThemeWrapper::class)

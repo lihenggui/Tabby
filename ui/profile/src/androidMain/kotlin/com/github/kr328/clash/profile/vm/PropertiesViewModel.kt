@@ -10,11 +10,21 @@ import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.FetchStatus
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
-import com.github.kr328.clash.profile.ui.hasProfilePropertiesChanges
+import com.github.kr328.clash.profile.ui.PropertiesUiState
+import com.github.kr328.clash.profile.ui.withFetchConfigurationProgress
+import com.github.kr328.clash.profile.ui.withFetchProvidersProgress
+import com.github.kr328.clash.profile.ui.withLoadedProfile
+import com.github.kr328.clash.profile.ui.withProcessingFinished
+import com.github.kr328.clash.profile.ui.withProcessingStarted
+import com.github.kr328.clash.profile.ui.withProfileInterval
+import com.github.kr328.clash.profile.ui.withProfileName
+import com.github.kr328.clash.profile.ui.withProfileSource
+import com.github.kr328.clash.profile.ui.withProgress
+import com.github.kr328.clash.profile.ui.withSavedProfile
+import com.github.kr328.clash.profile.ui.withVerifyingProgress
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -30,8 +40,8 @@ internal class PropertiesViewModel(app: Application) :
   private var rootUuid: Uuid? = null
   private var canceled = false
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<PropertiesUiState>
+    field = MutableStateFlow(PropertiesUiState())
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -46,7 +56,7 @@ internal class PropertiesViewModel(app: Application) :
         eventState.value = EventState.Finish(false)
         return@launch
       }
-      uiState.update { it.copy(profile = profile, originalProfile = profile.copy()) }
+      uiState.update { it.withLoadedProfile(profile) }
     }
   }
 
@@ -62,11 +72,7 @@ internal class PropertiesViewModel(app: Application) :
             profileRepository.patch(profile.uuid, profile.name, profile.source, profile.interval)
           }
           .onFailure { e -> Log.e("Auto save profile failed: ${e.message}", e) }
-          .onSuccess {
-            uiState.update { state ->
-              state.copy(originalProfile = profile.copy(), hasUnsavedChanges = false)
-            }
-          }
+          .onSuccess { uiState.update { state -> state.withSavedProfile(profile) } }
       }
     }
   }
@@ -84,33 +90,15 @@ internal class PropertiesViewModel(app: Application) :
   }
 
   fun onNameChanged(name: String) {
-    uiState.update { current ->
-      val profile = current.profile?.copy(name = name) ?: return@update current
-      current.copy(
-        profile = profile,
-        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
-      )
-    }
+    uiState.update { current -> current.withProfileName(name) }
   }
 
   fun onUrlChanged(url: String) {
-    uiState.update { current ->
-      val profile = current.profile?.copy(source = url) ?: return@update current
-      current.copy(
-        profile = profile,
-        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
-      )
-    }
+    uiState.update { current -> current.withProfileSource(url) }
   }
 
   fun onIntervalChanged(interval: Long) {
-    uiState.update { current ->
-      val profile = current.profile?.copy(interval = interval) ?: return@update current
-      current.copy(
-        profile = profile,
-        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
-      )
-    }
+    uiState.update { current -> current.withProfileInterval(interval) }
   }
 
   fun onBrowseFiles() {
@@ -157,27 +145,13 @@ internal class PropertiesViewModel(app: Application) :
   private suspend fun withProcessing(executeTask: suspend (suspend (FetchStatus) -> Unit) -> Unit) {
     try {
       withContext(Dispatchers.Main) {
-        uiState.update {
-          it.copy(
-            processing = true,
-            progress =
-              ProgressState(
-                visible = true,
-                isIndeterminate = true,
-                text = application.getString(R.string.initializing),
-                progress = 0,
-                max = 0,
-              ),
-          )
-        }
+        uiState.update { it.withProcessingStarted(application.getString(R.string.initializing)) }
       }
 
       executeTask { status -> withContext(Dispatchers.Main) { applyProgressStatus(status) } }
     } finally {
       withContext(Dispatchers.Main) {
-        uiState.update {
-          it.copy(processing = false, progress = it.progress.copy(visible = false, text = null))
-        }
+        uiState.update { it.withProcessingFinished() }
       }
     }
   }
@@ -187,55 +161,36 @@ internal class PropertiesViewModel(app: Application) :
       val newProgress =
         when (status.action) {
           FetchConfiguration -> {
-            current.progress.copy(
+            current.progress.withFetchConfigurationProgress(
               text =
                 application.getString(
                   R.string.format_fetching_configuration,
                   status.args.getOrNull(0).orEmpty(),
-                ),
-              isIndeterminate = true,
+                )
             )
           }
           FetchProviders -> {
-            current.progress.copy(
+            current.progress.withFetchProvidersProgress(
               text =
                 application.getString(
                   R.string.format_fetching_provider,
                   status.args.getOrNull(0).orEmpty(),
                 ),
-              isIndeterminate = false,
               max = status.max,
               progress = status.progress,
             )
           }
           Verifying -> {
-            current.progress.copy(
+            current.progress.withVerifyingProgress(
               text = application.getString(R.string.verifying),
-              isIndeterminate = false,
               max = status.max,
               progress = status.progress,
             )
           }
         }
-      current.copy(progress = newProgress)
+      current.withProgress(newProgress)
     }
   }
-
-  data class UiState(
-    val profile: Profile? = null,
-    val originalProfile: Profile? = null,
-    val processing: Boolean = false,
-    val progress: ProgressState = ProgressState(),
-    val hasUnsavedChanges: Boolean = false,
-  )
-
-  data class ProgressState(
-    val visible: Boolean = false,
-    val isIndeterminate: Boolean = false,
-    val text: String? = null,
-    val progress: Int = 0,
-    val max: Int = 0,
-  )
 
   sealed interface EventState {
     data object Idle : EventState
