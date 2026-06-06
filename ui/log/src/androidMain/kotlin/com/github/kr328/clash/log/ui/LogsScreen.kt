@@ -26,6 +26,11 @@ internal fun LogsScreen(
     logs = toLogListItems(logs) { created -> Date(created).format(context) },
     onDeleteAll = viewModel::deleteAll,
     onStartLogcat = onStartLogcat,
-    onOpenFile = { item -> item.toLogFile()?.let(onOpenFile) },
+    onOpenFile = { item ->
+      when (val action = logListItemOpenAction(item)) {
+        is LogListItemOpenAction.OpenFile -> onOpenFile(action.file)
+        LogListItemOpenAction.Ignore -> Unit
+      }
+    },
   )
 }

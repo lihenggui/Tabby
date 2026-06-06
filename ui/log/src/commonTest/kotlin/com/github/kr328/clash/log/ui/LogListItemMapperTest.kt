@@ -3,7 +3,6 @@ package com.github.kr328.clash.log.ui
 import com.github.kr328.clash.log.model.LogFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class LogListItemMapperTest {
   @Test
@@ -30,16 +29,21 @@ class LogListItemMapperTest {
   }
 
   @Test
-  fun parsesSelectedLogListItemBackToLogFile() {
-    val file = LogListItem(fileName = "clash-42.log", createdText = "ignored").toLogFile()
+  fun createsOpenFileActionForSelectedLogListItem() {
+    val action =
+      logListItemOpenAction(LogListItem(fileName = "clash-42.log", createdText = "ignored"))
 
-    assertEquals(LogFile(fileName = "clash-42.log", created = 42), file)
+    assertEquals(
+      LogListItemOpenAction.OpenFile(LogFile(fileName = "clash-42.log", created = 42)),
+      action,
+    )
   }
 
   @Test
-  fun invalidSelectedLogListItemReturnsNull() {
-    val file = LogListItem(fileName = "clash-latest.log", createdText = "ignored").toLogFile()
+  fun ignoresInvalidSelectedLogListItem() {
+    val action =
+      logListItemOpenAction(LogListItem(fileName = "clash-latest.log", createdText = "ignored"))
 
-    assertNull(file)
+    assertEquals(LogListItemOpenAction.Ignore, action)
   }
 }
