@@ -31,6 +31,11 @@ sealed interface TabbyTileClickAction {
   data object Ignore : TabbyTileClickAction
 }
 
+data class TabbyTilePresentation(
+  val active: Boolean,
+  val profileName: String?,
+)
+
 fun tabbyTileInitialState(currentProfile: String?): TabbyTileState =
   TabbyTileState(
     clashRunning = currentProfile != null,
@@ -62,3 +67,9 @@ fun tabbyTileClickAction(clickState: TabbyTileClickState): TabbyTileClickAction 
     TabbyTileClickState.Inactive -> TabbyTileClickAction.StartClash
     TabbyTileClickState.Other -> TabbyTileClickAction.Ignore
   }
+
+fun tabbyTilePresentation(state: TabbyTileState): TabbyTilePresentation =
+  TabbyTilePresentation(
+    active = state.clashRunning,
+    profileName = state.currentProfile.ifEmpty { null },
+  )

@@ -90,4 +90,20 @@ class TabbyTileStateTest {
       tabbyTileClickAction(TabbyTileClickState.Other),
     )
   }
+
+  @Test
+  fun tabbyTilePresentationUsesRunningStateAndProfileName() {
+    assertEquals(
+      TabbyTilePresentation(active = true, profileName = "profile-a"),
+      tabbyTilePresentation(TabbyTileState(clashRunning = true, currentProfile = "profile-a")),
+    )
+  }
+
+  @Test
+  fun tabbyTilePresentationUsesDefaultLabelWhenProfileNameIsEmpty() {
+    assertEquals(
+      TabbyTilePresentation(active = false, profileName = null),
+      tabbyTilePresentation(TabbyTileState(clashRunning = false, currentProfile = "")),
+    )
+  }
 }
