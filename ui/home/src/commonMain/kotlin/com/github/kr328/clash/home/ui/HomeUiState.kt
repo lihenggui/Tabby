@@ -96,6 +96,25 @@ internal fun homeBroadcastEventState(action: HomeBroadcastAction): HomeEventStat
   return action.stoppedMessage?.let { HomeEventState.ShowMessage(it) }
 }
 
+internal fun homeBroadcastActionFromPlatformPayload(
+  kind: HomeBroadcastEventKind,
+  stoppedMessage: String? = null,
+): HomeBroadcastAction {
+  return homeBroadcastAction(
+    kind = kind,
+    stoppedMessage =
+      when (kind) {
+        HomeBroadcastEventKind.Stopped -> stoppedMessage
+        HomeBroadcastEventKind.ServiceRecreated,
+        HomeBroadcastEventKind.Started,
+        HomeBroadcastEventKind.ProfileChanged,
+        HomeBroadcastEventKind.ProfileUpdateCompleted,
+        HomeBroadcastEventKind.ProfileUpdateFailed,
+        HomeBroadcastEventKind.ProfileLoaded -> null
+      },
+  )
+}
+
 internal fun <VpnPermissionT> homeVpnPermissionEventState(
   permissionRequest: VpnPermissionT
 ): HomeEventState<VpnPermissionT> {

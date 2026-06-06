@@ -25,7 +25,7 @@ import com.github.kr328.clash.home.ui.HomeToggleAction.StopClash
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
-import com.github.kr328.clash.home.ui.homeBroadcastAction
+import com.github.kr328.clash.home.ui.homeBroadcastActionFromPlatformPayload
 import com.github.kr328.clash.home.ui.homeBroadcastEventState
 import com.github.kr328.clash.home.ui.homeConsumedEventState
 import com.github.kr328.clash.home.ui.homeInitialEventState
@@ -158,16 +158,22 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   private fun Broadcasts.Event.toHomeBroadcastAction() =
     when (this) {
       Broadcasts.Event.ServiceRecreated ->
-        homeBroadcastAction(HomeBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started -> homeBroadcastAction(HomeBroadcastEventKind.Started)
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started ->
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.Started)
       is Broadcasts.Event.Stopped ->
-        homeBroadcastAction(HomeBroadcastEventKind.Stopped, stoppedMessage = cause)
-      Broadcasts.Event.ProfileChanged -> homeBroadcastAction(HomeBroadcastEventKind.ProfileChanged)
+        homeBroadcastActionFromPlatformPayload(
+          HomeBroadcastEventKind.Stopped,
+          stoppedMessage = cause,
+        )
+      Broadcasts.Event.ProfileChanged ->
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.ProfileChanged)
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateCompleted)
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.ProfileUpdateCompleted)
       is Broadcasts.Event.ProfileUpdateFailed ->
-        homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateFailed)
-      Broadcasts.Event.ProfileLoaded -> homeBroadcastAction(HomeBroadcastEventKind.ProfileLoaded)
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.ProfileUpdateFailed)
+      Broadcasts.Event.ProfileLoaded ->
+        homeBroadcastActionFromPlatformPayload(HomeBroadcastEventKind.ProfileLoaded)
     }
 }
 
