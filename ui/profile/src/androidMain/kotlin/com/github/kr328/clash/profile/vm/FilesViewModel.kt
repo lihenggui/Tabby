@@ -12,10 +12,12 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
+import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
+import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
@@ -116,14 +118,26 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onImportResult(uri: Uri?, targetConfigFile: ConfigFile?) {
-    if (uri == null) return
-    val parentId = location.currentDocumentId
+    val sourceUri = uri
+    val action =
+      profileFileImportAction(
+        sourceSelected = sourceUri != null,
+        sourceFileName = sourceUri?.fileName,
+        targetDocumentId = targetConfigFile?.id,
+        parentDocumentId = location.currentDocumentId,
+      )
+
+    if (action == ProfileFileImportAction.Ignore) return
+    val selectedUri = checkNotNull(sourceUri)
+
     viewModelScope.launch {
       try {
-        if (targetConfigFile == null) {
-          client.importDocument(parentId, uri, uri.fileName ?: "File")
-        } else {
-          client.copyDocument(targetConfigFile.id, uri)
+        when (action) {
+          is ProfileFileImportAction.ImportNewFile ->
+            client.importDocument(action.parentDocumentId, selectedUri, action.fileName)
+          is ProfileFileImportAction.ReplaceFile ->
+            client.copyDocument(action.targetDocumentId, selectedUri)
+          ProfileFileImportAction.Ignore -> Unit
         }
       } catch (e: Exception) {
         Log.e("Import file failed: ${e.message}", e)
