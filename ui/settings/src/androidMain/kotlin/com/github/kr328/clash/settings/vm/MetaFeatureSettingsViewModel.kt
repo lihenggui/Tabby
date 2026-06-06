@@ -14,8 +14,10 @@ import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.util.clashDir
+import com.github.kr328.clash.settings.ui.GeoFileImportPlan
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
+import com.github.kr328.clash.settings.ui.planGeoFileImport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +28,6 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   AndroidViewModel(app), MetaFeatureSettingsActions, DefaultLifecycleObserver {
   private val engineController: EngineController = AndroidEngineController(app)
   private val appContext = app
-  private val validDatabaseExtensions = listOf(".metadb", ".db", ".dat", ".mmdb")
   @Volatile private var skipPersist = false
 
   val configuration: StateFlow<ConfigurationOverride>
@@ -69,26 +70,20 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
           if (!it.moveToFirst()) return@use ImportResult.Failed
 
           val columnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-          val displayName = if (columnIndex != -1) it.getString(columnIndex) else ""
-          val ext = "." + displayName.substringAfterLast(".").lowercase()
+          val displayName = if (columnIndex != -1) it.getString(columnIndex).orEmpty() else ""
 
-          if (!validDatabaseExtensions.contains(ext)) {
-            return@use ImportResult.UnsupportedFormat(validDatabaseExtensions.joinToString("/"))
-          }
-
-          val outputFileName =
-            when (importType) {
-              GeoFileImportType.GeoIp -> "geoip$ext"
-              GeoFileImportType.GeoSite -> "geosite$ext"
-              GeoFileImportType.Country -> "country$ext"
-              GeoFileImportType.ASN -> "ASN$ext"
+          val plan = planGeoFileImport(displayName = displayName, importType = importType)
+          when (plan) {
+            is GeoFileImportPlan.UnsupportedFormat ->
+              return@use ImportResult.UnsupportedFormat(plan.supportedExtensionsSummary)
+            is GeoFileImportPlan.Supported -> {
+              val outputFile = appContext.clashDir.resolve(plan.outputFileName)
+              outputFile.parentFile?.mkdirs()
+              val inputStream = resolver.openInputStream(uri) ?: return@use ImportResult.Failed
+              inputStream.use { ins -> outputFile.outputStream().use { outs -> ins.copyTo(outs) } }
+              return@use ImportResult.Success(plan.displayName)
             }
-
-          val outputFile = appContext.clashDir.resolve(outputFileName)
-          outputFile.parentFile?.mkdirs()
-          val inputStream = resolver.openInputStream(uri) ?: return@use ImportResult.Failed
-          inputStream.use { ins -> outputFile.outputStream().use { outs -> ins.copyTo(outs) } }
-          return@use ImportResult.Success(displayName)
+          }
         }
       } catch (e: Exception) {
         Log.e("Import geo database failed: ${e.message}", e)
