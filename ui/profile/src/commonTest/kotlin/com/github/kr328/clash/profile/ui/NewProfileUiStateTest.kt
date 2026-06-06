@@ -154,6 +154,45 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun qrEventStateShowsMessagesOnlyForMessageActions() {
+    val missingPermissionMessage = "Camera permission denied"
+    val scanErrorMessage = "QR scan failed"
+
+    assertEquals(
+      null,
+      newProfileQrEventState(
+        ProfileQrAction.CreateUrlProfile("https://example.com/config.yaml"),
+        missingPermissionMessage = missingPermissionMessage,
+        scanErrorMessage = scanErrorMessage,
+      ),
+    )
+    assertEquals(
+      null,
+      newProfileQrEventState(
+        ProfileQrAction.Ignore,
+        missingPermissionMessage = missingPermissionMessage,
+        scanErrorMessage = scanErrorMessage,
+      ),
+    )
+    assertEquals(
+      NewProfileEventState.ShowMessage(missingPermissionMessage),
+      newProfileQrEventState(
+        ProfileQrAction.ShowMissingPermission,
+        missingPermissionMessage = missingPermissionMessage,
+        scanErrorMessage = scanErrorMessage,
+      ),
+    )
+    assertEquals(
+      NewProfileEventState.ShowMessage(scanErrorMessage),
+      newProfileQrEventState(
+        ProfileQrAction.ShowScanError,
+        missingPermissionMessage = missingPermissionMessage,
+        scanErrorMessage = scanErrorMessage,
+      ),
+    )
+  }
+
+  @Test
   fun newProfileProviderSelectionActionSelectsProviderByIndex() {
     val providers =
       listOf(

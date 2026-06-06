@@ -28,6 +28,7 @@ import com.github.kr328.clash.profile.ui.newProfileDetailAction
 import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
+import com.github.kr328.clash.profile.ui.newProfileQrEventState
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
@@ -137,14 +138,14 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
         }
       }
       ProfileQrAction.Ignore -> Unit
-      ProfileQrAction.ShowMissingPermission ->
-        eventState.value =
-          NewProfileEventState.ShowMessage(
-            application.getString(R.string.import_from_qr_no_permission)
-          )
+      ProfileQrAction.ShowMissingPermission,
       ProfileQrAction.ShowScanError ->
-        eventState.value =
-          NewProfileEventState.ShowMessage(application.getString(R.string.import_from_qr_exception))
+        newProfileQrEventState(
+            action = action,
+            missingPermissionMessage = application.getString(R.string.import_from_qr_no_permission),
+            scanErrorMessage = application.getString(R.string.import_from_qr_exception),
+          )
+          ?.let { eventState.value = it }
     }
   }
 

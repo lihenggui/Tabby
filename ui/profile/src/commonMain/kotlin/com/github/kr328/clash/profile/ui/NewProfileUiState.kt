@@ -106,6 +106,20 @@ internal fun <AppSettingsTargetT> newProfileDetailEventState(
   }
 }
 
+internal fun newProfileQrEventState(
+  action: ProfileQrAction,
+  missingPermissionMessage: String,
+  scanErrorMessage: String,
+): NewProfileEventState<Nothing, Nothing>? {
+  return when (action) {
+    is ProfileQrAction.CreateUrlProfile -> null
+    ProfileQrAction.Ignore -> null
+    ProfileQrAction.ShowMissingPermission ->
+      NewProfileEventState.ShowMessage(missingPermissionMessage)
+    ProfileQrAction.ShowScanError -> NewProfileEventState.ShowMessage(scanErrorMessage)
+  }
+}
+
 internal fun <T> newProfileProviderSelectionAction(
   providers: List<T>,
   index: Int,
