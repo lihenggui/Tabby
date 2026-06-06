@@ -14,8 +14,6 @@ kotlin {
     }
 
     androidMain {
-      kotlin.srcDir("src/main/kotlin")
-
       dependencies {
         implementation(projects.core.engineAndroid)
         implementation(projects.glue)
