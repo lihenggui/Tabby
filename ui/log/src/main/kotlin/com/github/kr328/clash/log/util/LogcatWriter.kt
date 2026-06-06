@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.model.LogFileMessageCodec
 import java.io.BufferedWriter
 
 internal class LogcatWriter(
@@ -12,8 +13,5 @@ internal class LogcatWriter(
   private val writer: BufferedWriter = context.logsDir.resolve(file.fileName).bufferedWriter(),
 ) : AutoCloseable by writer {
 
-  fun appendMessage(message: LogMessage) =
-    writer.appendLine(FORMAT.format(message.time, message.level.name, message.message))
+  fun appendMessage(message: LogMessage) = writer.appendLine(LogFileMessageCodec.encode(message))
 }
-
-private const val FORMAT = "%d:%s:%s"

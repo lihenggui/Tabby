@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.model.LogFileMessageCodec
 import java.io.BufferedReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,23 +20,13 @@ internal class LogcatReader(
       var lastTime = 0L
       reader
         .lineSequence()
-        .map { it.trim() }
-        .filter { !it.startsWith("#") }
-        .map { line ->
-          val parts = line.split(":", limit = 3)
-          val parsedTime = parts[0].toLongOrNull()
-          val time = parsedTime ?: lastTime
-          val logMessage =
-            if (parsedTime != null && parts.size >= 3) {
-              LogMessage(
-                time = time,
-                level = LogMessage.Level.valueOf(parts[1]),
-                message = parts[2],
-              )
-            } else {
-              LogMessage(time = time, level = LogMessage.Level.Warning, message = line)
-            }
-          lastTime = time
+        .mapNotNull { line ->
+          val logMessage = LogFileMessageCodec.decode(line, lastTime)
+
+          if (logMessage != null) {
+            lastTime = logMessage.time
+          }
+
           logMessage
         }
         .toList()
