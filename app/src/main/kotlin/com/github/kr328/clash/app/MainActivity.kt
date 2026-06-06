@@ -91,17 +91,7 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun Intent.handleAction(backStack: MutableList<NavKey>) {
-    val appAction =
-      when (action) {
-        Intent.ACTION_VIEW -> TabbyExternalAppAction.InstallProfile(requestAvailable = data != null)
-        Intents.ACTION_PROPERTIES -> TabbyExternalAppAction.OpenProfileProperties(uuid)
-        Intents.ACTION_LOGCAT -> TabbyExternalAppAction.OpenLogs
-        Intents.ACTION_APP_CRASHED -> TabbyExternalAppAction.OpenAppCrashed
-        Intents.ACTION_APK_BROKEN -> TabbyExternalAppAction.OpenApkBroken
-        else -> return
-      }
-
-    when (val plan = tabbyExternalAppActionPlan(appAction)) {
+    when (val plan = tabbyExternalAppActionPlan(tabbyExternalAppAction())) {
       TabbyExternalAppActionPlan.InstallProfile -> data?.let(viewModel::handleInstallConfigUri)
       is TabbyExternalAppActionPlan.OpenRoute ->
         backStack.handleTabbyExternalRouteAction(plan.routeAction)
@@ -265,6 +255,16 @@ private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =
     Intents.ACTION_TOGGLE_CLASH -> TabbyExternalQuickAction.ToggleClash
     Intents.ACTION_START_CLASH -> TabbyExternalQuickAction.StartClash
     Intents.ACTION_STOP_CLASH -> TabbyExternalQuickAction.StopClash
+    else -> null
+  }
+
+private fun Intent.tabbyExternalAppAction(): TabbyExternalAppAction? =
+  when (action) {
+    Intent.ACTION_VIEW -> TabbyExternalAppAction.InstallProfile(requestAvailable = data != null)
+    Intents.ACTION_PROPERTIES -> TabbyExternalAppAction.OpenProfileProperties(uuid)
+    Intents.ACTION_LOGCAT -> TabbyExternalAppAction.OpenLogs
+    Intents.ACTION_APP_CRASHED -> TabbyExternalAppAction.OpenAppCrashed
+    Intents.ACTION_APK_BROKEN -> TabbyExternalAppAction.OpenApkBroken
     else -> null
   }
 

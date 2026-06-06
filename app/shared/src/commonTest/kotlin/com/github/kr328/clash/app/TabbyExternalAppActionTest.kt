@@ -40,6 +40,14 @@ class TabbyExternalAppActionTest {
   }
 
   @Test
+  fun tabbyExternalAppActionPlanIgnoresUnknownActions() {
+    assertEquals(
+      TabbyExternalAppActionPlan.Ignore,
+      tabbyExternalAppActionPlan(null),
+    )
+  }
+
+  @Test
   fun tabbyExternalAppActionPlanMapsLogAndCrashRoutes() {
     assertEquals(
       TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenLogs),

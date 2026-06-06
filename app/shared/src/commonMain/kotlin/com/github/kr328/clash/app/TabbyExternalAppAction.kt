@@ -22,7 +22,7 @@ sealed interface TabbyExternalAppActionPlan {
   data object Ignore : TabbyExternalAppActionPlan
 }
 
-fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction): TabbyExternalAppActionPlan =
+fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction?): TabbyExternalAppActionPlan =
   when (action) {
     is TabbyExternalAppAction.InstallProfile ->
       if (action.requestAvailable) {
@@ -40,4 +40,5 @@ fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction): TabbyExternalApp
       TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenAppCrashed)
     TabbyExternalAppAction.OpenApkBroken ->
       TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenApkBroken)
+    null -> TabbyExternalAppActionPlan.Ignore
   }
