@@ -48,11 +48,11 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
-      HelpViewModel.EventState.Idle -> Unit
-      is HelpViewModel.EventState.ShowMessage -> {
+      HelpEventState.Idle -> Unit
+      is HelpEventState.ShowMessage -> {
         snackbarHostState.showSnackbar(message = event.message)
       }
-      is HelpViewModel.EventState.UpdateAvailable -> {
+      is HelpEventState.UpdateAvailable -> {
         val result =
           snackbarHostState.showSnackbar(
             message = updateAvailableText,

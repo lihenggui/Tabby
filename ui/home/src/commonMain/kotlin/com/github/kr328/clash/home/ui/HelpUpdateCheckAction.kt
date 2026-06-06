@@ -16,6 +16,14 @@ internal sealed interface HelpUpdateCheckRequestAction {
   data object Ignore : HelpUpdateCheckRequestAction
 }
 
+internal sealed interface HelpEventState {
+  data object Idle : HelpEventState
+
+  data class ShowMessage(val message: String) : HelpEventState
+
+  data class UpdateAvailable(val releasesUrl: String) : HelpEventState
+}
+
 internal fun helpUpdateCheckRequestAction(state: HelpContentState): HelpUpdateCheckRequestAction {
   return if (state.checkingForUpdates) {
     HelpUpdateCheckRequestAction.Ignore
@@ -34,5 +42,20 @@ internal fun helpUpdateCheckAction(
     HelpUpdateCheckAction.ShowUpdateAvailable
   } else {
     HelpUpdateCheckAction.ShowAlreadyUpToDateMessage
+  }
+}
+
+internal fun helpUpdateCheckEventState(
+  action: HelpUpdateCheckAction,
+  releasesUrl: String,
+  alreadyUpToDateMessage: String,
+  updateCheckFailedMessage: String,
+): HelpEventState {
+  return when (action) {
+    HelpUpdateCheckAction.ShowUpdateAvailable -> HelpEventState.UpdateAvailable(releasesUrl)
+    HelpUpdateCheckAction.ShowAlreadyUpToDateMessage ->
+      HelpEventState.ShowMessage(alreadyUpToDateMessage)
+    HelpUpdateCheckAction.ShowUpdateCheckFailedMessage ->
+      HelpEventState.ShowMessage(updateCheckFailedMessage)
   }
 }

@@ -59,4 +59,39 @@ class HelpUpdateCheckActionTest {
       helpUpdateCheckAction(latestTag = "not-a-version", localVersion = "1.0.0")
     }
   }
+
+  @Test
+  fun updateCheckEventStateMapsActionToUpdateAvailableEvent() {
+    assertEquals(
+      HelpEventState.UpdateAvailable("https://example.com/releases"),
+      helpUpdateCheckEventState(
+        action = HelpUpdateCheckAction.ShowUpdateAvailable,
+        releasesUrl = "https://example.com/releases",
+        alreadyUpToDateMessage = "already up to date",
+        updateCheckFailedMessage = "failed",
+      ),
+    )
+  }
+
+  @Test
+  fun updateCheckEventStateMapsActionToMessageEvent() {
+    assertEquals(
+      HelpEventState.ShowMessage("already up to date"),
+      helpUpdateCheckEventState(
+        action = HelpUpdateCheckAction.ShowAlreadyUpToDateMessage,
+        releasesUrl = "https://example.com/releases",
+        alreadyUpToDateMessage = "already up to date",
+        updateCheckFailedMessage = "failed",
+      ),
+    )
+    assertEquals(
+      HelpEventState.ShowMessage("failed"),
+      helpUpdateCheckEventState(
+        action = HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,
+        releasesUrl = "https://example.com/releases",
+        alreadyUpToDateMessage = "already up to date",
+        updateCheckFailedMessage = "failed",
+      ),
+    )
+  }
 }

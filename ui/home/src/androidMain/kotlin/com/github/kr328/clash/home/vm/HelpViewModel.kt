@@ -11,10 +11,11 @@ import com.github.kr328.clash.glue.util.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.api.HelpApi
 import com.github.kr328.clash.home.ui.HelpContentState
-import com.github.kr328.clash.home.ui.HelpUpdateCheckAction
+import com.github.kr328.clash.home.ui.HelpEventState
 import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
 import com.github.kr328.clash.home.ui.helpUpdateCheckAction
+import com.github.kr328.clash.home.ui.helpUpdateCheckEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
@@ -32,8 +33,8 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   val uiState: StateFlow<HelpContentState>
     field = MutableStateFlow(HelpContentState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<HelpEventState>
+    field = MutableStateFlow<HelpEventState>(HelpEventState.Idle)
 
   init {
     loadVersionInfo()
@@ -59,22 +60,18 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
             helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
           }
 
-        when (action) {
-          HelpUpdateCheckAction.ShowUpdateAvailable ->
-            eventState.update { EventState.UpdateAvailable(TABBY_RELEASES_LATEST) }
-          HelpUpdateCheckAction.ShowAlreadyUpToDateMessage ->
-            eventState.update {
-              EventState.ShowMessage(application.getString(R.string.already_up_to_date))
-            }
-          HelpUpdateCheckAction.ShowUpdateCheckFailedMessage ->
-            eventState.update {
-              EventState.ShowMessage(application.getString(R.string.check_update_failed))
-            }
+        eventState.update {
+          helpUpdateCheckEventState(
+            action = action,
+            releasesUrl = TABBY_RELEASES_LATEST,
+            alreadyUpToDateMessage = application.getString(R.string.already_up_to_date),
+            updateCheckFailedMessage = application.getString(R.string.check_update_failed),
+          )
         }
       } catch (e: Exception) {
         Log.e("Check for updates failed: ${e.message}", e)
         eventState.update {
-          EventState.ShowMessage(application.getString(R.string.check_update_failed))
+          HelpEventState.ShowMessage(application.getString(R.string.check_update_failed))
         }
       } finally {
         uiState.update { it.withUpdateCheckFinished() }
@@ -83,7 +80,7 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = HelpEventState.Idle
   }
 
   private fun loadVersionInfo() {
@@ -99,13 +96,5 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
 
       uiState.update { it.withVersionInfo(appVersion = appVersion, coreVersion = coreVersion) }
     }
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data class ShowMessage(val message: String) : EventState
-
-    data class UpdateAvailable(val releasesUrl: String) : EventState
   }
 }
