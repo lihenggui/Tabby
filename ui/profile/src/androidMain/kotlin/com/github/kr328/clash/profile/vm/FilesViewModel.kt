@@ -13,7 +13,9 @@ import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFileExportAction
+import com.github.kr328.clash.profile.ui.ProfileFileExportResult
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
+import com.github.kr328.clash.profile.ui.ProfileFileImportResult
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
 import com.github.kr328.clash.profile.ui.ProfileFilesEventState
@@ -144,10 +146,12 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     val sourceUri = uri
     val action =
       profileFileImportAction(
-        sourceSelected = sourceUri != null,
-        sourceFileName = sourceUri?.fileName,
-        targetDocumentId = targetConfigFile?.id,
-        parentDocumentId = location.currentDocumentId,
+        ProfileFileImportResult(
+          sourceSelected = sourceUri != null,
+          sourceFileName = sourceUri?.fileName,
+          targetDocumentId = targetConfigFile?.id,
+          parentDocumentId = location.currentDocumentId,
+        )
       )
 
     if (action == ProfileFileImportAction.Ignore) return
@@ -178,8 +182,10 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     val outputUri = uri
     val action =
       profileFileExportAction(
-        outputSelected = outputUri != null,
-        sourceDocumentId = sourceConfigFile?.id,
+        ProfileFileExportResult(
+          outputSelected = outputUri != null,
+          sourceDocumentId = sourceConfigFile?.id,
+        )
       )
 
     if (action == ProfileFileExportAction.Ignore) return

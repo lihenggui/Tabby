@@ -10,6 +10,15 @@ class ProfileFileExportActionTest {
       ProfileFileExportAction.Ignore,
       profileFileExportAction(outputSelected = false, sourceDocumentId = "root/config.yaml"),
     )
+    assertEquals(
+      ProfileFileExportAction.Ignore,
+      profileFileExportAction(
+        ProfileFileExportResult(
+          outputSelected = false,
+          sourceDocumentId = "root/config.yaml",
+        )
+      ),
+    )
   }
 
   @Test
@@ -18,6 +27,15 @@ class ProfileFileExportActionTest {
       ProfileFileExportAction.Ignore,
       profileFileExportAction(outputSelected = true, sourceDocumentId = null),
     )
+    assertEquals(
+      ProfileFileExportAction.Ignore,
+      profileFileExportAction(
+        ProfileFileExportResult(
+          outputSelected = true,
+          sourceDocumentId = null,
+        )
+      ),
+    )
   }
 
   @Test
@@ -25,6 +43,15 @@ class ProfileFileExportActionTest {
     assertEquals(
       ProfileFileExportAction.ExportFile("root/config.yaml"),
       profileFileExportAction(outputSelected = true, sourceDocumentId = "root/config.yaml"),
+    )
+    assertEquals(
+      ProfileFileExportAction.ExportFile("root/config.yaml"),
+      profileFileExportAction(
+        ProfileFileExportResult(
+          outputSelected = true,
+          sourceDocumentId = "root/config.yaml",
+        )
+      ),
     )
   }
 }

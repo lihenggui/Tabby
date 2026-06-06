@@ -11,6 +11,22 @@ internal sealed interface ProfileFileImportAction {
   data object Ignore : ProfileFileImportAction
 }
 
+internal data class ProfileFileImportResult(
+  val sourceSelected: Boolean,
+  val sourceFileName: String?,
+  val targetDocumentId: String?,
+  val parentDocumentId: String,
+)
+
+internal fun profileFileImportAction(result: ProfileFileImportResult): ProfileFileImportAction {
+  return profileFileImportAction(
+    sourceSelected = result.sourceSelected,
+    sourceFileName = result.sourceFileName,
+    targetDocumentId = result.targetDocumentId,
+    parentDocumentId = result.parentDocumentId,
+  )
+}
+
 internal fun profileFileImportAction(
   sourceSelected: Boolean,
   sourceFileName: String?,

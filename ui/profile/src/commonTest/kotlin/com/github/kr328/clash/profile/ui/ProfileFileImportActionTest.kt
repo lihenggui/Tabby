@@ -15,6 +15,17 @@ class ProfileFileImportActionTest {
         parentDocumentId = "root",
       ),
     )
+    assertEquals(
+      ProfileFileImportAction.Ignore,
+      profileFileImportAction(
+        ProfileFileImportResult(
+          sourceSelected = false,
+          sourceFileName = "ignored.yaml",
+          targetDocumentId = null,
+          parentDocumentId = "root",
+        )
+      ),
+    )
   }
 
   @Test
@@ -31,6 +42,20 @@ class ProfileFileImportActionTest {
         parentDocumentId = "root/providers",
       ),
     )
+    assertEquals(
+      ProfileFileImportAction.ImportNewFile(
+        parentDocumentId = "root/providers",
+        fileName = "provider.yaml",
+      ),
+      profileFileImportAction(
+        ProfileFileImportResult(
+          sourceSelected = true,
+          sourceFileName = "provider.yaml",
+          targetDocumentId = null,
+          parentDocumentId = "root/providers",
+        )
+      ),
+    )
   }
 
   @Test
@@ -44,6 +69,17 @@ class ProfileFileImportActionTest {
         parentDocumentId = "root",
       ),
     )
+    assertEquals(
+      ProfileFileImportAction.ImportNewFile(parentDocumentId = "root", fileName = "File"),
+      profileFileImportAction(
+        ProfileFileImportResult(
+          sourceSelected = true,
+          sourceFileName = null,
+          targetDocumentId = null,
+          parentDocumentId = "root",
+        )
+      ),
+    )
   }
 
   @Test
@@ -55,6 +91,17 @@ class ProfileFileImportActionTest {
         sourceFileName = "ignored.yaml",
         targetDocumentId = "root/config.yaml",
         parentDocumentId = "root",
+      ),
+    )
+    assertEquals(
+      ProfileFileImportAction.ReplaceFile("root/config.yaml"),
+      profileFileImportAction(
+        ProfileFileImportResult(
+          sourceSelected = true,
+          sourceFileName = "ignored.yaml",
+          targetDocumentId = "root/config.yaml",
+          parentDocumentId = "root",
+        )
       ),
     )
   }
