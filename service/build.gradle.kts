@@ -18,6 +18,9 @@ dependencies {
   implementation(libs.kaidl.runtime)
   implementation(libs.rikkax.multiprocess)
 
+  testImplementation(libs.kotlin.test.junit)
+  testImplementation(libs.sqldelight.sqlite.driver)
+
   ksp(libs.kaidl.compiler)
   ksp(libs.androidx.room.compiler)
 }

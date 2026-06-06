@@ -24,23 +24,7 @@ class ProfileDatabaseMigration(
       if (preferences.getBoolean(MIGRATED_KEY, false)) return
 
       withContext(Dispatchers.IO) {
-        val imported =
-          roomDatabase.importedDao().queryAllUUIDs().mapNotNull { uuid ->
-            roomDatabase.importedDao().queryByUUID(uuid)
-          }
-        val pending =
-          roomDatabase.pendingDao().queryAllUUIDs().mapNotNull { uuid ->
-            roomDatabase.pendingDao().queryByUUID(uuid)
-          }
-        val selections = imported.flatMap { profile ->
-          roomDatabase.selectionProxyDao().querySelections(profile.uuid)
-        }
-
-        profileDatabase.transaction {
-          imported.forEach { profile -> upsertImported(profile.toProfileEntity()) }
-          pending.forEach { profile -> upsertPending(profile.toProfileEntity()) }
-          selections.forEach { selection -> setProxySelection(selection.toProxySelectionEntity()) }
-        }
+        profileDatabase.importProfileMigrationSnapshot(roomDatabase.loadProfileMigrationSnapshot())
 
         preferences.edit().putBoolean(MIGRATED_KEY, true).apply()
       }
@@ -50,6 +34,35 @@ class ProfileDatabaseMigration(
   companion object {
     private const val MIGRATED_KEY = "__profiles_migrated_to_sqldelight_v1"
     private val mutex = Mutex()
+  }
+}
+
+internal data class ProfileMigrationSnapshot(
+  val imported: List<Imported>,
+  val pending: List<Pending>,
+  val selections: List<Selection>,
+)
+
+internal suspend fun Database.loadProfileMigrationSnapshot(): ProfileMigrationSnapshot {
+  val imported =
+    importedDao().queryAllUUIDs().mapNotNull { uuid -> importedDao().queryByUUID(uuid) }
+  val pending = pendingDao().queryAllUUIDs().mapNotNull { uuid -> pendingDao().queryByUUID(uuid) }
+  val selections = imported.flatMap { profile -> selectionProxyDao().querySelections(profile.uuid) }
+
+  return ProfileMigrationSnapshot(
+    imported = imported,
+    pending = pending,
+    selections = selections,
+  )
+}
+
+internal fun ProfileDatabase.importProfileMigrationSnapshot(snapshot: ProfileMigrationSnapshot) {
+  transaction {
+    snapshot.imported.forEach { profile -> upsertImported(profile.toProfileEntity()) }
+    snapshot.pending.forEach { profile -> upsertPending(profile.toProfileEntity()) }
+    snapshot.selections.forEach { selection ->
+      setProxySelection(selection.toProxySelectionEntity())
+    }
   }
 }
 
