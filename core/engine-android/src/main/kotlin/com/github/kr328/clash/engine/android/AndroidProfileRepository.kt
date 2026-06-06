@@ -19,7 +19,7 @@ class AndroidProfileRepository : ProfileRepository {
 
         Remote.broadcasts.register()
         Remote.broadcasts.event
-          .filter { it.isProfileEvent }
+          .filter { it.requiresProfileSnapshotRefresh() }
           .collect {
             emit(withProfile { queryAll() })
           }
@@ -59,12 +59,11 @@ class AndroidProfileRepository : ProfileRepository {
   }
 }
 
-private val Broadcasts.Event.isProfileEvent: Boolean
-  get() =
-    when (this) {
-      is Broadcasts.Event.ProfileChanged,
-      is Broadcasts.Event.ProfileLoaded,
-      is Broadcasts.Event.ProfileUpdateCompleted,
-      is Broadcasts.Event.ProfileUpdateFailed -> true
-      else -> false
-    }
+internal fun Broadcasts.Event.requiresProfileSnapshotRefresh(): Boolean =
+  when (this) {
+    is Broadcasts.Event.ProfileChanged,
+    is Broadcasts.Event.ProfileLoaded,
+    is Broadcasts.Event.ProfileUpdateCompleted,
+    is Broadcasts.Event.ProfileUpdateFailed -> true
+    else -> false
+  }

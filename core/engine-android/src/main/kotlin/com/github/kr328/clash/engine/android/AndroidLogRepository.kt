@@ -19,7 +19,7 @@ class AndroidLogRepository : LogRepository {
         val observer =
           object : ILogObserver {
             override fun newItem(log: String) {
-              trySend(json.decodeFromString<LogMessage>(log))
+              trySend(decodeAndroidLogMessage(log))
             }
           }
 
@@ -33,3 +33,5 @@ class AndroidLogRepository : LogRepository {
 private val json = Json {
   ignoreUnknownKeys = true
 }
+
+internal fun decodeAndroidLogMessage(log: String): LogMessage = json.decodeFromString(log)
