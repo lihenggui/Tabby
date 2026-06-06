@@ -5,6 +5,11 @@ import kotlin.test.assertEquals
 
 class LogFileSelectionTest {
   @Test
+  fun createsInitialLogFilesState() {
+    assertEquals(emptyList(), logFilesInitialState())
+  }
+
+  @Test
   fun logFilesAreSelectedInInputOrder() {
     val files = selectLogFiles(listOf("clash-20.log", "clash-10.log", "clash-30.log"))
 

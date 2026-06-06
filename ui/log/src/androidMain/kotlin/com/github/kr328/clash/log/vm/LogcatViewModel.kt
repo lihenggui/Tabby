@@ -36,6 +36,7 @@ import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatExportResultEventState
 import com.github.kr328.clash.log.ui.logcatInitialAction
 import com.github.kr328.clash.log.ui.logcatInitialEventState
+import com.github.kr328.clash.log.ui.logcatInitialUiState
 import com.github.kr328.clash.log.ui.logcatLoadFileFailureEventState
 import com.github.kr328.clash.log.ui.logcatPollAction
 import com.github.kr328.clash.log.ui.logcatRequestExportAction
@@ -76,10 +77,10 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   private var initialSnapshot = true
 
   val uiState: StateFlow<LogcatUiState>
-    field = MutableStateFlow(LogcatUiState())
+    field = MutableStateFlow(logcatInitialUiState())
 
   val eventState: StateFlow<LogcatEventState>
-    field = MutableStateFlow<LogcatEventState>(LogcatEventState.Idle)
+    field = MutableStateFlow(logcatInitialEventState())
 
   fun init(fileName: String?) {
     if (initialized) return

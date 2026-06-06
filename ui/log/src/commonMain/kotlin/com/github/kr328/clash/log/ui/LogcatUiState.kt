@@ -9,6 +9,10 @@ internal data class LogcatUiState(
   val exportProgress: LogcatExportProgress = LogcatExportProgress(),
 )
 
+internal fun logcatInitialUiState(): LogcatUiState {
+  return LogcatUiState()
+}
+
 internal data class LogcatExportProgress(
   val visible: Boolean = false,
   val isIndeterminate: Boolean = true,
@@ -42,6 +46,10 @@ internal sealed interface LogcatEventState {
   data class RequestExport(val fileName: String) : LogcatEventState
 
   data class ShowMessage(val message: String) : LogcatEventState
+}
+
+internal fun logcatInitialEventState(): LogcatEventState {
+  return LogcatEventState.Idle
 }
 
 internal sealed interface LogcatDeleteAction {

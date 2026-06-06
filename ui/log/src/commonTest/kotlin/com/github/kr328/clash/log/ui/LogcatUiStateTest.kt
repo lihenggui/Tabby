@@ -9,6 +9,16 @@ import kotlin.test.assertTrue
 
 class LogcatUiStateTest {
   @Test
+  fun createsInitialLogcatUiState() {
+    assertEquals(LogcatUiState(), logcatInitialUiState())
+  }
+
+  @Test
+  fun createsInitialLogcatEventState() {
+    assertEquals(LogcatEventState.Idle, logcatInitialEventState())
+  }
+
+  @Test
   fun logcatInitialActionStartsStreamingWhenNoFileNameIsProvided() {
     assertEquals(
       LogcatInitialAction.StartStreaming,
