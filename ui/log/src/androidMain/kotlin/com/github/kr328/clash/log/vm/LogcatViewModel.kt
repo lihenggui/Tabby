@@ -21,10 +21,16 @@ import com.github.kr328.clash.log.LogcatService
 import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.log.ui.LogcatCloseAction
+import com.github.kr328.clash.log.ui.LogcatDeleteAction
+import com.github.kr328.clash.log.ui.LogcatExportAction
 import com.github.kr328.clash.log.ui.LogcatInitialAction
+import com.github.kr328.clash.log.ui.LogcatRequestExportAction
 import com.github.kr328.clash.log.ui.LogcatUiState
 import com.github.kr328.clash.log.ui.logcatCloseAction
+import com.github.kr328.clash.log.ui.logcatDeleteAction
+import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatInitialAction
+import com.github.kr328.clash.log.ui.logcatRequestExportAction
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
@@ -96,34 +102,42 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   }
 
   fun delete() {
-    val file = currentFile ?: return
-
-    viewModelScope.launch {
-      withContext(Dispatchers.IO) { application.logsDir.resolve(file.fileName).delete() }
-      eventState.value = EventState.Close
+    when (val action = logcatDeleteAction(currentFile)) {
+      is LogcatDeleteAction.DeleteFile ->
+        viewModelScope.launch {
+          withContext(Dispatchers.IO) { application.logsDir.resolve(action.file.fileName).delete() }
+          eventState.value = EventState.Close
+        }
+      LogcatDeleteAction.Ignore -> Unit
     }
   }
 
   fun requestExport() {
-    val file = currentFile ?: return
-    eventState.value = EventState.RequestExport(file.fileName)
+    when (val action = logcatRequestExportAction(currentFile)) {
+      is LogcatRequestExportAction.RequestExport ->
+        eventState.value = EventState.RequestExport(action.fileName)
+      LogcatRequestExportAction.Ignore -> Unit
+    }
   }
 
   fun exportTo(uri: Uri?) {
-    val file = currentFile ?: return
-    if (uri == null) return
+    when (val action = logcatExportAction(currentFile, hasDestination = uri != null)) {
+      is LogcatExportAction.ExportFile -> {
+        val destination = checkNotNull(uri)
+        viewModelScope.launch {
+          val messages = uiState.value.messages
 
-    viewModelScope.launch {
-      val messages = uiState.value.messages
-
-      eventState.value =
-        try {
-          writeLogTo(messages, file, uri)
-          EventState.ShowMessage(application.getString(R.string.file_exported))
-        } catch (e: Exception) {
-          Log.e("Export log file failed: ${e.message}", e)
-          EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+          eventState.value =
+            try {
+              writeLogTo(messages, action.file, destination)
+              EventState.ShowMessage(application.getString(R.string.file_exported))
+            } catch (e: Exception) {
+              Log.e("Export log file failed: ${e.message}", e)
+              EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+            }
         }
+      }
+      LogcatExportAction.Ignore -> Unit
     }
   }
 

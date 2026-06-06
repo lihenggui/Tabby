@@ -30,6 +30,24 @@ internal enum class LogcatCloseAction {
   CloseViewer,
 }
 
+internal sealed interface LogcatDeleteAction {
+  data class DeleteFile(val file: LogFile) : LogcatDeleteAction
+
+  data object Ignore : LogcatDeleteAction
+}
+
+internal sealed interface LogcatRequestExportAction {
+  data class RequestExport(val fileName: String) : LogcatRequestExportAction
+
+  data object Ignore : LogcatRequestExportAction
+}
+
+internal sealed interface LogcatExportAction {
+  data class ExportFile(val file: LogFile) : LogcatExportAction
+
+  data object Ignore : LogcatExportAction
+}
+
 internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
   val file = fileName?.let(LogFile::parse)
   return when {
@@ -42,6 +60,25 @@ internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
 internal fun logcatCloseAction(state: LogcatUiState): LogcatCloseAction {
   return if (state.streaming) LogcatCloseAction.StopStreamingAndOpenLogs
   else LogcatCloseAction.CloseViewer
+}
+
+internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {
+  return currentFile?.let(LogcatDeleteAction::DeleteFile) ?: LogcatDeleteAction.Ignore
+}
+
+internal fun logcatRequestExportAction(currentFile: LogFile?): LogcatRequestExportAction {
+  return currentFile?.let { LogcatRequestExportAction.RequestExport(it.fileName) }
+    ?: LogcatRequestExportAction.Ignore
+}
+
+internal fun logcatExportAction(
+  currentFile: LogFile?,
+  hasDestination: Boolean,
+): LogcatExportAction {
+  val file = currentFile ?: return LogcatExportAction.Ignore
+  if (!hasDestination) return LogcatExportAction.Ignore
+
+  return LogcatExportAction.ExportFile(file)
 }
 
 internal fun LogcatUiState.withStreaming(streaming: Boolean): LogcatUiState {

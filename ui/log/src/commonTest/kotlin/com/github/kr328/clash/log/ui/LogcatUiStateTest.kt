@@ -49,6 +49,52 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatDeleteActionDeletesCurrentFileAndIgnoresMissingFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatDeleteAction.DeleteFile(file),
+      logcatDeleteAction(file),
+    )
+    assertEquals(
+      LogcatDeleteAction.Ignore,
+      logcatDeleteAction(null),
+    )
+  }
+
+  @Test
+  fun logcatRequestExportActionRequestsCurrentFileNameAndIgnoresMissingFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatRequestExportAction.RequestExport("clash-1234.log"),
+      logcatRequestExportAction(file),
+    )
+    assertEquals(
+      LogcatRequestExportAction.Ignore,
+      logcatRequestExportAction(null),
+    )
+  }
+
+  @Test
+  fun logcatExportActionExportsCurrentFileOnlyWhenDestinationExists() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportAction.ExportFile(file),
+      logcatExportAction(currentFile = file, hasDestination = true),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportAction(currentFile = file, hasDestination = false),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportAction(currentFile = null, hasDestination = true),
+    )
+  }
+
+  @Test
   fun streamingUpdatesPreserveMessagesAndExportProgress() {
     val message = logMessage(1)
     val state =
