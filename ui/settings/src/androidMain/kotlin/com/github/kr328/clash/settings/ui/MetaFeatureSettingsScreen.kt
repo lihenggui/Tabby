@@ -61,9 +61,13 @@ internal fun MetaFeatureSettingsScreen(
 
     val importLauncher =
       rememberLauncherForActivityResult(GetContent()) { uri ->
-        val type = pendingImportType ?: return@rememberLauncherForActivityResult
-        pendingImportType = null
-        viewModel.importGeoFile(uri, type)
+        when (val action = geoFileImportPickerResultAction(uri, pendingImportType)) {
+          is GeoFileImportPickerResultAction.Import -> {
+            pendingImportType = null
+            viewModel.importGeoFile(action.source, action.importType)
+          }
+          GeoFileImportPickerResultAction.Ignore -> Unit
+        }
       }
 
     MetaFeatureSettingsContent(

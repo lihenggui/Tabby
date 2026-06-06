@@ -10,6 +10,44 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun ignoresPickerResultWhenPendingImportTypeIsMissing() {
+    assertEquals(
+      GeoFileImportPickerResultAction.Ignore,
+      geoFileImportPickerResultAction(source = TestSource("geoip.mmdb"), pendingImportType = null),
+    )
+  }
+
+  @Test
+  fun createsImportActionForSelectedPickerSource() {
+    val source = TestSource("geoip.mmdb")
+
+    assertEquals(
+      GeoFileImportPickerResultAction.Import(
+        source = source,
+        importType = GeoFileImportType.GeoIp,
+      ),
+      geoFileImportPickerResultAction(
+        source = source,
+        pendingImportType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun createsImportActionForMissingPickerSourceWhenTypeIsPending() {
+    assertEquals(
+      GeoFileImportPickerResultAction.Import(
+        source = null,
+        importType = GeoFileImportType.Country,
+      ),
+      geoFileImportPickerResultAction<TestSource>(
+        source = null,
+        pendingImportType = GeoFileImportType.Country,
+      ),
+    )
+  }
+
+  @Test
   fun createsGeoIpImportPlanForSupportedExtension() {
     assertEquals(
       GeoFileImportPlan.Supported(
@@ -107,4 +145,6 @@ class GeoFileImportPlanTest {
       geoFileImportResult(action, copySucceeded = false),
     )
   }
+
+  private data class TestSource(val displayName: String)
 }
