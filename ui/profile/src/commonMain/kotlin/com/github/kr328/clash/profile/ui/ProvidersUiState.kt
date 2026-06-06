@@ -13,6 +13,12 @@ internal sealed interface ProvidersUpdateAllAction {
   data object Ignore : ProvidersUpdateAllAction
 }
 
+internal sealed interface ProvidersEventState {
+  data object Idle : ProvidersEventState
+
+  data class ShowMessage(val message: String) : ProvidersEventState
+}
+
 internal fun sortProvidersForDisplay(providers: List<Provider>): List<Provider> {
   return providers.sorted()
 }
@@ -64,4 +70,12 @@ internal fun providersUpdateAllAction(state: ProvidersUiState): ProvidersUpdateA
 
   return if (providers.isEmpty()) ProvidersUpdateAllAction.Ignore
   else ProvidersUpdateAllAction.UpdateProviders(providers)
+}
+
+internal fun providerUpdateFailureEventState(
+  providerName: String,
+  errorMessage: String,
+  formatUpdateFailure: (String, String) -> String,
+): ProvidersEventState {
+  return ProvidersEventState.ShowMessage(formatUpdateFailure(providerName, errorMessage))
 }

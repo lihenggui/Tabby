@@ -196,6 +196,19 @@ class ProvidersUiStateTest {
     assertEquals(ProvidersUpdateAllAction.Ignore, providersUpdateAllAction(state))
   }
 
+  @Test
+  fun providerUpdateFailureEventStateUsesPlatformFormattedMessage() {
+    val event =
+      providerUpdateFailureEventState(
+        providerName = "Remote",
+        errorMessage = "network failed",
+      ) { name, error ->
+        "$name: $error"
+      }
+
+    assertEquals(ProvidersEventState.ShowMessage("Remote: network failed"), event)
+  }
+
   private fun provider(
     name: String,
     type: Provider.Type = Provider.Type.Proxy,

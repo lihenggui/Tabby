@@ -25,8 +25,8 @@ internal fun ProvidersScreen(
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
-      Idle -> Unit
-      is ShowMessage -> {
+      ProvidersEventState.Idle -> Unit
+      is ProvidersEventState.ShowMessage -> {
         snackbarHostState.showSnackbar(message = event.message)
       }
     }

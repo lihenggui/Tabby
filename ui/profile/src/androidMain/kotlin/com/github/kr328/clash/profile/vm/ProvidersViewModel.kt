@@ -15,8 +15,10 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastAction
 import com.github.kr328.clash.profile.ui.ProvidersBroadcastEventKind
+import com.github.kr328.clash.profile.ui.ProvidersEventState
 import com.github.kr328.clash.profile.ui.ProvidersUiState
 import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
+import com.github.kr328.clash.profile.ui.providerUpdateFailureEventState
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
 import com.github.kr328.clash.profile.ui.providersUpdateAllAction
 import com.github.kr328.clash.profile.ui.withCurrentTime
@@ -43,8 +45,8 @@ internal class ProvidersViewModel(app: Application) :
   val uiState: StateFlow<ProvidersUiState>
     field = MutableStateFlow(ProvidersUiState(currentTime = System.currentTimeMillis()))
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<ProvidersEventState>
+    field = MutableStateFlow<ProvidersEventState>(ProvidersEventState.Idle)
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()
@@ -69,7 +71,7 @@ internal class ProvidersViewModel(app: Application) :
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = ProvidersEventState.Idle
   }
 
   fun onUpdateAll() {
@@ -93,13 +95,12 @@ internal class ProvidersViewModel(app: Application) :
         uiState.update { current -> current.withProviderUpdateFailed(provider) }
         val errorMessage = e.localizedMessage ?: e.message ?: e.toString()
         eventState.value =
-          EventState.ShowMessage(
-            application.getString(
-              R.string.format_update_provider_failure,
-              provider.name,
-              errorMessage,
-            )
-          )
+          providerUpdateFailureEventState(
+            providerName = provider.name,
+            errorMessage = errorMessage,
+          ) { name, message ->
+            application.getString(R.string.format_update_provider_failure, name, message)
+          }
       }
     }
   }
@@ -120,12 +121,6 @@ internal class ProvidersViewModel(app: Application) :
         uiState.update { it.withCurrentTime(System.currentTimeMillis()) }
       }
     }
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data class ShowMessage(val message: String) : EventState
   }
 
   private fun Broadcasts.Event.toProvidersBroadcastAction(): ProvidersBroadcastAction {
