@@ -20,7 +20,9 @@ import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.LogcatService
 import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatUiState
+import com.github.kr328.clash.log.ui.logcatInitialAction
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
@@ -64,22 +66,20 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
     if (initialized) return
     initialized = true
 
-    val file = fileName?.let(LogFile::parse)
-
-    if (fileName != null && file == null) {
-      eventState.value = EventState.InvalidFile
-      return
+    when (val action = logcatInitialAction(fileName)) {
+      LogcatInitialAction.StartStreaming -> {
+        uiState.update { it.withStreaming(true) }
+        startStreaming()
+      }
+      is LogcatInitialAction.LoadFile -> {
+        currentFile = action.file
+        uiState.update { it.withStreaming(false) }
+        loadLocalFile(action.file)
+      }
+      LogcatInitialAction.InvalidFile -> {
+        eventState.value = EventState.InvalidFile
+      }
     }
-
-    if (file != null) {
-      currentFile = file
-      uiState.update { it.withStreaming(false) }
-      loadLocalFile(file)
-      return
-    }
-
-    uiState.update { it.withStreaming(true) }
-    startStreaming()
   }
 
   fun close() {

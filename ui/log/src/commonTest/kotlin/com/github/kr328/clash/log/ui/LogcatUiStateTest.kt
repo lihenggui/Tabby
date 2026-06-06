@@ -1,12 +1,37 @@
 package com.github.kr328.clash.log.ui
 
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.log.model.LogFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LogcatUiStateTest {
+  @Test
+  fun logcatInitialActionStartsStreamingWhenNoFileNameIsProvided() {
+    assertEquals(
+      LogcatInitialAction.StartStreaming,
+      logcatInitialAction(null),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionLoadsParsedLogFile() {
+    assertEquals(
+      LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234)),
+      logcatInitialAction("clash-1234.log"),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionRejectsInvalidFileName() {
+    assertEquals(
+      LogcatInitialAction.InvalidFile,
+      logcatInitialAction("clash.log"),
+    )
+  }
+
   @Test
   fun streamingUpdatesPreserveMessagesAndExportProgress() {
     val message = logMessage(1)
