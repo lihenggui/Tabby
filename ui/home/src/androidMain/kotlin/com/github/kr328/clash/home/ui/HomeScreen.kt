@@ -1,6 +1,5 @@
 package com.github.kr328.clash.home.ui
 
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.material3.SnackbarDuration
@@ -43,8 +42,9 @@ internal fun HomeScreen(
 
   val vpnLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      if (result.resultCode == Activity.RESULT_OK) {
-        viewModel.onVpnPermissionGranted()
+      when (homeVpnPermissionResultAction(result.toHomeVpnPermissionResult())) {
+        HomeVpnPermissionResultAction.StartEngine -> viewModel.onVpnPermissionGranted()
+        HomeVpnPermissionResultAction.Ignore -> Unit
       }
     }
 

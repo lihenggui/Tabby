@@ -49,6 +49,16 @@ internal enum class HomeNoProfileSnackbarAction {
   Ignore,
 }
 
+internal enum class HomeVpnPermissionResult {
+  Granted,
+  Denied,
+}
+
+internal enum class HomeVpnPermissionResultAction {
+  StartEngine,
+  Ignore,
+}
+
 internal enum class HomeModeLabel {
   Direct,
   Global,
@@ -130,6 +140,15 @@ internal fun homeNoProfileSnackbarAction(
   return when (result) {
     SnackbarActionResult.ActionPerformed -> HomeNoProfileSnackbarAction.OpenProfiles
     SnackbarActionResult.Dismissed -> HomeNoProfileSnackbarAction.Ignore
+  }
+}
+
+internal fun homeVpnPermissionResultAction(
+  result: HomeVpnPermissionResult
+): HomeVpnPermissionResultAction {
+  return when (result) {
+    HomeVpnPermissionResult.Granted -> HomeVpnPermissionResultAction.StartEngine
+    HomeVpnPermissionResult.Denied -> HomeVpnPermissionResultAction.Ignore
   }
 }
 

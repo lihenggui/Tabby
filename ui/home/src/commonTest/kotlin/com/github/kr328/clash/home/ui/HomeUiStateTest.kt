@@ -165,6 +165,18 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeVpnPermissionResultActionStartsEngineOnlyWhenPermissionIsGranted() {
+    assertEquals(
+      HomeVpnPermissionResultAction.StartEngine,
+      homeVpnPermissionResultAction(HomeVpnPermissionResult.Granted),
+    )
+    assertEquals(
+      HomeVpnPermissionResultAction.Ignore,
+      homeVpnPermissionResultAction(HomeVpnPermissionResult.Denied),
+    )
+  }
+
+  @Test
   fun homeModeLabelMapsTunnelStateModes() {
     assertEquals(HomeModeLabel.Direct, homeModeLabel(TunnelState.Mode.Direct))
     assertEquals(HomeModeLabel.Global, homeModeLabel(TunnelState.Mode.Global))
