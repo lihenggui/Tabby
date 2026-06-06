@@ -10,6 +10,36 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun pickerPlatformPayloadKeepsSourceWhenImportTypeIsPending() {
+    val source = TestSource("geoip.mmdb")
+
+    assertEquals(
+      GeoFileImportPickerResult(
+        source = source,
+        pendingImportType = GeoFileImportType.GeoIp,
+      ),
+      geoFileImportPickerResultFromPlatformPayload(
+        source = source,
+        pendingImportType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun pickerPlatformPayloadDropsSourceWhenImportTypeIsMissing() {
+    assertEquals(
+      GeoFileImportPickerResult<TestSource>(
+        source = null,
+        pendingImportType = null,
+      ),
+      geoFileImportPickerResultFromPlatformPayload<TestSource>(
+        source = TestSource("ignored.mmdb"),
+        pendingImportType = null,
+      ),
+    )
+  }
+
+  @Test
   fun ignoresPickerResultWhenPendingImportTypeIsMissing() {
     assertEquals(
       GeoFileImportPickerResultAction.Ignore,

@@ -37,6 +37,16 @@ internal data class GeoFileImportPickerResult<T>(
   val pendingImportType: GeoFileImportType?,
 )
 
+internal fun <T> geoFileImportPickerResultFromPlatformPayload(
+  source: T?,
+  pendingImportType: GeoFileImportType?,
+): GeoFileImportPickerResult<T> {
+  return GeoFileImportPickerResult(
+    source = if (pendingImportType != null) source else null,
+    pendingImportType = pendingImportType,
+  )
+}
+
 internal sealed interface GeoFileImportPickerResultAction<out T> {
   data class Import<T>(val source: T?, val importType: GeoFileImportType) :
     GeoFileImportPickerResultAction<T>

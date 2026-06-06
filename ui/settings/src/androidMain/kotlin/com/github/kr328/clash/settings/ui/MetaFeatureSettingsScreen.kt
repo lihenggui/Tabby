@@ -61,7 +61,7 @@ internal fun MetaFeatureSettingsScreen(
         when (
           val action =
             geoFileImportPickerResultAction(
-              GeoFileImportPickerResult(
+              geoFileImportPickerResultFromPlatformPayload(
                 source = uri,
                 pendingImportType = pendingImportType,
               )
