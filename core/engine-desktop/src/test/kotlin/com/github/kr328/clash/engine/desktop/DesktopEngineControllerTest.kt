@@ -2,6 +2,7 @@ package com.github.kr328.clash.engine.desktop
 
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.Traffic
+import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.network.createTabbyHttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -12,6 +13,25 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 
 class DesktopEngineControllerTest {
+  @Test
+  fun queryStateDelegatesToMihomoConfigsMode() = runTest {
+    val api =
+      DesktopMihomoApi(
+        DesktopMihomoEndpoint("127.0.0.1:9090"),
+        createTabbyHttpClient(
+          MockEngine {
+            respond("""{"mode":"global"}""", HttpStatusCode.OK, headers = JSON_HEADERS)
+          }
+        ),
+      )
+    val controller = DesktopEngineController(mihomoApi = api)
+
+    val state = controller.queryState()
+
+    assertEquals(TunnelState(TunnelState.Mode.Global), state)
+    assertEquals(state, controller.state.value)
+  }
+
   @Test
   fun queryTrafficDelegatesToMihomoTrafficStream() = runTest {
     val api =

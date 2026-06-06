@@ -14,6 +14,8 @@ interface EngineController {
 
   suspend fun stop()
 
+  suspend fun queryState(): TunnelState
+
   suspend fun queryTraffic(): Traffic
 
   suspend fun queryProviders(): List<Provider>

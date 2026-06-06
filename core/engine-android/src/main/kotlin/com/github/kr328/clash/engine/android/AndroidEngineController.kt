@@ -46,6 +46,10 @@ class AndroidEngineController(
     context.stopClashService()
   }
 
+  override suspend fun queryState(): TunnelState {
+    return withClash { queryTunnelState() }
+  }
+
   override suspend fun queryTraffic(): Traffic {
     return withClash { queryTrafficTotal() }
   }
@@ -90,7 +94,7 @@ class AndroidEngineController(
   }
 
   private suspend fun refreshState() {
-    runCatching { withClash { queryTunnelState() } }.onSuccess { _state.value = it }
+    runCatching { queryState() }.onSuccess { _state.value = it }
   }
 }
 

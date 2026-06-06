@@ -23,6 +23,10 @@ class IosEngineController : EngineController {
     unsupported()
   }
 
+  override suspend fun queryState(): TunnelState {
+    unsupported()
+  }
+
   override suspend fun queryTraffic(): Traffic {
     unsupported()
   }

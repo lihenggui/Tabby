@@ -26,6 +26,12 @@ class DesktopEngineController(
     (mihomoProcess ?: unsupported()).stop()
   }
 
+  override suspend fun queryState(): TunnelState {
+    val state = TunnelState((mihomoApi ?: unsupported()).queryMode() ?: TunnelState.Mode.Rule)
+    _state.value = state
+    return state
+  }
+
   override suspend fun queryTraffic(): Traffic {
     return (mihomoApi ?: unsupported()).queryTraffic()
   }

@@ -16,7 +16,6 @@ import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
-import com.github.kr328.clash.glue.util.withClash
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -89,7 +88,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   private fun fetch() {
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
-      val state = withClash { queryTunnelState() }
+      val state = engineController.queryState()
       val providers = engineController.queryProviders()
       val mode =
         when (state.mode) {
