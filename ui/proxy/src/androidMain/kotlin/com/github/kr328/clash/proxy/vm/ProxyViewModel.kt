@@ -21,6 +21,8 @@ import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
+import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
+import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
@@ -31,6 +33,7 @@ import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxySortChangeAction
+import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
@@ -41,7 +44,6 @@ import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
 import com.github.kr328.clash.proxy.ui.withProxySelectionRefreshed
 import com.github.kr328.clash.proxy.ui.withSelectedProxy
-import com.github.kr328.clash.proxy.ui.withUrlTestStarted
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -159,18 +161,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onUrlTest(index: Int) {
-    val groupName =
-      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
-        is ProxyGroupSelectionAction.SelectGroup -> action.name
-        ProxyGroupSelectionAction.Ignore -> return
-      }
-
-    updateGroupState(index) { it.withUrlTestStarted() }
-
-    viewModelScope.launch {
-      engineController.healthCheck(groupName)
-      reload(index)
-    }
+    applyProxyUrlTestAction { proxyUrlTestAction(it, index) }
   }
 
   fun onProxySelected(index: Int, name: String) {
@@ -267,6 +258,27 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         eventState.value = ProxyEventState.ShowModeSwitchTips
         viewModelScope.launch { engineController.patchSessionMode(effect.mode) }
       }
+    }
+  }
+
+  private fun applyProxyUrlTestAction(action: (ProxyUiState) -> ProxyUrlTestAction) {
+    var effect: ProxyUrlTestEffect? = null
+    uiState.update { current ->
+      val change = action(current)
+      effect = change.effect
+      change.state
+    }
+    applyProxyUrlTestEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyUrlTestEffect(effect: ProxyUrlTestEffect) {
+    when (effect) {
+      is ProxyUrlTestEffect.StartUrlTest ->
+        viewModelScope.launch {
+          engineController.healthCheck(effect.groupName)
+          reload(effect.index)
+        }
+      ProxyUrlTestEffect.Ignore -> Unit
     }
   }
 

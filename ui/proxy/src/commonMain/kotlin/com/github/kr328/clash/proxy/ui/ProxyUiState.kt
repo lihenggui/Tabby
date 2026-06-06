@@ -126,6 +126,17 @@ internal sealed interface ProxyOverrideModeEffect {
   data class ShowTipsAndPatchMode(val mode: TunnelState.Mode?) : ProxyOverrideModeEffect
 }
 
+internal data class ProxyUrlTestAction(
+  val state: ProxyUiState,
+  val effect: ProxyUrlTestEffect,
+)
+
+internal sealed interface ProxyUrlTestEffect {
+  data class StartUrlTest(val index: Int, val groupName: String) : ProxyUrlTestEffect
+
+  data object Ignore : ProxyUrlTestEffect
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -232,6 +243,28 @@ internal fun proxyOverrideModeAction(
     state = state.withOverrideMode(mode),
     effect = ProxyOverrideModeEffect.ShowTipsAndPatchMode(mode),
   )
+}
+
+internal fun proxyUrlTestAction(
+  state: ProxyUiState,
+  index: Int,
+): ProxyUrlTestAction {
+  return when (val selection = proxyGroupSelectionAction(state.groupNames, index)) {
+    is ProxyGroupSelectionAction.SelectGroup ->
+      ProxyUrlTestAction(
+        state = state.withProxyGroupState(index) { it.withUrlTestStarted() },
+        effect =
+          ProxyUrlTestEffect.StartUrlTest(
+            index = index,
+            groupName = selection.name,
+          ),
+      )
+    ProxyGroupSelectionAction.Ignore ->
+      ProxyUrlTestAction(
+        state = state,
+        effect = ProxyUrlTestEffect.Ignore,
+      )
+  }
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

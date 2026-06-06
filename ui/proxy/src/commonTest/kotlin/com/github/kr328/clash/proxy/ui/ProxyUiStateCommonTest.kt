@@ -262,6 +262,55 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyUrlTestActionStartsUrlTestForGroupIndex() {
+    val action =
+      proxyUrlTestAction(
+        state =
+          ProxyUiState(
+            groupNames = listOf("Proxy", "Auto"),
+            groups = listOf(ProxyGroupUiState(), ProxyGroupUiState()),
+          ),
+        index = 1,
+      )
+
+    assertEquals(false, action.state.groups[0].urlTesting)
+    assertEquals(true, action.state.groups[1].urlTesting)
+    assertEquals(
+      ProxyUrlTestEffect.StartUrlTest(index = 1, groupName = "Auto"),
+      action.effect,
+    )
+  }
+
+  @Test
+  fun proxyUrlTestActionIgnoresMissingGroupIndex() {
+    val state =
+      ProxyUiState(
+        groupNames = listOf("Proxy"),
+        groups = listOf(ProxyGroupUiState()),
+      )
+    val action = proxyUrlTestAction(state, index = 1)
+
+    assertSame(state, action.state)
+    assertEquals(ProxyUrlTestEffect.Ignore, action.effect)
+  }
+
+  @Test
+  fun proxyUrlTestActionStartsEffectWhenGroupStateIsMissing() {
+    val state =
+      ProxyUiState(
+        groupNames = listOf("Proxy"),
+        groups = emptyList(),
+      )
+    val action = proxyUrlTestAction(state, index = 0)
+
+    assertSame(state, action.state)
+    assertEquals(
+      ProxyUrlTestEffect.StartUrlTest(index = 0, groupName = "Proxy"),
+      action.effect,
+    )
+  }
+
+  @Test
   fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
     assertEquals(
       ProxyGroupSelectionAction.SelectGroup("Auto"),
