@@ -1,6 +1,7 @@
 package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.Profile
+import kotlin.uuid.Uuid
 
 internal data class NewProfileUiState<T>(val providers: List<T> = emptyList())
 
@@ -35,6 +36,25 @@ internal sealed interface NewProfileProviderSelectionAction<out T> {
   data class SelectProvider<T>(val provider: T) : NewProfileProviderSelectionAction<T>
 
   data object Ignore : NewProfileProviderSelectionAction<Nothing>
+}
+
+internal sealed interface NewProfileEventState<out ExternalProviderT, out AppSettingsTargetT> {
+  data object Idle : NewProfileEventState<Nothing, Nothing>
+
+  data object LaunchQRScanner : NewProfileEventState<Nothing, Nothing>
+
+  data class LaunchExternalProvider<out ExternalProviderT>(
+    val externalProvider: ExternalProviderT
+  ) : NewProfileEventState<ExternalProviderT, Nothing>
+
+  data class LaunchProperties(val uuid: Uuid) : NewProfileEventState<Nothing, Nothing>
+
+  data class OpenAppSettings<out AppSettingsTargetT>(val target: AppSettingsTargetT) :
+    NewProfileEventState<Nothing, AppSettingsTargetT>
+
+  data class ShowMessage(val message: String) : NewProfileEventState<Nothing, Nothing>
+
+  data object Finish : NewProfileEventState<Nothing, Nothing>
 }
 
 internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCreateAction {
@@ -87,4 +107,11 @@ internal fun <T> NewProfileUiState<T>.withNewProfileProviders(
   providers: List<T>
 ): NewProfileUiState<T> {
   return copy(providers = providers)
+}
+
+internal fun newProfileErrorEventState(
+  message: String?,
+  unknownMessage: String,
+): NewProfileEventState<Nothing, Nothing> {
+  return NewProfileEventState.ShowMessage(message ?: unknownMessage)
 }

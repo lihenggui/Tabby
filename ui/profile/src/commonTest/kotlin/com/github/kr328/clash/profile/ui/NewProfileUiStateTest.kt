@@ -4,6 +4,7 @@ import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class NewProfileUiStateTest {
   @Test
@@ -175,6 +176,35 @@ class NewProfileUiStateTest {
       ) { provider ->
         provider.takeIf { it.detail }
       },
+    )
+  }
+
+  @Test
+  fun eventStateCarriesPlatformPayloadsAsGenericValues() {
+    val externalProvider = "external-provider-intent"
+    val appSettingsTarget = "package:com.example.provider"
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+    val launchExternalEvent: NewProfileEventState<String, String> =
+      NewProfileEventState.LaunchExternalProvider(externalProvider)
+    val openAppSettingsEvent: NewProfileEventState<String, String> =
+      NewProfileEventState.OpenAppSettings(appSettingsTarget)
+    val launchPropertiesEvent: NewProfileEventState<String, String> =
+      NewProfileEventState.LaunchProperties(uuid)
+
+    assertEquals(NewProfileEventState.LaunchExternalProvider(externalProvider), launchExternalEvent)
+    assertEquals(NewProfileEventState.OpenAppSettings(appSettingsTarget), openAppSettingsEvent)
+    assertEquals(NewProfileEventState.LaunchProperties(uuid), launchPropertiesEvent)
+  }
+
+  @Test
+  fun errorEventStateFallsBackToUnknownMessage() {
+    assertEquals(
+      NewProfileEventState.ShowMessage("create failed"),
+      newProfileErrorEventState("create failed", "Unknown error"),
+    )
+    assertEquals(
+      NewProfileEventState.ShowMessage("Unknown error"),
+      newProfileErrorEventState(null, "Unknown error"),
     )
   }
 

@@ -63,16 +63,17 @@ internal fun NewProfileScreen(
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
-      Idle -> Unit
-      LaunchQRScanner -> qrLauncher.launch(null)
-      is LaunchExternalProvider -> externalProviderLauncher.launch(event.intent)
-      is LaunchProperties -> onProperties(event.uuid)
-      is OpenAppSettings ->
+      NewProfileEventState.Idle -> Unit
+      NewProfileEventState.LaunchQRScanner -> qrLauncher.launch(null)
+      is NewProfileEventState.LaunchExternalProvider ->
+        externalProviderLauncher.launch(event.externalProvider)
+      is NewProfileEventState.LaunchProperties -> onProperties(event.uuid)
+      is NewProfileEventState.OpenAppSettings ->
         context.startActivity(
-          Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(event.uri)
+          Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(event.target)
         )
-      is ShowMessage -> snackbarHostState.showSnackbar(message = event.message)
-      Finish -> onFinish()
+      is NewProfileEventState.ShowMessage -> snackbarHostState.showSnackbar(message = event.message)
+      NewProfileEventState.Finish -> onFinish()
     }
     viewModel.consumeEvent()
   }

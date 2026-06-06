@@ -17,17 +17,18 @@ import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileDetailAction
+import com.github.kr328.clash.profile.ui.NewProfileEventState
 import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.newProfileDetailAction
+import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
-import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,24 +42,25 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   val uiState: StateFlow<NewProfileUiState<ProfileProvider>>
     field = MutableStateFlow(NewProfileUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<NewProfileEventState<Intent, Uri>>
+    field = MutableStateFlow<NewProfileEventState<Intent, Uri>>(NewProfileEventState.Idle)
 
   init {
     loadProviders()
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = NewProfileEventState.Idle
   }
 
   fun onCreate(provider: ProfileProvider) {
     when (val action = newProfileCreateAction(provider.kind)) {
       is NewProfileCreateAction.CreateProfile -> createProfile(action.type)
-      NewProfileCreateAction.LaunchQRScanner -> eventState.value = EventState.LaunchQRScanner
+      NewProfileCreateAction.LaunchQRScanner ->
+        eventState.value = NewProfileEventState.LaunchQRScanner
       NewProfileCreateAction.LaunchExternalProvider -> {
         val externalProvider = provider as ProfileProvider.External
-        eventState.value = EventState.LaunchExternalProvider(externalProvider.intent)
+        eventState.value = NewProfileEventState.LaunchExternalProvider(externalProvider.intent)
       }
     }
   }
@@ -67,7 +69,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     when (val action = newProfileDetailAction(provider.intent.component?.packageName)) {
       is NewProfileDetailAction.OpenAppSettings -> {
         val uri = Uri.fromParts("package", action.packageName, null)
-        eventState.value = EventState.OpenAppSettings(uri)
+        eventState.value = NewProfileEventState.OpenAppSettings(uri)
       }
       NewProfileDetailAction.Ignore -> Unit
     }
@@ -88,11 +90,11 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
             val profileName = application.getString(CommonR.string.new_profile)
             val uuid =
               profileRepository.create(External, action.name ?: profileName, uri.toString())
-            eventState.value = EventState.LaunchProperties(uuid)
+            eventState.value = NewProfileEventState.LaunchProperties(uuid)
           } catch (e: Exception) {
             Log.e("Create external profile failed: ${e.message}", e)
             eventState.value =
-              EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+              newProfileErrorEventState(e.message, application.getString(CommonR.string.unknown))
           }
         }
       }
@@ -124,21 +126,23 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
                 name = application.getString(CommonR.string.new_profile),
                 source = action.source,
               )
-            eventState.value = EventState.LaunchProperties(uuid)
+            eventState.value = NewProfileEventState.LaunchProperties(uuid)
           } catch (e: Exception) {
             Log.e("Create QR profile failed: ${e.message}", e)
             eventState.value =
-              EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+              newProfileErrorEventState(e.message, application.getString(CommonR.string.unknown))
           }
         }
       }
       ProfileQrAction.Ignore -> Unit
       ProfileQrAction.ShowMissingPermission ->
         eventState.value =
-          EventState.ShowMessage(application.getString(R.string.import_from_qr_no_permission))
+          NewProfileEventState.ShowMessage(
+            application.getString(R.string.import_from_qr_no_permission)
+          )
       ProfileQrAction.ShowScanError ->
         eventState.value =
-          EventState.ShowMessage(application.getString(R.string.import_from_qr_exception))
+          NewProfileEventState.ShowMessage(application.getString(R.string.import_from_qr_exception))
     }
   }
 
@@ -147,11 +151,11 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
       try {
         val name = application.getString(CommonR.string.new_profile)
         val uuid = profileRepository.create(type, name)
-        eventState.value = EventState.LaunchProperties(uuid)
+        eventState.value = NewProfileEventState.LaunchProperties(uuid)
       } catch (e: Exception) {
         Log.e("Create profile failed: ${e.message}", e)
         eventState.value =
-          EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+          newProfileErrorEventState(e.message, application.getString(CommonR.string.unknown))
       }
     }
   }
@@ -182,21 +186,5 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
         }
       uiState.update { it.withNewProfileProviders(providers) }
     }
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data object LaunchQRScanner : EventState
-
-    data class LaunchExternalProvider(val intent: Intent) : EventState
-
-    data class LaunchProperties(val uuid: Uuid) : EventState
-
-    data class OpenAppSettings(val uri: Uri) : EventState
-
-    data class ShowMessage(val message: String) : EventState
-
-    data object Finish : EventState
   }
 }
