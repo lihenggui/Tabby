@@ -11,6 +11,7 @@ import com.github.kr328.clash.glue.util.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.api.HelpApi
 import com.github.kr328.clash.home.ui.HelpContentState
+import com.github.kr328.clash.home.ui.formatAppVersionInfo
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
 import com.github.kr328.clash.home.ui.withVersionInfo
@@ -79,7 +80,10 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
       val (appVersion, coreVersion) =
         withContext(Dispatchers.IO) {
           val pkgInfo = application.packageManager.getPackageInfo(application.packageName, 0)
-          "${pkgInfo.versionName} - ${appInfoProvider.buildCommit}" to Bridge.nativeCoreVersion()
+          formatAppVersionInfo(
+            versionName = pkgInfo.versionName,
+            buildCommit = appInfoProvider.buildCommit,
+          ) to Bridge.nativeCoreVersion()
         }
 
       uiState.update { it.withVersionInfo(appVersion = appVersion, coreVersion = coreVersion) }

@@ -54,6 +54,10 @@ internal fun HelpContentState.withVersionInfo(
   return copy(appVersion = appVersion, coreVersion = coreVersion)
 }
 
+internal fun formatAppVersionInfo(versionName: String?, buildCommit: String): String {
+  return "$versionName - $buildCommit"
+}
+
 @Composable
 internal fun HelpContent(
   uiState: HelpContentState,

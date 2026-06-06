@@ -28,4 +28,20 @@ class HelpContentStateTest {
     assertEquals("2.0.0 - abc123", state.appVersion)
     assertEquals("Meta 2.0", state.coreVersion)
   }
+
+  @Test
+  fun appVersionInfoIncludesBuildCommit() {
+    assertEquals(
+      "1.2.3 - abc123",
+      formatAppVersionInfo(versionName = "1.2.3", buildCommit = "abc123"),
+    )
+  }
+
+  @Test
+  fun appVersionInfoPreservesNullVersionNameDisplay() {
+    assertEquals(
+      "null - abc123",
+      formatAppVersionInfo(versionName = null, buildCommit = "abc123"),
+    )
+  }
 }
