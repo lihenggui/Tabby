@@ -26,18 +26,20 @@ import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
 import com.github.kr328.clash.settings.ui.AccessControlSettingsState
+import com.github.kr328.clash.settings.ui.AccessControlUiState
 import com.github.kr328.clash.settings.ui.exportAccessControlPackages
 import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
-import com.github.kr328.clash.settings.ui.importAccessControlPackages
-import com.github.kr328.clash.settings.ui.invertAccessControlPackages
-import com.github.kr328.clash.settings.ui.selectAllAccessControlPackages
-import com.github.kr328.clash.settings.ui.selectNoAccessControlPackages
 import com.github.kr328.clash.settings.ui.sortAccessControlApps
-import com.github.kr328.clash.settings.ui.toggleAccessControlSelectedPackage
-import com.github.kr328.clash.settings.ui.updateAccessControlReverse
-import com.github.kr328.clash.settings.ui.updateAccessControlSelectedPackages
-import com.github.kr328.clash.settings.ui.updateAccessControlShowSystemApps
-import com.github.kr328.clash.settings.ui.updateAccessControlSort
+import com.github.kr328.clash.settings.ui.withAccessControlApps
+import com.github.kr328.clash.settings.ui.withAccessControlReverse
+import com.github.kr328.clash.settings.ui.withAccessControlSelectedPackages
+import com.github.kr328.clash.settings.ui.withAccessControlShowSystemApps
+import com.github.kr328.clash.settings.ui.withAccessControlSort
+import com.github.kr328.clash.settings.ui.withAllAccessControlPackages
+import com.github.kr328.clash.settings.ui.withImportedAccessControlPackages
+import com.github.kr328.clash.settings.ui.withInvertedAccessControlPackages
+import com.github.kr328.clash.settings.ui.withNoAccessControlPackages
+import com.github.kr328.clash.settings.ui.withToggledAccessControlPackage
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,10 +58,10 @@ internal class AccessControlViewModel(app: Application) :
   private val serviceStore = ServiceStore(app)
   private var reloadAppsJob: Job? = null
 
-  val uiState: StateFlow<UiState>
+  val uiState: StateFlow<AccessControlUiState<AppInfo>>
     field =
       MutableStateFlow(
-        UiState(
+        AccessControlUiState(
           apps = emptyList(),
           settings =
             AccessControlSettingsState(
@@ -76,9 +78,7 @@ internal class AccessControlViewModel(app: Application) :
   init {
     viewModelScope.launch {
       val selected = withContext(Dispatchers.IO) { serviceStore.accessControlPackages }
-      uiState.update {
-        it.copy(settings = updateAccessControlSelectedPackages(it.settings, selected))
-      }
+      uiState.update { it.withAccessControlSelectedPackages(selected) }
       reloadApps()
     }
   }
@@ -113,9 +113,7 @@ internal class AccessControlViewModel(app: Application) :
   }
 
   override fun toggleApp(packageName: String) {
-    uiState.update { state ->
-      state.copy(settings = toggleAccessControlSelectedPackage(state.settings, packageName))
-    }
+    uiState.update { state -> state.withToggledAccessControlPackage(packageName) }
   }
 
   override fun selectAll() {
@@ -123,17 +121,14 @@ internal class AccessControlViewModel(app: Application) :
       val all =
         withContext(Dispatchers.Default) {
           val state = uiState.value
-          selectAllAccessControlPackages(
-            state = state.settings,
-            packageNames = state.apps.map(AppInfo::packageName),
-          )
+          state.withAllAccessControlPackages(packageNames = state.apps.map(AppInfo::packageName))
         }
-      uiState.update { it.copy(settings = all) }
+      uiState.update { all }
     }
   }
 
   override fun selectNone() {
-    uiState.update { it.copy(settings = selectNoAccessControlPackages(it.settings)) }
+    uiState.update { it.withNoAccessControlPackages() }
   }
 
   override fun selectInvert() {
@@ -141,12 +136,11 @@ internal class AccessControlViewModel(app: Application) :
       val selected =
         withContext(Dispatchers.Default) {
           val state = uiState.value
-          invertAccessControlPackages(
-            state = state.settings,
-            packageNames = state.apps.map(AppInfo::packageName),
+          state.withInvertedAccessControlPackages(
+            packageNames = state.apps.map(AppInfo::packageName)
           )
         }
-      uiState.update { it.copy(settings = selected) }
+      uiState.update { selected }
     }
   }
 
@@ -157,12 +151,11 @@ internal class AccessControlViewModel(app: Application) :
     if (data != null && data.itemCount > 0) {
       val state = uiState.value
       val selected =
-        importAccessControlPackages(
-          state = state.settings,
+        state.withImportedAccessControlPackages(
           clipboardText = data.getItemAt(0).text?.toString(),
           installedPackageNames = state.apps.map(AppInfo::packageName),
         )
-      uiState.update { it.copy(settings = selected) }
+      uiState.update { selected }
     }
   }
 
@@ -178,19 +171,19 @@ internal class AccessControlViewModel(app: Application) :
 
   override fun updateSort(sort: AccessControlSort) {
     uiStore.accessControlSort = sort
-    uiState.update { it.copy(settings = updateAccessControlSort(it.settings, sort)) }
+    uiState.update { it.withAccessControlSort(sort) }
     reloadApps()
   }
 
   override fun updateReverse(reverse: Boolean) {
     uiStore.accessControlReverse = reverse
-    uiState.update { it.copy(settings = updateAccessControlReverse(it.settings, reverse)) }
+    uiState.update { it.withAccessControlReverse(reverse) }
     reloadApps()
   }
 
   override fun updateShowSystemApps(show: Boolean) {
     uiStore.accessControlSystemApp = show
-    uiState.update { it.copy(settings = updateAccessControlShowSystemApps(it.settings, show)) }
+    uiState.update { it.withAccessControlShowSystemApps(show) }
     reloadApps()
   }
 
@@ -206,7 +199,7 @@ internal class AccessControlViewModel(app: Application) :
           showSystemApps = state.showSystemApps,
         )
 
-      uiState.update { it.copy(apps = apps) }
+      uiState.update { it.withAccessControlApps(apps) }
     }
   }
 
@@ -251,11 +244,6 @@ internal class AccessControlViewModel(app: Application) :
 
   private val PackageInfo.isSystemApp: Boolean
     get() = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-
-  data class UiState(
-    val apps: List<AppInfo>,
-    val settings: AccessControlSettingsState,
-  )
 }
 
 private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {

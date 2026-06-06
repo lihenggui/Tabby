@@ -392,6 +392,75 @@ class AccessControlSelectionTest {
     )
   }
 
+  @Test
+  fun accessControlUiStateUpdatesAppsAndPreservesSettings() {
+    val settings = accessControlSettingsState(selected = setOf("com.example.alpha"))
+    val apps = listOf(accessControlApp(packageName = "com.example.alpha"))
+    val updated =
+      AccessControlUiState<TestAccessControlApp>(apps = emptyList(), settings = settings)
+        .withAccessControlApps(apps)
+
+    assertEquals(apps, updated.apps)
+    assertEquals(settings, updated.settings)
+  }
+
+  @Test
+  fun accessControlUiStateReducersUpdateSettingsAndPreserveApps() {
+    val apps =
+      listOf(
+        accessControlApp(packageName = "com.example.alpha"),
+        accessControlApp(packageName = "com.example.beta"),
+      )
+    val state =
+      AccessControlUiState(
+        apps = apps,
+        settings = accessControlSettingsState(selected = setOf("com.example.alpha")),
+      )
+
+    val selectedUpdated =
+      state.withAccessControlSelectedPackages(setOf("com.example.beta", "com.example.missing"))
+    val toggled = state.withToggledAccessControlPackage("com.example.beta")
+    val selectedAll =
+      state.withAllAccessControlPackages(apps.map(TestAccessControlApp::packageName))
+    val selectedNone = state.withNoAccessControlPackages()
+    val inverted =
+      state.withInvertedAccessControlPackages(apps.map(TestAccessControlApp::packageName))
+    val imported =
+      state.withImportedAccessControlPackages(
+        clipboardText = "com.example.beta\ncom.example.missing",
+        installedPackageNames = apps.map(TestAccessControlApp::packageName),
+      )
+    val sortUpdated = state.withAccessControlSort(AccessControlSort.UpdateTime)
+    val reverseUpdated = state.withAccessControlReverse(true)
+    val showSystemAppsUpdated = state.withAccessControlShowSystemApps(true)
+
+    assertEquals(apps, selectedUpdated.apps)
+    assertEquals(
+      setOf("com.example.beta", "com.example.missing"),
+      selectedUpdated.settings.selected,
+    )
+    assertEquals(setOf("com.example.alpha", "com.example.beta"), toggled.settings.selected)
+    assertEquals(setOf("com.example.alpha", "com.example.beta"), selectedAll.settings.selected)
+    assertEquals(emptySet(), selectedNone.settings.selected)
+    assertEquals(setOf("com.example.beta"), inverted.settings.selected)
+    assertEquals(setOf("com.example.beta"), imported.settings.selected)
+    assertEquals(AccessControlSort.UpdateTime, sortUpdated.settings.sort)
+    assertEquals(true, reverseUpdated.settings.reverse)
+    assertEquals(true, showSystemAppsUpdated.settings.showSystemApps)
+
+    listOf(
+        toggled,
+        selectedAll,
+        selectedNone,
+        inverted,
+        imported,
+        sortUpdated,
+        reverseUpdated,
+        showSystemAppsUpdated,
+      )
+      .forEach { assertEquals(apps, it.apps) }
+  }
+
   private fun accessControlSettingsState(
     selected: Set<String> = setOf("com.example.alpha")
   ): AccessControlSettingsState {
