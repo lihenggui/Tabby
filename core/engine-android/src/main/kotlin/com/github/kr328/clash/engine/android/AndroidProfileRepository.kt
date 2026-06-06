@@ -26,6 +26,10 @@ class AndroidProfileRepository : ProfileRepository {
       }
       .flowOn(Dispatchers.IO)
 
+  override suspend fun queryActive(): Profile? {
+    return withProfile { queryActive() }
+  }
+
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid {
     return withProfile { create(type, name, source) }
   }

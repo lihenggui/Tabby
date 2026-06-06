@@ -65,11 +65,13 @@ class DesktopProfileRepositoryTest {
       assertEquals(false, importedProfile.pending)
       assertEquals(1, validator.configFiles.size)
       assertTrue(home.resolve("profiles/imported/$uuid/config.yaml").isRegularFile())
+      assertEquals(null, repository.queryActive())
 
       repository.setActive(importedProfile)
       val activeProfile = repository.observeProfiles().first().single()
 
       assertTrue(activeProfile.active)
+      assertEquals(uuid, repository.queryActive()?.uuid)
       assertEquals(uuid.toString(), home.resolve("active-profile").readText())
       assertTrue(home.resolve("config.yaml").isRegularFile())
       assertEquals("proxies: []", home.resolve(proxyCache).readText())
@@ -248,6 +250,7 @@ class DesktopProfileRepositoryTest {
       repository.delete(uuid)
 
       assertEquals(emptyList(), repository.observeProfiles().first())
+      assertEquals(null, repository.queryActive())
       assertEquals(false, home.resolve("active-profile").isRegularFile())
       assertEquals(false, home.resolve("config.yaml").isRegularFile())
     }

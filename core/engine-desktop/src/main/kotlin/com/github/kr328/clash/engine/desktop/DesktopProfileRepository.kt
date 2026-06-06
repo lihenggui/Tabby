@@ -56,6 +56,9 @@ class DesktopProfileRepository(
     return profiles.asStateFlow()
   }
 
+  override suspend fun queryActive(): Profile? =
+    withContext(Dispatchers.IO) { lock.withLock { readActiveProfileUuid()?.let(::resolveProfile) } }
+
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid =
     withContext(Dispatchers.IO) {
       lock.withLock {

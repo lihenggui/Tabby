@@ -11,6 +11,10 @@ class IosProfileRepository : ProfileRepository {
     return flowOf(emptyList())
   }
 
+  override suspend fun queryActive(): Profile? {
+    return null
+  }
+
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid {
     unsupported()
   }

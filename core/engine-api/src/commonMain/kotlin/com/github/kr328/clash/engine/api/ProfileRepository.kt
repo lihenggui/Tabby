@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface ProfileRepository {
   fun observeProfiles(): Flow<List<Profile>>
 
+  suspend fun queryActive(): Profile?
+
   suspend fun create(type: Profile.Type, name: String, source: String = ""): Uuid
 
   suspend fun clone(uuid: Uuid): Uuid

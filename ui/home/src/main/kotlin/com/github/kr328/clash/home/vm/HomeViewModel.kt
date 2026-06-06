@@ -10,11 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.util.trafficTotal
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
+import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
-import com.github.kr328.clash.glue.util.startClashService
-import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.glue.util.withClash
-import com.github.kr328.clash.glue.util.withProfile
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +27,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultLifecycleObserver {
+  private val engineController: EngineController = AndroidEngineController(app)
+  private val profileRepository: ProfileRepository = AndroidProfileRepository()
   private var broadcastEventsJob: Job? = null
   private var trafficPollingJob: Job? = null
   private var fetchJob: Job? = null
@@ -68,14 +72,14 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 
   fun toggleStatus() {
     if (clashRunning.value) {
-      application.stopClashService()
+      viewModelScope.launch { engineController.stop() }
     } else {
       startClash()
     }
   }
 
   fun onVpnPermissionGranted() {
-    application.startClashService()
+    viewModelScope.launch { startEngine() }
   }
 
   fun consumeEvent() {
@@ -93,7 +97,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
           Global -> application.getString(CommonR.string.global_mode)
           Rule -> application.getString(CommonR.string.rule_mode)
         }
-      val profileName = withProfile { queryActive()?.name }
+      val profileName = profileRepository.queryActive()?.name
 
       uiState.update {
         it.copy(
@@ -111,7 +115,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
       while (isActive) {
         delay(1.seconds)
         if (clashRunning.value) {
-          val total = withClash { queryTrafficTotal() }
+          val total = engineController.queryTraffic()
           uiState.update { it.copy(forwarded = total.trafficTotal()) }
         }
       }
@@ -120,23 +124,26 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 
   private fun startClash() {
     viewModelScope.launch {
-      val active = withProfile { queryActive() }
+      val active = profileRepository.queryActive()
 
       if (active == null || !active.imported) {
         eventState.value = EventState.ShowNoProfileMessage
         return@launch
       }
 
-      try {
-        val vpnRequest = application.startClashService()
-        if (vpnRequest != null) {
-          eventState.value = EventState.RequestVpnPermission(vpnRequest)
-        }
-      } catch (e: Exception) {
-        Log.e("Start clash service failed: ${e.message}", e)
-        eventState.value =
-          EventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
-      }
+      startEngine()
+    }
+  }
+
+  private suspend fun startEngine() {
+    try {
+      engineController.start()
+    } catch (e: VpnPermissionRequiredException) {
+      eventState.value = EventState.RequestVpnPermission(e.prepareIntent)
+    } catch (e: Exception) {
+      Log.e("Start clash service failed: ${e.message}", e)
+      eventState.value =
+        EventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
     }
   }
 
