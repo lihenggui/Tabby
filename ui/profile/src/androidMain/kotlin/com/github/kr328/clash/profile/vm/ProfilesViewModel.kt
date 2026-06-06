@@ -10,13 +10,17 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
+import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProfileActivationAction.Activate
 import com.github.kr328.clash.profile.ui.ProfileActivationAction.RequireSave
+import com.github.kr328.clash.profile.ui.ProfilesBroadcastAction
+import com.github.kr328.clash.profile.ui.ProfilesBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProfilesUiState
 import com.github.kr328.clash.profile.ui.filterUpdatableProfiles
 import com.github.kr328.clash.profile.ui.profileActivationAction
+import com.github.kr328.clash.profile.ui.profilesBroadcastAction
 import com.github.kr328.clash.profile.ui.withAllUpdating
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withProfiles
@@ -47,18 +51,12 @@ internal class ProfilesViewModel(app: Application) :
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (event) {
-          ServiceRecreated,
-          Started,
-          ProfileChanged,
-          ProfileLoaded -> fetch()
-          is Stopped -> Unit
-          is ProfileUpdateCompleted -> {
-            event.uuid?.let { uuid -> showProfileUpdateCompleted(uuid) }
-          }
-          is ProfileUpdateFailed -> {
-            event.uuid?.let { uuid -> showProfileUpdateFailed(uuid, event.reason) }
-          }
+        when (val action = event.toProfilesBroadcastAction()) {
+          ProfilesBroadcastAction.FetchProfiles -> fetch()
+          ProfilesBroadcastAction.Ignore -> Unit
+          is ProfilesBroadcastAction.ShowUpdateCompleted -> showProfileUpdateCompleted(action.uuid)
+          is ProfilesBroadcastAction.ShowUpdateFailed ->
+            showProfileUpdateFailed(action.uuid, action.reason)
         }
       }
     }
@@ -178,5 +176,26 @@ internal class ProfilesViewModel(app: Application) :
     data class ShowMessage(val message: String) : EventState
 
     data class ShowEditableMessage(val message: String, val uuid: Uuid) : EventState
+  }
+
+  private fun Broadcasts.Event.toProfilesBroadcastAction(): ProfilesBroadcastAction {
+    return when (this) {
+      Broadcasts.Event.ServiceRecreated ->
+        profilesBroadcastAction(ProfilesBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started -> profilesBroadcastAction(ProfilesBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped -> profilesBroadcastAction(ProfilesBroadcastEventKind.Stopped)
+      Broadcasts.Event.ProfileChanged ->
+        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileChanged)
+      is Broadcasts.Event.ProfileUpdateCompleted ->
+        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid)
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        profilesBroadcastAction(
+          ProfilesBroadcastEventKind.ProfileUpdateFailed,
+          uuid = uuid,
+          reason = reason,
+        )
+      Broadcasts.Event.ProfileLoaded ->
+        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileLoaded)
+    }
   }
 }

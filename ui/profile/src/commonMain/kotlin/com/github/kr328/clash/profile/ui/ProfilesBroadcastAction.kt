@@ -1,0 +1,42 @@
+package com.github.kr328.clash.profile.ui
+
+import kotlin.uuid.Uuid
+
+internal enum class ProfilesBroadcastEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
+internal sealed interface ProfilesBroadcastAction {
+  data object FetchProfiles : ProfilesBroadcastAction
+
+  data class ShowUpdateCompleted(val uuid: Uuid) : ProfilesBroadcastAction
+
+  data class ShowUpdateFailed(val uuid: Uuid, val reason: String?) : ProfilesBroadcastAction
+
+  data object Ignore : ProfilesBroadcastAction
+}
+
+internal fun profilesBroadcastAction(
+  kind: ProfilesBroadcastEventKind,
+  uuid: Uuid? = null,
+  reason: String? = null,
+): ProfilesBroadcastAction {
+  return when (kind) {
+    ProfilesBroadcastEventKind.ServiceRecreated,
+    ProfilesBroadcastEventKind.Started,
+    ProfilesBroadcastEventKind.ProfileChanged,
+    ProfilesBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastAction.FetchProfiles
+    ProfilesBroadcastEventKind.Stopped -> ProfilesBroadcastAction.Ignore
+    ProfilesBroadcastEventKind.ProfileUpdateCompleted ->
+      uuid?.let(ProfilesBroadcastAction::ShowUpdateCompleted) ?: ProfilesBroadcastAction.Ignore
+    ProfilesBroadcastEventKind.ProfileUpdateFailed ->
+      uuid?.let { ProfilesBroadcastAction.ShowUpdateFailed(it, reason) }
+        ?: ProfilesBroadcastAction.Ignore
+  }
+}
