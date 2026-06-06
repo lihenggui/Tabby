@@ -14,6 +14,7 @@ import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
+import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -46,7 +47,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         eventState.value = EventState.Finish
         return@launch
       }
-      uiState.update { it.withConfigurationEditable(profile.type == Url) }
+      uiState.update { it.withConfigurationEditable(isProfileConfigurationEditable(profile)) }
       fetch()
     }
   }

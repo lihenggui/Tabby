@@ -1,11 +1,20 @@
 package com.github.kr328.clash.profile.ui
 
+import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class ProfileFilesUiStateTest {
+  @Test
+  fun onlyUrlProfileConfigurationIsEditable() {
+    assertTrue(isProfileConfigurationEditable(profile(type = Profile.Type.Url)))
+    assertFalse(isProfileConfigurationEditable(profile(type = Profile.Type.File)))
+    assertFalse(isProfileConfigurationEditable(profile(type = Profile.Type.External)))
+  }
+
   @Test
   fun configurationEditableUpdatePreservesFileState() {
     val files = listOf(testFile("config.yaml"))
@@ -42,6 +51,24 @@ class ProfileFilesUiStateTest {
 
   private fun testFile(name: String): TestFile {
     return TestFile(name)
+  }
+
+  private fun profile(type: Profile.Type): Profile {
+    return Profile(
+      uuid = Uuid.parse("00000000-0000-0000-0000-000000000001"),
+      name = "Profile",
+      type = type,
+      source = "",
+      active = false,
+      interval = 0,
+      upload = 0,
+      download = 0,
+      total = 0,
+      expire = 0,
+      updatedAt = 0,
+      imported = true,
+      pending = false,
+    )
   }
 
   private data class TestFile(val name: String)
