@@ -8,6 +8,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,7 @@ import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
+import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -33,7 +36,9 @@ fun PlaceholderTabbyApp(
   darkMode: DarkMode = DarkMode.Auto,
   modifier: Modifier = Modifier,
 ) {
+  val appDarkModeState = remember { mutableStateOf(darkMode) }
   val backStack = remember { tabbyInitialBackStack() }
+  LaunchedEffect(darkMode) { appDarkModeState.value = darkMode }
   val entryProvider =
     remember(engineEnvironment) {
       tabbyEntryProvider(
@@ -118,7 +123,12 @@ fun PlaceholderTabbyApp(
         settingsEntries = {
           settingsEntries {
             SettingsRouteContent(
-              appSettingsContent = { PlaceholderScreen("App settings") },
+              appSettingsContent = {
+                AppSettingsRouteContent(
+                  darkMode = appDarkModeState.value,
+                  onDarkModeChange = { appDarkModeState.value = it },
+                )
+              },
               networkSettingsContent = { onStartAccessControlList ->
                 PlaceholderScreen(
                   title = "Network settings",
@@ -150,7 +160,7 @@ fun PlaceholderTabbyApp(
     }
 
   TabbyApp(
-    darkMode = darkMode,
+    darkMode = appDarkModeState.value,
     backStack = backStack,
     entryProvider = entryProvider,
     onBack = { backStack.removeLastOrNull() },
