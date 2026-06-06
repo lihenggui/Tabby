@@ -12,12 +12,28 @@ import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
+import com.github.kr328.clash.settings.ui.updateOverrideAllowLan
+import com.github.kr328.clash.settings.ui.updateOverrideAllowOrigins
+import com.github.kr328.clash.settings.ui.updateOverrideAllowPrivateNetwork
+import com.github.kr328.clash.settings.ui.updateOverrideAuthentication
+import com.github.kr328.clash.settings.ui.updateOverrideBindAddress
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackDomain
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIp
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIpCode
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackIpcidr
 import com.github.kr328.clash.settings.ui.updateOverrideDnsNameserverPolicy
+import com.github.kr328.clash.settings.ui.updateOverrideExternalController
+import com.github.kr328.clash.settings.ui.updateOverrideExternalControllerTls
 import com.github.kr328.clash.settings.ui.updateOverrideHosts
+import com.github.kr328.clash.settings.ui.updateOverrideHttpPort
+import com.github.kr328.clash.settings.ui.updateOverrideIpv6
+import com.github.kr328.clash.settings.ui.updateOverrideLogLevel
+import com.github.kr328.clash.settings.ui.updateOverrideMixedPort
+import com.github.kr328.clash.settings.ui.updateOverrideMode
+import com.github.kr328.clash.settings.ui.updateOverrideRedirectPort
+import com.github.kr328.clash.settings.ui.updateOverrideSecret
+import com.github.kr328.clash.settings.ui.updateOverrideSocksPort
+import com.github.kr328.clash.settings.ui.updateOverrideTproxyPort
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -49,52 +65,66 @@ internal class OverrideSettingsViewModel(app: Application) :
     skipPersist = true
   }
 
-  override fun updateHttpPort(value: Int?) = configuration.update { it.copy(httpPort = value) }
+  override fun updateHttpPort(value: Int?) = configuration.update {
+    updateOverrideHttpPort(it, value)
+  }
 
-  override fun updateSocksPort(value: Int?) = configuration.update { it.copy(socksPort = value) }
+  override fun updateSocksPort(value: Int?) = configuration.update {
+    updateOverrideSocksPort(it, value)
+  }
 
   override fun updateRedirectPort(value: Int?) = configuration.update {
-    it.copy(redirectPort = value)
+    updateOverrideRedirectPort(it, value)
   }
 
-  override fun updateTproxyPort(value: Int?) = configuration.update { it.copy(tproxyPort = value) }
+  override fun updateTproxyPort(value: Int?) = configuration.update {
+    updateOverrideTproxyPort(it, value)
+  }
 
-  override fun updateMixedPort(value: Int?) = configuration.update { it.copy(mixedPort = value) }
+  override fun updateMixedPort(value: Int?) = configuration.update {
+    updateOverrideMixedPort(it, value)
+  }
 
   override fun updateAuthentication(value: List<String>?) = configuration.update {
-    it.copy(authentication = value)
+    updateOverrideAuthentication(it, value)
   }
 
-  override fun updateAllowLan(value: Boolean?) = configuration.update { it.copy(allowLan = value) }
+  override fun updateAllowLan(value: Boolean?) = configuration.update {
+    updateOverrideAllowLan(it, value)
+  }
 
-  override fun updateIpv6(value: Boolean?) = configuration.update { it.copy(ipv6 = value) }
+  override fun updateIpv6(value: Boolean?) = configuration.update { updateOverrideIpv6(it, value) }
 
   override fun updateBindAddress(value: String?) = configuration.update {
-    it.copy(bindAddress = value)
+    updateOverrideBindAddress(it, value)
   }
 
   override fun updateExternalController(value: String?) = configuration.update {
-    it.copy(externalController = value)
+    updateOverrideExternalController(it, value)
   }
 
   override fun updateExternalControllerTls(value: String?) = configuration.update {
-    it.copy(externalControllerTLS = value)
+    updateOverrideExternalControllerTls(it, value)
   }
 
   override fun updateAllowOrigins(value: List<String>?) = configuration.update {
-    it.copy(externalControllerCors = it.externalControllerCors.copy(allowOrigins = value))
+    updateOverrideAllowOrigins(it, value)
   }
 
   override fun updateAllowPrivateNetwork(value: Boolean?) = configuration.update {
-    it.copy(externalControllerCors = it.externalControllerCors.copy(allowPrivateNetwork = value))
+    updateOverrideAllowPrivateNetwork(it, value)
   }
 
-  override fun updateSecret(value: String?) = configuration.update { it.copy(secret = value) }
+  override fun updateSecret(value: String?) = configuration.update {
+    updateOverrideSecret(it, value)
+  }
 
-  override fun updateMode(value: TunnelState.Mode?) = configuration.update { it.copy(mode = value) }
+  override fun updateMode(value: TunnelState.Mode?) = configuration.update {
+    updateOverrideMode(it, value)
+  }
 
   override fun updateLogLevel(value: LogMessage.Level?) = configuration.update {
-    it.copy(logLevel = value)
+    updateOverrideLogLevel(it, value)
   }
 
   override fun updateHosts(value: Map<String, String>?) = configuration.update {
