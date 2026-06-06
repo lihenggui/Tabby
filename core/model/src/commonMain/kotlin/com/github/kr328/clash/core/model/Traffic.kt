@@ -1,7 +1,9 @@
 package com.github.kr328.clash.core.model
 
 import kotlin.jvm.JvmInline
+import kotlinx.serialization.Serializable
 
+@Serializable
 @JvmInline
 value class Traffic(val packed: Long) {
   companion object {
