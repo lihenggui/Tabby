@@ -26,6 +26,7 @@ import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.vm.NewProfileViewModel
 import com.github.kr328.clash.ui.theme.tabbyDimens
+import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanQRCode
 import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
@@ -43,7 +44,9 @@ internal fun NewProfileScreen(
   val snackbarHostState = remember { SnackbarHostState() }
 
   val qrLauncher =
-    rememberLauncherForActivityResult(ScanQRCode()) { result -> viewModel.onQRResult(result) }
+    rememberLauncherForActivityResult(ScanQRCode()) { result ->
+      viewModel.onQRResult(result.toProfileQrScanResult())
+    }
 
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
@@ -134,5 +137,19 @@ private fun rememberProfileProviderPainter(icon: Any?): Painter? {
       ?.toBitmap(width = iconSizePx, height = iconSizePx)
       ?.asImageBitmap()
       ?.let(::BitmapPainter)
+  }
+}
+
+private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
+  return when (this) {
+    is QRSuccess ->
+      ProfileQrScanResult(
+        kind = ProfileQrResultKind.Success,
+        rawValue = content.rawValue,
+        rawBytes = content.rawBytes,
+      )
+    QRUserCanceled -> ProfileQrScanResult(kind = ProfileQrResultKind.UserCanceled)
+    QRMissingPermission -> ProfileQrScanResult(kind = ProfileQrResultKind.MissingPermission)
+    is QRError -> ProfileQrScanResult(kind = ProfileQrResultKind.Error)
   }
 }

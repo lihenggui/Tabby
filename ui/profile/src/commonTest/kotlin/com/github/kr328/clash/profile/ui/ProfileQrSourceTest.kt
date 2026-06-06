@@ -56,6 +56,20 @@ class ProfileQrSourceTest {
   }
 
   @Test
+  fun qrScanResultCreatesUrlProfileFromRawPayload() {
+    assertEquals(
+      ProfileQrAction.CreateUrlProfile("https://example.com/scan-result.yaml"),
+      profileQrAction(
+        ProfileQrScanResult(
+          kind = ProfileQrResultKind.Success,
+          rawValue = null,
+          rawBytes = "https://example.com/scan-result.yaml".encodeToByteArray(),
+        )
+      ),
+    )
+  }
+
+  @Test
   fun qrUserCanceledIsIgnored() {
     assertEquals(
       ProfileQrAction.Ignore,

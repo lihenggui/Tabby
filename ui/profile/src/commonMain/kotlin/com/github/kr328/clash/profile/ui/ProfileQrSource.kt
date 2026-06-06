@@ -7,6 +7,12 @@ internal enum class ProfileQrResultKind {
   Error,
 }
 
+internal class ProfileQrScanResult(
+  val kind: ProfileQrResultKind,
+  val rawValue: String? = null,
+  val rawBytes: ByteArray? = null,
+)
+
 internal sealed interface ProfileQrAction {
   data class CreateUrlProfile(val source: String) : ProfileQrAction
 
@@ -33,4 +39,12 @@ internal fun profileQrAction(
     ProfileQrResultKind.MissingPermission -> ProfileQrAction.ShowMissingPermission
     ProfileQrResultKind.Error -> ProfileQrAction.ShowScanError
   }
+}
+
+internal fun profileQrAction(result: ProfileQrScanResult): ProfileQrAction {
+  return profileQrAction(
+    kind = result.kind,
+    rawValue = result.rawValue,
+    rawBytes = result.rawBytes,
+  )
 }

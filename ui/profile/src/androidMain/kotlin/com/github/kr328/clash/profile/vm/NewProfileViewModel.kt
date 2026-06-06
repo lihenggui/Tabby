@@ -22,7 +22,7 @@ import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.NewProfileProviderKind
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
-import com.github.kr328.clash.profile.ui.ProfileQrResultKind
+import com.github.kr328.clash.profile.ui.ProfileQrScanResult
 import com.github.kr328.clash.profile.ui.newProfileConsumedEventState
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.newProfileCreateEventState
@@ -37,7 +37,6 @@ import com.github.kr328.clash.profile.ui.newProfileProviderList
 import com.github.kr328.clash.profile.ui.newProfileQrEventState
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
-import io.github.g00fy2.quickie.QRResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -111,20 +110,8 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     }
   }
 
-  fun onQRResult(result: QRResult) {
-    val action =
-      when (result) {
-        is QRSuccess ->
-          profileQrAction(
-            kind = ProfileQrResultKind.Success,
-            rawValue = result.content.rawValue,
-            rawBytes = result.content.rawBytes,
-          )
-        QRUserCanceled -> profileQrAction(ProfileQrResultKind.UserCanceled)
-        QRMissingPermission -> profileQrAction(ProfileQrResultKind.MissingPermission)
-        is QRError -> profileQrAction(ProfileQrResultKind.Error)
-      }
-
+  fun onQRResult(result: ProfileQrScanResult) {
+    val action = profileQrAction(result)
     when (action) {
       is ProfileQrAction.CreateUrlProfile -> {
         viewModelScope.launch {
