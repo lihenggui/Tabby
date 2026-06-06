@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.crash.ui.formatAppCrashLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,18 +36,13 @@ internal class AppCrashedViewModel(app: Application) : AndroidViewModel(app) {
   private suspend fun dumpCrash(): String =
     withContext(Dispatchers.IO) {
       val process = ProcessBuilder(*crashDumpCommand).redirectErrorStream(true).start()
-      val result =
-        process.inputStream
-          .bufferedReader()
-          .readLines()
-          .filterNot { it.startsWith("------") }
-          .joinToString("\n")
+      val result = formatAppCrashLog(process.inputStream.bufferedReader().readLines())
       val exitCode = process.waitFor()
 
       if (exitCode != 0) {
-        error("logcat exited with code $exitCode: ${result.trim()}")
+        error("logcat exited with code $exitCode: $result")
       }
-      result.trim()
+      result
     }
 }
 
