@@ -61,4 +61,22 @@ class TabbyNotificationPermissionActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyNotificationPermissionGrantedFromPlatformResultMapsGrantedResultOnly() {
+    assertEquals(
+      true,
+      tabbyNotificationPermissionGrantedFromPlatformResult(
+        permissionResult = 0,
+        grantedResult = 0,
+      ),
+    )
+    assertEquals(
+      false,
+      tabbyNotificationPermissionGrantedFromPlatformResult(
+        permissionResult = -1,
+        grantedResult = 0,
+      ),
+    )
+  }
 }

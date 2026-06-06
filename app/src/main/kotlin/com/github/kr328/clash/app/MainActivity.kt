@@ -150,8 +150,10 @@ class MainActivity : ComponentActivity() {
             runtimePermissionSdkVersion = Build.VERSION_CODES.TIRAMISU,
           ),
         permissionGranted =
-          ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED,
+          tabbyNotificationPermissionGrantedFromPlatformResult(
+            permissionResult = ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS),
+            grantedResult = PackageManager.PERMISSION_GRANTED,
+          ),
       )
     ) {
       TabbyNotificationPermissionAction.RequestNotificationPermission ->
