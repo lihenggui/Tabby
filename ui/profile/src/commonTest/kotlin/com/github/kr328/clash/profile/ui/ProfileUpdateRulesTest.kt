@@ -55,6 +55,28 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun profileListOpenEventStatesCarryNavigationTargets() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000007")
+
+    assertEquals(ProfilesEventState.OpenCreate, profilesOpenCreateEventState())
+    assertEquals(ProfilesEventState.OpenEdit(uuid), profilesOpenEditEventState(uuid))
+  }
+
+  @Test
+  fun profileUpdateResultEventStatesCarryMessagesAndEditTargets() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000008")
+
+    assertEquals(
+      ProfilesEventState.ShowMessage("Profile updated"),
+      profileUpdateCompletedEventState("Profile updated"),
+    )
+    assertEquals(
+      ProfilesEventState.ShowEditableMessage("Profile update failed", uuid),
+      profileUpdateFailedEventState("Profile update failed", uuid),
+    )
+  }
+
+  @Test
   fun updateAllActionQueriesProfilesOnlyWhenNotAlreadyUpdating() {
     assertEquals(
       ProfileUpdateAllAction.QueryProfiles,

@@ -25,8 +25,12 @@ import com.github.kr328.clash.profile.ui.profileActivationAction
 import com.github.kr328.clash.profile.ui.profileActivationEventState
 import com.github.kr328.clash.profile.ui.profileUpdateAllAction
 import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
+import com.github.kr328.clash.profile.ui.profileUpdateCompletedEventState
+import com.github.kr328.clash.profile.ui.profileUpdateFailedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
+import com.github.kr328.clash.profile.ui.profilesOpenCreateEventState
+import com.github.kr328.clash.profile.ui.profilesOpenEditEventState
 import com.github.kr328.clash.profile.ui.withAllUpdating
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withProfiles
@@ -83,7 +87,7 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun onOpenCreate() {
-    eventState.value = ProfilesEventState.OpenCreate
+    eventState.value = profilesOpenCreateEventState()
   }
 
   fun onActivate(profile: Profile) {
@@ -126,13 +130,13 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun onEdit(profile: Profile) {
-    eventState.value = ProfilesEventState.OpenEdit(profile.uuid)
+    eventState.value = profilesOpenEditEventState(profile.uuid)
   }
 
   fun onDuplicate(profile: Profile) {
     viewModelScope.launch {
       val uuid = profileRepository.clone(profile.uuid)
-      eventState.value = ProfilesEventState.OpenEdit(uuid)
+      eventState.value = profilesOpenEditEventState(uuid)
     }
   }
 
@@ -163,7 +167,7 @@ internal class ProfilesViewModel(app: Application) :
   private suspend fun showProfileUpdateCompleted(uuid: Uuid) {
     val name = profileRepository.queryByUuid(uuid)?.name
     eventState.value =
-      ProfilesEventState.ShowMessage(
+      profileUpdateCompletedEventState(
         application.getString(R.string.toast_profile_updated_complete, name)
       )
   }
@@ -173,7 +177,7 @@ internal class ProfilesViewModel(app: Application) :
     val displayReason =
       profileUpdateFailureReasonText(reason, application.getString(CommonR.string.unknown))
     eventState.value =
-      ProfilesEventState.ShowEditableMessage(
+      profileUpdateFailedEventState(
         application.getString(R.string.toast_profile_updated_failed, name, displayReason),
         uuid,
       )

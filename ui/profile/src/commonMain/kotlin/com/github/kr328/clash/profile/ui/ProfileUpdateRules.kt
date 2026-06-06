@@ -42,6 +42,25 @@ internal fun profileActivationEventState(
   }
 }
 
+internal fun profilesOpenCreateEventState(): ProfilesEventState {
+  return ProfilesEventState.OpenCreate
+}
+
+internal fun profilesOpenEditEventState(uuid: Uuid): ProfilesEventState {
+  return ProfilesEventState.OpenEdit(uuid)
+}
+
+internal fun profileUpdateCompletedEventState(message: String): ProfilesEventState {
+  return ProfilesEventState.ShowMessage(message)
+}
+
+internal fun profileUpdateFailedEventState(
+  message: String,
+  uuid: Uuid,
+): ProfilesEventState {
+  return ProfilesEventState.ShowEditableMessage(message, uuid)
+}
+
 internal fun profileUpdateAllAction(state: ProfilesUiState): ProfileUpdateAllAction {
   return if (state.allUpdating) ProfileUpdateAllAction.Ignore
   else ProfileUpdateAllAction.QueryProfiles
