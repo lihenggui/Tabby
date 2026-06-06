@@ -15,8 +15,7 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 
 class TileService : android.service.quicksettings.TileService() {
-  private var currentProfile = ""
-  private var clashRunning = false
+  private var tileState = TabbyTileState()
 
   override fun onClick() {
     val tile = qsTile ?: return
@@ -46,10 +45,7 @@ class TileService : android.service.quicksettings.TileService() {
       null,
     )
 
-    val name = StatusClient(this).currentProfile()
-
-    clashRunning = name != null
-    currentProfile = name.orEmpty()
+    tileState = tabbyTileInitialState(StatusClient(this).currentProfile())
 
     updateTile()
   }
@@ -63,9 +59,9 @@ class TileService : android.service.quicksettings.TileService() {
   private fun updateTile() {
     val tile = qsTile ?: return
 
-    tile.state = if (clashRunning) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+    tile.state = if (tileState.clashRunning) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
 
-    tile.label = currentProfile.ifEmpty { getText(CommonR.string.tabby) }
+    tile.label = tileState.currentProfile.ifEmpty { getText(CommonR.string.tabby) }
 
     tile.icon = Icon.createWithResource(this, CommonR.drawable.ic_tabby_small)
 
@@ -75,22 +71,17 @@ class TileService : android.service.quicksettings.TileService() {
   private val receiver =
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
-        when (intent?.action) {
-          Intents.ACTION_CLASH_STARTED -> {
-            clashRunning = true
+        val event =
+          when (intent?.action) {
+            Intents.ACTION_CLASH_STARTED -> TabbyTileEvent.ClashStarted
+            Intents.ACTION_CLASH_STOPPED -> TabbyTileEvent.ClashStopped
+            Intents.ACTION_SERVICE_RECREATED -> TabbyTileEvent.ServiceRecreated
+            Intents.ACTION_PROFILE_LOADED ->
+              TabbyTileEvent.ProfileLoaded(StatusClient(this@TileService).currentProfile())
+            else -> return
+          }
 
-            currentProfile = ""
-          }
-          Intents.ACTION_CLASH_STOPPED,
-          Intents.ACTION_SERVICE_RECREATED -> {
-            clashRunning = false
-
-            currentProfile = ""
-          }
-          Intents.ACTION_PROFILE_LOADED -> {
-            currentProfile = StatusClient(this@TileService).currentProfile().orEmpty()
-          }
-        }
+        tileState = reduceTabbyTileState(tileState, event)
 
         updateTile()
       }
