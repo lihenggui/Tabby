@@ -109,6 +109,18 @@ class HelpUpdateCheckActionTest {
   }
 
   @Test
+  fun updateAvailableSnackbarActionOpensReleasesOnlyWhenActionIsPerformed() {
+    assertEquals(
+      HelpUpdateAvailableSnackbarAction.OpenReleases,
+      helpUpdateAvailableSnackbarAction(SnackbarActionResult.ActionPerformed),
+    )
+    assertEquals(
+      HelpUpdateAvailableSnackbarAction.Ignore,
+      helpUpdateAvailableSnackbarAction(SnackbarActionResult.Dismissed),
+    )
+  }
+
+  @Test
   fun consumedEventStateResetsToIdle() {
     assertEquals(HelpEventState.Idle, helpConsumedEventState())
   }

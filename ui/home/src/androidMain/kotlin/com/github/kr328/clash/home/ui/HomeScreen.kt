@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +60,10 @@ internal fun HomeScreen(
             duration = SnackbarDuration.Long,
           )
 
-        if (result == SnackbarResult.ActionPerformed) onOpenProfiles()
+        when (homeNoProfileSnackbarAction(result.toSnackbarActionResult())) {
+          HomeNoProfileSnackbarAction.OpenProfiles -> onOpenProfiles()
+          HomeNoProfileSnackbarAction.Ignore -> Unit
+        }
       }
       is HomeEventState.ShowMessage -> {
         snackbarHostState.showSnackbar(message = event.message)

@@ -3,7 +3,6 @@ package com.github.kr328.clash.home.ui
 import android.content.ClipData
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,8 +58,9 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
             actionLabel = openActionText,
             duration = SnackbarDuration.Long,
           )
-        if (result == SnackbarResult.ActionPerformed) {
-          context.openLink(event.releasesUrl)
+        when (helpUpdateAvailableSnackbarAction(result.toSnackbarActionResult())) {
+          HelpUpdateAvailableSnackbarAction.OpenReleases -> context.openLink(event.releasesUrl)
+          HelpUpdateAvailableSnackbarAction.Ignore -> Unit
         }
       }
     }

@@ -153,6 +153,18 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeNoProfileSnackbarActionOpensProfilesOnlyWhenActionIsPerformed() {
+    assertEquals(
+      HomeNoProfileSnackbarAction.OpenProfiles,
+      homeNoProfileSnackbarAction(SnackbarActionResult.ActionPerformed),
+    )
+    assertEquals(
+      HomeNoProfileSnackbarAction.Ignore,
+      homeNoProfileSnackbarAction(SnackbarActionResult.Dismissed),
+    )
+  }
+
+  @Test
   fun homeModeLabelMapsTunnelStateModes() {
     assertEquals(HomeModeLabel.Direct, homeModeLabel(TunnelState.Mode.Direct))
     assertEquals(HomeModeLabel.Global, homeModeLabel(TunnelState.Mode.Global))

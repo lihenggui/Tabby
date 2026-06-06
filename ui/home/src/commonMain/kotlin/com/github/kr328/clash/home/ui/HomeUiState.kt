@@ -44,6 +44,11 @@ internal enum class HomeTrafficPollAction {
   Ignore,
 }
 
+internal enum class HomeNoProfileSnackbarAction {
+  OpenProfiles,
+  Ignore,
+}
+
 internal enum class HomeModeLabel {
   Direct,
   Global,
@@ -117,6 +122,15 @@ internal fun homeToggleAction(clashRunning: Boolean): HomeToggleAction {
 
 internal fun homeTrafficPollAction(clashRunning: Boolean): HomeTrafficPollAction {
   return if (clashRunning) HomeTrafficPollAction.QueryTraffic else HomeTrafficPollAction.Ignore
+}
+
+internal fun homeNoProfileSnackbarAction(
+  result: SnackbarActionResult
+): HomeNoProfileSnackbarAction {
+  return when (result) {
+    SnackbarActionResult.ActionPerformed -> HomeNoProfileSnackbarAction.OpenProfiles
+    SnackbarActionResult.Dismissed -> HomeNoProfileSnackbarAction.Ignore
+  }
 }
 
 internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
