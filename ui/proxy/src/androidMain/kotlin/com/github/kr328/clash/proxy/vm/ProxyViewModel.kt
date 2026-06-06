@@ -39,6 +39,8 @@ import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxyReloadAction
+import com.github.kr328.clash.proxy.ui.proxyReloadSelectedProxies
+import com.github.kr328.clash.proxy.ui.proxyReloadUiState
 import com.github.kr328.clash.proxy.ui.proxySelectedAction
 import com.github.kr328.clash.proxy.ui.proxySelectedProxies
 import com.github.kr328.clash.proxy.ui.proxySelectedUiState
@@ -47,10 +49,8 @@ import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
-import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
-import com.github.kr328.clash.proxy.ui.withSelectedProxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -193,14 +193,27 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
             engineController.queryProxyGroup(action.groupName, action.sort)
           }
 
-          selectedProxies.update { it.withSelectedProxy(action.index, group.now) }
+          selectedProxies.update { current ->
+            proxyReloadSelectedProxies(
+              selectedProxies = current,
+              index = action.index,
+              group = group,
+            )
+          }
 
           val sources =
             withContext(Dispatchers.Default) {
               group.toProxyItemSources(groupNames = action.groupNames)
             }
 
-          updateGroupState(action.index) { it.withProxyGroup(group, sources) }
+          uiState.update { current ->
+            proxyReloadUiState(
+              state = current,
+              index = action.index,
+              group = group,
+              sources = sources,
+            )
+          }
         }
       ProxyReloadAction.Ignore -> Unit
     }

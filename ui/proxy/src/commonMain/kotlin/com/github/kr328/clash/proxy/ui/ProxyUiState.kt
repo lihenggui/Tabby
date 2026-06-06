@@ -268,6 +268,23 @@ internal fun proxyReloadAction(
   }
 }
 
+internal fun proxyReloadSelectedProxies(
+  selectedProxies: List<SelectedProxy>,
+  index: Int,
+  group: ProxyGroup,
+): List<SelectedProxy> {
+  return selectedProxies.withSelectedProxy(index, group.now)
+}
+
+internal fun proxyReloadUiState(
+  state: ProxyUiState,
+  index: Int,
+  group: ProxyGroup,
+  sources: List<ProxyItemSource>,
+): ProxyUiState {
+  return state.withProxyGroupState(index) { it.withProxyGroup(group, sources) }
+}
+
 internal fun proxyPageChangedAction(
   state: ProxyUiState,
   index: Int,

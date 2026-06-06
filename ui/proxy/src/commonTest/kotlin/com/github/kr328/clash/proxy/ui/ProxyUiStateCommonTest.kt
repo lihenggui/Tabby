@@ -1,5 +1,7 @@
 package com.github.kr328.clash.proxy.ui
 
+import com.github.kr328.clash.core.model.Proxy
+import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
 import kotlin.test.Test
@@ -552,4 +554,62 @@ class ProxyUiStateCommonTest {
       ),
     )
   }
+
+  @Test
+  fun proxyReloadSelectedProxiesUpdatesSelectedProxyFromGroupNow() {
+    val selected = listOf(SelectedProxy("?"), SelectedProxy("Proxy"))
+    val group = proxyGroup(now = "Direct")
+    val updated = proxyReloadSelectedProxies(selected, index = 1, group = group)
+    val unchanged = proxyReloadSelectedProxies(selected, index = 3, group = group)
+
+    assertEquals(listOf(SelectedProxy("?"), SelectedProxy("Direct")), updated)
+    assertSame(selected, unchanged)
+  }
+
+  @Test
+  fun proxyReloadUiStateRefreshesGroupStateByIndex() {
+    val group =
+      proxyGroup(
+        type = Proxy.Type.Selector,
+        now = "Proxy",
+        proxies = listOf(proxy("Proxy"), proxy("Direct")),
+      )
+    val sources = listOf(ProxyItemSource(proxy("Proxy"), linkIndex = -1))
+    val state =
+      ProxyUiState(
+        groups =
+          listOf(
+            ProxyGroupUiState(refreshVersion = 2),
+            ProxyGroupUiState(
+              urlTesting = true,
+              delayTestingKeys = setOf("Proxy", "Removed"),
+              refreshVersion = 4,
+            ),
+          )
+      )
+
+    val updated = proxyReloadUiState(state, index = 1, group = group, sources = sources)
+    val unchanged = proxyReloadUiState(state, index = 3, group = group, sources = sources)
+
+    assertEquals(false, updated.groups[1].urlTesting)
+    assertEquals(setOf("Proxy"), updated.groups[1].delayTestingKeys)
+    assertEquals(5, updated.groups[1].refreshVersion)
+    assertEquals(sources, updated.groups[1].sources)
+    assertSame(state, unchanged)
+  }
 }
+
+private fun proxyGroup(
+  type: Proxy.Type = Proxy.Type.Selector,
+  now: String = "Proxy",
+  proxies: List<Proxy> = listOf(proxy(now)),
+): ProxyGroup = ProxyGroup(type = type, now = now, proxies = proxies)
+
+private fun proxy(name: String): Proxy =
+  Proxy(
+    name = name,
+    title = "$name title",
+    subtitle = "$name subtitle",
+    type = Proxy.Type.Direct,
+    delay = 12,
+  )
