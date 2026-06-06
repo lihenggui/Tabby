@@ -267,6 +267,15 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyPreferenceChangeEventStateMapsRelaunchOnly() {
+    assertEquals(
+      ProxyEventState.ReLaunch,
+      proxyPreferenceChangeEventState(ProxyPreferenceChangeEffect.ReLaunch),
+    )
+    assertEquals(null, proxyPreferenceChangeEventState(ProxyPreferenceChangeEffect.ReloadAll))
+  }
+
+  @Test
   fun proxyPageChangedActionUpdatesPageAndSavesGroup() {
     val action =
       proxyPageChangedAction(
@@ -317,6 +326,14 @@ class ProxyUiStateCommonTest {
     assertEquals(
       ProxyOverrideModeEffect.ShowTipsAndPatchMode(null),
       action.effect,
+    )
+  }
+
+  @Test
+  fun proxyOverrideModeEventStateShowsModeSwitchTips() {
+    assertEquals(
+      ProxyEventState.ShowModeSwitchTips,
+      proxyOverrideModeEventState(ProxyOverrideModeEffect.ShowTipsAndPatchMode(null)),
     )
   }
 
@@ -543,6 +560,15 @@ class ProxyUiStateCommonTest {
         newGroupNames = listOf("Proxy", "Auto"),
       ),
     )
+  }
+
+  @Test
+  fun proxyGroupNamesChangeEventStateMapsRelaunchOnly() {
+    assertEquals(
+      ProxyEventState.ReLaunch,
+      proxyGroupNamesChangeEventState(ProxyGroupNamesChangeAction.ReLaunch),
+    )
+    assertEquals(null, proxyGroupNamesChangeEventState(ProxyGroupNamesChangeAction.Ignore))
   }
 
   @Test

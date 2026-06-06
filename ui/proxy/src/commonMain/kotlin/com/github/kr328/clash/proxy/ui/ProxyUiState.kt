@@ -537,3 +537,27 @@ internal sealed interface ProxyEventState {
 
   data object ShowModeSwitchTips : ProxyEventState
 }
+
+internal fun proxyGroupNamesChangeEventState(
+  action: ProxyGroupNamesChangeAction
+): ProxyEventState? {
+  return when (action) {
+    ProxyGroupNamesChangeAction.ReLaunch -> ProxyEventState.ReLaunch
+    ProxyGroupNamesChangeAction.Ignore -> null
+  }
+}
+
+internal fun proxyPreferenceChangeEventState(
+  effect: ProxyPreferenceChangeEffect
+): ProxyEventState? {
+  return when (effect) {
+    ProxyPreferenceChangeEffect.ReLaunch -> ProxyEventState.ReLaunch
+    ProxyPreferenceChangeEffect.ReloadAll -> null
+  }
+}
+
+internal fun proxyOverrideModeEventState(effect: ProxyOverrideModeEffect): ProxyEventState {
+  return when (effect) {
+    is ProxyOverrideModeEffect.ShowTipsAndPatchMode -> ProxyEventState.ShowModeSwitchTips
+  }
+}

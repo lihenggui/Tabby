@@ -14,7 +14,6 @@ import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.proxy.ui.ProxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.ProxyDelayTestEffect
 import com.github.kr328.clash.proxy.ui.ProxyEventState
-import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
 import com.github.kr328.clash.proxy.ui.ProxyInitialStateAction
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeAction
@@ -33,11 +32,14 @@ import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
+import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeEventState
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
 import com.github.kr328.clash.proxy.ui.proxyInitialStateAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
+import com.github.kr328.clash.proxy.ui.proxyOverrideModeEventState
 import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
+import com.github.kr328.clash.proxy.ui.proxyPreferenceChangeEventState
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxyReloadAction
 import com.github.kr328.clash.proxy.ui.proxyReloadSelectedProxies
@@ -99,11 +101,10 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
               ProxyProfileLoadedAction.QueryGroupNames -> {
                 val newNames =
                   engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
-                when (proxyGroupNamesChangeAction(uiState.value.groupNames, newNames)) {
-                  ProxyGroupNamesChangeAction.ReLaunch ->
-                    eventState.value = ProxyEventState.ReLaunch
-                  ProxyGroupNamesChangeAction.Ignore -> Unit
-                }
+                proxyGroupNamesChangeEventState(
+                    proxyGroupNamesChangeAction(uiState.value.groupNames, newNames)
+                  )
+                  ?.let { eventState.value = it }
               }
               ProxyProfileLoadedAction.Ignore -> Unit
             }
@@ -260,8 +261,10 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   private fun applyProxyPreferenceChangeEffect(effect: ProxyPreferenceChangeEffect) {
+    proxyPreferenceChangeEventState(effect)?.let { eventState.value = it }
+
     when (effect) {
-      ProxyPreferenceChangeEffect.ReLaunch -> eventState.value = ProxyEventState.ReLaunch
+      ProxyPreferenceChangeEffect.ReLaunch -> Unit
       ProxyPreferenceChangeEffect.ReloadAll -> reloadAll()
     }
   }
@@ -277,9 +280,10 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   private fun applyProxyOverrideModeEffect(effect: ProxyOverrideModeEffect) {
+    eventState.value = proxyOverrideModeEventState(effect)
+
     when (effect) {
       is ProxyOverrideModeEffect.ShowTipsAndPatchMode -> {
-        eventState.value = ProxyEventState.ShowModeSwitchTips
         viewModelScope.launch { engineController.patchSessionMode(effect.mode) }
       }
     }
