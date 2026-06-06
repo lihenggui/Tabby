@@ -168,10 +168,10 @@ class MainActivity : ComponentActivity() {
 
   private fun edgeToEdge(darkMode: DarkMode) {
     val systemBars =
-      when (darkMode) {
-        ForceDark -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { true }
-        ForceLight -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { false }
-        Auto -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT)
+      when (tabbyEdgeToEdgeStyle(darkMode)) {
+        TabbyEdgeToEdgeStyle.ForceDark -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { true }
+        TabbyEdgeToEdgeStyle.ForceLight -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { false }
+        TabbyEdgeToEdgeStyle.Auto -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT)
       }
     enableEdgeToEdge(statusBarStyle = systemBars, navigationBarStyle = systemBars)
     // TODO: https://issuetracker.google.com/issues/298296168
