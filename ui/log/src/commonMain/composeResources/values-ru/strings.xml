@@ -1,0 +1,11 @@
+<resources>
+
+  <string name="tabby_logcat">Tabby Logcat</string>
+  <string name="copied">Скопировано</string>
+  <string name="delete_all_logs">Удалить все логи</string>
+  <string name="delete_all_logs_warn">Вся история будет ПОТЕРЯНА</string>
+  <string name="file_exported">Файл экспортирован</string>
+  <string name="history">История</string>
+  <string name="invalid_log_file">Недопустимый лог файл</string>
+  <string name="logcat">Logcat</string>
+</resources>

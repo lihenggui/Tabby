@@ -38,6 +38,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 internal class LogcatService :
   Service(), CoroutineScope by CoroutineScope(Dispatchers.Default), IInterface {
@@ -107,8 +109,8 @@ internal class LogcatService :
         LogcatWriter(this@LogcatService).use {
           val observer =
             object : ILogObserver {
-              override fun newItem(log: LogMessage) {
-                channel.trySend(log)
+              override fun newItem(log: String) {
+                channel.trySend(json.decodeFromString<LogMessage>(log))
               }
             }
 
@@ -179,4 +181,8 @@ internal class LogcatService :
     val running: StateFlow<Boolean>
       field = MutableStateFlow(false)
   }
+}
+
+private val json = Json {
+  ignoreUnknownKeys = true
 }

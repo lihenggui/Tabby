@@ -13,7 +13,7 @@ internal class LogcatWriter(
 ) : AutoCloseable by writer {
 
   fun appendMessage(message: LogMessage) =
-    writer.appendLine(FORMAT.format(message.time.time, message.level.name, message.message))
+    writer.appendLine(FORMAT.format(message.time, message.level.name, message.message))
 }
 
 private const val FORMAT = "%d:%s:%s"

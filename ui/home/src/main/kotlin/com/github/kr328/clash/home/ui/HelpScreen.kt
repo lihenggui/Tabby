@@ -1,16 +1,9 @@
 package com.github.kr328.clash.home.ui
 
 import android.content.ClipData
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,11 +14,9 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.kr328.clash.common.R as CommonR
@@ -35,17 +26,13 @@ import com.github.kr328.clash.glue.util.TABBY_GITHUB
 import com.github.kr328.clash.glue.util.openLink
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.vm.HelpViewModel
-import com.github.kr328.clash.ui.component.TabbyScaffold
-import com.github.kr328.clash.ui.icon.BaselineMihomo
-import com.github.kr328.clash.ui.icon.BaselineUpdate
-import com.github.kr328.clash.ui.icon.OutlineInfo
-import com.github.kr328.clash.ui.icon.TabbyIcons
-import com.github.kr328.clash.ui.theme.PreviewTabby
-import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 import kotlinx.coroutines.launch
-import me.zhanghai.compose.preference.ProvidePreferenceLocals
-import me.zhanghai.compose.preference.preference
-import me.zhanghai.compose.preference.preferenceCategory
+import org.jetbrains.compose.resources.stringResource
+import tabby.ui.home.generated.resources.Res as HomeRes
+import tabby.ui.home.generated.resources.open
+import tabby.ui.home.generated.resources.update_available
+import tabby.ui.shared.generated.resources.Res as SharedRes
+import tabby.ui.shared.generated.resources.copied
 
 @Composable
 internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel = viewModel()) {
@@ -53,8 +40,11 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
   val eventState by viewModel.eventState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
-  val updateAvailableText = stringResource(R.string.update_available)
-  val openActionText = stringResource(R.string.open)
+  val clipboard = LocalClipboard.current
+  val scope = rememberCoroutineScope()
+  val updateAvailableText = stringResource(HomeRes.string.update_available)
+  val openActionText = stringResource(HomeRes.string.open)
+  val messageCopied = stringResource(SharedRes.string.copied)
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
@@ -79,122 +69,27 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
 
   HelpContent(
     modifier = modifier,
-    uiState = uiState,
+    uiState =
+      HelpContentState(
+        checkingForUpdates = uiState.checkingForUpdates,
+        appVersion = uiState.appVersion,
+        coreVersion = uiState.coreVersion,
+      ),
+    tipsText = AnnotatedString.fromHtml(androidStringResource(R.string.tips_help)),
+    appName = androidStringResource(CommonR.string.tabby),
+    appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
+    mihomoWikiUrl = MIHOMO_WIKI,
+    mihomoCoreUrl = MIHOMO_CORE,
+    tabbyUrl = TABBY_GITHUB,
     snackbarHostState = snackbarHostState,
     onOpenLink = { url -> context.openLink(url) },
+    onCopyVersion = { version ->
+      scope.launch {
+        val clipEntry = ClipData.newPlainText("version", version).toClipEntry()
+        clipboard.setClipEntry(clipEntry)
+        snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
+      }
+    },
     onCheckForUpdates = viewModel::checkForUpdates,
   )
-}
-
-@Composable
-private fun HelpContent(
-  uiState: HelpViewModel.UiState,
-  onOpenLink: (String) -> Unit,
-  onCheckForUpdates: () -> Unit,
-  modifier: Modifier = Modifier,
-  snackbarHostState: SnackbarHostState? = null,
-) {
-  val clipboard = LocalClipboard.current
-  val scope = rememberCoroutineScope()
-  val messageCopied = stringResource(CommonR.string.copied)
-
-  val onCopyVersion: (String) -> Unit = { version ->
-    scope.launch {
-      val clipEntry = ClipData.newPlainText("version", version).toClipEntry()
-      clipboard.setClipEntry(clipEntry)
-      snackbarHostState?.showSnackbar(message = messageCopied, withDismissAction = true)
-    }
-  }
-
-  TabbyScaffold(
-    title = stringResource(R.string.help),
-    modifier = modifier,
-    snackbarHostState = snackbarHostState,
-  ) { innerPadding ->
-    ProvidePreferenceLocals {
-      LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = innerPadding) {
-        preference(
-          key = "tips",
-          title = {},
-          summary = { Text(AnnotatedString.fromHtml(stringResource(R.string.tips_help))) },
-          icon = { Icon(imageVector = TabbyIcons.OutlineInfo, contentDescription = null) },
-        )
-        preferenceCategory(
-          key = "cat_document",
-          title = { Text(stringResource(R.string.document)) },
-        )
-        preference(
-          key = "mihomo_wiki",
-          title = { Text(stringResource(R.string.mihomo_wiki)) },
-          summary = { Text(MIHOMO_WIKI) },
-          onClick = { onOpenLink(MIHOMO_WIKI) },
-        )
-        preferenceCategory(key = "cat_sources", title = { Text(stringResource(R.string.sources)) })
-        preference(
-          key = "mihomo_core",
-          title = { Text(stringResource(R.string.mihomo_core)) },
-          summary = { Text(MIHOMO_CORE) },
-          onClick = { onOpenLink(MIHOMO_CORE) },
-        )
-        preference(
-          key = "tabby",
-          title = { Text(stringResource(CommonR.string.tabby)) },
-          summary = { Text(TABBY_GITHUB) },
-          onClick = { onOpenLink(TABBY_GITHUB) },
-        )
-        preferenceCategory(key = "cat_update", title = { Text(stringResource(R.string.about)) })
-        preference(
-          key = "app_version",
-          title = { Text(stringResource(R.string.app_version)) },
-          summary = { Text(uiState.appVersion) },
-          icon = {
-            Icon(
-              painter = painterResource(CommonR.drawable.ic_tabby_small),
-              contentDescription = null,
-            )
-          },
-          modifier =
-            Modifier.combinedClickable(
-              onClick = {},
-              onLongClick = { onCopyVersion(uiState.appVersion) },
-            ),
-        )
-        preference(
-          key = "core_version",
-          title = { Text(stringResource(R.string.core_version)) },
-          summary = { Text(uiState.coreVersion) },
-          icon = {
-            Icon(
-              imageVector = TabbyIcons.BaselineMihomo,
-              contentDescription = null,
-            )
-          },
-          modifier =
-            Modifier.combinedClickable(
-              onClick = {},
-              onLongClick = { onCopyVersion(uiState.coreVersion) },
-            ),
-        )
-        preference(
-          key = "check_for_updates",
-          title = { Text(stringResource(R.string.check_for_updates)) },
-          icon = {
-            if (uiState.checkingForUpdates) {
-              CircularProgressIndicator(modifier = Modifier.size(24.dp))
-            } else {
-              Icon(imageVector = TabbyIcons.BaselineUpdate, contentDescription = null)
-            }
-          },
-          onClick = onCheckForUpdates,
-        )
-      }
-    }
-  }
-}
-
-@PreviewWrapper(TabbyThemeWrapper::class)
-@PreviewTabby
-@Composable
-private fun HelpContentPreview() {
-  HelpContent(uiState = HelpViewModel.UiState(), onOpenLink = {}, onCheckForUpdates = {})
 }

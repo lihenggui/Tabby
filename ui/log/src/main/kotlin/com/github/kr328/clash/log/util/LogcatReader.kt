@@ -5,7 +5,6 @@ import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.model.LogFile
 import java.io.BufferedReader
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,7 +16,7 @@ internal class LogcatReader(
 
   suspend fun readAll(): List<LogMessage> =
     withContext(Dispatchers.IO) {
-      var lastTime = Date(0)
+      var lastTime = 0L
       reader
         .lineSequence()
         .map { it.trim() }
@@ -25,7 +24,7 @@ internal class LogcatReader(
         .map { line ->
           val parts = line.split(":", limit = 3)
           val parsedTime = parts[0].toLongOrNull()
-          val time = parsedTime?.let { date -> Date(date) } ?: lastTime
+          val time = parsedTime ?: lastTime
           val logMessage =
             if (parsedTime != null && parts.size >= 3) {
               LogMessage(

@@ -1,10 +1,29 @@
 plugins {
-  alias(libs.plugins.android.library)
-  alias(libs.plugins.kotlin.compose)
+  id("tabby.cmp.feature")
   alias(libs.plugins.kotlin.serialization)
 }
 
-dependencies {
-  implementation(projects.glue)
-  implementation(projects.ui)
+kotlin {
+  android { androidResources { enable = true } }
+
+  sourceSets {
+    commonMain.dependencies {
+      implementation(projects.core.model)
+      implementation(projects.ui.shared)
+    }
+
+    androidMain {
+      kotlin.srcDir("src/main/kotlin")
+
+      dependencies {
+        implementation(projects.glue)
+
+        implementation(libs.androidx.activity.compose)
+        implementation(libs.androidx.core)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+        implementation(libs.jetbrains.navigation3.ui)
+        implementation(libs.kotlin.serialization.json)
+      }
+    }
+  }
 }

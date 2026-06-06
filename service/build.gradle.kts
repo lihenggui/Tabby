@@ -1,12 +1,14 @@
 plugins {
   alias(libs.plugins.android.library)
-  alias(libs.plugins.kotlin.parcelize)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
 }
 
 dependencies {
   implementation(projects.core)
+  implementation(projects.core.database)
+  implementation(projects.core.network)
+  implementation(projects.core.settingsStore)
   implementation(projects.common)
 
   implementation(libs.kotlin.coroutine)
@@ -15,8 +17,6 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.kaidl.runtime)
   implementation(libs.rikkax.multiprocess)
-  implementation(libs.okhttp.client)
-  implementation(libs.okhttp.interceptor)
 
   ksp(libs.kaidl.compiler)
   ksp(libs.androidx.room.compiler)

@@ -71,8 +71,9 @@ androidComponents {
 }
 
 dependencies {
+  implementation(project(":app:shared"))
   implementation(projects.glue)
-  implementation(projects.ui)
+  implementation(projects.ui.shared)
   implementation(projects.ui.crash)
   implementation(projects.ui.home)
   implementation(projects.ui.log)

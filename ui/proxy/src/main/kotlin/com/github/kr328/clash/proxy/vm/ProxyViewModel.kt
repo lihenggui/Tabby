@@ -1,18 +1,22 @@
 package com.github.kr328.clash.proxy.vm
 
 import android.app.Application
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
-import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
-import com.github.kr328.clash.glue.util.withClash
+import com.github.kr328.clash.proxy.ui.ProxyEventState
+import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
+import com.github.kr328.clash.proxy.ui.ProxyItemSource
+import com.github.kr328.clash.proxy.ui.ProxyUiState
+import com.github.kr328.clash.proxy.ui.SelectedProxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,17 +30,18 @@ import kotlinx.coroutines.withContext
 
 internal class ProxyViewModel(app: Application) : AndroidViewModel(app), DefaultLifecycleObserver {
   private val uiStore = UiStore(app)
+  private val engineController: EngineController = AndroidEngineController(app)
   private var broadcastEventsJob: Job? = null
   private var fetchInitialStateJob: Job? = null
   @Volatile private var initialized = false
   // Allow up to 10 concurrent group queries to avoid overwhelming the service
   private val reloadLock = Semaphore(10)
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<ProxyUiState>
+    field = MutableStateFlow(ProxyUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<ProxyEventState>
+    field = MutableStateFlow<ProxyEventState>(ProxyEventState.Idle)
 
   val selectedProxies: StateFlow<List<SelectedProxy>>
     field = MutableStateFlow(emptyList())
@@ -58,9 +63,9 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         when (event) {
           ProfileLoaded -> {
             if (!initialized) return@collect
-            val newNames = withClash { queryProxyGroupNames(uiStore.proxyExcludeNotSelectable) }
+            val newNames = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
             if (newNames != uiState.value.groupNames) {
-              eventState.value = EventState.ReLaunch
+              eventState.value = ProxyEventState.ReLaunch
             }
           }
           else -> Unit
@@ -80,12 +85,12 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = ProxyEventState.Idle
   }
 
   private suspend fun fetchInitialState() {
-    val mode = withClash { queryOverride(Clash.OverrideSlot.Session).mode }
-    val names = withClash { queryProxyGroupNames(uiStore.proxyExcludeNotSelectable) }
+    val mode = engineController.querySessionMode()
+    val names = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
     val preservedGroups =
       with(uiState.value) { groups.takeIf { groupNames == names && groups.size == names.size } }
 
@@ -98,7 +103,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
       it.copy(
         overrideMode = mode,
         groupNames = names,
-        groups = preservedGroups ?: List(names.size) { UiState.ProxyGroupUiState() },
+        groups = preservedGroups ?: List(names.size) { ProxyGroupUiState() },
         initialPage = initialPage,
         currentPage = currentPage,
       )
@@ -117,7 +122,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
     uiStore.proxyExcludeNotSelectable = enabled
     uiState.update { it.copy(excludeNotSelectable = enabled) }
-    eventState.value = EventState.ReLaunch
+    eventState.value = ProxyEventState.ReLaunch
   }
 
   fun onProxyLineChanged(line: Int) {
@@ -138,13 +143,8 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   fun onOverrideModeSelected(mode: TunnelState.Mode?) {
     uiState.update { it.copy(overrideMode = mode) }
-    eventState.value = EventState.ShowModeSwitchTips
-    viewModelScope.launch {
-      withClash {
-        val o = queryOverride(Clash.OverrideSlot.Session)
-        patchOverride(Clash.OverrideSlot.Session, o.copy(mode = mode))
-      }
-    }
+    eventState.value = ProxyEventState.ShowModeSwitchTips
+    viewModelScope.launch { engineController.patchSessionMode(mode) }
   }
 
   fun onUrlTest(index: Int) {
@@ -154,7 +154,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     updateGroupState(index) { it.copy(urlTesting = true) }
 
     viewModelScope.launch {
-      withClash { healthCheck(names[index]) }
+      engineController.healthCheck(names[index])
       reload(index)
     }
   }
@@ -164,7 +164,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     if (index !in names.indices) return
 
     viewModelScope.launch {
-      withClash { patchSelector(names[index], name) }
+      engineController.patchSelector(names[index], name)
       selectedProxies.update { list ->
         list.toMutableList().apply { set(index, SelectedProxy(name)) }
       }
@@ -183,7 +183,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
     viewModelScope.launch {
       try {
-        withClash { healthCheckProxy(names[index], name) }
+        engineController.healthCheckProxy(names[index], name)
         reload(index)
       } finally {
         updateGroupState(index) {
@@ -208,7 +208,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
       val sort = uiStore.proxySort
 
-      val group = reloadLock.withPermit { withClash { queryProxyGroup(names[index], sort) } }
+      val group = reloadLock.withPermit { engineController.queryProxyGroup(names[index], sort) }
 
       selectedProxies.update { list ->
         list.toMutableList().apply { set(index, SelectedProxy(group.now)) }
@@ -218,7 +218,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         withContext(Dispatchers.Default) {
           val nameIndexMap = names.withIndex().associate { (index, name) -> name to index }
           group.proxies.map { proxy ->
-            UiState.ProxyItemSource(
+            ProxyItemSource(
               proxy = proxy,
               linkIndex = if (proxy.type.group) nameIndexMap[proxy.name] ?: -1 else -1,
             )
@@ -240,7 +240,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   private fun updateGroupState(
     index: Int,
-    transform: (UiState.ProxyGroupUiState) -> UiState.ProxyGroupUiState,
+    transform: (ProxyGroupUiState) -> ProxyGroupUiState,
   ) {
     uiState.update { current ->
       if (index !in current.groups.indices) return@update current
@@ -248,96 +248,5 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
       newGroups[index] = transform(newGroups[index])
       current.copy(groups = newGroups)
     }
-  }
-
-  data class UiState(
-    val groupNames: List<String> = emptyList(),
-    val groups: List<ProxyGroupUiState> = emptyList(),
-    val currentPage: Int = 0,
-    val proxyLine: Int = 0,
-    val excludeNotSelectable: Boolean = false,
-    val proxySort: ProxySort = ProxySort.Default,
-    val overrideMode: TunnelState.Mode? = null,
-    val initialPage: Int = 0,
-  ) {
-    data class ProxyGroupUiState(
-      val selectable: Boolean = false,
-      val urlTesting: Boolean = false,
-      val sources: List<ProxyItemSource> = emptyList(),
-      val delayTestingKeys: Set<String> = emptySet(),
-      val refreshVersion: Int = 0,
-    )
-
-    data class ProxyItemSource(val proxy: Proxy, val linkIndex: Int) {
-      fun toUiState(
-        parentNow: SelectedProxy?,
-        linkNow: SelectedProxy?,
-        proxyLine: Int,
-        selectedControl: Color,
-        selectedBackground: Color,
-        unselectedControl: Color,
-        unselectedBackground: Color,
-        delayTesting: Boolean,
-      ): ProxyItemUiState {
-        val selected = proxy.name == parentNow?.name
-        val background =
-          if (selected) {
-            selectedBackground
-          } else if (proxyLine == 1) {
-            Color.Transparent
-          } else {
-            unselectedBackground
-          }
-        val controls = if (selected) selectedControl else unselectedControl
-        val title = if (proxy.type.group) proxy.name else proxy.title
-        val subtitle =
-          if (proxy.type.group) {
-            if (linkNow == null) {
-              proxy.type.name
-            } else {
-              "%s(%s)".format(proxy.type.name, linkNow.name.ifEmpty { "*" })
-            }
-          } else {
-            proxy.subtitle
-          }
-        val delayText =
-          when {
-            delayTesting -> "···"
-            proxy.delay in 0..Short.MAX_VALUE -> proxy.delay.toString()
-            else -> "--"
-          }
-        return ProxyItemUiState(
-          key = proxy.name,
-          title = title,
-          subtitle = subtitle,
-          delayText = delayText,
-          delayTesting = delayTesting,
-          selected = selected,
-          background = background,
-          controls = controls,
-        )
-      }
-    }
-
-    data class ProxyItemUiState(
-      val key: String,
-      val title: String,
-      val subtitle: String,
-      val delayText: String,
-      val delayTesting: Boolean,
-      val selected: Boolean,
-      val background: Color,
-      val controls: Color,
-    )
-  }
-
-  @JvmInline value class SelectedProxy(val name: String)
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data object ReLaunch : EventState
-
-    data object ShowModeSwitchTips : EventState
   }
 }

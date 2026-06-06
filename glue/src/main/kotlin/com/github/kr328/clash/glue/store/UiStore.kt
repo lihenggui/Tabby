@@ -8,9 +8,11 @@ import com.github.kr328.clash.common.store.Store
 import com.github.kr328.clash.common.store.asStoreProvider
 import com.github.kr328.clash.common.util.mainActivityAlias
 import com.github.kr328.clash.common.util.unsafeLazy
+import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.glue.model.AppInfo
-import com.github.kr328.clash.glue.model.DarkMode
+import com.github.kr328.clash.settingsstore.StoreProviderMigration
+import com.github.kr328.clash.settingsstore.asSettingsStoreProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +20,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 
 class UiStore(context: Context) {
-  private val preferences = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
-  private val store = Store(preferences.asStoreProvider())
+  private val preferences =
+    context.getSharedPreferences(SETTINGS_PREFERENCE_NAME, Context.MODE_PRIVATE)
+  private val store = Store(createStoreProvider(context, preferences))
 
   val valueState: StateFlow<ValueState> by unsafeLazy {
     val readValues = {
@@ -109,6 +112,36 @@ class UiStore(context: Context) {
   )
 
   companion object {
-    private const val PREFERENCE_NAME = "ui"
+    private const val LEGACY_PREFERENCE_NAME = "ui"
+    private const val SETTINGS_PREFERENCE_NAME = "settings_ui"
+    private const val MIGRATED_KEY = "__migrated_from_shared_preferences_v1"
+
+    private fun createStoreProvider(
+      context: Context,
+      preferences: android.content.SharedPreferences,
+    ) =
+      preferences.asSettingsStoreProvider().also { destination ->
+        StoreProviderMigration(
+            source =
+              context
+                .getSharedPreferences(LEGACY_PREFERENCE_NAME, Context.MODE_PRIVATE)
+                .asStoreProvider(),
+            destination = destination,
+            migratedKey = MIGRATED_KEY,
+          )
+          .migrate {
+            boolean("enable_vpn", defaultValue = true)
+            string("dark_mode", defaultValue = DarkMode.Auto.name)
+            boolean("hide_app_icon", defaultValue = false)
+            boolean("hide_from_recents", defaultValue = false)
+            boolean("proxy_exclude_not_selectable", defaultValue = false)
+            int("proxy_line", defaultValue = 2)
+            string("proxy_sort", defaultValue = ProxySort.Default.name)
+            string("proxy_last_group", defaultValue = "")
+            string("access_control_sort", defaultValue = AppInfo.Sorter.Label.name)
+            boolean("access_control_reverse", defaultValue = false)
+            boolean("access_control_system_app", defaultValue = false)
+          }
+      }
   }
 }

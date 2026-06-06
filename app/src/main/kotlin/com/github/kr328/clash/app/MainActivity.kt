@@ -22,6 +22,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -34,34 +35,23 @@ import androidx.lifecycle.application
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.common.util.unsafeLazy
 import com.github.kr328.clash.common.util.uuid
+import com.github.kr328.clash.core.model.DarkMode
+import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.crash.CrashRoute
-import com.github.kr328.clash.crash.crashEntries
-import com.github.kr328.clash.glue.model.DarkMode
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.glue.util.withProfile
 import com.github.kr328.clash.home.HomeRoute
-import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.log.LogRoute
-import com.github.kr328.clash.log.logsEntries
 import com.github.kr328.clash.profile.ProfilesRoute
-import com.github.kr328.clash.profile.profilesEntries
-import com.github.kr328.clash.proxy.ProxyRoute
-import com.github.kr328.clash.proxy.proxyEntries
-import com.github.kr328.clash.service.model.Profile
-import com.github.kr328.clash.settings.SettingsRoute
-import com.github.kr328.clash.settings.settingsEntries
-import com.github.kr328.clash.ui.nav.TabbyNavDisplay
 import com.github.kr328.clash.ui.nav.addIfNotLast
-import com.github.kr328.clash.ui.theme.TabbyTheme
 import java.util.Locale
 import kotlinx.coroutines.launch
 
@@ -84,33 +74,16 @@ class MainActivity : ComponentActivity() {
     setContent {
       val uiValueState by uiStore.valueState.collectAsStateWithLifecycle()
       val darkMode = uiValueState.darkMode
+      val entryProvider = remember(backStack) { androidEntryProvider(backStack) }
 
       LaunchedEffect(darkMode) { edgeToEdge(darkMode) }
 
-      TabbyTheme(darkMode = darkMode) {
-        TabbyNavDisplay(
-          backStack = backStack,
-          entryProvider =
-            entryProvider {
-              homeEntries(
-                onOpenProxy = { backStack.addIfNotLast(ProxyRoute.Proxy) },
-                onOpenProfiles = { backStack.addIfNotLast(ProfilesRoute.Profiles()) },
-                onOpenProviders = { backStack.addIfNotLast(ProfilesRoute.Providers) },
-                onOpenLogs = { backStack.addIfNotLast(LogRoute.Root) },
-                onOpenSettings = { backStack.addIfNotLast(SettingsRoute.Root) },
-                onOpenHelp = { backStack.addIfNotLast(HomeRoute.Help) },
-              )
-              proxyEntries {
-                backStack.clear()
-                backStack.add(HomeRoute.Home)
-              }
-              profilesEntries()
-              logsEntries()
-              settingsEntries()
-              crashEntries()
-            },
-        )
-      }
+      TabbyApp(
+        darkMode = darkMode,
+        backStack = backStack,
+        entryProvider = entryProvider,
+        onBack = { backStack.removeLastOrNull() },
+      )
     }
 
     requestNotificationPermission()

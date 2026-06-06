@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.FetchStatus
+import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
-import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.service.util.fetchProfile
 import com.github.kr328.clash.service.util.fetchSubscriptionUserInfo
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
@@ -23,6 +26,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 object ProfileProcessor {
   private val profileLock = Mutex()
@@ -50,15 +55,24 @@ object ProfileProcessor {
 
         val force = snapshot.type != Profile.Type.File
         var cb = callback
+        val reportStatus: (FetchStatus) -> Unit = { status ->
+          try {
+            cb?.updateStatus(json.encodeToString(status))
+          } catch (e: Exception) {
+            cb = null
 
-        Clash.fetchAndValid(context.processingDir, snapshot.source, force) {
-            try {
-              cb?.updateStatus(it)
-            } catch (e: Exception) {
-              cb = null
+            Log.w("Report fetch status: $e", e)
+          }
+        }
+        val fetchedProfile =
+          context.fetchProfileConfigurationIfNeeded(snapshot.source, force, reportStatus)
 
-              Log.w("Report fetch status: $e", e)
-            }
+        Clash.fetchAndValid(
+            context.processingDir,
+            snapshot.source,
+            force && fetchedProfile == null,
+          ) {
+            reportStatus(it)
           }
           .await()
 
@@ -73,7 +87,8 @@ object ProfileProcessor {
             if (snapshot.type == Profile.Type.Url) {
               val userInfo =
                 if (snapshot.source.startsWith("https://", true)) {
-                  context.fetchSubscriptionUserInfo(snapshot.source)
+                  fetchedProfile?.subscriptionUserInfo
+                    ?: context.fetchSubscriptionUserInfo(snapshot.source)
                 } else {
                   null
                 }
@@ -152,15 +167,20 @@ object ProfileProcessor {
         }
 
         var cb = callback
+        val reportStatus: (FetchStatus) -> Unit = { status ->
+          try {
+            cb?.updateStatus(json.encodeToString(status))
+          } catch (e: Exception) {
+            cb = null
 
-        Clash.fetchAndValid(context.processingDir, snapshot.source, true) {
-            try {
-              cb?.updateStatus(it)
-            } catch (e: Exception) {
-              cb = null
+            Log.w("Report fetch status: $e", e)
+          }
+        }
+        val fetchedProfile =
+          context.fetchProfileConfigurationIfNeeded(snapshot.source, force = true, reportStatus)
 
-              Log.w("Report fetch status: $e", e)
-            }
+        Clash.fetchAndValid(context.processingDir, snapshot.source, fetchedProfile == null) {
+            reportStatus(it)
           }
           .await()
 
@@ -234,4 +254,36 @@ object ProfileProcessor {
         throw IllegalArgumentException("Invalid interval")
     }
   }
+}
+
+private suspend fun Context.fetchProfileConfigurationIfNeeded(
+  source: String,
+  force: Boolean,
+  reportStatus: (FetchStatus) -> Unit,
+): ProfileFetchResult? {
+  val config = processingDir.resolve("config.yaml")
+  if (!source.isHttpSource() || (!force && config.exists())) return null
+
+  val uri = source.toUri()
+  reportStatus(
+    FetchStatus(
+      action = FetchStatus.Action.FetchConfiguration,
+      args = listOf(uri.host.orEmpty()),
+      progress = -1,
+      max = -1,
+    )
+  )
+
+  return fetchProfile(source).also { result ->
+    config.parentFile?.mkdirs()
+    config.writeText(result.content)
+  }
+}
+
+private fun String.isHttpSource(): Boolean {
+  return startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true)
+}
+
+private val json = Json {
+  ignoreUnknownKeys = true
 }

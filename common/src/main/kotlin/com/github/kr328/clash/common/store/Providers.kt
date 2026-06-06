@@ -4,6 +4,10 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 
 class SharedPreferenceProvider(private val preferences: SharedPreferences) : StoreProvider {
+  override fun contains(key: String): Boolean {
+    return preferences.contains(key)
+  }
+
   override fun getInt(key: String, defaultValue: Int): Int {
     return preferences.getInt(key, defaultValue)
   }

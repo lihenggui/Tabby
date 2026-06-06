@@ -1,0 +1,136 @@
+CREATE TABLE imported (
+  uuid TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  source TEXT NOT NULL,
+  interval INTEGER NOT NULL,
+  upload INTEGER NOT NULL,
+  download INTEGER NOT NULL,
+  total INTEGER NOT NULL,
+  expire INTEGER NOT NULL,
+  createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE pending (
+  uuid TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  source TEXT NOT NULL,
+  interval INTEGER NOT NULL,
+  upload INTEGER NOT NULL,
+  download INTEGER NOT NULL,
+  total INTEGER NOT NULL,
+  expire INTEGER NOT NULL,
+  createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE selections (
+  uuid TEXT NOT NULL,
+  proxy TEXT NOT NULL,
+  selected TEXT NOT NULL,
+  PRIMARY KEY (uuid, proxy),
+  FOREIGN KEY (uuid) REFERENCES imported(uuid)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE INDEX selections_uuid ON selections(uuid);
+
+selectImportedByUuid:
+SELECT *
+FROM imported
+WHERE uuid = ?;
+
+selectImportedUuids:
+SELECT uuid
+FROM imported
+ORDER BY createdAt;
+
+insertImported:
+INSERT INTO imported(
+  uuid,
+  name,
+  type,
+  source,
+  interval,
+  upload,
+  download,
+  total,
+  expire,
+  createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateImported:
+UPDATE imported
+SET
+  name = ?,
+  type = ?,
+  source = ?,
+  interval = ?,
+  upload = ?,
+  download = ?,
+  total = ?,
+  expire = ?,
+  createdAt = ?
+WHERE uuid = ?;
+
+deleteImported:
+DELETE FROM imported
+WHERE uuid = ?;
+
+countImportedByUuid:
+SELECT count(*)
+FROM imported
+WHERE uuid = ?;
+
+selectPendingByUuid:
+SELECT *
+FROM pending
+WHERE uuid = ?;
+
+selectPendingUuids:
+SELECT uuid
+FROM pending
+ORDER BY createdAt;
+
+upsertPending:
+INSERT OR REPLACE INTO pending(
+  uuid,
+  name,
+  type,
+  source,
+  interval,
+  upload,
+  download,
+  total,
+  expire,
+  createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deletePending:
+DELETE FROM pending
+WHERE uuid = ?;
+
+countPendingByUuid:
+SELECT count(*)
+FROM pending
+WHERE uuid = ?;
+
+setProxySelection:
+INSERT OR REPLACE INTO selections(uuid, proxy, selected)
+VALUES (?, ?, ?);
+
+deleteProxySelection:
+DELETE FROM selections
+WHERE uuid = ? AND proxy = ?;
+
+selectProxySelections:
+SELECT *
+FROM selections
+WHERE uuid = ?;
+
+deleteProxySelectionsByUuid:
+DELETE FROM selections
+WHERE uuid = ?;

@@ -1,4 +1,5 @@
 pluginManagement {
+  includeBuild("build-logic")
   repositories {
     maven("https://central.sonatype.com/repository/maven-snapshots/") {
       mavenContent { includeGroupAndSubgroups("io.github.goooler.golang") }
@@ -48,11 +49,22 @@ enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 include(
   ":app",
+  ":app:desktop",
+  ":app:shared",
   ":core",
+  ":core:common",
+  ":core:database",
+  ":core:engine-api",
+  ":core:engine-android",
+  ":core:engine-desktop",
+  ":core:engine-ios",
+  ":core:model",
+  ":core:network",
+  ":core:settings-store",
   ":service",
   ":common",
   ":glue",
-  ":ui",
+  ":ui:shared",
   ":ui:crash",
   ":ui:home",
   ":ui:log",

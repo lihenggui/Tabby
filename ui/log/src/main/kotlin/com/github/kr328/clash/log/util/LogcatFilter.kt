@@ -13,7 +13,7 @@ internal class LogcatFilter(output: Writer, private val context: Context) : Buff
   }
 
   fun writeMessage(message: LogMessage) {
-    val time = message.time.format(context, includeDate = false)
+    val time = Date(message.time).format(context, includeDate = false)
     val level = message.level.name
 
     appendLine(FORMAT.format(time, level, message.message))

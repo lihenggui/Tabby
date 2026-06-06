@@ -2,12 +2,12 @@ package com.github.kr328.clash.service
 
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.service.data.Database
+import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
-import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.data.ProfileDatabaseMigration
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.remote.IProfileManager
 import com.github.kr328.clash.service.store.ServiceStore
@@ -23,6 +23,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ProfileManager(private val context: Context) :
   IProfileManager, CoroutineScope by CoroutineScope(Dispatchers.IO) {
@@ -30,7 +32,7 @@ class ProfileManager(private val context: Context) :
 
   init {
     launch {
-      Database.database // .init
+      ProfileDatabaseMigration(context).migrateIfNeeded()
 
       ProfileReceiver.rescheduleAll(context)
     }
@@ -180,31 +182,31 @@ class ProfileManager(private val context: Context) :
     ProfileProcessor.delete(context, uuid)
   }
 
-  override suspend fun queryByUUID(uuid: Uuid): Profile? {
-    return resolveProfile(uuid)
+  override suspend fun queryByUUID(uuid: Uuid): String? {
+    return resolveProfile(uuid)?.let { json.encodeToString(it) }
   }
 
-  override suspend fun queryAll(): List<Profile> {
+  override suspend fun queryAll(): String {
     val uuids =
       withContext(Dispatchers.IO) {
         (ImportedDao().queryAllUUIDs() + PendingDao().queryAllUUIDs()).distinct()
       }
 
-    return uuids.mapNotNull { resolveProfile(it) }
+    return json.encodeToString(uuids.mapNotNull { resolveProfile(it) })
   }
 
-  override suspend fun queryActive(): Profile? {
+  override suspend fun queryActive(): String? {
     val active = store.activeProfile ?: return null
 
     return if (ImportedDao().exists(active)) {
-      resolveProfile(active)
+      resolveProfile(active)?.let { json.encodeToString(it) }
     } else {
       null
     }
   }
 
-  override suspend fun setActive(profile: Profile) {
-    ProfileProcessor.active(context, profile.uuid)
+  override suspend fun setActive(uuid: Uuid) {
+    ProfileProcessor.active(context, uuid)
   }
 
   private suspend fun resolveProfile(uuid: Uuid): Profile? {
@@ -264,4 +266,8 @@ class ProfileManager(private val context: Context) :
       ProfileReceiver.scheduleNext(context, imported)
     }
   }
+}
+
+private val json = Json {
+  ignoreUnknownKeys = true
 }
