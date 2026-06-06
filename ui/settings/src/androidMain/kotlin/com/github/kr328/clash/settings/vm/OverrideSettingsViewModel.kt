@@ -12,6 +12,8 @@ import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
+import com.github.kr328.clash.settings.ui.updateOverrideDnsNameserverPolicy
+import com.github.kr328.clash.settings.ui.updateOverrideHosts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -92,11 +94,7 @@ internal class OverrideSettingsViewModel(app: Application) :
   }
 
   override fun updateHosts(value: Map<String, String>?) = configuration.update {
-    it.copy(
-      hosts = value,
-      // Force a new state emission when only map iteration order changes after reordering.
-      revision = it.revision + 1,
-    )
+    updateOverrideHosts(it, value)
   }
 
   override fun updateDnsEnable(value: Boolean?) = configuration.update {
@@ -166,10 +164,6 @@ internal class OverrideSettingsViewModel(app: Application) :
   }
 
   override fun updateDnsNameserverPolicy(value: Map<String, String>?) = configuration.update {
-    it.copy(
-      dns = it.dns.copy(nameserverPolicy = value),
-      // Force a new state emission when only map iteration order changes after reordering.
-      revision = it.revision + 1,
-    )
+    updateOverrideDnsNameserverPolicy(it, value)
   }
 }
