@@ -69,6 +69,76 @@ class MetaFeatureSettingsStateTest {
     assertEquals(configuration.sniffer.sniff.quic, updated.sniffer.sniff.quic)
   }
 
+  @Test
+  fun updatesSnifferEnableAndPreservesSniffProtocols() {
+    val configuration = configurationWithSnifferOptions()
+
+    val updated = updateMetaSnifferEnable(configuration, false)
+
+    assertEquals(false, updated.sniffer.enable)
+    assertEquals(configuration.sniffer.sniff, updated.sniffer.sniff)
+    assertEquals(configuration.sniffer.forceDomain, updated.sniffer.forceDomain)
+    assertEquals(configuration.sniffer.skipDomain, updated.sniffer.skipDomain)
+  }
+
+  @Test
+  fun updatesSnifferBooleanOptionsAndPreservesSniffProtocols() {
+    val configuration = configurationWithSnifferOptions()
+
+    val forceDnsMappingUpdated = updateMetaSnifferForceDnsMapping(configuration, null)
+    val parsePureIpUpdated = updateMetaSnifferParsePureIp(configuration, true)
+    val overrideDestinationUpdated = updateMetaSnifferOverrideDestination(configuration, false)
+
+    assertEquals(null, forceDnsMappingUpdated.sniffer.forceDnsMapping)
+    assertEquals(configuration.sniffer.sniff, forceDnsMappingUpdated.sniffer.sniff)
+    assertEquals(configuration.sniffer.parsePureIp, forceDnsMappingUpdated.sniffer.parsePureIp)
+
+    assertEquals(true, parsePureIpUpdated.sniffer.parsePureIp)
+    assertEquals(configuration.sniffer.sniff, parsePureIpUpdated.sniffer.sniff)
+    assertEquals(configuration.sniffer.forceDnsMapping, parsePureIpUpdated.sniffer.forceDnsMapping)
+
+    assertEquals(false, overrideDestinationUpdated.sniffer.overrideDestination)
+    assertEquals(configuration.sniffer.sniff, overrideDestinationUpdated.sniffer.sniff)
+    assertEquals(
+      configuration.sniffer.forceDnsMapping,
+      overrideDestinationUpdated.sniffer.forceDnsMapping,
+    )
+  }
+
+  @Test
+  fun updatesSnifferDomainListsAndPreservesSniffProtocols() {
+    val configuration = configurationWithSnifferOptions()
+    val forceDomain = listOf("+.force.example", "geosite:forced")
+    val skipDomain = listOf("+.skip.example")
+
+    val forceDomainUpdated = updateMetaSnifferForceDomain(configuration, forceDomain)
+    val skipDomainUpdated = updateMetaSnifferSkipDomain(configuration, skipDomain)
+
+    assertEquals(forceDomain, forceDomainUpdated.sniffer.forceDomain)
+    assertEquals(configuration.sniffer.skipDomain, forceDomainUpdated.sniffer.skipDomain)
+    assertEquals(configuration.sniffer.sniff, forceDomainUpdated.sniffer.sniff)
+
+    assertEquals(skipDomain, skipDomainUpdated.sniffer.skipDomain)
+    assertEquals(configuration.sniffer.forceDomain, skipDomainUpdated.sniffer.forceDomain)
+    assertEquals(configuration.sniffer.sniff, skipDomainUpdated.sniffer.sniff)
+  }
+
+  @Test
+  fun clearsSnifferAddressListsAndPreservesSniffProtocols() {
+    val configuration = configurationWithSnifferOptions()
+
+    val skipSrcAddressUpdated = updateMetaSnifferSkipSrcAddress(configuration, null)
+    val skipDstAddressUpdated = updateMetaSnifferSkipDstAddress(configuration, null)
+
+    assertEquals(null, skipSrcAddressUpdated.sniffer.skipSrcAddress)
+    assertEquals(configuration.sniffer.skipDstAddress, skipSrcAddressUpdated.sniffer.skipDstAddress)
+    assertEquals(configuration.sniffer.sniff, skipSrcAddressUpdated.sniffer.sniff)
+
+    assertEquals(null, skipDstAddressUpdated.sniffer.skipDstAddress)
+    assertEquals(configuration.sniffer.skipSrcAddress, skipDstAddressUpdated.sniffer.skipSrcAddress)
+    assertEquals(configuration.sniffer.sniff, skipDstAddressUpdated.sniffer.sniff)
+  }
+
   private fun configurationWithSniffProtocols(): ConfigurationOverride {
     return ConfigurationOverride(
       sniffer =
@@ -92,6 +162,24 @@ class MetaFeatureSettingsStateTest {
                   overrideDestination = true,
                 ),
             ),
+        )
+    )
+  }
+
+  private fun configurationWithSnifferOptions(): ConfigurationOverride {
+    val sniff = configurationWithSniffProtocols().sniffer.sniff
+    return ConfigurationOverride(
+      sniffer =
+        ConfigurationOverride.Sniffer(
+          enable = true,
+          sniff = sniff,
+          forceDnsMapping = true,
+          parsePureIp = false,
+          overrideDestination = true,
+          forceDomain = listOf("+.force.test"),
+          skipDomain = listOf("+.skip.test"),
+          skipSrcAddress = listOf("192.0.2.0/24"),
+          skipDstAddress = listOf("198.51.100.0/24"),
         )
     )
   }

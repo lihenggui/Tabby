@@ -19,6 +19,14 @@ import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.planGeoFileImport
+import com.github.kr328.clash.settings.ui.updateMetaSnifferEnable
+import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDnsMapping
+import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDomain
+import com.github.kr328.clash.settings.ui.updateMetaSnifferOverrideDestination
+import com.github.kr328.clash.settings.ui.updateMetaSnifferParsePureIp
+import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDomain
+import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDstAddress
+import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipSrcAddress
 import com.github.kr328.clash.settings.ui.updateSniffProtocolOverrideDestination
 import com.github.kr328.clash.settings.ui.updateSniffProtocolPorts
 import kotlinx.coroutines.Dispatchers
@@ -113,7 +121,7 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
     }
 
   override fun updateSnifferEnable(value: Boolean?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(enable = value))
+    updateMetaSnifferEnable(it, value)
   }
 
   override fun updateSniffHttpPorts(value: List<String>?) = configuration.update {
@@ -141,31 +149,31 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   }
 
   override fun updateForceDnsMapping(value: Boolean?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(forceDnsMapping = value))
+    updateMetaSnifferForceDnsMapping(it, value)
   }
 
   override fun updateParsePureIp(value: Boolean?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(parsePureIp = value))
+    updateMetaSnifferParsePureIp(it, value)
   }
 
   override fun updateOverrideDestination(value: Boolean?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(overrideDestination = value))
+    updateMetaSnifferOverrideDestination(it, value)
   }
 
   override fun updateForceDomain(value: List<String>?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(forceDomain = value))
+    updateMetaSnifferForceDomain(it, value)
   }
 
   override fun updateSkipDomain(value: List<String>?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(skipDomain = value))
+    updateMetaSnifferSkipDomain(it, value)
   }
 
   override fun updateSkipSrcAddress(value: List<String>?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(skipSrcAddress = value))
+    updateMetaSnifferSkipSrcAddress(it, value)
   }
 
   override fun updateSkipDstAddress(value: List<String>?) = configuration.update {
-    it.copy(sniffer = it.sniffer.copy(skipDstAddress = value))
+    updateMetaSnifferSkipDstAddress(it, value)
   }
 
   sealed interface ImportResult {
