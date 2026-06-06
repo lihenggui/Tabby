@@ -15,6 +15,7 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.glue.util.format
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.LogcatService
 import com.github.kr328.clash.log.R
@@ -25,9 +26,11 @@ import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
 import com.github.kr328.clash.log.ui.withMessages
 import com.github.kr328.clash.log.ui.withStreaming
-import com.github.kr328.clash.log.util.LogcatFilter
+import com.github.kr328.clash.log.util.LogcatExportWriter
 import com.github.kr328.clash.log.util.LogcatReader
+import java.io.BufferedWriter
 import java.io.OutputStreamWriter
+import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration.Companion.milliseconds
@@ -271,11 +274,17 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
 
   private suspend fun writeLogTo(messages: List<LogMessage>, file: LogFile, uri: Uri) =
     withContext(Dispatchers.IO) {
-      LogcatFilter(
-          OutputStreamWriter(checkNotNull(application.contentResolver.openOutputStream(uri))),
-          application,
+      BufferedWriter(
+          OutputStreamWriter(checkNotNull(application.contentResolver.openOutputStream(uri)))
         )
-        .use { filter ->
+        .use { writer ->
+          val filter =
+            LogcatExportWriter(
+              output = writer,
+              formatHeaderTime = { created -> Date(created).format(application) },
+              formatMessageTime = { time -> Date(time).format(application, includeDate = false) },
+            )
+
           uiState.update { it.withExportStarted(messages.size) }
 
           try {

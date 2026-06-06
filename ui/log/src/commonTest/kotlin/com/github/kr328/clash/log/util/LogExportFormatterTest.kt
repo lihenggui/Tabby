@@ -31,4 +31,23 @@ class LogExportFormatterTest {
       ),
     )
   }
+
+  @Test
+  fun exportWriterWritesHeaderAndMessagesWithFormattedTimes() {
+    val output = StringBuilder()
+    val writer =
+      LogcatExportWriter(
+        output = output,
+        formatHeaderTime = { time -> "created:$time" },
+        formatMessageTime = { time -> "time:$time" },
+      )
+
+    writer.writeHeader(1000)
+    writer.writeMessage(LogMessage(LogMessage.Level.Debug, "debug message", 2000))
+
+    assertEquals(
+      "# Capture on created:1000\n" + "   time:2000   Debug: debug message\n",
+      output.toString(),
+    )
+  }
 }
