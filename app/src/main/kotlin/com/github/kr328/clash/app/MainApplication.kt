@@ -49,28 +49,20 @@ class MainApplication : Application() {
     clashDir.mkdirs()
 
     val updateDate = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
-    val geoipFile = File(clashDir, "geoip.metadb")
-    if (geoipFile.exists() && geoipFile.lastModified() < updateDate) {
-      geoipFile.delete()
-    }
-    if (!geoipFile.exists()) {
-      geoipFile.outputStream().use { assets.open("geoip.metadb").copyTo(it) }
-    }
-
-    val geositeFile = File(clashDir, "geosite.dat")
-    if (geositeFile.exists() && geositeFile.lastModified() < updateDate) {
-      geositeFile.delete()
-    }
-    if (!geositeFile.exists()) {
-      geositeFile.outputStream().use { assets.open("geosite.dat").copyTo(it) }
-    }
-
-    val asnFile = File(clashDir, "ASN.mmdb")
-    if (asnFile.exists() && asnFile.lastModified() < updateDate) {
-      asnFile.delete()
-    }
-    if (!asnFile.exists()) {
-      asnFile.outputStream().use { assets.open("ASN.mmdb").copyTo(it) }
+    tabbyGeoAssets().forEach { asset ->
+      val geoFile = File(clashDir, asset.outputName)
+      if (
+        tabbyGeoFileNeedsRefresh(
+          fileExists = geoFile.exists(),
+          fileLastModifiedMillis = geoFile.lastModified(),
+          packageLastUpdateMillis = updateDate,
+        )
+      ) {
+        geoFile.delete()
+      }
+      if (tabbyGeoFileNeedsExtract(fileExists = geoFile.exists())) {
+        geoFile.outputStream().use { assets.open(asset.assetName).copyTo(it) }
+      }
     }
   }
 
