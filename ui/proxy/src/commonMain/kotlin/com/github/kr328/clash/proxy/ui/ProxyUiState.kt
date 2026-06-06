@@ -152,6 +152,16 @@ internal sealed interface ProxyDelayTestEffect {
   data object Ignore : ProxyDelayTestEffect
 }
 
+internal sealed interface ProxySelectedAction {
+  data class PatchSelector(
+    val index: Int,
+    val groupName: String,
+    val proxyName: String,
+  ) : ProxySelectedAction
+
+  data object Ignore : ProxySelectedAction
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -304,6 +314,37 @@ internal fun proxyDelayTestAction(
         effect = ProxyDelayTestEffect.Ignore,
       )
   }
+}
+
+internal fun proxySelectedAction(
+  state: ProxyUiState,
+  index: Int,
+  name: String,
+): ProxySelectedAction {
+  return when (val selection = proxyGroupSelectionAction(state.groupNames, index)) {
+    is ProxyGroupSelectionAction.SelectGroup ->
+      ProxySelectedAction.PatchSelector(
+        index = index,
+        groupName = selection.name,
+        proxyName = name,
+      )
+    ProxyGroupSelectionAction.Ignore -> ProxySelectedAction.Ignore
+  }
+}
+
+internal fun proxySelectedProxies(
+  selectedProxies: List<SelectedProxy>,
+  index: Int,
+  name: String,
+): List<SelectedProxy> {
+  return selectedProxies.withSelectedProxy(index, name)
+}
+
+internal fun proxySelectedUiState(
+  state: ProxyUiState,
+  index: Int,
+): ProxyUiState {
+  return state.withProxyGroupState(index) { it.withProxySelectionRefreshed() }
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

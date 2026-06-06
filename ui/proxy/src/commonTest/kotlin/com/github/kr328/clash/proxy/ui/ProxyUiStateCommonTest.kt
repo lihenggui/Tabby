@@ -370,6 +370,61 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxySelectedActionPatchesSelectorForGroupIndex() {
+    assertEquals(
+      ProxySelectedAction.PatchSelector(
+        index = 1,
+        groupName = "Auto",
+        proxyName = "Direct",
+      ),
+      proxySelectedAction(
+        state = ProxyUiState(groupNames = listOf("Proxy", "Auto")),
+        index = 1,
+        name = "Direct",
+      ),
+    )
+  }
+
+  @Test
+  fun proxySelectedActionIgnoresMissingGroupIndex() {
+    assertEquals(
+      ProxySelectedAction.Ignore,
+      proxySelectedAction(
+        state = ProxyUiState(groupNames = listOf("Proxy")),
+        index = 1,
+        name = "Direct",
+      ),
+    )
+  }
+
+  @Test
+  fun proxySelectedProxiesUpdatesSelectedProxyByIndex() {
+    val selected = listOf(SelectedProxy("?"), SelectedProxy("Proxy"))
+    val updated = proxySelectedProxies(selected, index = 1, name = "Direct")
+    val unchanged = proxySelectedProxies(selected, index = 3, name = "Direct")
+
+    assertEquals(listOf(SelectedProxy("?"), SelectedProxy("Direct")), updated)
+    assertSame(selected, unchanged)
+  }
+
+  @Test
+  fun proxySelectedUiStateRefreshesGroupByIndex() {
+    val state =
+      ProxyUiState(
+        groups =
+          listOf(
+            ProxyGroupUiState(refreshVersion = 2),
+            ProxyGroupUiState(refreshVersion = 4),
+          )
+      )
+    val updated = proxySelectedUiState(state, index = 1)
+    val unchanged = proxySelectedUiState(state, index = 2)
+
+    assertEquals(listOf(2, 5), updated.groups.map(ProxyGroupUiState::refreshVersion))
+    assertSame(state, unchanged)
+  }
+
+  @Test
   fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
     assertEquals(
       ProxyGroupSelectionAction.SelectGroup("Auto"),

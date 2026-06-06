@@ -22,6 +22,7 @@ import com.github.kr328.clash.proxy.ui.ProxyOverrideModeEffect
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
+import com.github.kr328.clash.proxy.ui.ProxySelectedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
@@ -35,6 +36,9 @@ import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
+import com.github.kr328.clash.proxy.ui.proxySelectedAction
+import com.github.kr328.clash.proxy.ui.proxySelectedProxies
+import com.github.kr328.clash.proxy.ui.proxySelectedUiState
 import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
@@ -44,7 +48,6 @@ import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
-import com.github.kr328.clash.proxy.ui.withProxySelectionRefreshed
 import com.github.kr328.clash.proxy.ui.withSelectedProxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -167,16 +170,13 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onProxySelected(index: Int, name: String) {
-    val groupName =
-      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
-        is ProxyGroupSelectionAction.SelectGroup -> action.name
-        ProxyGroupSelectionAction.Ignore -> return
-      }
-
-    viewModelScope.launch {
-      engineController.patchSelector(groupName, name)
-      selectedProxies.update { it.withSelectedProxy(index, name) }
-      updateGroupState(index) { it.withProxySelectionRefreshed() }
+    when (val action = proxySelectedAction(uiState.value, index, name)) {
+      is ProxySelectedAction.PatchSelector ->
+        viewModelScope.launch {
+          engineController.patchSelector(action.groupName, action.proxyName)
+          applyProxySelectedPatch(action.index, action.proxyName)
+        }
+      ProxySelectedAction.Ignore -> Unit
     }
   }
 
@@ -292,6 +292,17 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         }
       ProxyDelayTestEffect.Ignore -> Unit
     }
+  }
+
+  private fun applyProxySelectedPatch(index: Int, name: String) {
+    selectedProxies.update { current ->
+      proxySelectedProxies(
+        selectedProxies = current,
+        index = index,
+        name = name,
+      )
+    }
+    uiState.update { current -> proxySelectedUiState(current, index) }
   }
 
   private fun updateGroupState(
