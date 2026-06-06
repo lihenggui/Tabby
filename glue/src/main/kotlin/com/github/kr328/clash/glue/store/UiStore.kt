@@ -8,9 +8,9 @@ import com.github.kr328.clash.common.store.Store
 import com.github.kr328.clash.common.store.asStoreProvider
 import com.github.kr328.clash.common.util.mainActivityAlias
 import com.github.kr328.clash.common.util.unsafeLazy
+import com.github.kr328.clash.core.model.AccessControlSort
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.ProxySort
-import com.github.kr328.clash.glue.model.AppInfo
 import com.github.kr328.clash.settingsstore.StoreProviderMigration
 import com.github.kr328.clash.settingsstore.asSettingsStoreProvider
 import kotlinx.coroutines.channels.awaitClose
@@ -84,11 +84,11 @@ class UiStore(context: Context) {
 
   var proxyLastGroup: String by store.string(key = "proxy_last_group", defaultValue = "")
 
-  var accessControlSort: AppInfo.Sorter by
+  var accessControlSort: AccessControlSort by
     store.enum(
       key = "access_control_sort",
-      defaultValue = Label,
-      values = AppInfo.Sorter.entries.toTypedArray(),
+      defaultValue = AccessControlSort.Label,
+      values = AccessControlSort.entries.toTypedArray(),
     )
 
   var accessControlReverse: Boolean by
@@ -106,7 +106,7 @@ class UiStore(context: Context) {
     val proxyLine: Int,
     val proxySort: ProxySort,
     val proxyLastGroup: String,
-    val accessControlSort: AppInfo.Sorter,
+    val accessControlSort: AccessControlSort,
     val accessControlReverse: Boolean,
     val accessControlSystemApp: Boolean,
   )
@@ -138,7 +138,7 @@ class UiStore(context: Context) {
             int("proxy_line", defaultValue = 2)
             string("proxy_sort", defaultValue = ProxySort.Default.name)
             string("proxy_last_group", defaultValue = "")
-            string("access_control_sort", defaultValue = AppInfo.Sorter.Label.name)
+            string("access_control_sort", defaultValue = AccessControlSort.Label.name)
             boolean("access_control_reverse", defaultValue = false)
             boolean("access_control_system_app", defaultValue = false)
           }

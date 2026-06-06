@@ -17,6 +17,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.compat.getInstalledPackagesCompat
+import com.github.kr328.clash.core.model.AccessControlSort
 import com.github.kr328.clash.glue.model.AppInfo
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
@@ -24,11 +25,17 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
+import com.github.kr328.clash.settings.ui.AccessControlSettingsState
 import com.github.kr328.clash.settings.ui.exportAccessControlPackages
 import com.github.kr328.clash.settings.ui.importAccessControlPackages
 import com.github.kr328.clash.settings.ui.invertAccessControlPackages
 import com.github.kr328.clash.settings.ui.selectAllAccessControlPackages
-import com.github.kr328.clash.settings.ui.toggleAccessControlPackage
+import com.github.kr328.clash.settings.ui.selectNoAccessControlPackages
+import com.github.kr328.clash.settings.ui.toggleAccessControlSelectedPackage
+import com.github.kr328.clash.settings.ui.updateAccessControlReverse
+import com.github.kr328.clash.settings.ui.updateAccessControlSelectedPackages
+import com.github.kr328.clash.settings.ui.updateAccessControlShowSystemApps
+import com.github.kr328.clash.settings.ui.updateAccessControlSort
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -52,10 +59,13 @@ internal class AccessControlViewModel(app: Application) :
       MutableStateFlow(
         UiState(
           apps = emptyList(),
-          selected = emptySet(),
-          sort = uiStore.accessControlSort,
-          reverse = uiStore.accessControlReverse,
-          showSystemApps = uiStore.accessControlSystemApp,
+          settings =
+            AccessControlSettingsState(
+              selected = emptySet(),
+              sort = uiStore.accessControlSort,
+              reverse = uiStore.accessControlReverse,
+              showSystemApps = uiStore.accessControlSystemApp,
+            ),
         )
       )
 
@@ -64,7 +74,9 @@ internal class AccessControlViewModel(app: Application) :
   init {
     viewModelScope.launch {
       val selected = withContext(Dispatchers.IO) { serviceStore.accessControlPackages }
-      uiState.update { it.copy(selected = selected) }
+      uiState.update {
+        it.copy(settings = updateAccessControlSelectedPackages(it.settings, selected))
+      }
       reloadApps()
     }
   }
@@ -72,7 +84,7 @@ internal class AccessControlViewModel(app: Application) :
   override fun onStop(owner: LifecycleOwner) {
     // Intended to use non-viewModel scope as we need the action to be called on disposed.
     Global.launch {
-      val selected = uiState.value.selected
+      val selected = uiState.value.settings.selected
       val persistedSelection = serviceStore.accessControlPackages
       val changed = selected != persistedSelection
 
@@ -100,7 +112,7 @@ internal class AccessControlViewModel(app: Application) :
 
   override fun toggleApp(packageName: String) {
     uiState.update { state ->
-      state.copy(selected = toggleAccessControlPackage(state.selected, packageName))
+      state.copy(settings = toggleAccessControlSelectedPackage(state.settings, packageName))
     }
   }
 
@@ -108,14 +120,18 @@ internal class AccessControlViewModel(app: Application) :
     viewModelScope.launch {
       val all =
         withContext(Dispatchers.Default) {
-          selectAllAccessControlPackages(uiState.value.apps.map(AppInfo::packageName))
+          val state = uiState.value
+          selectAllAccessControlPackages(
+            state = state.settings,
+            packageNames = state.apps.map(AppInfo::packageName),
+          )
         }
-      uiState.update { it.copy(selected = all) }
+      uiState.update { it.copy(settings = all) }
     }
   }
 
   override fun selectNone() {
-    uiState.update { it.copy(selected = emptySet()) }
+    uiState.update { it.copy(settings = selectNoAccessControlPackages(it.settings)) }
   }
 
   override fun selectInvert() {
@@ -124,11 +140,11 @@ internal class AccessControlViewModel(app: Application) :
         withContext(Dispatchers.Default) {
           val state = uiState.value
           invertAccessControlPackages(
-            selected = state.selected,
+            state = state.settings,
             packageNames = state.apps.map(AppInfo::packageName),
           )
         }
-      uiState.update { it.copy(selected = selected) }
+      uiState.update { it.copy(settings = selected) }
     }
   }
 
@@ -140,42 +156,46 @@ internal class AccessControlViewModel(app: Application) :
       val state = uiState.value
       val selected =
         importAccessControlPackages(
+          state = state.settings,
           clipboardText = data.getItemAt(0).text?.toString(),
           installedPackageNames = state.apps.map(AppInfo::packageName),
         )
-      uiState.update { it.copy(selected = selected) }
+      uiState.update { it.copy(settings = selected) }
     }
   }
 
   override fun exportToClipboard() {
     val clipboard = appContext.getSystemService<ClipboardManager>()
     val data =
-      ClipData.newPlainText("packages", exportAccessControlPackages(uiState.value.selected))
+      ClipData.newPlainText(
+        "packages",
+        exportAccessControlPackages(uiState.value.settings.selected),
+      )
     clipboard?.setPrimaryClip(data)
   }
 
-  override fun updateSort(sort: AppInfo.Sorter) {
+  override fun updateSort(sort: AccessControlSort) {
     uiStore.accessControlSort = sort
-    uiState.update { it.copy(sort = sort) }
+    uiState.update { it.copy(settings = updateAccessControlSort(it.settings, sort)) }
     reloadApps()
   }
 
   override fun updateReverse(reverse: Boolean) {
     uiStore.accessControlReverse = reverse
-    uiState.update { it.copy(reverse = reverse) }
+    uiState.update { it.copy(settings = updateAccessControlReverse(it.settings, reverse)) }
     reloadApps()
   }
 
   override fun updateShowSystemApps(show: Boolean) {
     uiStore.accessControlSystemApp = show
-    uiState.update { it.copy(showSystemApps = show) }
+    uiState.update { it.copy(settings = updateAccessControlShowSystemApps(it.settings, show)) }
     reloadApps()
   }
 
   private fun reloadApps() {
     reloadAppsJob?.cancel()
     reloadAppsJob = viewModelScope.launch {
-      val state = uiState.value
+      val state = uiState.value.settings
       val apps =
         loadApps(
           selected = state.selected,
@@ -190,13 +210,14 @@ internal class AccessControlViewModel(app: Application) :
 
   private suspend fun loadApps(
     selected: Set<String>,
-    sort: AppInfo.Sorter,
+    sort: AccessControlSort,
     reverse: Boolean,
     showSystemApps: Boolean,
   ): List<AppInfo> =
     withContext(Dispatchers.IO) {
       val base = compareByDescending<AppInfo> { it.packageName in selected }
-      val comparator = if (reverse) base.thenDescending(sort) else base.then(sort)
+      val comparator =
+        if (reverse) base.thenDescending(sort.appComparator) else base.then(sort.appComparator)
 
       val pm = appContext.packageManager
       pm
@@ -219,12 +240,18 @@ internal class AccessControlViewModel(app: Application) :
 
   data class UiState(
     val apps: List<AppInfo>,
-    val selected: Set<String>,
-    val sort: AppInfo.Sorter,
-    val reverse: Boolean,
-    val showSystemApps: Boolean,
+    val settings: AccessControlSettingsState,
   )
 }
+
+private val AccessControlSort.appComparator: Comparator<AppInfo>
+  get() =
+    when (this) {
+      AccessControlSort.Label -> compareBy(AppInfo::label)
+      AccessControlSort.PackageName -> compareBy(AppInfo::packageName)
+      AccessControlSort.InstallTime -> compareBy(AppInfo::installTime)
+      AccessControlSort.UpdateTime -> compareBy(AppInfo::updateDate)
+    }
 
 private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {
   val applicationInfo = checkNotNull(applicationInfo)

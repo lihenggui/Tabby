@@ -9,6 +9,10 @@ class ModelSerializationTest {
   @Test
   fun serializesSettingsEnums() {
     assertEquals(
+      AccessControlSort.UpdateTime,
+      Json.decodeFromString(Json.encodeToString(AccessControlSort.UpdateTime)),
+    )
+    assertEquals(
       AccessControlMode.DenySelected,
       Json.decodeFromString(Json.encodeToString(AccessControlMode.DenySelected)),
     )

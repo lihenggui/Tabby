@@ -49,6 +49,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.core.model.AccessControlSort
 import com.github.kr328.clash.glue.model.AppInfo
 import com.github.kr328.clash.settings.R
 import com.github.kr328.clash.settings.vm.AccessControlViewModel
@@ -79,10 +80,10 @@ internal fun AccessControlScreen(
 
   AccessControlContent(
     apps = uiState.apps,
-    selected = uiState.selected,
-    sort = uiState.sort,
-    reverse = uiState.reverse,
-    showSystemApps = uiState.showSystemApps,
+    selected = uiState.settings.selected,
+    sort = uiState.settings.sort,
+    reverse = uiState.settings.reverse,
+    showSystemApps = uiState.settings.showSystemApps,
     actions = viewModel,
     modifier = modifier,
   )
@@ -92,7 +93,7 @@ internal fun AccessControlScreen(
 private fun AccessControlContent(
   apps: List<AppInfo>,
   selected: Set<String>,
-  sort: AppInfo.Sorter,
+  sort: AccessControlSort,
   reverse: Boolean,
   showSystemApps: Boolean,
   actions: AccessControlActions,
@@ -243,7 +244,7 @@ private fun ColumnScope.AccessControlSearchContent(
 
 @Composable
 private fun ColumnScope.AccessControlMenuContent(
-  sort: AppInfo.Sorter,
+  sort: AccessControlSort,
   reverse: Boolean,
   showSystemApps: Boolean,
   onSelectAll: () -> Unit,
@@ -251,7 +252,7 @@ private fun ColumnScope.AccessControlMenuContent(
   onSelectInvert: () -> Unit,
   onImport: () -> Unit,
   onExport: () -> Unit,
-  onUpdateSort: (AppInfo.Sorter) -> Unit,
+  onUpdateSort: (AccessControlSort) -> Unit,
   onUpdateReverse: (Boolean) -> Unit,
   onUpdateShowSystemApps: (Boolean) -> Unit,
 ) {
@@ -270,23 +271,23 @@ private fun ColumnScope.AccessControlMenuContent(
     AccessControlMenuSectionTitle(text = stringResource(CommonR.string.sort))
     AccessControlMenuSortAction(
       text = stringResource(CommonR.string.name),
-      checked = sort == Label,
-      onClick = { onUpdateSort(Label) },
+      checked = sort == AccessControlSort.Label,
+      onClick = { onUpdateSort(AccessControlSort.Label) },
     )
     AccessControlMenuSortAction(
       text = stringResource(R.string.package_name),
-      checked = sort == PackageName,
-      onClick = { onUpdateSort(PackageName) },
+      checked = sort == AccessControlSort.PackageName,
+      onClick = { onUpdateSort(AccessControlSort.PackageName) },
     )
     AccessControlMenuSortAction(
       text = stringResource(R.string.install_time),
-      checked = sort == InstallTime,
-      onClick = { onUpdateSort(InstallTime) },
+      checked = sort == AccessControlSort.InstallTime,
+      onClick = { onUpdateSort(AccessControlSort.InstallTime) },
     )
     AccessControlMenuSortAction(
       text = stringResource(R.string.update_time),
-      checked = sort == UpdateTime,
-      onClick = { onUpdateSort(UpdateTime) },
+      checked = sort == AccessControlSort.UpdateTime,
+      onClick = { onUpdateSort(AccessControlSort.UpdateTime) },
     )
     AccessControlMenuCheckAction(
       text = stringResource(R.string.reverse),
@@ -412,7 +413,7 @@ interface AccessControlActions {
 
   fun exportToClipboard() = Unit
 
-  fun updateSort(sort: AppInfo.Sorter) = Unit
+  fun updateSort(sort: AccessControlSort) = Unit
 
   fun updateReverse(reverse: Boolean) = Unit
 
@@ -442,7 +443,7 @@ private fun AccessControlContentPreview() {
         ),
       ),
     selected = setOf("com.example.alpha"),
-    sort = Label,
+    sort = AccessControlSort.Label,
     reverse = false,
     showSystemApps = true,
     actions = object : AccessControlActions {},
@@ -456,7 +457,7 @@ private fun AccessControlMenuSheetPreview() {
   Surface {
     Column {
       AccessControlMenuContent(
-        sort = Label,
+        sort = AccessControlSort.Label,
         reverse = false,
         showSystemApps = true,
         onSelectAll = {},
