@@ -14,6 +14,17 @@ class LogFileMessageCodecTest {
   }
 
   @Test
+  fun messageWriterAppendsEncodedMessageLine() {
+    val output = StringBuilder()
+    val writer = LogFileMessageWriter(output)
+
+    writer.appendMessage(LogMessage(LogMessage.Level.Debug, "proxy: selected", 1234))
+    writer.appendMessage(LogMessage(LogMessage.Level.Info, "connected", 5678))
+
+    assertEquals("1234:Debug:proxy: selected\n5678:Info:connected\n", output.toString())
+  }
+
+  @Test
   fun decodeMessageLine() {
     assertEquals(
       LogMessage(LogMessage.Level.Warning, "proxy: changed", 1234),
