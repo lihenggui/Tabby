@@ -58,7 +58,7 @@ internal fun tabbyNavigationActions(backStack: MutableList<NavKey>): TabbyNaviga
     relaunchHome = { backStack.replaceWith(HomeRoute.Home) },
   )
 
-private fun MutableList<NavKey>.replaceWith(route: NavKey) {
+internal fun MutableList<NavKey>.replaceWith(route: NavKey) {
   clear()
   add(route)
 }

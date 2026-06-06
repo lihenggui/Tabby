@@ -42,7 +42,6 @@ import com.github.kr328.clash.common.util.unsafeLazy
 import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.crash.CrashRoute
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
@@ -50,9 +49,6 @@ import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.home.HomeRoute
-import com.github.kr328.clash.log.LogRoute
-import com.github.kr328.clash.profile.ProfilesRoute
-import com.github.kr328.clash.ui.nav.addIfNotLast
 import java.util.Locale
 import kotlinx.coroutines.launch
 
@@ -106,18 +102,17 @@ class MainActivity : ComponentActivity() {
       }
       Intents.ACTION_PROPERTIES -> {
         uuid?.let { uuid ->
-          backStack.addIfNotLast(ProfilesRoute.Profiles(openPropertyUuid = uuid))
+          backStack.handleTabbyExternalRouteAction(
+            TabbyExternalRouteAction.OpenProfileProperties(uuid)
+          )
         }
       }
-      Intents.ACTION_LOGCAT -> backStack.addIfNotLast(LogRoute.Root)
-      Intents.ACTION_APP_CRASHED -> {
-        backStack.clear()
-        backStack.add(CrashRoute.AppCrashed)
-      }
-      Intents.ACTION_APK_BROKEN -> {
-        backStack.clear()
-        backStack.add(CrashRoute.ApkBroken)
-      }
+      Intents.ACTION_LOGCAT ->
+        backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenLogs)
+      Intents.ACTION_APP_CRASHED ->
+        backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenAppCrashed)
+      Intents.ACTION_APK_BROKEN ->
+        backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenApkBroken)
     }
   }
 
@@ -241,7 +236,9 @@ class MainActivity : ComponentActivity() {
           uri.getQueryParameter("name") ?: application.getString(CommonR.string.new_profile)
         val uuid =
           profileRepository.create(type, name).also { profileRepository.patch(it, name, url, 0) }
-        backStack.addIfNotLast(ProfilesRoute.Profiles(openPropertyUuid = uuid))
+        backStack.handleTabbyExternalRouteAction(
+          TabbyExternalRouteAction.OpenProfileProperties(uuid)
+        )
       }
     }
 

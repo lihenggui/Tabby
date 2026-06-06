@@ -9,6 +9,7 @@ import com.github.kr328.clash.proxy.ProxyRoute
 import com.github.kr328.clash.settings.SettingsRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.uuid.Uuid
 
 class TabbyNavigationActionsTest {
   @Test
@@ -51,5 +52,42 @@ class TabbyNavigationActionsTest {
 
     actions.relaunchHome()
     assertEquals(listOf<NavKey>(HomeRoute.Home), backStack)
+  }
+
+  @Test
+  fun tabbyExternalRouteActionsOpenAndroidEntryRoutesFromCommonHandler() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+    val backStack = mutableListOf<NavKey>(HomeRoute.Home)
+
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenProfileProperties(uuid))
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenProfileProperties(uuid))
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenLogs)
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenLogs)
+
+    assertEquals(
+      listOf<NavKey>(
+        HomeRoute.Home,
+        ProfilesRoute.Profiles(openPropertyUuid = uuid),
+        LogRoute.Root,
+      ),
+      backStack,
+    )
+  }
+
+  @Test
+  fun tabbyExternalRouteActionsReplaceStackForCrashRoutes() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+    val backStack =
+      mutableListOf<NavKey>(
+        HomeRoute.Home,
+        ProfilesRoute.Profiles(openPropertyUuid = uuid),
+        LogRoute.Root,
+      )
+
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenAppCrashed)
+    assertEquals(listOf<NavKey>(CrashRoute.AppCrashed), backStack)
+
+    backStack.handleTabbyExternalRouteAction(TabbyExternalRouteAction.OpenApkBroken)
+    assertEquals(listOf<NavKey>(CrashRoute.ApkBroken), backStack)
   }
 }
