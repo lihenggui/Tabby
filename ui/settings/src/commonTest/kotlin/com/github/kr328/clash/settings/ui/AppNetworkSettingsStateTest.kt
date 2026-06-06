@@ -160,6 +160,31 @@ class AppNetworkSettingsStateTest {
   }
 
   @Test
+  fun mapsSystemProxyOptionAvailabilityFromPlatformSdk() {
+    assertEquals(
+      false,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        sdkVersion = 28,
+        systemProxySdkVersion = 29,
+      ),
+    )
+    assertEquals(
+      true,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        sdkVersion = 29,
+        systemProxySdkVersion = 29,
+      ),
+    )
+    assertEquals(
+      true,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        sdkVersion = 30,
+        systemProxySdkVersion = 29,
+      ),
+    )
+  }
+
+  @Test
   fun updatesNetworkSettingsBooleanFieldsAndPreservesOtherValues() {
     val uiState = networkSettingsUiState()
 

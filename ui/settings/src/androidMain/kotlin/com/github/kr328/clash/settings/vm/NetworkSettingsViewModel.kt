@@ -8,6 +8,7 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.NetworkSettingsUiState
+import com.github.kr328.clash.settings.ui.networkSettingsHasSystemProxyOptionFromPlatformSdk
 import com.github.kr328.clash.settings.ui.networkSettingsInitialUiState
 import com.github.kr328.clash.settings.ui.updateNetworkSettingsAccessControlMode
 import com.github.kr328.clash.settings.ui.updateNetworkSettingsAllowBypass
@@ -31,7 +32,11 @@ internal class NetworkSettingsViewModel(app: Application) : AndroidViewModel(app
     field =
       MutableStateFlow(
         networkSettingsInitialUiState(
-          hasSystemProxyOption = Build.VERSION.SDK_INT >= 29,
+          hasSystemProxyOption =
+            networkSettingsHasSystemProxyOptionFromPlatformSdk(
+              sdkVersion = Build.VERSION.SDK_INT,
+              systemProxySdkVersion = Build.VERSION_CODES.Q,
+            ),
           enableVpn = uiStore.enableVpn,
           bypassPrivateNetwork = serviceStore.bypassPrivateNetwork,
           dnsHijacking = serviceStore.dnsHijacking,

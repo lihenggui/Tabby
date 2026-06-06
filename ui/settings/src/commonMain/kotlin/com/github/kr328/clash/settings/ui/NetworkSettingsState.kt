@@ -2,6 +2,13 @@ package com.github.kr328.clash.settings.ui
 
 import com.github.kr328.clash.core.model.AccessControlMode
 
+internal fun networkSettingsHasSystemProxyOptionFromPlatformSdk(
+  sdkVersion: Int,
+  systemProxySdkVersion: Int,
+): Boolean {
+  return sdkVersion >= systemProxySdkVersion
+}
+
 internal fun updateNetworkSettingsEnableVpn(
   uiState: NetworkSettingsUiState,
   enableVpn: Boolean,
