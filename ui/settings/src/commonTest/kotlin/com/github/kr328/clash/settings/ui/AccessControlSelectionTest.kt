@@ -467,13 +467,22 @@ class AccessControlSelectionTest {
     val toggled = state.withToggledAccessControlPackage("com.example.beta")
     val selectedAll =
       state.withAllAccessControlPackages(apps.map(TestAccessControlApp::packageName))
+    val visibleSelectedAll =
+      state.withAllVisibleAccessControlPackages(TestAccessControlApp::packageName)
     val selectedNone = state.withNoAccessControlPackages()
     val inverted =
       state.withInvertedAccessControlPackages(apps.map(TestAccessControlApp::packageName))
+    val visibleInverted =
+      state.withInvertedVisibleAccessControlPackages(TestAccessControlApp::packageName)
     val imported =
       state.withImportedAccessControlPackages(
         clipboardText = "com.example.beta\ncom.example.missing",
         installedPackageNames = apps.map(TestAccessControlApp::packageName),
+      )
+    val visibleImported =
+      state.withImportedVisibleAccessControlPackages(
+        clipboardText = "com.example.beta\ncom.example.missing",
+        packageName = TestAccessControlApp::packageName,
       )
     val sortUpdated = state.withAccessControlSort(AccessControlSort.UpdateTime)
     val reverseUpdated = state.withAccessControlReverse(true)
@@ -486,9 +495,15 @@ class AccessControlSelectionTest {
     )
     assertEquals(setOf("com.example.alpha", "com.example.beta"), toggled.settings.selected)
     assertEquals(setOf("com.example.alpha", "com.example.beta"), selectedAll.settings.selected)
+    assertEquals(
+      setOf("com.example.alpha", "com.example.beta"),
+      visibleSelectedAll.settings.selected,
+    )
     assertEquals(emptySet(), selectedNone.settings.selected)
     assertEquals(setOf("com.example.beta"), inverted.settings.selected)
+    assertEquals(setOf("com.example.beta"), visibleInverted.settings.selected)
     assertEquals(setOf("com.example.beta"), imported.settings.selected)
+    assertEquals(setOf("com.example.beta"), visibleImported.settings.selected)
     assertEquals(AccessControlSort.UpdateTime, sortUpdated.settings.sort)
     assertEquals(true, reverseUpdated.settings.reverse)
     assertEquals(true, showSystemAppsUpdated.settings.showSystemApps)
@@ -496,9 +511,12 @@ class AccessControlSelectionTest {
     listOf(
         toggled,
         selectedAll,
+        visibleSelectedAll,
         selectedNone,
         inverted,
+        visibleInverted,
         imported,
+        visibleImported,
         sortUpdated,
         reverseUpdated,
         showSystemAppsUpdated,

@@ -36,9 +36,9 @@ import com.github.kr328.clash.settings.ui.withAccessControlReverse
 import com.github.kr328.clash.settings.ui.withAccessControlSelectedPackages
 import com.github.kr328.clash.settings.ui.withAccessControlShowSystemApps
 import com.github.kr328.clash.settings.ui.withAccessControlSort
-import com.github.kr328.clash.settings.ui.withAllAccessControlPackages
-import com.github.kr328.clash.settings.ui.withImportedAccessControlPackages
-import com.github.kr328.clash.settings.ui.withInvertedAccessControlPackages
+import com.github.kr328.clash.settings.ui.withAllVisibleAccessControlPackages
+import com.github.kr328.clash.settings.ui.withImportedVisibleAccessControlPackages
+import com.github.kr328.clash.settings.ui.withInvertedVisibleAccessControlPackages
 import com.github.kr328.clash.settings.ui.withNoAccessControlPackages
 import com.github.kr328.clash.settings.ui.withToggledAccessControlPackage
 import kotlin.time.Duration.Companion.seconds
@@ -127,7 +127,7 @@ internal class AccessControlViewModel(app: Application) :
       val all =
         withContext(Dispatchers.Default) {
           val state = uiState.value
-          state.withAllAccessControlPackages(packageNames = state.apps.map(AppInfo::packageName))
+          state.withAllVisibleAccessControlPackages(AppInfo::packageName)
         }
       uiState.update { all }
     }
@@ -142,9 +142,7 @@ internal class AccessControlViewModel(app: Application) :
       val selected =
         withContext(Dispatchers.Default) {
           val state = uiState.value
-          state.withInvertedAccessControlPackages(
-            packageNames = state.apps.map(AppInfo::packageName)
-          )
+          state.withInvertedVisibleAccessControlPackages(AppInfo::packageName)
         }
       uiState.update { selected }
     }
@@ -157,9 +155,9 @@ internal class AccessControlViewModel(app: Application) :
     if (data != null && data.itemCount > 0) {
       val state = uiState.value
       val selected =
-        state.withImportedAccessControlPackages(
+        state.withImportedVisibleAccessControlPackages(
           clipboardText = data.getItemAt(0).text?.toString(),
-          installedPackageNames = state.apps.map(AppInfo::packageName),
+          packageName = AppInfo::packageName,
         )
       uiState.update { selected }
     }

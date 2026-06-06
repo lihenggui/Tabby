@@ -31,6 +31,12 @@ internal fun <T> AccessControlUiState<T>.withAllAccessControlPackages(
   return copy(settings = selectAllAccessControlPackages(settings, packageNames))
 }
 
+internal fun <T> AccessControlUiState<T>.withAllVisibleAccessControlPackages(
+  packageName: (T) -> String
+): AccessControlUiState<T> {
+  return withAllAccessControlPackages(apps.map(packageName))
+}
+
 internal fun <T> AccessControlUiState<T>.withNoAccessControlPackages(): AccessControlUiState<T> {
   return copy(settings = selectNoAccessControlPackages(settings))
 }
@@ -41,12 +47,28 @@ internal fun <T> AccessControlUiState<T>.withInvertedAccessControlPackages(
   return copy(settings = invertAccessControlPackages(settings, packageNames))
 }
 
+internal fun <T> AccessControlUiState<T>.withInvertedVisibleAccessControlPackages(
+  packageName: (T) -> String
+): AccessControlUiState<T> {
+  return withInvertedAccessControlPackages(apps.map(packageName))
+}
+
 internal fun <T> AccessControlUiState<T>.withImportedAccessControlPackages(
   clipboardText: String?,
   installedPackageNames: Iterable<String>,
 ): AccessControlUiState<T> {
   return copy(
     settings = importAccessControlPackages(settings, clipboardText, installedPackageNames)
+  )
+}
+
+internal fun <T> AccessControlUiState<T>.withImportedVisibleAccessControlPackages(
+  clipboardText: String?,
+  packageName: (T) -> String,
+): AccessControlUiState<T> {
+  return withImportedAccessControlPackages(
+    clipboardText = clipboardText,
+    installedPackageNames = apps.map(packageName),
   )
 }
 
