@@ -1,6 +1,5 @@
 package com.github.kr328.clash.profile.ui
 
-import android.content.Context
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -12,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.glue.util.elapsedIntervalString
 import com.github.kr328.clash.glue.util.toDateStr
 import com.github.kr328.clash.glue.util.toString
@@ -62,7 +60,19 @@ internal fun ProfilesScreen(
   ProfilesContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    profiles = uiState.profiles.map { profile -> profile.toListItem(context, uiState.currentTime) },
+    profiles =
+      uiState.profiles.map { profile ->
+        profile.toProfileListItem(
+          currentTime = uiState.currentTime,
+          formatType = { type -> type.toString(context) },
+          formatUnsavedType = { typeText ->
+            context.getString(R.string.format_type_unsaved, typeText)
+          },
+          formatBytes = { bytes -> bytes.binaryBytes.toString() },
+          formatExpire = { expire -> expire.toDateStr() },
+          formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+        )
+      },
     allUpdating = uiState.allUpdating,
     hasUpdatableProfile = uiState.hasUpdatableProfile,
     onUpdateAll = viewModel::onUpdateAll,
@@ -72,36 +82,5 @@ internal fun ProfilesScreen(
     onEdit = viewModel::onEdit,
     onDuplicate = viewModel::onDuplicate,
     onDelete = viewModel::onDelete,
-  )
-}
-
-private fun Profile.toListItem(context: Context, currentTime: Long): ProfileListItem {
-  val profileTypeText =
-    if (pending) {
-      context.getString(R.string.format_type_unsaved, type.toString(context))
-    } else {
-      type.toString(context)
-    }
-  val showTraffic = download >= 2 && total > 1
-  val usageText =
-    if (showTraffic) {
-      "${(download + upload).binaryBytes} / ${total.binaryBytes}"
-    } else {
-      null
-    }
-  val progress =
-    if (showTraffic) {
-      ((download + upload).toDouble() / total.toDouble() * 1000).toInt().coerceIn(0, 1000)
-    } else {
-      0
-    }
-
-  return ProfileListItem(
-    profile = this,
-    typeText = profileTypeText,
-    usageText = usageText,
-    expireText = expire.takeIf { it != 0L }?.toDateStr(),
-    updatedAtText = (currentTime - updatedAt).elapsedIntervalString(context),
-    trafficProgress = progress,
   )
 }
