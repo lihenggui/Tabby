@@ -119,26 +119,21 @@ class MainActivity : ComponentActivity() {
     when (plan) {
       TabbyExternalQuickActionPlan.StartClash -> startClash()
       TabbyExternalQuickActionPlan.StopClash -> stopClash()
-      TabbyExternalQuickActionPlan.ShowAlreadyStarted ->
-        toast(R.string.external_control_already_started)
-      TabbyExternalQuickActionPlan.ShowAlreadyStopped ->
-        toast(R.string.external_control_already_stopped)
+      TabbyExternalQuickActionPlan.ShowAlreadyStarted,
+      TabbyExternalQuickActionPlan.ShowAlreadyStopped -> plan.androidToastResource()?.let(::toast)
     }
   }
 
   private fun startClash() {
-    when (tabbyStartClashResultAction(vpnPermissionRequired = startClashService() != null)) {
-      TabbyStartClashResultAction.ShowVpnPermissionRequired ->
-        toast(CommonR.string.unable_to_start_vpn)
-      TabbyStartClashResultAction.ShowStarted -> toast(R.string.external_control_started)
-    }
+    toast(
+      tabbyStartClashResultAction(vpnPermissionRequired = startClashService() != null)
+        .androidToastResource()
+    )
   }
 
   private fun stopClash() {
     stopClashService()
-    when (tabbyStopClashResultAction()) {
-      TabbyStopClashResultAction.ShowStopped -> toast(R.string.external_control_stopped)
-    }
+    toast(tabbyStopClashResultAction().androidToastResource())
   }
 
   private fun requestNotificationPermission() {
@@ -224,6 +219,26 @@ class MainActivity : ComponentActivity() {
 private fun Activity.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_LONG) {
   Toast.makeText(this, resId, duration).show()
 }
+
+private fun TabbyExternalQuickActionPlan.androidToastResource(): Int? =
+  tabbyExternalQuickActionPlanFeedbackResource(
+    plan = this,
+    alreadyStartedResource = R.string.external_control_already_started,
+    alreadyStoppedResource = R.string.external_control_already_stopped,
+  )
+
+private fun TabbyStartClashResultAction.androidToastResource(): Int =
+  tabbyStartClashResultFeedbackResource(
+    action = this,
+    vpnPermissionRequiredResource = CommonR.string.unable_to_start_vpn,
+    startedResource = R.string.external_control_started,
+  )
+
+private fun TabbyStopClashResultAction.androidToastResource(): Int =
+  tabbyStopClashResultFeedbackResource(
+    action = this,
+    stoppedResource = R.string.external_control_stopped,
+  )
 
 private fun TabbyEdgeToEdgeSystemBarMode.androidSystemBarStyle(): SystemBarStyle {
   return forcedDarkMode?.let { forcedDarkMode ->

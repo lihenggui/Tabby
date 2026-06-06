@@ -98,3 +98,33 @@ fun tabbyStartClashResultAction(vpnPermissionRequired: Boolean): TabbyStartClash
 
 fun tabbyStopClashResultAction(): TabbyStopClashResultAction =
   TabbyStopClashResultAction.ShowStopped
+
+fun tabbyExternalQuickActionPlanFeedbackResource(
+  plan: TabbyExternalQuickActionPlan,
+  alreadyStartedResource: Int,
+  alreadyStoppedResource: Int,
+): Int? =
+  when (plan) {
+    TabbyExternalQuickActionPlan.ShowAlreadyStarted -> alreadyStartedResource
+    TabbyExternalQuickActionPlan.ShowAlreadyStopped -> alreadyStoppedResource
+    TabbyExternalQuickActionPlan.StartClash,
+    TabbyExternalQuickActionPlan.StopClash -> null
+  }
+
+fun tabbyStartClashResultFeedbackResource(
+  action: TabbyStartClashResultAction,
+  vpnPermissionRequiredResource: Int,
+  startedResource: Int,
+): Int =
+  when (action) {
+    TabbyStartClashResultAction.ShowVpnPermissionRequired -> vpnPermissionRequiredResource
+    TabbyStartClashResultAction.ShowStarted -> startedResource
+  }
+
+fun tabbyStopClashResultFeedbackResource(
+  action: TabbyStopClashResultAction,
+  stoppedResource: Int,
+): Int =
+  when (action) {
+    TabbyStopClashResultAction.ShowStopped -> stoppedResource
+  }

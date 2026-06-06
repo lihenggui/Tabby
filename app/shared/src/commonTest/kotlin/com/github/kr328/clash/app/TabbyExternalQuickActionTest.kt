@@ -191,4 +191,71 @@ class TabbyExternalQuickActionTest {
   fun tabbyStopClashResultActionShowsStopped() {
     assertEquals(TabbyStopClashResultAction.ShowStopped, tabbyStopClashResultAction())
   }
+
+  @Test
+  fun tabbyExternalQuickActionPlanFeedbackResourceMapsFeedbackOnlyPlans() {
+    assertEquals(
+      1,
+      tabbyExternalQuickActionPlanFeedbackResource(
+        plan = TabbyExternalQuickActionPlan.ShowAlreadyStarted,
+        alreadyStartedResource = 1,
+        alreadyStoppedResource = 2,
+      ),
+    )
+    assertEquals(
+      2,
+      tabbyExternalQuickActionPlanFeedbackResource(
+        plan = TabbyExternalQuickActionPlan.ShowAlreadyStopped,
+        alreadyStartedResource = 1,
+        alreadyStoppedResource = 2,
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyExternalQuickActionPlanFeedbackResource(
+        plan = TabbyExternalQuickActionPlan.StartClash,
+        alreadyStartedResource = 1,
+        alreadyStoppedResource = 2,
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyExternalQuickActionPlanFeedbackResource(
+        plan = TabbyExternalQuickActionPlan.StopClash,
+        alreadyStartedResource = 1,
+        alreadyStoppedResource = 2,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyStartClashResultFeedbackResourceMapsResultActions() {
+    assertEquals(
+      1,
+      tabbyStartClashResultFeedbackResource(
+        action = TabbyStartClashResultAction.ShowVpnPermissionRequired,
+        vpnPermissionRequiredResource = 1,
+        startedResource = 2,
+      ),
+    )
+    assertEquals(
+      2,
+      tabbyStartClashResultFeedbackResource(
+        action = TabbyStartClashResultAction.ShowStarted,
+        vpnPermissionRequiredResource = 1,
+        startedResource = 2,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyStopClashResultFeedbackResourceMapsResultAction() {
+    assertEquals(
+      1,
+      tabbyStopClashResultFeedbackResource(
+        action = TabbyStopClashResultAction.ShowStopped,
+        stoppedResource = 1,
+      ),
+    )
+  }
 }
