@@ -95,6 +95,13 @@ internal fun FilesScreen(
   val configFiles = uiState.configFiles
   val configFileById = remember(configFiles) { configFiles.associateBy(ConfigFile::id) }
 
+  fun handleSelectedConfigFile(item: FileListItem, action: (ConfigFile) -> Unit) {
+    when (val selection = profileFileListItemSelection(item, configFileById)) {
+      is ProfileFileListItemSelection.Select -> action(selection.file)
+      ProfileFileListItemSelection.Ignore -> Unit
+    }
+  }
+
   BackHandler(onBack = viewModel::onBack)
 
   FilesContent(
@@ -116,11 +123,11 @@ internal fun FilesScreen(
     currentInBaseDir = uiState.currentInBaseDir,
     configurationEditable = uiState.configurationEditable,
     onBack = viewModel::onBack,
-    onOpen = { item -> configFileById[item.id]?.let(viewModel::onOpen) },
+    onOpen = { item -> handleSelectedConfigFile(item, viewModel::onOpen) },
     onNew = { viewModel.onRequestImport(null) },
-    onImport = { item -> configFileById[item.id]?.let(viewModel::onRequestImport) },
-    onExport = { item -> configFileById[item.id]?.let(viewModel::onRequestExport) },
-    onRename = { item, name -> configFileById[item.id]?.let { viewModel.onRename(it, name) } },
-    onDelete = { item -> configFileById[item.id]?.let(viewModel::onDelete) },
+    onImport = { item -> handleSelectedConfigFile(item, viewModel::onRequestImport) },
+    onExport = { item -> handleSelectedConfigFile(item, viewModel::onRequestExport) },
+    onRename = { item, name -> handleSelectedConfigFile(item) { viewModel.onRename(it, name) } },
+    onDelete = { item -> handleSelectedConfigFile(item, viewModel::onDelete) },
   )
 }

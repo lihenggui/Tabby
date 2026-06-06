@@ -24,3 +24,17 @@ internal fun toFileListItem(
       },
   )
 }
+
+internal sealed interface ProfileFileListItemSelection<out T> {
+  data class Select<T>(val file: T) : ProfileFileListItemSelection<T>
+
+  data object Ignore : ProfileFileListItemSelection<Nothing>
+}
+
+internal fun <T> profileFileListItemSelection(
+  item: FileListItem,
+  fileById: Map<String, T>,
+): ProfileFileListItemSelection<T> {
+  val file = fileById[item.id] ?: return ProfileFileListItemSelection.Ignore
+  return ProfileFileListItemSelection.Select(file)
+}

@@ -49,4 +49,46 @@ class FileListItemMapperTest {
     assertNull(item.sizeText)
     assertNull(item.updatedAtText)
   }
+
+  @Test
+  fun selectsProfileFileForListItemId() {
+    val file = TestProfileFile(id = "config", name = "config.yaml")
+    val item =
+      FileListItem(
+        id = "config",
+        name = "config.yaml",
+        sizeBytes = 128,
+        isDirectory = false,
+        sizeText = "128B",
+        updatedAtText = "updated",
+      )
+
+    assertEquals(
+      ProfileFileListItemSelection.Select(file),
+      profileFileListItemSelection(item, mapOf(file.id to file)),
+    )
+  }
+
+  @Test
+  fun ignoresListItemWhenProfileFileIdIsMissing() {
+    val item =
+      FileListItem(
+        id = "missing",
+        name = "missing.yaml",
+        sizeBytes = 128,
+        isDirectory = false,
+        sizeText = "128B",
+        updatedAtText = "updated",
+      )
+
+    assertEquals(
+      ProfileFileListItemSelection.Ignore,
+      profileFileListItemSelection(
+        item = item,
+        fileById = mapOf("config" to TestProfileFile(id = "config", name = "config.yaml")),
+      ),
+    )
+  }
+
+  private data class TestProfileFile(val id: String, val name: String)
 }
