@@ -23,6 +23,7 @@ import com.github.kr328.clash.log.ui.LogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.proxy.proxyEntries
+import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 
@@ -54,7 +55,16 @@ fun PlaceholderTabbyApp(
             helpContent = { PlaceholderScreen("Help") },
           )
         },
-        proxyEntries = { proxyEntries(proxyContent = { PlaceholderScreen("Proxy") }) },
+        proxyEntries = { onReLaunch ->
+          proxyEntries(
+            proxyContent = {
+              ProxyRouteContent(
+                engineController = engineEnvironment.engineController,
+                onReLaunch = onReLaunch,
+              )
+            }
+          )
+        },
         profilesEntries = {
           profilesEntries(
             profilesContent = { key ->
