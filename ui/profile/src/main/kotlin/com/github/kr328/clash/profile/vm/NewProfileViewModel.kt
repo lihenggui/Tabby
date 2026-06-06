@@ -15,6 +15,7 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
+import com.github.kr328.clash.profile.ui.decodeProfileQrSource
 import io.github.g00fy2.quickie.QRResult
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +74,11 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   fun onQRResult(result: QRResult) {
     when (result) {
       is QRSuccess -> {
-        val url = result.content.rawValue ?: result.content.rawBytes?.let { String(it) }.orEmpty()
+        val url =
+          decodeProfileQrSource(
+            rawValue = result.content.rawValue,
+            rawBytes = result.content.rawBytes,
+          )
         viewModelScope.launch {
           try {
             val uuid =
