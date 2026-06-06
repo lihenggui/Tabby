@@ -17,6 +17,16 @@ class ProvidersBroadcastActionTest {
   }
 
   @Test
+  fun platformPayloadBoundaryCreatesProviderBroadcastEvent() {
+    ProvidersBroadcastEventKind.entries.forEach { kind ->
+      assertEquals(
+        ProvidersBroadcastEvent(kind),
+        providersBroadcastEventFromPlatformPayload(kind),
+      )
+    }
+  }
+
+  @Test
   fun nonProfileLoadedEventsAreIgnored() {
     listOf(
         ProvidersBroadcastEventKind.ServiceRecreated,

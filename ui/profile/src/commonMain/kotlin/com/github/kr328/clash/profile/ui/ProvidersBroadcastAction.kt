@@ -12,6 +12,12 @@ internal enum class ProvidersBroadcastEventKind {
 
 internal data class ProvidersBroadcastEvent(val kind: ProvidersBroadcastEventKind)
 
+internal fun providersBroadcastEventFromPlatformPayload(
+  kind: ProvidersBroadcastEventKind
+): ProvidersBroadcastEvent {
+  return ProvidersBroadcastEvent(kind)
+}
+
 internal enum class ProvidersBroadcastAction {
   FetchProviders,
   Ignore,

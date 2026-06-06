@@ -22,6 +22,7 @@ import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
 import com.github.kr328.clash.profile.ui.providerUpdateFailureErrorMessage
 import com.github.kr328.clash.profile.ui.providerUpdateFailureEventState
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
+import com.github.kr328.clash.profile.ui.providersBroadcastEventFromPlatformPayload
 import com.github.kr328.clash.profile.ui.providersConsumedEventState
 import com.github.kr328.clash.profile.ui.providersInitialEventState
 import com.github.kr328.clash.profile.ui.providersInitialUiState
@@ -136,17 +137,21 @@ internal class ProvidersViewModel(app: Application) :
   private fun Broadcasts.Event.toProvidersBroadcastEvent(): ProvidersBroadcastEvent {
     return when (this) {
       Broadcasts.Event.ServiceRecreated ->
-        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started -> ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Started)
-      is Broadcasts.Event.Stopped -> ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Stopped)
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Stopped)
       Broadcasts.Event.ProfileChanged ->
-        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileChanged)
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileChanged)
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateCompleted)
+        providersBroadcastEventFromPlatformPayload(
+          ProvidersBroadcastEventKind.ProfileUpdateCompleted
+        )
       is Broadcasts.Event.ProfileUpdateFailed ->
-        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateFailed)
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileUpdateFailed)
       Broadcasts.Event.ProfileLoaded ->
-        ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileLoaded)
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileLoaded)
     }
   }
 }
