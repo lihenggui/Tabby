@@ -30,6 +30,20 @@ internal enum class LogcatCloseAction {
   CloseViewer,
 }
 
+internal sealed interface LogcatEventState {
+  data object Idle : LogcatEventState
+
+  data object Close : LogcatEventState
+
+  data object InvalidFile : LogcatEventState
+
+  data object OpenLogs : LogcatEventState
+
+  data class RequestExport(val fileName: String) : LogcatEventState
+
+  data class ShowMessage(val message: String) : LogcatEventState
+}
+
 internal sealed interface LogcatDeleteAction {
   data class DeleteFile(val file: LogFile) : LogcatDeleteAction
 
@@ -71,6 +85,13 @@ internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
 internal fun logcatCloseAction(state: LogcatUiState): LogcatCloseAction {
   return if (state.streaming) LogcatCloseAction.StopStreamingAndOpenLogs
   else LogcatCloseAction.CloseViewer
+}
+
+internal fun logcatCloseEventState(action: LogcatCloseAction): LogcatEventState {
+  return when (action) {
+    LogcatCloseAction.StopStreamingAndOpenLogs -> LogcatEventState.OpenLogs
+    LogcatCloseAction.CloseViewer -> LogcatEventState.Close
+  }
 }
 
 internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {

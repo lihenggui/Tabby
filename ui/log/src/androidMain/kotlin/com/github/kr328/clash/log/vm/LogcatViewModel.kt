@@ -22,12 +22,14 @@ import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.log.ui.LogcatCloseAction
 import com.github.kr328.clash.log.ui.LogcatDeleteAction
+import com.github.kr328.clash.log.ui.LogcatEventState
 import com.github.kr328.clash.log.ui.LogcatExportAction
 import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatPollAction
 import com.github.kr328.clash.log.ui.LogcatRequestExportAction
 import com.github.kr328.clash.log.ui.LogcatUiState
 import com.github.kr328.clash.log.ui.logcatCloseAction
+import com.github.kr328.clash.log.ui.logcatCloseEventState
 import com.github.kr328.clash.log.ui.logcatDeleteAction
 import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatInitialAction
@@ -70,8 +72,8 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   val uiState: StateFlow<LogcatUiState>
     field = MutableStateFlow(LogcatUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<LogcatEventState>
+    field = MutableStateFlow<LogcatEventState>(LogcatEventState.Idle)
 
   fun init(fileName: String?) {
     if (initialized) return
@@ -88,20 +90,17 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
         loadLocalFile(action.file)
       }
       LogcatInitialAction.InvalidFile -> {
-        eventState.value = EventState.InvalidFile
+        eventState.value = LogcatEventState.InvalidFile
       }
     }
   }
 
   fun close() {
-    eventState.value =
-      when (logcatCloseAction(uiState.value)) {
-        LogcatCloseAction.StopStreamingAndOpenLogs -> {
-          application.stopService(LogcatService::class.intent)
-          EventState.OpenLogs
-        }
-        LogcatCloseAction.CloseViewer -> EventState.Close
-      }
+    val action = logcatCloseAction(uiState.value)
+    if (action == LogcatCloseAction.StopStreamingAndOpenLogs) {
+      application.stopService(LogcatService::class.intent)
+    }
+    eventState.value = logcatCloseEventState(action)
   }
 
   fun delete() {
@@ -109,7 +108,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
       is LogcatDeleteAction.DeleteFile ->
         viewModelScope.launch {
           withContext(Dispatchers.IO) { application.logsDir.resolve(action.file.fileName).delete() }
-          eventState.value = EventState.Close
+          eventState.value = LogcatEventState.Close
         }
       LogcatDeleteAction.Ignore -> Unit
     }
@@ -118,7 +117,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   fun requestExport() {
     when (val action = logcatRequestExportAction(currentFile)) {
       is LogcatRequestExportAction.RequestExport ->
-        eventState.value = EventState.RequestExport(action.fileName)
+        eventState.value = LogcatEventState.RequestExport(action.fileName)
       LogcatRequestExportAction.Ignore -> Unit
     }
   }
@@ -133,10 +132,12 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           eventState.value =
             try {
               writeLogTo(messages, action.file, destination)
-              EventState.ShowMessage(application.getString(R.string.file_exported))
+              LogcatEventState.ShowMessage(application.getString(R.string.file_exported))
             } catch (e: Exception) {
               Log.e("Export log file failed: ${e.message}", e)
-              EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+              LogcatEventState.ShowMessage(
+                e.message ?: application.getString(CommonR.string.unknown)
+              )
             }
         }
       }
@@ -145,7 +146,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = LogcatEventState.Idle
   }
 
   override fun onStart(owner: LifecycleOwner) {
@@ -168,7 +169,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           LogcatReader(application, file).use { it.readAll() }
         } catch (e: Exception) {
           Log.e("Fail to read log file ${file.fileName}: ${e.message}", e)
-          eventState.value = EventState.InvalidFile
+          eventState.value = LogcatEventState.InvalidFile
           return@launch
         }
 
@@ -188,7 +189,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
         runCatching { application.stopService(LogcatService::class.intent) }
           .onFailure { ex -> Log.e("Stop logcat service failed: ${ex.message}", ex) }
         reset()
-        eventState.value = EventState.OpenLogs
+        eventState.value = LogcatEventState.OpenLogs
       }
     }
   }
@@ -333,19 +334,5 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
     }
     conn = null
     logcat = null
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data object Close : EventState
-
-    data object InvalidFile : EventState
-
-    data object OpenLogs : EventState
-
-    data class RequestExport(val fileName: String) : EventState
-
-    data class ShowMessage(val message: String) : EventState
   }
 }

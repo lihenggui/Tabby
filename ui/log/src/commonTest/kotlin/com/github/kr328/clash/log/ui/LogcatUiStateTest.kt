@@ -49,6 +49,18 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatCloseEventStateMapsCloseActionsToUiEvents() {
+    assertEquals(
+      LogcatEventState.OpenLogs,
+      logcatCloseEventState(LogcatCloseAction.StopStreamingAndOpenLogs),
+    )
+    assertEquals(
+      LogcatEventState.Close,
+      logcatCloseEventState(LogcatCloseAction.CloseViewer),
+    )
+  }
+
+  @Test
   fun logcatDeleteActionDeletesCurrentFileAndIgnoresMissingFile() {
     val file = LogFile("clash-1234.log", 1234)
 
