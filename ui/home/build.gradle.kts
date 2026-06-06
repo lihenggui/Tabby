@@ -10,6 +10,7 @@ kotlin {
     commonMain.dependencies {
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
+      implementation(libs.semver)
     }
 
     androidMain {
@@ -21,7 +22,6 @@ kotlin {
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
         implementation(libs.jetbrains.navigation3.ui)
-        implementation(libs.semver)
 
         implementation(project.dependencies.platform(libs.koin.bom))
         implementation(libs.koin.android)

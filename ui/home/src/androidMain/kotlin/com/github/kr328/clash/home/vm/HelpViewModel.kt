@@ -11,7 +11,9 @@ import com.github.kr328.clash.glue.util.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.api.HelpApi
 import com.github.kr328.clash.home.ui.HelpContentState
+import com.github.kr328.clash.home.ui.HelpUpdateCheckAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
+import com.github.kr328.clash.home.ui.helpUpdateCheckAction
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
 import com.github.kr328.clash.home.ui.withVersionInfo
@@ -21,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.swiftzer.semver.SemVer
 
 internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   private val api = HelpApi()
@@ -43,22 +44,27 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
       uiState.update { it.withUpdateCheckStarted() }
       try {
         val latestTag = api.getLatestRelease()
-
-        if (latestTag == null) {
-          eventState.update {
-            EventState.ShowMessage(application.getString(R.string.check_update_failed))
+        val action =
+          if (latestTag == null) {
+            helpUpdateCheckAction(latestTag = null, localVersion = "")
+          } else {
+            val localVersion =
+              application.packageManager.getPackageInfo(application.packageName, 0).versionName
+                ?: ""
+            helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
           }
-          return@launch
-        }
 
-        val localVersion =
-          application.packageManager.getPackageInfo(application.packageName, 0).versionName ?: ""
-        if (SemVer.parse(latestTag) > SemVer.parse(localVersion)) {
-          eventState.update { EventState.UpdateAvailable(TABBY_RELEASES_LATEST) }
-        } else {
-          eventState.update {
-            EventState.ShowMessage(application.getString(R.string.already_up_to_date))
-          }
+        when (action) {
+          HelpUpdateCheckAction.ShowUpdateAvailable ->
+            eventState.update { EventState.UpdateAvailable(TABBY_RELEASES_LATEST) }
+          HelpUpdateCheckAction.ShowAlreadyUpToDateMessage ->
+            eventState.update {
+              EventState.ShowMessage(application.getString(R.string.already_up_to_date))
+            }
+          HelpUpdateCheckAction.ShowUpdateCheckFailedMessage ->
+            eventState.update {
+              EventState.ShowMessage(application.getString(R.string.check_update_failed))
+            }
         }
       } catch (e: Exception) {
         Log.e("Check for updates failed: ${e.message}", e)
