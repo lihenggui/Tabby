@@ -5,6 +5,46 @@ import kotlin.test.assertEquals
 
 class TabbyRestartReceiverActionTest {
   @Test
+  fun tabbyRestartReceiverEventFromStringParsesKnownPlatformActions() {
+    assertEquals(
+      TabbyRestartReceiverEvent.BootCompleted,
+      tabbyRestartReceiverEventFromString(
+        action = "boot-completed",
+        bootCompletedAction = "boot-completed",
+        packageReplacedAction = "package-replaced",
+      ),
+    )
+    assertEquals(
+      TabbyRestartReceiverEvent.PackageReplaced,
+      tabbyRestartReceiverEventFromString(
+        action = "package-replaced",
+        bootCompletedAction = "boot-completed",
+        packageReplacedAction = "package-replaced",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyRestartReceiverEventFromStringIgnoresUnknownPlatformActions() {
+    assertEquals(
+      null,
+      tabbyRestartReceiverEventFromString(
+        action = "unknown",
+        bootCompletedAction = "boot-completed",
+        packageReplacedAction = "package-replaced",
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyRestartReceiverEventFromString(
+        action = null,
+        bootCompletedAction = "boot-completed",
+        packageReplacedAction = "package-replaced",
+      ),
+    )
+  }
+
+  @Test
   fun tabbyRestartReceiverActionIgnoresUnknownEvents() {
     assertEquals(
       TabbyRestartReceiverAction.Ignore,

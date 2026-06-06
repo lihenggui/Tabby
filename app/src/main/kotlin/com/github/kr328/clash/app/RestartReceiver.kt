@@ -21,8 +21,8 @@ class RestartReceiver : BroadcastReceiver() {
 }
 
 private fun Intent.tabbyRestartReceiverEvent(): TabbyRestartReceiverEvent? =
-  when (action) {
-    Intent.ACTION_BOOT_COMPLETED -> TabbyRestartReceiverEvent.BootCompleted
-    Intent.ACTION_MY_PACKAGE_REPLACED -> TabbyRestartReceiverEvent.PackageReplaced
-    else -> null
-  }
+  tabbyRestartReceiverEventFromString(
+    action = action,
+    bootCompletedAction = Intent.ACTION_BOOT_COMPLETED,
+    packageReplacedAction = Intent.ACTION_MY_PACKAGE_REPLACED,
+  )

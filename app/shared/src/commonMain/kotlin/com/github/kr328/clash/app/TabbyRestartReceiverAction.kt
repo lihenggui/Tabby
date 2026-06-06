@@ -12,6 +12,17 @@ sealed interface TabbyRestartReceiverAction {
   data object Ignore : TabbyRestartReceiverAction
 }
 
+fun tabbyRestartReceiverEventFromString(
+  action: String?,
+  bootCompletedAction: String,
+  packageReplacedAction: String,
+): TabbyRestartReceiverEvent? =
+  when (action) {
+    bootCompletedAction -> TabbyRestartReceiverEvent.BootCompleted
+    packageReplacedAction -> TabbyRestartReceiverEvent.PackageReplaced
+    else -> null
+  }
+
 fun tabbyRestartReceiverAction(
   event: TabbyRestartReceiverEvent?,
   shouldStartClashOnBoot: Boolean,
