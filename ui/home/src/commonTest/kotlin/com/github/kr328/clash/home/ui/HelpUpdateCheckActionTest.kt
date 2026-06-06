@@ -6,6 +6,22 @@ import kotlin.test.assertFailsWith
 
 class HelpUpdateCheckActionTest {
   @Test
+  fun updateCheckRequestStartsWhenNotAlreadyChecking() {
+    assertEquals(
+      HelpUpdateCheckRequestAction.StartCheck,
+      helpUpdateCheckRequestAction(HelpContentState(checkingForUpdates = false)),
+    )
+  }
+
+  @Test
+  fun updateCheckRequestIgnoresWhenAlreadyChecking() {
+    assertEquals(
+      HelpUpdateCheckRequestAction.Ignore,
+      helpUpdateCheckRequestAction(HelpContentState(checkingForUpdates = true)),
+    )
+  }
+
+  @Test
   fun updateCheckActionShowsFailureWhenLatestTagIsMissing() {
     assertEquals(
       HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,

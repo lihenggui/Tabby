@@ -10,6 +10,20 @@ internal sealed interface HelpUpdateCheckAction {
   data object ShowUpdateAvailable : HelpUpdateCheckAction
 }
 
+internal sealed interface HelpUpdateCheckRequestAction {
+  data object StartCheck : HelpUpdateCheckRequestAction
+
+  data object Ignore : HelpUpdateCheckRequestAction
+}
+
+internal fun helpUpdateCheckRequestAction(state: HelpContentState): HelpUpdateCheckRequestAction {
+  return if (state.checkingForUpdates) {
+    HelpUpdateCheckRequestAction.Ignore
+  } else {
+    HelpUpdateCheckRequestAction.StartCheck
+  }
+}
+
 internal fun helpUpdateCheckAction(
   latestTag: String?,
   localVersion: String,

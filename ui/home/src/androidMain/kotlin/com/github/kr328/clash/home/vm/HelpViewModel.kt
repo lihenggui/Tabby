@@ -12,8 +12,10 @@ import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.api.HelpApi
 import com.github.kr328.clash.home.ui.HelpContentState
 import com.github.kr328.clash.home.ui.HelpUpdateCheckAction
+import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
 import com.github.kr328.clash.home.ui.helpUpdateCheckAction
+import com.github.kr328.clash.home.ui.helpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
 import com.github.kr328.clash.home.ui.withVersionInfo
@@ -38,7 +40,10 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun checkForUpdates() {
-    if (uiState.value.checkingForUpdates) return
+    when (helpUpdateCheckRequestAction(uiState.value)) {
+      HelpUpdateCheckRequestAction.StartCheck -> Unit
+      HelpUpdateCheckRequestAction.Ignore -> return
+    }
 
     viewModelScope.launch {
       uiState.update { it.withUpdateCheckStarted() }
