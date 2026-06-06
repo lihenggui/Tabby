@@ -540,18 +540,35 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
-  fun proxyProfileLoadedActionQueriesGroupNamesWhenInitialized() {
+  fun proxyBroadcastActionQueriesGroupNamesForProfileLoadedAfterInitialization() {
     assertEquals(
-      ProxyProfileLoadedAction.QueryGroupNames,
-      proxyProfileLoadedAction(initialized = true),
+      ProxyBroadcastAction.QueryGroupNames,
+      proxyBroadcastAction(
+        kind = ProxyBroadcastEventKind.ProfileLoaded,
+        initialized = true,
+      ),
     )
   }
 
   @Test
-  fun proxyProfileLoadedActionIgnoresProfileLoadedBeforeInitialization() {
+  fun proxyBroadcastActionIgnoresProfileLoadedBeforeInitialization() {
     assertEquals(
-      ProxyProfileLoadedAction.Ignore,
-      proxyProfileLoadedAction(initialized = false),
+      ProxyBroadcastAction.Ignore,
+      proxyBroadcastAction(
+        kind = ProxyBroadcastEventKind.ProfileLoaded,
+        initialized = false,
+      ),
+    )
+  }
+
+  @Test
+  fun proxyBroadcastActionIgnoresOtherEventsAfterInitialization() {
+    assertEquals(
+      ProxyBroadcastAction.Ignore,
+      proxyBroadcastAction(
+        kind = ProxyBroadcastEventKind.Other,
+        initialized = true,
+      ),
     )
   }
 

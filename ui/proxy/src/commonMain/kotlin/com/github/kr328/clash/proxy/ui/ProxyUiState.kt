@@ -118,10 +118,15 @@ internal sealed interface ProxyGroupSelectionAction {
   data object Ignore : ProxyGroupSelectionAction
 }
 
-internal sealed interface ProxyProfileLoadedAction {
-  data object QueryGroupNames : ProxyProfileLoadedAction
+internal enum class ProxyBroadcastEventKind {
+  ProfileLoaded,
+  Other,
+}
 
-  data object Ignore : ProxyProfileLoadedAction
+internal sealed interface ProxyBroadcastAction {
+  data object QueryGroupNames : ProxyBroadcastAction
+
+  data object Ignore : ProxyBroadcastAction
 }
 
 internal sealed interface ProxyGroupNamesChangeAction {
@@ -269,11 +274,14 @@ internal fun proxyInitialStateAction(
   )
 }
 
-internal fun proxyProfileLoadedAction(initialized: Boolean): ProxyProfileLoadedAction {
-  return if (initialized) {
-    ProxyProfileLoadedAction.QueryGroupNames
+internal fun proxyBroadcastAction(
+  kind: ProxyBroadcastEventKind,
+  initialized: Boolean,
+): ProxyBroadcastAction {
+  return if (kind == ProxyBroadcastEventKind.ProfileLoaded && initialized) {
+    ProxyBroadcastAction.QueryGroupNames
   } else {
-    ProxyProfileLoadedAction.Ignore
+    ProxyBroadcastAction.Ignore
   }
 }
 

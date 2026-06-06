@@ -9,8 +9,11 @@ import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
+import com.github.kr328.clash.proxy.ui.ProxyBroadcastAction
+import com.github.kr328.clash.proxy.ui.ProxyBroadcastEventKind
 import com.github.kr328.clash.proxy.ui.ProxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.ProxyDelayTestEffect
 import com.github.kr328.clash.proxy.ui.ProxyEventState
@@ -22,13 +25,13 @@ import com.github.kr328.clash.proxy.ui.ProxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.ProxyPageChangedEffect
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
-import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.ProxyReloadAction
 import com.github.kr328.clash.proxy.ui.ProxySelectedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
+import com.github.kr328.clash.proxy.ui.proxyBroadcastAction
 import com.github.kr328.clash.proxy.ui.proxyConsumedEventState
 import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
@@ -44,7 +47,6 @@ import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeEventState
 import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.proxyPreferenceChangeEventState
-import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxyReloadAction
 import com.github.kr328.clash.proxy.ui.proxyReloadResultAction
 import com.github.kr328.clash.proxy.ui.proxySelectedAction
@@ -97,21 +99,15 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (event) {
-          ProfileLoaded -> {
-            when (proxyProfileLoadedAction(initialized)) {
-              ProxyProfileLoadedAction.QueryGroupNames -> {
-                val newNames =
-                  engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
-                proxyGroupNamesChangeEventState(
-                    proxyGroupNamesChangeAction(uiState.value.groupNames, newNames)
-                  )
-                  ?.let { eventState.value = it }
-              }
-              ProxyProfileLoadedAction.Ignore -> Unit
-            }
+        when (proxyBroadcastAction(event.toProxyBroadcastEventKind(), initialized)) {
+          ProxyBroadcastAction.QueryGroupNames -> {
+            val newNames = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
+            proxyGroupNamesChangeEventState(
+                proxyGroupNamesChangeAction(uiState.value.groupNames, newNames)
+              )
+              ?.let { eventState.value = it }
           }
-          else -> Unit
+          ProxyBroadcastAction.Ignore -> Unit
         }
       }
     }
@@ -349,6 +345,18 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   ) {
     uiState.update { current ->
       current.withProxyGroupState(index, transform)
+    }
+  }
+
+  private fun Broadcasts.Event.toProxyBroadcastEventKind(): ProxyBroadcastEventKind {
+    return when (this) {
+      Broadcasts.Event.ProfileLoaded -> ProxyBroadcastEventKind.ProfileLoaded
+      Broadcasts.Event.ServiceRecreated,
+      Broadcasts.Event.Started,
+      Broadcasts.Event.ProfileChanged,
+      is Broadcasts.Event.Stopped,
+      is Broadcasts.Event.ProfileUpdateCompleted,
+      is Broadcasts.Event.ProfileUpdateFailed -> ProxyBroadcastEventKind.Other
     }
   }
 }
