@@ -92,6 +92,14 @@ class TabbyTileStateTest {
   }
 
   @Test
+  fun tabbyTileClickActionIgnoresMissingTileState() {
+    assertEquals(
+      TabbyTileClickAction.Ignore,
+      tabbyTileClickAction(null),
+    )
+  }
+
+  @Test
   fun tabbyTilePresentationUsesRunningStateAndProfileName() {
     assertEquals(
       TabbyTilePresentation(active = true, profileName = "profile-a"),

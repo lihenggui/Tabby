@@ -79,11 +79,12 @@ fun reduceTabbyTileState(
     is TabbyTileEvent.ProfileLoaded -> state.copy(currentProfile = event.profileName.orEmpty())
   }
 
-fun tabbyTileClickAction(clickState: TabbyTileClickState): TabbyTileClickAction =
+fun tabbyTileClickAction(clickState: TabbyTileClickState?): TabbyTileClickAction =
   when (clickState) {
     TabbyTileClickState.Active -> TabbyTileClickAction.StopClash
     TabbyTileClickState.Inactive -> TabbyTileClickAction.StartClash
-    TabbyTileClickState.Other -> TabbyTileClickAction.Ignore
+    TabbyTileClickState.Other,
+    null -> TabbyTileClickAction.Ignore
   }
 
 fun tabbyTilePresentation(state: TabbyTileState): TabbyTilePresentation =

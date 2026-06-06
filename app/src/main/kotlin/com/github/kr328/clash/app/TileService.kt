@@ -18,9 +18,7 @@ class TileService : android.service.quicksettings.TileService() {
   private var tileState = TabbyTileState()
 
   override fun onClick() {
-    val tile = qsTile ?: return
-
-    when (tabbyTileClickAction(tile.tabbyTileClickState())) {
+    when (tabbyTileClickAction(qsTile?.tabbyTileClickState())) {
       TabbyTileClickAction.StartClash -> startClashService()
       TabbyTileClickAction.StopClash -> stopClashService()
       TabbyTileClickAction.Ignore -> Unit
