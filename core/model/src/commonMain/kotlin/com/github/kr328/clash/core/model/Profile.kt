@@ -19,6 +19,7 @@ data class Profile(
   val imported: Boolean,
   val pending: Boolean,
 ) {
+  @Serializable
   enum class Type {
     File,
     Url,

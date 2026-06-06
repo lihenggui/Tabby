@@ -10,6 +10,7 @@ data class Proxy(
   val type: Type,
   val delay: Int,
 ) {
+  @Serializable
   enum class Type(val group: Boolean) {
     Direct(false),
     Reject(false),

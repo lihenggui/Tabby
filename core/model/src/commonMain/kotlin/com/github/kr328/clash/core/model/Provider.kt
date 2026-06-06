@@ -9,11 +9,13 @@ data class Provider(
   val vehicleType: VehicleType,
   val updatedAt: Long,
 ) : Comparable<Provider> {
+  @Serializable
   enum class Type {
     Proxy,
     Rule,
   }
 
+  @Serializable
   enum class VehicleType {
     HTTP,
     File,

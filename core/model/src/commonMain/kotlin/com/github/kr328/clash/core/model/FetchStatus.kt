@@ -9,6 +9,7 @@ data class FetchStatus(
   val progress: Int,
   val max: Int,
 ) {
+  @Serializable
   enum class Action {
     FetchConfiguration,
     FetchProviders,
