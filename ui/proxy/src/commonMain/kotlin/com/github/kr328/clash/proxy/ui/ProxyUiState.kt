@@ -95,6 +95,18 @@ internal sealed interface ProxyGroupSelectionAction {
   data object Ignore : ProxyGroupSelectionAction
 }
 
+internal sealed interface ProxyProfileLoadedAction {
+  data object QueryGroupNames : ProxyProfileLoadedAction
+
+  data object Ignore : ProxyProfileLoadedAction
+}
+
+internal sealed interface ProxyGroupNamesChangeAction {
+  data object ReLaunch : ProxyGroupNamesChangeAction
+
+  data object Ignore : ProxyGroupNamesChangeAction
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -138,6 +150,25 @@ internal fun proxyGroupSelectionAction(
   val name = groupNames.getOrNull(index) ?: return ProxyGroupSelectionAction.Ignore
 
   return ProxyGroupSelectionAction.SelectGroup(name)
+}
+
+internal fun proxyProfileLoadedAction(initialized: Boolean): ProxyProfileLoadedAction {
+  return if (initialized) {
+    ProxyProfileLoadedAction.QueryGroupNames
+  } else {
+    ProxyProfileLoadedAction.Ignore
+  }
+}
+
+internal fun proxyGroupNamesChangeAction(
+  currentGroupNames: List<String>,
+  newGroupNames: List<String>,
+): ProxyGroupNamesChangeAction {
+  return if (newGroupNames != currentGroupNames) {
+    ProxyGroupNamesChangeAction.ReLaunch
+  } else {
+    ProxyGroupNamesChangeAction.Ignore
+  }
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

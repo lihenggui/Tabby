@@ -213,4 +213,42 @@ class ProxyUiStateCommonTest {
       proxyGroupSelectionAction(emptyList(), index = 0),
     )
   }
+
+  @Test
+  fun proxyProfileLoadedActionQueriesGroupNamesWhenInitialized() {
+    assertEquals(
+      ProxyProfileLoadedAction.QueryGroupNames,
+      proxyProfileLoadedAction(initialized = true),
+    )
+  }
+
+  @Test
+  fun proxyProfileLoadedActionIgnoresProfileLoadedBeforeInitialization() {
+    assertEquals(
+      ProxyProfileLoadedAction.Ignore,
+      proxyProfileLoadedAction(initialized = false),
+    )
+  }
+
+  @Test
+  fun proxyGroupNamesChangeActionRelaunchesWhenNamesChange() {
+    assertEquals(
+      ProxyGroupNamesChangeAction.ReLaunch,
+      proxyGroupNamesChangeAction(
+        currentGroupNames = listOf("Proxy", "Auto"),
+        newGroupNames = listOf("Proxy", "Fallback"),
+      ),
+    )
+  }
+
+  @Test
+  fun proxyGroupNamesChangeActionIgnoresUnchangedNames() {
+    assertEquals(
+      ProxyGroupNamesChangeAction.Ignore,
+      proxyGroupNamesChangeAction(
+        currentGroupNames = listOf("Proxy", "Auto"),
+        newGroupNames = listOf("Proxy", "Auto"),
+      ),
+    )
+  }
 }

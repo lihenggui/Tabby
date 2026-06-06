@@ -12,12 +12,16 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.proxy.ui.ProxyEventState
+import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
+import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
+import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
+import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
@@ -77,10 +81,17 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
       Remote.broadcasts.event.collect { event ->
         when (event) {
           ProfileLoaded -> {
-            if (!initialized) return@collect
-            val newNames = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
-            if (newNames != uiState.value.groupNames) {
-              eventState.value = ProxyEventState.ReLaunch
+            when (proxyProfileLoadedAction(initialized)) {
+              ProxyProfileLoadedAction.QueryGroupNames -> {
+                val newNames =
+                  engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
+                when (proxyGroupNamesChangeAction(uiState.value.groupNames, newNames)) {
+                  ProxyGroupNamesChangeAction.ReLaunch ->
+                    eventState.value = ProxyEventState.ReLaunch
+                  ProxyGroupNamesChangeAction.Ignore -> Unit
+                }
+              }
+              ProxyProfileLoadedAction.Ignore -> Unit
             }
           }
           else -> Unit
