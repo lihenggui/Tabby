@@ -159,8 +159,9 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setExcludeFromRecents() {
+    val action = tabbyRecentsTaskAction(hideFromRecents = uiStore.hideFromRecents)
     checkNotNull(getSystemService<ActivityManager>()).appTasks.forEach { task ->
-      task.setExcludeFromRecents(uiStore.hideFromRecents)
+      task.setExcludeFromRecents(action.excludeFromRecents)
     }
   }
 
