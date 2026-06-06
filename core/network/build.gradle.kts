@@ -1,4 +1,7 @@
-plugins { id("tabby.kmp.library") }
+plugins {
+  id("tabby.kmp.library")
+  alias(libs.plugins.kotlin.serialization)
+}
 
 kotlin {
   sourceSets {

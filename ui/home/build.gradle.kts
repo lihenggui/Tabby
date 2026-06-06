@@ -17,13 +17,12 @@ kotlin {
 
       dependencies {
         implementation(projects.core.engineAndroid)
+        implementation(projects.core.network)
         implementation(projects.glue)
 
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
         implementation(libs.jetbrains.navigation3.ui)
-        implementation(libs.kotlin.serialization.json)
-        implementation(libs.okhttp.client)
         implementation(libs.semver)
 
         implementation(project.dependencies.platform(libs.koin.bom))
