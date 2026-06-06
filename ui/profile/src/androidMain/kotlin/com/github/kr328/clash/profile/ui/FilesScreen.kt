@@ -108,18 +108,17 @@ internal fun FilesScreen(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     files =
-      configFiles.map { file ->
-        toFileListItem(
-          id = file.id,
-          name = file.name,
-          sizeBytes = file.size,
-          lastModified = file.lastModified,
-          isDirectory = file.isDirectory,
-          currentTime = currentTime,
-          formatBytes = { bytes -> bytes.binaryBytes.toString() },
-          formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
-        )
-      },
+      toFileListItems(
+        files = configFiles,
+        currentTime = currentTime,
+        id = ConfigFile::id,
+        name = ConfigFile::name,
+        sizeBytes = ConfigFile::size,
+        lastModified = ConfigFile::lastModified,
+        isDirectory = ConfigFile::isDirectory,
+        formatBytes = { bytes -> bytes.binaryBytes.toString() },
+        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+      ),
     currentInBaseDir = uiState.currentInBaseDir,
     configurationEditable = uiState.configurationEditable,
     onBack = viewModel::onBack,

@@ -1,5 +1,30 @@
 package com.github.kr328.clash.profile.ui
 
+internal fun <T> toFileListItems(
+  files: List<T>,
+  currentTime: Long,
+  id: (T) -> String,
+  name: (T) -> String,
+  sizeBytes: (T) -> Long,
+  lastModified: (T) -> Long,
+  isDirectory: (T) -> Boolean,
+  formatBytes: (Long) -> String,
+  formatElapsedMillis: (Long) -> String,
+): List<FileListItem> {
+  return files.map { file ->
+    toFileListItem(
+      id = id(file),
+      name = name(file),
+      sizeBytes = sizeBytes(file),
+      lastModified = lastModified(file),
+      isDirectory = isDirectory(file),
+      currentTime = currentTime,
+      formatBytes = formatBytes,
+      formatElapsedMillis = formatElapsedMillis,
+    )
+  }
+}
+
 internal fun toFileListItem(
   id: String,
   name: String,
