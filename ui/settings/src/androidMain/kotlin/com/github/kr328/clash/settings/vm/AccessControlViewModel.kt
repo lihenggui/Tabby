@@ -27,7 +27,8 @@ import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
 import com.github.kr328.clash.settings.ui.AccessControlSettingsState
 import com.github.kr328.clash.settings.ui.AccessControlUiState
-import com.github.kr328.clash.settings.ui.exportAccessControlPackages
+import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
+import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
 import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
 import com.github.kr328.clash.settings.ui.planAccessControlPersist
 import com.github.kr328.clash.settings.ui.sortAccessControlApps
@@ -37,7 +38,6 @@ import com.github.kr328.clash.settings.ui.withAccessControlSelectedPackages
 import com.github.kr328.clash.settings.ui.withAccessControlShowSystemApps
 import com.github.kr328.clash.settings.ui.withAccessControlSort
 import com.github.kr328.clash.settings.ui.withAllVisibleAccessControlPackages
-import com.github.kr328.clash.settings.ui.withImportedVisibleAccessControlPackages
 import com.github.kr328.clash.settings.ui.withInvertedVisibleAccessControlPackages
 import com.github.kr328.clash.settings.ui.withNoAccessControlPackages
 import com.github.kr328.clash.settings.ui.withToggledAccessControlPackage
@@ -155,7 +155,8 @@ internal class AccessControlViewModel(app: Application) :
     if (data != null && data.itemCount > 0) {
       val state = uiState.value
       val selected =
-        state.withImportedVisibleAccessControlPackages(
+        accessControlImportClipboardState(
+          state = state,
           clipboardText = data.getItemAt(0).text?.toString(),
           packageName = AppInfo::packageName,
         )
@@ -168,7 +169,7 @@ internal class AccessControlViewModel(app: Application) :
     val data =
       ClipData.newPlainText(
         "packages",
-        exportAccessControlPackages(uiState.value.settings.selected),
+        accessControlExportClipboardText(uiState.value),
       )
     clipboard?.setPrimaryClip(data)
   }

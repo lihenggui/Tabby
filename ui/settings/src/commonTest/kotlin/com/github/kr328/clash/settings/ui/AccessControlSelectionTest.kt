@@ -484,6 +484,13 @@ class AccessControlSelectionTest {
         clipboardText = "com.example.beta\ncom.example.missing",
         packageName = TestAccessControlApp::packageName,
       )
+    val clipboardImported =
+      accessControlImportClipboardState(
+        state = state,
+        clipboardText = "com.example.beta\ncom.example.missing",
+        packageName = TestAccessControlApp::packageName,
+      )
+    val clipboardText = accessControlExportClipboardText(state)
     val sortUpdated = state.withAccessControlSort(AccessControlSort.UpdateTime)
     val reverseUpdated = state.withAccessControlReverse(true)
     val showSystemAppsUpdated = state.withAccessControlShowSystemApps(true)
@@ -504,6 +511,8 @@ class AccessControlSelectionTest {
     assertEquals(setOf("com.example.beta"), visibleInverted.settings.selected)
     assertEquals(setOf("com.example.beta"), imported.settings.selected)
     assertEquals(setOf("com.example.beta"), visibleImported.settings.selected)
+    assertEquals(setOf("com.example.beta"), clipboardImported.settings.selected)
+    assertEquals("com.example.alpha", clipboardText)
     assertEquals(AccessControlSort.UpdateTime, sortUpdated.settings.sort)
     assertEquals(true, reverseUpdated.settings.reverse)
     assertEquals(true, showSystemAppsUpdated.settings.showSystemApps)
@@ -517,6 +526,7 @@ class AccessControlSelectionTest {
         visibleInverted,
         imported,
         visibleImported,
+        clipboardImported,
         sortUpdated,
         reverseUpdated,
         showSystemAppsUpdated,

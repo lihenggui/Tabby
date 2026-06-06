@@ -72,6 +72,21 @@ internal fun <T> AccessControlUiState<T>.withImportedVisibleAccessControlPackage
   )
 }
 
+internal fun <T> accessControlImportClipboardState(
+  state: AccessControlUiState<T>,
+  clipboardText: String?,
+  packageName: (T) -> String,
+): AccessControlUiState<T> {
+  return state.withImportedVisibleAccessControlPackages(
+    clipboardText = clipboardText,
+    packageName = packageName,
+  )
+}
+
+internal fun <T> accessControlExportClipboardText(state: AccessControlUiState<T>): String {
+  return exportAccessControlPackages(state.settings.selected)
+}
+
 internal fun <T> AccessControlUiState<T>.withAccessControlSort(
   sort: AccessControlSort
 ): AccessControlUiState<T> {
