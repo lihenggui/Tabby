@@ -12,8 +12,11 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.ProfilesUiState
 import com.github.kr328.clash.profile.ui.filterUpdatableProfiles
-import com.github.kr328.clash.profile.ui.hasUpdatableProfiles
+import com.github.kr328.clash.profile.ui.withAllUpdating
+import com.github.kr328.clash.profile.ui.withCurrentTime
+import com.github.kr328.clash.profile.ui.withProfiles
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Job
@@ -31,8 +34,8 @@ internal class ProfilesViewModel(app: Application) :
   private var elapsedJob: Job? = null
   private var fetchJob: Job? = null
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<ProfilesUiState>
+    field = MutableStateFlow(ProfilesUiState(currentTime = System.currentTimeMillis()))
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -94,13 +97,13 @@ internal class ProfilesViewModel(app: Application) :
     if (uiState.value.allUpdating) return
 
     viewModelScope.launch {
-      uiState.update { it.copy(allUpdating = true) }
+      uiState.update { it.withAllUpdating(true) }
       try {
         filterUpdatableProfiles(profileRepository.queryProfiles()).forEach { profile ->
           profileRepository.update(profile.uuid)
         }
       } finally {
-        uiState.update { it.copy(allUpdating = false) }
+        uiState.update { it.withAllUpdating(false) }
       }
     }
   }
@@ -129,9 +132,7 @@ internal class ProfilesViewModel(app: Application) :
     fetchJob = viewModelScope.launch {
       val profiles = profileRepository.queryProfiles()
 
-      uiState.update {
-        it.copy(profiles = profiles, hasUpdatableProfile = hasUpdatableProfiles(profiles))
-      }
+      uiState.update { it.withProfiles(profiles) }
     }
   }
 
@@ -141,7 +142,7 @@ internal class ProfilesViewModel(app: Application) :
     elapsedJob = viewModelScope.launch {
       while (isActive) {
         delay(1.minutes)
-        uiState.update { it.copy(currentTime = System.currentTimeMillis()) }
+        uiState.update { it.withCurrentTime(System.currentTimeMillis()) }
       }
     }
   }
@@ -162,13 +163,6 @@ internal class ProfilesViewModel(app: Application) :
         uuid,
       )
   }
-
-  data class UiState(
-    val profiles: List<Profile> = emptyList(),
-    val allUpdating: Boolean = false,
-    val hasUpdatableProfile: Boolean = false,
-    val currentTime: Long = System.currentTimeMillis(),
-  )
 
   sealed interface EventState {
     data object Idle : EventState
