@@ -50,6 +50,7 @@ internal data class LogListItem(val fileName: String, val createdText: String)
 @Composable
 internal fun LogsContent(
   logs: List<LogListItem>,
+  showDeleteAllAction: Boolean = true,
   onDeleteAll: () -> Unit,
   onStartLogcat: () -> Unit,
   onOpenFile: (LogListItem) -> Unit,
@@ -84,11 +85,13 @@ internal fun LogsContent(
     modifier = modifier,
     title = stringResource(SharedRes.string.logs),
     actions = {
-      IconButton(onClick = { showDeleteAllDialog = true }) {
-        Icon(
-          imageVector = TabbyIcons.BaselineClearAll,
-          contentDescription = stringResource(LogRes.string.delete_all_logs),
-        )
+      if (showDeleteAllAction) {
+        IconButton(onClick = { showDeleteAllDialog = true }) {
+          Icon(
+            imageVector = TabbyIcons.BaselineClearAll,
+            contentDescription = stringResource(LogRes.string.delete_all_logs),
+          )
+        }
       }
     },
   ) { innerPadding ->

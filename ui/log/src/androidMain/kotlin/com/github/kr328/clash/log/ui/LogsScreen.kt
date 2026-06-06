@@ -21,16 +21,12 @@ internal fun LogsScreen(
   val context = LocalContext.current
   val logs by viewModel.logFiles.collectAsStateWithLifecycle()
 
-  LogsContent(
+  LogsRouteContent(
     modifier = modifier,
-    logs = toLogListItems(logs) { created -> Date(created).format(context) },
+    logs = logs,
+    formatCreated = { created -> Date(created).format(context) },
     onDeleteAll = viewModel::deleteAll,
     onStartLogcat = onStartLogcat,
-    onOpenFile = { item ->
-      when (val action = logListItemOpenAction(item)) {
-        is LogListItemOpenAction.OpenFile -> onOpenFile(action.file)
-        LogListItemOpenAction.Ignore -> Unit
-      }
-    },
+    onOpenFile = onOpenFile,
   )
 }
