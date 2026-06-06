@@ -20,8 +20,10 @@ import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.LogcatService
 import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.ui.LogcatCloseAction
 import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatUiState
+import com.github.kr328.clash.log.ui.logcatCloseAction
 import com.github.kr328.clash.log.ui.logcatInitialAction
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
@@ -84,11 +86,12 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
 
   fun close() {
     eventState.value =
-      if (uiState.value.streaming) {
-        application.stopService(LogcatService::class.intent)
-        EventState.OpenLogs
-      } else {
-        EventState.Close
+      when (logcatCloseAction(uiState.value)) {
+        LogcatCloseAction.StopStreamingAndOpenLogs -> {
+          application.stopService(LogcatService::class.intent)
+          EventState.OpenLogs
+        }
+        LogcatCloseAction.CloseViewer -> EventState.Close
       }
   }
 

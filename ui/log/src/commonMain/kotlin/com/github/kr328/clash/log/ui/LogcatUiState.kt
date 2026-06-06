@@ -25,6 +25,11 @@ internal sealed interface LogcatInitialAction {
   data object InvalidFile : LogcatInitialAction
 }
 
+internal enum class LogcatCloseAction {
+  StopStreamingAndOpenLogs,
+  CloseViewer,
+}
+
 internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
   val file = fileName?.let(LogFile::parse)
   return when {
@@ -32,6 +37,11 @@ internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
     file != null -> LogcatInitialAction.LoadFile(file)
     else -> LogcatInitialAction.InvalidFile
   }
+}
+
+internal fun logcatCloseAction(state: LogcatUiState): LogcatCloseAction {
+  return if (state.streaming) LogcatCloseAction.StopStreamingAndOpenLogs
+  else LogcatCloseAction.CloseViewer
 }
 
 internal fun LogcatUiState.withStreaming(streaming: Boolean): LogcatUiState {

@@ -33,6 +33,22 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatCloseActionStopsStreamingAndOpensLogsWhenStreaming() {
+    assertEquals(
+      LogcatCloseAction.StopStreamingAndOpenLogs,
+      logcatCloseAction(LogcatUiState(streaming = true)),
+    )
+  }
+
+  @Test
+  fun logcatCloseActionClosesViewerWhenViewingLocalFile() {
+    assertEquals(
+      LogcatCloseAction.CloseViewer,
+      logcatCloseAction(LogcatUiState(streaming = false)),
+    )
+  }
+
+  @Test
   fun streamingUpdatesPreserveMessagesAndExportProgress() {
     val message = logMessage(1)
     val state =
