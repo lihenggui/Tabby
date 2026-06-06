@@ -18,6 +18,7 @@ import com.github.kr328.clash.profile.ui.ProvidersBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProvidersEventState
 import com.github.kr328.clash.profile.ui.ProvidersUiState
 import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
+import com.github.kr328.clash.profile.ui.providerUpdateFailureErrorMessage
 import com.github.kr328.clash.profile.ui.providerUpdateFailureEventState
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
 import com.github.kr328.clash.profile.ui.providersConsumedEventState
@@ -96,7 +97,12 @@ internal class ProvidersViewModel(app: Application) :
       } catch (e: Exception) {
         Log.e("Update provider ${provider.name} failed: ${e.message}", e)
         uiState.update { current -> current.withProviderUpdateFailed(provider) }
-        val errorMessage = e.localizedMessage ?: e.message ?: e.toString()
+        val errorMessage =
+          providerUpdateFailureErrorMessage(
+            localizedMessage = e.localizedMessage,
+            message = e.message,
+            fallbackMessage = e.toString(),
+          )
         eventState.value =
           providerUpdateFailureEventState(
             providerName = provider.name,

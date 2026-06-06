@@ -88,6 +88,14 @@ internal fun providerUpdateFailureEventState(
   return ProvidersEventState.ShowMessage(formatUpdateFailure(providerName, errorMessage))
 }
 
+internal fun providerUpdateFailureErrorMessage(
+  localizedMessage: String?,
+  message: String?,
+  fallbackMessage: String,
+): String {
+  return localizedMessage ?: message ?: fallbackMessage
+}
+
 internal fun providersConsumedEventState(): ProvidersEventState {
   return ProvidersEventState.Idle
 }

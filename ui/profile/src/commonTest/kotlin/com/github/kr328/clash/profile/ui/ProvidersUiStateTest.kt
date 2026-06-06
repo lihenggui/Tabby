@@ -216,6 +216,38 @@ class ProvidersUiStateTest {
   }
 
   @Test
+  fun providerUpdateFailureErrorMessagePrefersLocalizedMessage() {
+    assertEquals(
+      "localized",
+      providerUpdateFailureErrorMessage(
+        localizedMessage = "localized",
+        message = "message",
+        fallbackMessage = "fallback",
+      ),
+    )
+  }
+
+  @Test
+  fun providerUpdateFailureErrorMessageFallsBackToMessageThenFinalFallback() {
+    assertEquals(
+      "message",
+      providerUpdateFailureErrorMessage(
+        localizedMessage = null,
+        message = "message",
+        fallbackMessage = "fallback",
+      ),
+    )
+    assertEquals(
+      "fallback",
+      providerUpdateFailureErrorMessage(
+        localizedMessage = null,
+        message = null,
+        fallbackMessage = "fallback",
+      ),
+    )
+  }
+
+  @Test
   fun consumedEventStateResetsToIdle() {
     assertEquals(ProvidersEventState.Idle, providersConsumedEventState())
   }
