@@ -53,7 +53,7 @@ internal fun NewProfileScreen(
       val uri = result.data?.data
       val action =
         newProfileExternalProviderResultAction(
-          NewProfileExternalProviderResult(
+          newProfileExternalProviderResultFromPlatformPayload(
             resultAccepted =
               newProfileExternalProviderResultAcceptedFromPlatformResultCode(
                 resultCode = result.resultCode,

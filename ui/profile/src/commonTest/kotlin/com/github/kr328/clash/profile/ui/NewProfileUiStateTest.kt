@@ -169,6 +169,50 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileExternalProviderPlatformPayloadKeepsAcceptedSourceMetadata() {
+    assertEquals(
+      NewProfileExternalProviderResult(
+        resultAccepted = true,
+        sourceSelected = true,
+        name = "External config",
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        resultAccepted = true,
+        sourceSelected = true,
+        name = "External config",
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileExternalProviderPlatformPayloadDropsNameWhenResultCannotCreateProfile() {
+    assertEquals(
+      NewProfileExternalProviderResult(
+        resultAccepted = false,
+        sourceSelected = true,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        resultAccepted = false,
+        sourceSelected = true,
+        name = "Ignored",
+      ),
+    )
+    assertEquals(
+      NewProfileExternalProviderResult(
+        resultAccepted = true,
+        sourceSelected = false,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        resultAccepted = true,
+        sourceSelected = false,
+        name = "Ignored",
+      ),
+    )
+  }
+
+  @Test
   fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
     assertEquals(
       NewProfileExternalProviderResultAction.CreateProfile("External config"),
