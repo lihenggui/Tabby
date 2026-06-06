@@ -106,6 +106,54 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesBackActionIgnoresWhileProcessing() {
+    assertEquals(
+      PropertiesBackAction.Ignore,
+      propertiesBackAction(
+        processing = true,
+        showExitWithoutSavingDialog = true,
+        hasUnsavedChanges = true,
+      ),
+    )
+  }
+
+  @Test
+  fun propertiesBackActionHidesExistingExitDialog() {
+    assertEquals(
+      PropertiesBackAction.HideExitWithoutSavingDialog,
+      propertiesBackAction(
+        processing = false,
+        showExitWithoutSavingDialog = true,
+        hasUnsavedChanges = true,
+      ),
+    )
+  }
+
+  @Test
+  fun propertiesBackActionShowsExitDialogForUnsavedChanges() {
+    assertEquals(
+      PropertiesBackAction.ShowExitWithoutSavingDialog,
+      propertiesBackAction(
+        processing = false,
+        showExitWithoutSavingDialog = false,
+        hasUnsavedChanges = true,
+      ),
+    )
+  }
+
+  @Test
+  fun propertiesBackActionRequestsCloseWhenNothingBlocksBack() {
+    assertEquals(
+      PropertiesBackAction.RequestClose,
+      propertiesBackAction(
+        processing = false,
+        showExitWithoutSavingDialog = false,
+        hasUnsavedChanges = false,
+      ),
+    )
+  }
+
+  @Test
   fun mapsPropertiesProgressState() {
     assertEquals(
       PropertiesProgressState(

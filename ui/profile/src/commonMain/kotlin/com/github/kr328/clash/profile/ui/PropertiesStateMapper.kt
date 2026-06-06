@@ -17,6 +17,13 @@ internal enum class PropertiesCommitValidationResult {
   EmptySource,
 }
 
+internal enum class PropertiesBackAction {
+  Ignore,
+  HideExitWithoutSavingDialog,
+  ShowExitWithoutSavingDialog,
+  RequestClose,
+}
+
 internal sealed interface PropertiesAutoSaveAction {
   data class Save(val profile: Profile) : PropertiesAutoSaveAction
 
@@ -49,6 +56,19 @@ internal fun propertiesAutoSaveAction(
     PropertiesAutoSaveAction.Save(profile)
   } else {
     PropertiesAutoSaveAction.Ignore
+  }
+}
+
+internal fun propertiesBackAction(
+  processing: Boolean,
+  showExitWithoutSavingDialog: Boolean,
+  hasUnsavedChanges: Boolean,
+): PropertiesBackAction {
+  return when {
+    processing -> PropertiesBackAction.Ignore
+    showExitWithoutSavingDialog -> PropertiesBackAction.HideExitWithoutSavingDialog
+    hasUnsavedChanges -> PropertiesBackAction.ShowExitWithoutSavingDialog
+    else -> PropertiesBackAction.RequestClose
   }
 }
 

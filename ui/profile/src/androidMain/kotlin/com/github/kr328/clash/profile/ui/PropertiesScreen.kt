@@ -17,6 +17,10 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.PropertiesBackAction.HideExitWithoutSavingDialog
+import com.github.kr328.clash.profile.ui.PropertiesBackAction.Ignore
+import com.github.kr328.clash.profile.ui.PropertiesBackAction.RequestClose
+import com.github.kr328.clash.profile.ui.PropertiesBackAction.ShowExitWithoutSavingDialog
 import com.github.kr328.clash.profile.vm.PropertiesViewModel
 import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import com.github.kr328.clash.ui.theme.PreviewTabby
@@ -58,11 +62,17 @@ internal fun PropertiesScreen(
   if (profile != null) {
     var showExitWithoutSavingDialog by rememberSaveable { mutableStateOf(false) }
     val onBack = {
-      when {
-        uiState.processing -> Unit
-        showExitWithoutSavingDialog -> showExitWithoutSavingDialog = false
-        uiState.hasUnsavedChanges -> showExitWithoutSavingDialog = true
-        else -> viewModel.onRequestClose()
+      when (
+        propertiesBackAction(
+          processing = uiState.processing,
+          showExitWithoutSavingDialog = showExitWithoutSavingDialog,
+          hasUnsavedChanges = uiState.hasUnsavedChanges,
+        )
+      ) {
+        Ignore -> Unit
+        HideExitWithoutSavingDialog -> showExitWithoutSavingDialog = false
+        ShowExitWithoutSavingDialog -> showExitWithoutSavingDialog = true
+        RequestClose -> viewModel.onRequestClose()
       }
     }
 
