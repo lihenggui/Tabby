@@ -40,14 +40,12 @@ import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.common.util.unsafeLazy
 import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.core.model.DarkMode
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
-import java.util.Locale
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -222,18 +220,18 @@ class MainActivity : ComponentActivity() {
     private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
     fun handleInstallConfigUri(uri: Uri) {
-      val url = uri.getQueryParameter("url") ?: return
+      val request =
+        tabbyInstallProfileRequest(
+          source = uri.getQueryParameter("url"),
+          type = uri.getQueryParameter("type"),
+          name = uri.getQueryParameter("name"),
+          defaultName = application.getString(CommonR.string.new_profile),
+        ) ?: return
       viewModelScope.launch {
-        val type =
-          when (uri.getQueryParameter("type")?.lowercase(Locale.getDefault())) {
-            "url" -> Profile.Type.Url
-            "file" -> Profile.Type.File
-            else -> Profile.Type.Url
-          }
-        val name =
-          uri.getQueryParameter("name") ?: application.getString(CommonR.string.new_profile)
         val uuid =
-          profileRepository.create(type, name).also { profileRepository.patch(it, name, url, 0) }
+          profileRepository.create(request.type, request.name).also {
+            profileRepository.patch(it, request.name, request.source, 0)
+          }
         backStack.handleTabbyExternalRouteAction(
           TabbyExternalRouteAction.OpenProfileProperties(uuid)
         )
