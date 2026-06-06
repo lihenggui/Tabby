@@ -116,6 +116,100 @@ class OverrideSettingsStateTest {
   }
 
   @Test
+  fun updatesDnsScalarOverridesAndPreservesNestedState() {
+    val configuration = configurationWithDnsOverrides()
+
+    val enableUpdated = updateOverrideDnsEnable(configuration, false)
+    val preferH3Updated = updateOverrideDnsPreferH3(configuration, null)
+    val listenUpdated = updateOverrideDnsListen(configuration, "127.0.0.1:1053")
+    val appendSystemDnsUpdated = updateOverrideAppendSystemDns(configuration, null)
+    val ipv6Updated = updateOverrideDnsIpv6(configuration, true)
+    val useHostsUpdated = updateOverrideDnsUseHosts(configuration, null)
+    val enhancedModeUpdated =
+      updateOverrideDnsEnhancedMode(configuration, ConfigurationOverride.DnsEnhancedMode.FakeIp)
+
+    assertEquals(false, enableUpdated.dns.enable)
+    assertEquals(configuration.dns.fallbackFilter, enableUpdated.dns.fallbackFilter)
+    assertEquals(configuration.dns.nameserverPolicy, enableUpdated.dns.nameserverPolicy)
+    assertEquals(configuration.app, enableUpdated.app)
+    assertEquals(configuration.sniffer, enableUpdated.sniffer)
+
+    assertEquals(null, preferH3Updated.dns.preferH3)
+    assertEquals(configuration.dns.fallbackFilter, preferH3Updated.dns.fallbackFilter)
+    assertEquals(configuration.app, preferH3Updated.app)
+    assertEquals(configuration.sniffer, preferH3Updated.sniffer)
+
+    assertEquals("127.0.0.1:1053", listenUpdated.dns.listen)
+    assertEquals(configuration.dns.fallbackFilter, listenUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, listenUpdated.app)
+    assertEquals(configuration.sniffer, listenUpdated.sniffer)
+
+    assertEquals(null, appendSystemDnsUpdated.app.appendSystemDns)
+    assertEquals(configuration.dns, appendSystemDnsUpdated.dns)
+    assertEquals(configuration.sniffer, appendSystemDnsUpdated.sniffer)
+
+    assertEquals(true, ipv6Updated.dns.ipv6)
+    assertEquals(configuration.dns.fallbackFilter, ipv6Updated.dns.fallbackFilter)
+    assertEquals(configuration.app, ipv6Updated.app)
+    assertEquals(configuration.sniffer, ipv6Updated.sniffer)
+
+    assertEquals(null, useHostsUpdated.dns.useHosts)
+    assertEquals(configuration.dns.fallbackFilter, useHostsUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, useHostsUpdated.app)
+    assertEquals(configuration.sniffer, useHostsUpdated.sniffer)
+
+    assertEquals(ConfigurationOverride.DnsEnhancedMode.FakeIp, enhancedModeUpdated.dns.enhancedMode)
+    assertEquals(configuration.dns.fallbackFilter, enhancedModeUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, enhancedModeUpdated.app)
+    assertEquals(configuration.sniffer, enhancedModeUpdated.sniffer)
+  }
+
+  @Test
+  fun updatesDnsListAndFilterOverridesAndPreservesNestedState() {
+    val configuration = configurationWithDnsOverrides()
+    val nameServer = listOf("https://new-dns.example/dns-query", "1.1.1.1")
+    val fallback = listOf("tls://fallback.example")
+    val defaultServer = listOf("9.9.9.9")
+    val fakeIpFilter = listOf("+.lan", "geosite:private")
+
+    val nameServerUpdated = updateOverrideDnsNameServer(configuration, nameServer)
+    val fallbackUpdated = updateOverrideDnsFallback(configuration, fallback)
+    val defaultServerUpdated = updateOverrideDnsDefaultServer(configuration, defaultServer)
+    val fakeIpFilterUpdated = updateOverrideDnsFakeIpFilter(configuration, fakeIpFilter)
+    val fakeIpFilterModeUpdated =
+      updateOverrideDnsFakeIpFilterMode(configuration, ConfigurationOverride.FilterMode.WhiteList)
+
+    assertEquals(nameServer, nameServerUpdated.dns.nameServer)
+    assertEquals(configuration.dns.fallbackFilter, nameServerUpdated.dns.fallbackFilter)
+    assertEquals(configuration.dns.nameserverPolicy, nameServerUpdated.dns.nameserverPolicy)
+    assertEquals(configuration.app, nameServerUpdated.app)
+    assertEquals(configuration.sniffer, nameServerUpdated.sniffer)
+
+    assertEquals(fallback, fallbackUpdated.dns.fallback)
+    assertEquals(configuration.dns.fallbackFilter, fallbackUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, fallbackUpdated.app)
+    assertEquals(configuration.sniffer, fallbackUpdated.sniffer)
+
+    assertEquals(defaultServer, defaultServerUpdated.dns.defaultServer)
+    assertEquals(configuration.dns.fallbackFilter, defaultServerUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, defaultServerUpdated.app)
+    assertEquals(configuration.sniffer, defaultServerUpdated.sniffer)
+
+    assertEquals(fakeIpFilter, fakeIpFilterUpdated.dns.fakeIpFilter)
+    assertEquals(configuration.dns.fallbackFilter, fakeIpFilterUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, fakeIpFilterUpdated.app)
+    assertEquals(configuration.sniffer, fakeIpFilterUpdated.sniffer)
+
+    assertEquals(
+      ConfigurationOverride.FilterMode.WhiteList,
+      fakeIpFilterModeUpdated.dns.fakeIPFilterMode,
+    )
+    assertEquals(configuration.dns.fallbackFilter, fakeIpFilterModeUpdated.dns.fallbackFilter)
+    assertEquals(configuration.app, fakeIpFilterModeUpdated.app)
+    assertEquals(configuration.sniffer, fakeIpFilterModeUpdated.sniffer)
+  }
+
+  @Test
   fun updatesHostsAndIncrementsRevision() {
     val configuration = ConfigurationOverride(revision = 7)
     val hosts = linkedMapOf("example.com" to "127.0.0.1", "internal.test" to "192.0.2.10")
@@ -234,6 +328,39 @@ class OverrideSettingsStateTest {
               ipcidr = listOf("192.0.2.0/24"),
             ),
         )
+    )
+  }
+
+  private fun configurationWithDnsOverrides(): ConfigurationOverride {
+    return ConfigurationOverride(
+      dns =
+        ConfigurationOverride.Dns(
+          enable = true,
+          preferH3 = true,
+          listen = "0.0.0.0:1053",
+          ipv6 = false,
+          useHosts = true,
+          enhancedMode = ConfigurationOverride.DnsEnhancedMode.Mapping,
+          nameServer = listOf("https://dns.example/dns-query"),
+          fallback = listOf("tls://fallback.old.example"),
+          defaultServer = listOf("223.5.5.5"),
+          fakeIpFilter = listOf("+.old.example"),
+          fakeIPFilterMode = ConfigurationOverride.FilterMode.BlackList,
+          fallbackFilter =
+            ConfigurationOverride.DnsFallbackFilter(
+              geoIp = true,
+              geoIpCode = "CN",
+              domain = listOf("geosite:old"),
+              ipcidr = listOf("198.51.100.0/24"),
+            ),
+          nameserverPolicy = mapOf("geosite:policy" to "https://policy.example/dns-query"),
+        ),
+      app = ConfigurationOverride.App(appendSystemDns = true),
+      sniffer =
+        ConfigurationOverride.Sniffer(
+          enable = true,
+          forceDomain = listOf("+.force.example"),
+        ),
     )
   }
 

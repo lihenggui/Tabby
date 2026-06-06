@@ -15,13 +15,25 @@ import com.github.kr328.clash.settings.ui.OverrideSettingsActions
 import com.github.kr328.clash.settings.ui.updateOverrideAllowLan
 import com.github.kr328.clash.settings.ui.updateOverrideAllowOrigins
 import com.github.kr328.clash.settings.ui.updateOverrideAllowPrivateNetwork
+import com.github.kr328.clash.settings.ui.updateOverrideAppendSystemDns
 import com.github.kr328.clash.settings.ui.updateOverrideAuthentication
 import com.github.kr328.clash.settings.ui.updateOverrideBindAddress
+import com.github.kr328.clash.settings.ui.updateOverrideDnsDefaultServer
+import com.github.kr328.clash.settings.ui.updateOverrideDnsEnable
+import com.github.kr328.clash.settings.ui.updateOverrideDnsEnhancedMode
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFakeIpFilter
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFakeIpFilterMode
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFallback
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackDomain
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIp
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIpCode
 import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackIpcidr
+import com.github.kr328.clash.settings.ui.updateOverrideDnsIpv6
+import com.github.kr328.clash.settings.ui.updateOverrideDnsListen
+import com.github.kr328.clash.settings.ui.updateOverrideDnsNameServer
 import com.github.kr328.clash.settings.ui.updateOverrideDnsNameserverPolicy
+import com.github.kr328.clash.settings.ui.updateOverrideDnsPreferH3
+import com.github.kr328.clash.settings.ui.updateOverrideDnsUseHosts
 import com.github.kr328.clash.settings.ui.updateOverrideExternalController
 import com.github.kr328.clash.settings.ui.updateOverrideExternalControllerTls
 import com.github.kr328.clash.settings.ui.updateOverrideHosts
@@ -132,53 +144,53 @@ internal class OverrideSettingsViewModel(app: Application) :
   }
 
   override fun updateDnsEnable(value: Boolean?) = configuration.update {
-    it.copy(dns = it.dns.copy(enable = value))
+    updateOverrideDnsEnable(it, value)
   }
 
   override fun updateDnsPreferH3(value: Boolean?) = configuration.update {
-    it.copy(dns = it.dns.copy(preferH3 = value))
+    updateOverrideDnsPreferH3(it, value)
   }
 
   override fun updateDnsListen(value: String?) = configuration.update {
-    it.copy(dns = it.dns.copy(listen = value))
+    updateOverrideDnsListen(it, value)
   }
 
   override fun updateAppendSystemDns(value: Boolean?) = configuration.update {
-    it.copy(app = it.app.copy(appendSystemDns = value))
+    updateOverrideAppendSystemDns(it, value)
   }
 
   override fun updateDnsIpv6(value: Boolean?) = configuration.update {
-    it.copy(dns = it.dns.copy(ipv6 = value))
+    updateOverrideDnsIpv6(it, value)
   }
 
   override fun updateDnsUseHosts(value: Boolean?) = configuration.update {
-    it.copy(dns = it.dns.copy(useHosts = value))
+    updateOverrideDnsUseHosts(it, value)
   }
 
   override fun updateDnsEnhancedMode(value: ConfigurationOverride.DnsEnhancedMode?) =
     configuration.update {
-      it.copy(dns = it.dns.copy(enhancedMode = value))
+      updateOverrideDnsEnhancedMode(it, value)
     }
 
   override fun updateDnsNameServer(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(nameServer = value))
+    updateOverrideDnsNameServer(it, value)
   }
 
   override fun updateDnsFallback(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(fallback = value))
+    updateOverrideDnsFallback(it, value)
   }
 
   override fun updateDnsDefaultServer(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(defaultServer = value))
+    updateOverrideDnsDefaultServer(it, value)
   }
 
   override fun updateDnsFakeIpFilter(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(fakeIpFilter = value))
+    updateOverrideDnsFakeIpFilter(it, value)
   }
 
   override fun updateDnsFakeIpFilterMode(value: ConfigurationOverride.FilterMode?) =
     configuration.update {
-      it.copy(dns = it.dns.copy(fakeIPFilterMode = value))
+      updateOverrideDnsFakeIpFilterMode(it, value)
     }
 
   override fun updateDnsGeoIpFallback(value: Boolean?) = configuration.update {

@@ -118,6 +118,90 @@ internal fun updateOverrideLogLevel(
   return configuration.copy(logLevel = logLevel)
 }
 
+internal fun updateOverrideDnsEnable(
+  configuration: ConfigurationOverride,
+  enable: Boolean?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(enable = enable) }
+}
+
+internal fun updateOverrideDnsPreferH3(
+  configuration: ConfigurationOverride,
+  preferH3: Boolean?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(preferH3 = preferH3) }
+}
+
+internal fun updateOverrideDnsListen(
+  configuration: ConfigurationOverride,
+  listen: String?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(listen = listen) }
+}
+
+internal fun updateOverrideAppendSystemDns(
+  configuration: ConfigurationOverride,
+  appendSystemDns: Boolean?,
+): ConfigurationOverride {
+  return configuration.copy(app = configuration.app.copy(appendSystemDns = appendSystemDns))
+}
+
+internal fun updateOverrideDnsIpv6(
+  configuration: ConfigurationOverride,
+  ipv6: Boolean?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(ipv6 = ipv6) }
+}
+
+internal fun updateOverrideDnsUseHosts(
+  configuration: ConfigurationOverride,
+  useHosts: Boolean?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(useHosts = useHosts) }
+}
+
+internal fun updateOverrideDnsEnhancedMode(
+  configuration: ConfigurationOverride,
+  enhancedMode: ConfigurationOverride.DnsEnhancedMode?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(enhancedMode = enhancedMode) }
+}
+
+internal fun updateOverrideDnsNameServer(
+  configuration: ConfigurationOverride,
+  nameServer: List<String>?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(nameServer = nameServer) }
+}
+
+internal fun updateOverrideDnsFallback(
+  configuration: ConfigurationOverride,
+  fallback: List<String>?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(fallback = fallback) }
+}
+
+internal fun updateOverrideDnsDefaultServer(
+  configuration: ConfigurationOverride,
+  defaultServer: List<String>?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(defaultServer = defaultServer) }
+}
+
+internal fun updateOverrideDnsFakeIpFilter(
+  configuration: ConfigurationOverride,
+  fakeIpFilter: List<String>?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(fakeIpFilter = fakeIpFilter) }
+}
+
+internal fun updateOverrideDnsFakeIpFilterMode(
+  configuration: ConfigurationOverride,
+  fakeIPFilterMode: ConfigurationOverride.FilterMode?,
+): ConfigurationOverride {
+  return configuration.updateDns { it.copy(fakeIPFilterMode = fakeIPFilterMode) }
+}
+
 internal fun updateOverrideHosts(
   configuration: ConfigurationOverride,
   hosts: Map<String, String>?,
@@ -170,8 +254,14 @@ private fun ConfigurationOverride.updateExternalControllerCors(
   return copy(externalControllerCors = transform(externalControllerCors))
 }
 
+private fun ConfigurationOverride.updateDns(
+  transform: (ConfigurationOverride.Dns) -> ConfigurationOverride.Dns
+): ConfigurationOverride {
+  return copy(dns = transform(dns))
+}
+
 private fun ConfigurationOverride.updateDnsFallbackFilter(
   transform: (ConfigurationOverride.DnsFallbackFilter) -> ConfigurationOverride.DnsFallbackFilter
 ): ConfigurationOverride {
-  return copy(dns = dns.copy(fallbackFilter = transform(dns.fallbackFilter)))
+  return updateDns { it.copy(fallbackFilter = transform(it.fallbackFilter)) }
 }
