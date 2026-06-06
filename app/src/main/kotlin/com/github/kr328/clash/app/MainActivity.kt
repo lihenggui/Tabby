@@ -220,9 +220,10 @@ class MainActivity : ComponentActivity() {
           profileRepository.create(request.type, request.name).also {
             profileRepository.patch(it, request.name, request.source, 0)
           }
-        backStack.handleTabbyExternalRouteAction(
-          TabbyExternalRouteAction.OpenProfileProperties(uuid)
-        )
+        when (val action = tabbyInstallProfileResultAction(uuid)) {
+          is TabbyInstallProfileResultAction.OpenRoute ->
+            backStack.handleTabbyExternalRouteAction(action.routeAction)
+        }
       }
     }
 

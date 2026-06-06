@@ -1,12 +1,17 @@
 package com.github.kr328.clash.app
 
 import com.github.kr328.clash.core.model.Profile
+import kotlin.uuid.Uuid
 
 data class TabbyInstallProfileRequest(
   val type: Profile.Type,
   val name: String,
   val source: String,
 )
+
+sealed interface TabbyInstallProfileResultAction {
+  data class OpenRoute(val routeAction: TabbyExternalRouteAction) : TabbyInstallProfileResultAction
+}
 
 fun tabbyInstallProfileRequest(
   source: String?,
@@ -26,3 +31,6 @@ fun tabbyInstallProfileRequest(
     source = profileSource,
   )
 }
+
+fun tabbyInstallProfileResultAction(uuid: Uuid): TabbyInstallProfileResultAction =
+  TabbyInstallProfileResultAction.OpenRoute(TabbyExternalRouteAction.OpenProfileProperties(uuid))

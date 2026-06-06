@@ -4,6 +4,7 @@ import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.uuid.Uuid
 
 class TabbyInstallProfileRequestTest {
   @Test
@@ -60,6 +61,18 @@ class TabbyInstallProfileRequestTest {
         name = "Profile",
         defaultName = "Default",
       ),
+    )
+  }
+
+  @Test
+  fun tabbyInstallProfileResultActionOpensInstalledProfileProperties() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+
+    assertEquals(
+      TabbyInstallProfileResultAction.OpenRoute(
+        TabbyExternalRouteAction.OpenProfileProperties(uuid)
+      ),
+      tabbyInstallProfileResultAction(uuid),
     )
   }
 }
