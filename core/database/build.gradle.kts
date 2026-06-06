@@ -24,7 +24,7 @@ sqldelight {
   databases {
     create("TabbyDatabase") {
       packageName.set("com.github.kr328.clash.database")
-      schemaOutputDirectory.set(file("schemas"))
+      schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
       verifyMigrations.set(true)
     }
   }
