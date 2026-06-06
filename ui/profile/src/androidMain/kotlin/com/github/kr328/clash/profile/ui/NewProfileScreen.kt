@@ -47,10 +47,17 @@ internal fun NewProfileScreen(
 
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      if (result.resultCode == RESULT_OK) {
-        val uri = result.data?.data ?: return@rememberLauncherForActivityResult
-        val name = result.data?.getStringExtra(Intents.EXTRA_NAME)
-        viewModel.onExternalProviderResult(uri, name)
+      val uri = result.data?.data
+      val action =
+        newProfileExternalProviderResultAction(
+          resultAccepted = result.resultCode == RESULT_OK,
+          sourceSelected = uri != null,
+          name = result.data?.getStringExtra(Intents.EXTRA_NAME),
+        )
+      when (action) {
+        is NewProfileExternalProviderResultAction.CreateProfile ->
+          viewModel.onExternalProviderResult(checkNotNull(uri), action.name)
+        NewProfileExternalProviderResultAction.Ignore -> Unit
       }
     }
 

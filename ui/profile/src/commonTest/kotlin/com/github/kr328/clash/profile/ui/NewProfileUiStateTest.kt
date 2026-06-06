@@ -78,6 +78,42 @@ class NewProfileUiStateTest {
     )
   }
 
+  @Test
+  fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
+    assertEquals(
+      NewProfileExternalProviderResultAction.CreateProfile("External config"),
+      newProfileExternalProviderResultAction(
+        resultAccepted = true,
+        sourceSelected = true,
+        name = "External config",
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileExternalProviderResultActionIgnoresRejectedResults() {
+    assertEquals(
+      NewProfileExternalProviderResultAction.Ignore,
+      newProfileExternalProviderResultAction(
+        resultAccepted = false,
+        sourceSelected = true,
+        name = "Ignored",
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileExternalProviderResultActionIgnoresMissingSource() {
+    assertEquals(
+      NewProfileExternalProviderResultAction.Ignore,
+      newProfileExternalProviderResultAction(
+        resultAccepted = true,
+        sourceSelected = false,
+        name = "Ignored",
+      ),
+    )
+  }
+
   private fun testProvider(id: String): TestProvider {
     return TestProvider(id)
   }

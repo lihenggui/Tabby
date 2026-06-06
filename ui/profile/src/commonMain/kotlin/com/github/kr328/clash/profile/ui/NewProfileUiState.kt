@@ -25,6 +25,12 @@ internal sealed interface NewProfileDetailAction {
   data object Ignore : NewProfileDetailAction
 }
 
+internal sealed interface NewProfileExternalProviderResultAction {
+  data class CreateProfile(val name: String?) : NewProfileExternalProviderResultAction
+
+  data object Ignore : NewProfileExternalProviderResultAction
+}
+
 internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCreateAction {
   return when (kind) {
     NewProfileProviderKind.File -> NewProfileCreateAction.CreateProfile(Profile.Type.File)
@@ -37,6 +43,18 @@ internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCre
 internal fun newProfileDetailAction(packageName: String?): NewProfileDetailAction {
   return if (packageName == null) NewProfileDetailAction.Ignore
   else NewProfileDetailAction.OpenAppSettings(packageName)
+}
+
+internal fun newProfileExternalProviderResultAction(
+  resultAccepted: Boolean,
+  sourceSelected: Boolean,
+  name: String?,
+): NewProfileExternalProviderResultAction {
+  return if (resultAccepted && sourceSelected) {
+    NewProfileExternalProviderResultAction.CreateProfile(name)
+  } else {
+    NewProfileExternalProviderResultAction.Ignore
+  }
 }
 
 internal fun <T> NewProfileUiState<T>.withNewProfileProviders(
