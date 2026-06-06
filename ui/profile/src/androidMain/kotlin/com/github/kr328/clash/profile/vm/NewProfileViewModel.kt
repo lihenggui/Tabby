@@ -15,8 +15,10 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
+import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.decodeProfileQrSource
+import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
 import kotlin.uuid.Uuid
@@ -45,11 +47,13 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun onCreate(provider: ProfileProvider) {
-    when (provider) {
-      is QR -> eventState.value = EventState.LaunchQRScanner
-      is External -> eventState.value = EventState.LaunchExternalProvider(provider.intent)
-      is File -> createProfile(File)
-      is Url -> createProfile(Url)
+    when (val action = newProfileCreateAction(provider.kind)) {
+      is NewProfileCreateAction.CreateProfile -> createProfile(action.type)
+      NewProfileCreateAction.LaunchQRScanner -> eventState.value = EventState.LaunchQRScanner
+      NewProfileCreateAction.LaunchExternalProvider -> {
+        val externalProvider = provider as ProfileProvider.External
+        eventState.value = EventState.LaunchExternalProvider(externalProvider.intent)
+      }
     }
   }
 

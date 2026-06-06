@@ -1,5 +1,6 @@
 package com.github.kr328.clash.profile.ui
 
+import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,6 +28,38 @@ class NewProfileUiStateTest {
         .withNewProfileProviders(emptyList())
 
     assertTrue(state.providers.isEmpty())
+  }
+
+  @Test
+  fun newProfileCreateActionCreatesFileProfile() {
+    assertEquals(
+      NewProfileCreateAction.CreateProfile(Profile.Type.File),
+      newProfileCreateAction(NewProfileProviderKind.File),
+    )
+  }
+
+  @Test
+  fun newProfileCreateActionCreatesUrlProfile() {
+    assertEquals(
+      NewProfileCreateAction.CreateProfile(Profile.Type.Url),
+      newProfileCreateAction(NewProfileProviderKind.Url),
+    )
+  }
+
+  @Test
+  fun newProfileCreateActionLaunchesQrScanner() {
+    assertEquals(
+      NewProfileCreateAction.LaunchQRScanner,
+      newProfileCreateAction(NewProfileProviderKind.QR),
+    )
+  }
+
+  @Test
+  fun newProfileCreateActionLaunchesExternalProvider() {
+    assertEquals(
+      NewProfileCreateAction.LaunchExternalProvider,
+      newProfileCreateAction(NewProfileProviderKind.External),
+    )
   }
 
   private fun testProvider(id: String): TestProvider {
