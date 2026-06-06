@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
+import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
 import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
@@ -132,7 +133,7 @@ fun PlaceholderTabbyApp(
                 onOpenReleases = {},
               )
             },
-            appCrashedContent = { PlaceholderScreen("App crashed") },
+            appCrashedContent = { AppCrashedRouteContent(logs = "") },
           )
         },
       )

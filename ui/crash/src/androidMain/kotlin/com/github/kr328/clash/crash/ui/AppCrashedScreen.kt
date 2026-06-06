@@ -14,5 +14,5 @@ internal fun AppCrashedScreen(
 ) {
   val logs by viewModel.logs.collectAsStateWithLifecycle()
 
-  AppCrashedContent(modifier = modifier, logs = logs)
+  AppCrashedRouteContent(modifier = modifier, logs = logs)
 }
