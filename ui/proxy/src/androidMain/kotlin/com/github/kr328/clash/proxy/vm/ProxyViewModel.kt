@@ -16,6 +16,7 @@ import com.github.kr328.clash.proxy.ui.ProxyDelayTestEffect
 import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
+import com.github.kr328.clash.proxy.ui.ProxyInitialStateAction
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeEffect
 import com.github.kr328.clash.proxy.ui.ProxyPageChangedAction
@@ -29,11 +30,11 @@ import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
-import com.github.kr328.clash.proxy.ui.initialSelectedProxies
 import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
+import com.github.kr328.clash.proxy.ui.proxyInitialStateAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
@@ -48,7 +49,6 @@ import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
-import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
 import kotlinx.coroutines.Dispatchers
@@ -132,8 +132,14 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     val mode = engineController.querySessionMode()
     val names = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
 
-    selectedProxies.value = initialSelectedProxies(names.size)
-    uiState.update { it.withInitialProxyGroups(mode, names, uiStore.proxyLastGroup) }
+    applyProxyInitialStateAction {
+      proxyInitialStateAction(
+        state = it,
+        overrideMode = mode,
+        groupNames = names,
+        lastGroupName = uiStore.proxyLastGroup,
+      )
+    }
 
     initialized = true
     reloadAll()
@@ -217,6 +223,11 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         }
       ProxyReloadAction.Ignore -> Unit
     }
+  }
+
+  private fun applyProxyInitialStateAction(action: (ProxyUiState) -> ProxyInitialStateAction) {
+    selectedProxies.value = action(uiState.value).selectedProxies
+    uiState.update { current -> action(current).state }
   }
 
   private fun applyProxyPreferenceChangeAction(

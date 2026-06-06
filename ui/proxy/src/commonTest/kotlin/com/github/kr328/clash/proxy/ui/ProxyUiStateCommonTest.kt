@@ -100,6 +100,39 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyInitialStateActionInitializesUiStateAndSelectedProxies() {
+    val action =
+      proxyInitialStateAction(
+        state = ProxyUiState(),
+        overrideMode = TunnelState.Mode.Rule,
+        groupNames = listOf("Proxy", "Auto"),
+        lastGroupName = "Auto",
+      )
+
+    assertEquals(TunnelState.Mode.Rule, action.state.overrideMode)
+    assertEquals(listOf("Proxy", "Auto"), action.state.groupNames)
+    assertEquals(1, action.state.initialPage)
+    assertEquals(1, action.state.currentPage)
+    assertEquals(listOf(SelectedProxy("?"), SelectedProxy("?")), action.selectedProxies)
+  }
+
+  @Test
+  fun proxyInitialStateActionInitializesEmptySelectedProxiesForEmptyGroups() {
+    val action =
+      proxyInitialStateAction(
+        state = ProxyUiState(currentPage = 2),
+        overrideMode = null,
+        groupNames = emptyList(),
+        lastGroupName = "Missing",
+      )
+
+    assertEquals(0, action.state.initialPage)
+    assertEquals(0, action.state.currentPage)
+    assertEquals(emptyList(), action.state.groups)
+    assertEquals(emptyList(), action.selectedProxies)
+  }
+
+  @Test
   fun updatesProxyLineAndRefreshVersions() {
     val state =
       ProxyUiState(

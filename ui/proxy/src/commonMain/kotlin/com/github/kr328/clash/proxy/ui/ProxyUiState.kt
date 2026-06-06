@@ -89,6 +89,11 @@ internal data class ProxyItemUiState(
 
 internal data class SelectedProxy(val name: String)
 
+internal data class ProxyInitialStateAction(
+  val state: ProxyUiState,
+  val selectedProxies: List<SelectedProxy>,
+)
+
 internal sealed interface ProxyGroupSelectionAction {
   data class SelectGroup(val name: String) : ProxyGroupSelectionAction
 
@@ -227,6 +232,23 @@ internal fun proxyGroupSelectionAction(
   val name = groupNames.getOrNull(index) ?: return ProxyGroupSelectionAction.Ignore
 
   return ProxyGroupSelectionAction.SelectGroup(name)
+}
+
+internal fun proxyInitialStateAction(
+  state: ProxyUiState,
+  overrideMode: TunnelState.Mode?,
+  groupNames: List<String>,
+  lastGroupName: String,
+): ProxyInitialStateAction {
+  return ProxyInitialStateAction(
+    state =
+      state.withInitialProxyGroups(
+        overrideMode = overrideMode,
+        groupNames = groupNames,
+        lastGroupName = lastGroupName,
+      ),
+    selectedProxies = initialSelectedProxies(groupNames.size),
+  )
 }
 
 internal fun proxyProfileLoadedAction(initialized: Boolean): ProxyProfileLoadedAction {
