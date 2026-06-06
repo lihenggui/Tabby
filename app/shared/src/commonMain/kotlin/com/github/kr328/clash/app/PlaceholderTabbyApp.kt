@@ -24,6 +24,7 @@ import com.github.kr328.clash.log.logsEntries
 import com.github.kr328.clash.log.ui.LogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
+import com.github.kr328.clash.profile.ui.FilesRouteContent
 import com.github.kr328.clash.profile.ui.NewProfileRouteContent
 import com.github.kr328.clash.profile.ui.ProfilesListRouteContent
 import com.github.kr328.clash.profile.ui.ProvidersRouteContent
@@ -96,7 +97,7 @@ fun PlaceholderTabbyApp(
                   )
                 },
                 filesContent = { _, onFinish ->
-                  PlaceholderScreen("Profile files", "Done" to onFinish)
+                  FilesRouteContent(onBack = onFinish)
                 },
               )
             },
