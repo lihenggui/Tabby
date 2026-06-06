@@ -57,4 +57,73 @@ class OverrideSettingsStateTest {
     assertEquals(null, updated.dns.nameserverPolicy)
     assertEquals(6, updated.revision)
   }
+
+  @Test
+  fun updatesDnsFallbackGeoIpAndPreservesOtherFallbackFields() {
+    val configuration = configurationWithDnsFallbackFilter()
+
+    val updated = updateOverrideDnsFallbackGeoIp(configuration, false)
+
+    assertEquals(false, updated.dns.fallbackFilter.geoIp)
+    assertEquals(configuration.dns.fallbackFilter.geoIpCode, updated.dns.fallbackFilter.geoIpCode)
+    assertEquals(configuration.dns.fallbackFilter.domain, updated.dns.fallbackFilter.domain)
+    assertEquals(configuration.dns.fallbackFilter.ipcidr, updated.dns.fallbackFilter.ipcidr)
+    assertEquals(configuration.dns.nameServer, updated.dns.nameServer)
+  }
+
+  @Test
+  fun clearsDnsFallbackGeoIpCodeAndPreservesOtherFallbackFields() {
+    val configuration = configurationWithDnsFallbackFilter()
+
+    val updated = updateOverrideDnsFallbackGeoIpCode(configuration, null)
+
+    assertEquals(null, updated.dns.fallbackFilter.geoIpCode)
+    assertEquals(configuration.dns.fallbackFilter.geoIp, updated.dns.fallbackFilter.geoIp)
+    assertEquals(configuration.dns.fallbackFilter.domain, updated.dns.fallbackFilter.domain)
+    assertEquals(configuration.dns.fallbackFilter.ipcidr, updated.dns.fallbackFilter.ipcidr)
+    assertEquals(configuration.dns.nameServer, updated.dns.nameServer)
+  }
+
+  @Test
+  fun updatesDnsFallbackDomainAndPreservesOtherFallbackFields() {
+    val configuration = configurationWithDnsFallbackFilter()
+    val domain = listOf("geosite:private", "+.internal.example")
+
+    val updated = updateOverrideDnsFallbackDomain(configuration, domain)
+
+    assertEquals(domain, updated.dns.fallbackFilter.domain)
+    assertEquals(configuration.dns.fallbackFilter.geoIp, updated.dns.fallbackFilter.geoIp)
+    assertEquals(configuration.dns.fallbackFilter.geoIpCode, updated.dns.fallbackFilter.geoIpCode)
+    assertEquals(configuration.dns.fallbackFilter.ipcidr, updated.dns.fallbackFilter.ipcidr)
+    assertEquals(configuration.dns.nameServer, updated.dns.nameServer)
+  }
+
+  @Test
+  fun clearsDnsFallbackIpcidrAndPreservesOtherFallbackFields() {
+    val configuration = configurationWithDnsFallbackFilter()
+
+    val updated = updateOverrideDnsFallbackIpcidr(configuration, null)
+
+    assertEquals(null, updated.dns.fallbackFilter.ipcidr)
+    assertEquals(configuration.dns.fallbackFilter.geoIp, updated.dns.fallbackFilter.geoIp)
+    assertEquals(configuration.dns.fallbackFilter.geoIpCode, updated.dns.fallbackFilter.geoIpCode)
+    assertEquals(configuration.dns.fallbackFilter.domain, updated.dns.fallbackFilter.domain)
+    assertEquals(configuration.dns.nameServer, updated.dns.nameServer)
+  }
+
+  private fun configurationWithDnsFallbackFilter(): ConfigurationOverride {
+    return ConfigurationOverride(
+      dns =
+        ConfigurationOverride.Dns(
+          nameServer = listOf("https://dns.example/dns-query"),
+          fallbackFilter =
+            ConfigurationOverride.DnsFallbackFilter(
+              geoIp = true,
+              geoIpCode = "CN",
+              domain = listOf("geosite:example"),
+              ipcidr = listOf("192.0.2.0/24"),
+            ),
+        )
+    )
+  }
 }

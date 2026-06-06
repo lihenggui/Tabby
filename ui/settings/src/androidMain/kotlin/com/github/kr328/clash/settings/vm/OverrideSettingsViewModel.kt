@@ -12,6 +12,10 @@ import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackDomain
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIp
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackGeoIpCode
+import com.github.kr328.clash.settings.ui.updateOverrideDnsFallbackIpcidr
 import com.github.kr328.clash.settings.ui.updateOverrideDnsNameserverPolicy
 import com.github.kr328.clash.settings.ui.updateOverrideHosts
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,19 +152,19 @@ internal class OverrideSettingsViewModel(app: Application) :
     }
 
   override fun updateDnsGeoIpFallback(value: Boolean?) = configuration.update {
-    it.copy(dns = it.dns.copy(fallbackFilter = it.dns.fallbackFilter.copy(geoIp = value)))
+    updateOverrideDnsFallbackGeoIp(it, value)
   }
 
   override fun updateDnsGeoIpCode(value: String?) = configuration.update {
-    it.copy(dns = it.dns.copy(fallbackFilter = it.dns.fallbackFilter.copy(geoIpCode = value)))
+    updateOverrideDnsFallbackGeoIpCode(it, value)
   }
 
   override fun updateDnsDomainFallback(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(fallbackFilter = it.dns.fallbackFilter.copy(domain = value)))
+    updateOverrideDnsFallbackDomain(it, value)
   }
 
   override fun updateDnsIpcidrFallback(value: List<String>?) = configuration.update {
-    it.copy(dns = it.dns.copy(fallbackFilter = it.dns.fallbackFilter.copy(ipcidr = value)))
+    updateOverrideDnsFallbackIpcidr(it, value)
   }
 
   override fun updateDnsNameserverPolicy(value: Map<String, String>?) = configuration.update {
