@@ -15,6 +15,24 @@ sealed interface TabbyTileEvent {
   data class ProfileLoaded(val profileName: String?) : TabbyTileEvent
 }
 
+sealed interface TabbyTileBroadcastAction {
+  data object ClashStarted : TabbyTileBroadcastAction
+
+  data object ClashStopped : TabbyTileBroadcastAction
+
+  data object ServiceRecreated : TabbyTileBroadcastAction
+
+  data object ProfileLoaded : TabbyTileBroadcastAction
+}
+
+sealed interface TabbyTileBroadcastPlan {
+  data class Reduce(val event: TabbyTileEvent) : TabbyTileBroadcastPlan
+
+  data object LoadCurrentProfile : TabbyTileBroadcastPlan
+
+  data object Ignore : TabbyTileBroadcastPlan
+}
+
 sealed interface TabbyTileClickState {
   data object Active : TabbyTileClickState
 
@@ -73,3 +91,18 @@ fun tabbyTilePresentation(state: TabbyTileState): TabbyTilePresentation =
     active = state.clashRunning,
     profileName = state.currentProfile.ifEmpty { null },
   )
+
+fun tabbyTileBroadcastPlan(action: TabbyTileBroadcastAction?): TabbyTileBroadcastPlan =
+  when (action) {
+    TabbyTileBroadcastAction.ClashStarted ->
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStarted)
+    TabbyTileBroadcastAction.ClashStopped ->
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStopped)
+    TabbyTileBroadcastAction.ServiceRecreated ->
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ServiceRecreated)
+    TabbyTileBroadcastAction.ProfileLoaded -> TabbyTileBroadcastPlan.LoadCurrentProfile
+    null -> TabbyTileBroadcastPlan.Ignore
+  }
+
+fun tabbyTileProfileLoadedEvent(currentProfile: String?): TabbyTileEvent =
+  TabbyTileEvent.ProfileLoaded(currentProfile)

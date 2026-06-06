@@ -69,22 +69,30 @@ class TileService : android.service.quicksettings.TileService() {
   private val receiver =
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
-        val event =
-          when (intent?.action) {
-            Intents.ACTION_CLASH_STARTED -> TabbyTileEvent.ClashStarted
-            Intents.ACTION_CLASH_STOPPED -> TabbyTileEvent.ClashStopped
-            Intents.ACTION_SERVICE_RECREATED -> TabbyTileEvent.ServiceRecreated
-            Intents.ACTION_PROFILE_LOADED ->
-              TabbyTileEvent.ProfileLoaded(StatusClient(this@TileService).currentProfile())
-            else -> return
+        tileState =
+          when (val plan = tabbyTileBroadcastPlan(intent?.tabbyTileBroadcastAction())) {
+            is TabbyTileBroadcastPlan.Reduce -> reduceTabbyTileState(tileState, plan.event)
+            TabbyTileBroadcastPlan.LoadCurrentProfile ->
+              reduceTabbyTileState(
+                tileState,
+                tabbyTileProfileLoadedEvent(StatusClient(this@TileService).currentProfile()),
+              )
+            TabbyTileBroadcastPlan.Ignore -> return
           }
-
-        tileState = reduceTabbyTileState(tileState, event)
 
         updateTile()
       }
     }
 }
+
+private fun Intent.tabbyTileBroadcastAction(): TabbyTileBroadcastAction? =
+  when (action) {
+    Intents.ACTION_CLASH_STARTED -> TabbyTileBroadcastAction.ClashStarted
+    Intents.ACTION_CLASH_STOPPED -> TabbyTileBroadcastAction.ClashStopped
+    Intents.ACTION_SERVICE_RECREATED -> TabbyTileBroadcastAction.ServiceRecreated
+    Intents.ACTION_PROFILE_LOADED -> TabbyTileBroadcastAction.ProfileLoaded
+    else -> null
+  }
 
 private fun Tile.tabbyTileClickState(): TabbyTileClickState =
   when (state) {

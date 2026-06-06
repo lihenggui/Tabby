@@ -106,4 +106,48 @@ class TabbyTileStateTest {
       tabbyTilePresentation(TabbyTileState(clashRunning = false, currentProfile = "")),
     )
   }
+
+  @Test
+  fun tabbyTileBroadcastPlanReducesDirectTileEvents() {
+    assertEquals(
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStarted),
+      tabbyTileBroadcastPlan(TabbyTileBroadcastAction.ClashStarted),
+    )
+    assertEquals(
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStopped),
+      tabbyTileBroadcastPlan(TabbyTileBroadcastAction.ClashStopped),
+    )
+    assertEquals(
+      TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ServiceRecreated),
+      tabbyTileBroadcastPlan(TabbyTileBroadcastAction.ServiceRecreated),
+    )
+  }
+
+  @Test
+  fun tabbyTileBroadcastPlanRequestsCurrentProfileForProfileLoadedBroadcast() {
+    assertEquals(
+      TabbyTileBroadcastPlan.LoadCurrentProfile,
+      tabbyTileBroadcastPlan(TabbyTileBroadcastAction.ProfileLoaded),
+    )
+  }
+
+  @Test
+  fun tabbyTileBroadcastPlanIgnoresUnknownBroadcasts() {
+    assertEquals(
+      TabbyTileBroadcastPlan.Ignore,
+      tabbyTileBroadcastPlan(null),
+    )
+  }
+
+  @Test
+  fun tabbyTileProfileLoadedEventWrapsCurrentProfile() {
+    assertEquals(
+      TabbyTileEvent.ProfileLoaded("profile-c"),
+      tabbyTileProfileLoadedEvent("profile-c"),
+    )
+    assertEquals(
+      TabbyTileEvent.ProfileLoaded(null),
+      tabbyTileProfileLoadedEvent(null),
+    )
+  }
 }
