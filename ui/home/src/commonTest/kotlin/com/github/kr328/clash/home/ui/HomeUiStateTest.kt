@@ -38,9 +38,31 @@ class HomeUiStateTest {
   @Test
   fun homeEventStateCarriesVpnPermissionPayloadAsGenericValue() {
     val permissionRequest = "vpn-permission-intent"
-    val event: HomeEventState<String> = HomeEventState.RequestVpnPermission(permissionRequest)
+    val event: HomeEventState<String> = homeVpnPermissionEventState(permissionRequest)
 
     assertEquals(HomeEventState.RequestVpnPermission(permissionRequest), event)
+  }
+
+  @Test
+  fun homeBroadcastEventStateShowsStoppedMessageOnlyWhenPresent() {
+    assertEquals(
+      HomeEventState.ShowMessage("Stopped by system"),
+      homeBroadcastEventState(
+        HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system")
+      ),
+    )
+    assertEquals(
+      null,
+      homeBroadcastEventState(HomeBroadcastAction(shouldFetch = true)),
+    )
+  }
+
+  @Test
+  fun homeStartFailureEventStateCarriesLocalizedMessage() {
+    assertEquals(
+      HomeEventState.ShowMessage("Unable to start VPN"),
+      homeStartFailureEventState("Unable to start VPN"),
+    )
   }
 
   @Test

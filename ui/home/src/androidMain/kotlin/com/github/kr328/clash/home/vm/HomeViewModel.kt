@@ -25,10 +25,13 @@ import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
 import com.github.kr328.clash.home.ui.homeBroadcastAction
+import com.github.kr328.clash.home.ui.homeBroadcastEventState
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeStartEventState
+import com.github.kr328.clash.home.ui.homeStartFailureEventState
 import com.github.kr328.clash.home.ui.homeToggleAction
 import com.github.kr328.clash.home.ui.homeTrafficPollAction
+import com.github.kr328.clash.home.ui.homeVpnPermissionEventState
 import com.github.kr328.clash.home.ui.withFetchedHomeState
 import com.github.kr328.clash.home.ui.withForwardedTraffic
 import kotlin.time.Duration.Companion.seconds
@@ -61,9 +64,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
       Remote.broadcasts.event.collect { event ->
         val action = event.toHomeBroadcastAction()
 
-        action.stoppedMessage?.let { message ->
-          eventState.update { HomeEventState.ShowMessage(message) }
-        }
+        homeBroadcastEventState(action)?.let { eventState.value = it }
         if (action.shouldFetch) fetch()
       }
     }
@@ -146,11 +147,11 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     try {
       engineController.start()
     } catch (e: VpnPermissionRequiredException) {
-      eventState.value = HomeEventState.RequestVpnPermission(e.prepareIntent)
+      eventState.value = homeVpnPermissionEventState(e.prepareIntent)
     } catch (e: Exception) {
       Log.e("Start clash service failed: ${e.message}", e)
       eventState.value =
-        HomeEventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
+        homeStartFailureEventState(application.getString(CommonR.string.unable_to_start_vpn))
     }
   }
 

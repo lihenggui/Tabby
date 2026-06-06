@@ -62,6 +62,20 @@ internal fun homeStartEventState(action: HomeStartAction): HomeEventState<Nothin
   }
 }
 
+internal fun homeBroadcastEventState(action: HomeBroadcastAction): HomeEventState<Nothing>? {
+  return action.stoppedMessage?.let { HomeEventState.ShowMessage(it) }
+}
+
+internal fun <VpnPermissionT> homeVpnPermissionEventState(
+  permissionRequest: VpnPermissionT
+): HomeEventState<VpnPermissionT> {
+  return HomeEventState.RequestVpnPermission(permissionRequest)
+}
+
+internal fun homeStartFailureEventState(message: String): HomeEventState<Nothing> {
+  return HomeEventState.ShowMessage(message)
+}
+
 internal fun homeBroadcastAction(
   kind: HomeBroadcastEventKind,
   stoppedMessage: String? = null,
