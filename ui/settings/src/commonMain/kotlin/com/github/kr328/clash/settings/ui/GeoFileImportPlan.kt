@@ -14,6 +14,12 @@ internal sealed interface GeoFileImportAction {
   data class UnsupportedFormat(val summary: String) : GeoFileImportAction
 }
 
+internal sealed interface GeoFileImportSourceAction {
+  data class Import(val action: GeoFileImportAction) : GeoFileImportSourceAction
+
+  data object Fail : GeoFileImportSourceAction
+}
+
 internal sealed interface GeoFileImportResult {
   data object Idle : GeoFileImportResult
 
@@ -102,6 +108,19 @@ internal fun geoFileImportAction(
     is GeoFileImportPlan.UnsupportedFormat ->
       GeoFileImportAction.UnsupportedFormat(plan.supportedExtensionsSummary)
   }
+}
+
+internal fun geoFileImportSourceAction(
+  sourceSelected: Boolean,
+  sourceReadable: Boolean,
+  displayName: String?,
+  importType: GeoFileImportType,
+): GeoFileImportSourceAction {
+  if (!sourceSelected || !sourceReadable) return GeoFileImportSourceAction.Fail
+
+  return GeoFileImportSourceAction.Import(
+    geoFileImportAction(displayName = displayName.orEmpty(), importType = importType)
+  )
 }
 
 internal fun geoFileImportStartedResult(): GeoFileImportResult {

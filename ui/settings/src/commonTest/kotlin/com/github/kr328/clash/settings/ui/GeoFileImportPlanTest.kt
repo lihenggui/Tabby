@@ -156,6 +156,62 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun sourceActionFailsWhenSourceIsMissing() {
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceAction(
+        sourceSelected = false,
+        sourceReadable = true,
+        displayName = "geoip.mmdb",
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun sourceActionFailsWhenSourceCannotBeRead() {
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceAction(
+        sourceSelected = true,
+        sourceReadable = false,
+        displayName = "geoip.mmdb",
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun sourceActionCreatesImportActionForReadableSource() {
+    assertEquals(
+      GeoFileImportSourceAction.Import(
+        GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+      ),
+      geoFileImportSourceAction(
+        sourceSelected = true,
+        sourceReadable = true,
+        displayName = "GeoSite.DAT",
+        importType = GeoFileImportType.GeoSite,
+      ),
+    )
+  }
+
+  @Test
+  fun sourceActionUsesEmptyDisplayNameWhenMetadataIsMissing() {
+    assertEquals(
+      GeoFileImportSourceAction.Import(
+        GeoFileImportAction.UnsupportedFormat(".metadb/.db/.dat/.mmdb")
+      ),
+      geoFileImportSourceAction(
+        sourceSelected = true,
+        sourceReadable = true,
+        displayName = null,
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
   fun importStartedAndFailedResultsMapToCommonStates() {
     assertEquals(GeoFileImportResult.InProgress, geoFileImportStartedResult())
     assertEquals(GeoFileImportResult.Failed, geoFileImportFailedResult())

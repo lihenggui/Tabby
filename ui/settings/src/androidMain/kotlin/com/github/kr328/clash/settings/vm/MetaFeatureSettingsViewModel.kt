@@ -16,14 +16,15 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.util.clashDir
 import com.github.kr328.clash.settings.ui.GeoFileImportAction
 import com.github.kr328.clash.settings.ui.GeoFileImportResult
+import com.github.kr328.clash.settings.ui.GeoFileImportSourceAction
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.SniffProtocol
-import com.github.kr328.clash.settings.ui.geoFileImportAction
 import com.github.kr328.clash.settings.ui.geoFileImportFailedResult
 import com.github.kr328.clash.settings.ui.geoFileImportInitialResult
 import com.github.kr328.clash.settings.ui.geoFileImportResult
+import com.github.kr328.clash.settings.ui.geoFileImportSourceAction
 import com.github.kr328.clash.settings.ui.geoFileImportStartedResult
 import com.github.kr328.clash.settings.ui.metaFeatureSettingsInitialConfiguration
 import com.github.kr328.clash.settings.ui.overridePersistAction
@@ -85,31 +86,47 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
       importResult.value = geoFileImportStartedResult()
       try {
         val resolver = appContext.contentResolver
+        val sourceUri =
+          uri
+            ?: run {
+              importResult.value = geoFileImportFailedResult()
+              return@launch
+            }
         val cursor: Cursor =
-          uri?.let { resolver.query(it, null, null, null, null, null) }
+          resolver.query(sourceUri, null, null, null, null, null)
             ?: run {
               importResult.value = geoFileImportFailedResult()
               return@launch
             }
 
         importResult.value = cursor.use {
-          if (!it.moveToFirst()) return@use geoFileImportFailedResult()
-
-          val columnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-          val displayName = if (columnIndex != -1) it.getString(columnIndex).orEmpty() else ""
-
+          val sourceReadable = it.moveToFirst()
+          val displayName = if (sourceReadable) it.displayName else null
           when (
-            val action = geoFileImportAction(displayName = displayName, importType = importType)
+            val sourceAction =
+              geoFileImportSourceAction(
+                sourceSelected = true,
+                sourceReadable = sourceReadable,
+                displayName = displayName,
+                importType = importType,
+              )
           ) {
-            is GeoFileImportAction.UnsupportedFormat -> return@use geoFileImportResult(action)
-            is GeoFileImportAction.Copy -> {
-              val outputFile = appContext.clashDir.resolve(action.outputFileName)
-              outputFile.parentFile?.mkdirs()
-              val inputStream =
-                resolver.openInputStream(uri)
-                  ?: return@use geoFileImportResult(action, copySucceeded = false)
-              inputStream.use { ins -> outputFile.outputStream().use { outs -> ins.copyTo(outs) } }
-              return@use geoFileImportResult(action, copySucceeded = true)
+            GeoFileImportSourceAction.Fail -> return@use geoFileImportFailedResult()
+            is GeoFileImportSourceAction.Import -> {
+              when (val action = sourceAction.action) {
+                is GeoFileImportAction.UnsupportedFormat -> return@use geoFileImportResult(action)
+                is GeoFileImportAction.Copy -> {
+                  val outputFile = appContext.clashDir.resolve(action.outputFileName)
+                  outputFile.parentFile?.mkdirs()
+                  val inputStream =
+                    resolver.openInputStream(sourceUri)
+                      ?: return@use geoFileImportResult(action, copySucceeded = false)
+                  inputStream.use { ins ->
+                    outputFile.outputStream().use { outs -> ins.copyTo(outs) }
+                  }
+                  return@use geoFileImportResult(action, copySucceeded = true)
+                }
+              }
             }
           }
         }
@@ -119,6 +136,12 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
       }
     }
   }
+
+  private val Cursor.displayName: String?
+    get() {
+      val columnIndex = getColumnIndex(OpenableColumns.DISPLAY_NAME)
+      return if (columnIndex != -1) getString(columnIndex) else null
+    }
 
   override fun updateUnifiedDelay(value: Boolean?) = configuration.update {
     updateMetaUnifiedDelay(it, value)
