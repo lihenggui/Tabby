@@ -17,18 +17,6 @@ internal class LogcatReader(
 
   suspend fun readAll(): List<LogMessage> =
     withContext(Dispatchers.IO) {
-      var lastTime = 0L
-      reader
-        .lineSequence()
-        .mapNotNull { line ->
-          val logMessage = LogFileMessageCodec.decode(line, lastTime)
-
-          if (logMessage != null) {
-            lastTime = logMessage.time
-          }
-
-          logMessage
-        }
-        .toList()
+      LogFileMessageCodec.decodeLines(reader.lineSequence())
     }
 }

@@ -28,4 +28,19 @@ object LogFileMessageCodec {
       LogMessage(time = time, level = LogMessage.Level.Warning, message = value)
     }
   }
+
+  fun decodeLines(lines: Sequence<String>): List<LogMessage> {
+    var lastTime = 0L
+    return lines
+      .mapNotNull { line ->
+        val logMessage = decode(line, lastTime)
+
+        if (logMessage != null) {
+          lastTime = logMessage.time
+        }
+
+        logMessage
+      }
+      .toList()
+  }
 }
