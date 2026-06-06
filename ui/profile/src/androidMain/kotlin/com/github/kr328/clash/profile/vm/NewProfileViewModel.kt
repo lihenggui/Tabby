@@ -17,8 +17,10 @@ import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
-import com.github.kr328.clash.profile.ui.decodeProfileQrSource
+import com.github.kr328.clash.profile.ui.ProfileQrAction
+import com.github.kr328.clash.profile.ui.ProfileQrResultKind
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
+import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
 import kotlin.uuid.Uuid
@@ -78,20 +80,28 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun onQRResult(result: QRResult) {
-    when (result) {
-      is QRSuccess -> {
-        val url =
-          decodeProfileQrSource(
+    val action =
+      when (result) {
+        is QRSuccess ->
+          profileQrAction(
+            kind = ProfileQrResultKind.Success,
             rawValue = result.content.rawValue,
             rawBytes = result.content.rawBytes,
           )
+        QRUserCanceled -> profileQrAction(ProfileQrResultKind.UserCanceled)
+        QRMissingPermission -> profileQrAction(ProfileQrResultKind.MissingPermission)
+        is QRError -> profileQrAction(ProfileQrResultKind.Error)
+      }
+
+    when (action) {
+      is ProfileQrAction.CreateUrlProfile -> {
         viewModelScope.launch {
           try {
             val uuid =
               profileRepository.create(
                 type = Url,
                 name = application.getString(CommonR.string.new_profile),
-                source = url,
+                source = action.source,
               )
             eventState.value = EventState.LaunchProperties(uuid)
           } catch (e: Exception) {
@@ -101,11 +111,11 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
           }
         }
       }
-      QRUserCanceled -> Unit
-      QRMissingPermission ->
+      ProfileQrAction.Ignore -> Unit
+      ProfileQrAction.ShowMissingPermission ->
         eventState.value =
           EventState.ShowMessage(application.getString(R.string.import_from_qr_no_permission))
-      is QRError ->
+      ProfileQrAction.ShowScanError ->
         eventState.value =
           EventState.ShowMessage(application.getString(R.string.import_from_qr_exception))
     }
