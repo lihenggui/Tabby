@@ -7,10 +7,11 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
-import com.github.kr328.clash.glue.util.withProfile
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 internal class FilesViewModel(app: Application) : AndroidViewModel(app), DefaultLifecycleObserver {
+  private val profileRepository: ProfileRepository = AndroidProfileRepository()
   private val client = FilesClient(app)
   private val stack = ArrayDeque<String>()
   private var root: String = ""
@@ -35,7 +37,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     root = uuid.toString()
 
     viewModelScope.launch {
-      val profile = withProfile { queryByUUID(uuid) }
+      val profile = profileRepository.queryByUuid(uuid)
       if (profile == null) {
         eventState.value = EventState.Finish
         return@launch

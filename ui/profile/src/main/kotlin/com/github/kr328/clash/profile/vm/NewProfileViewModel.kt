@@ -11,7 +11,8 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.glue.util.withProfile
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
 import io.github.g00fy2.quickie.QRResult
@@ -24,6 +25,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
+  private val profileRepository: ProfileRepository = AndroidProfileRepository()
+
   val uiState: StateFlow<UiState>
     field = MutableStateFlow(UiState())
 
@@ -57,7 +60,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       try {
         val profileName = application.getString(CommonR.string.new_profile)
-        val uuid = withProfile { create(External, name ?: profileName, uri.toString()) }
+        val uuid = profileRepository.create(External, name ?: profileName, uri.toString())
         eventState.value = EventState.LaunchProperties(uuid)
       } catch (e: Exception) {
         Log.e("Create external profile failed: ${e.message}", e)
@@ -73,9 +76,12 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
         val url = result.content.rawValue ?: result.content.rawBytes?.let { String(it) }.orEmpty()
         viewModelScope.launch {
           try {
-            val uuid = withProfile {
-              create(type = Url, name = application.getString(CommonR.string.new_profile), url)
-            }
+            val uuid =
+              profileRepository.create(
+                type = Url,
+                name = application.getString(CommonR.string.new_profile),
+                source = url,
+              )
             eventState.value = EventState.LaunchProperties(uuid)
           } catch (e: Exception) {
             Log.e("Create QR profile failed: ${e.message}", e)
@@ -98,7 +104,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       try {
         val name = application.getString(CommonR.string.new_profile)
-        val uuid = withProfile { create(type, name) }
+        val uuid = profileRepository.create(type, name)
         eventState.value = EventState.LaunchProperties(uuid)
       } catch (e: Exception) {
         Log.e("Create profile failed: ${e.message}", e)

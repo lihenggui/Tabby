@@ -60,6 +60,8 @@ class DesktopProfileRepositoryTest {
       val importedProfile = repository.observeProfiles().first().single()
 
       assertEquals(uuid, importedProfile.uuid)
+      assertEquals(listOf(importedProfile), repository.queryProfiles())
+      assertEquals(importedProfile, repository.queryByUuid(uuid))
       assertEquals("Local", importedProfile.name)
       assertTrue(importedProfile.imported)
       assertEquals(false, importedProfile.pending)
@@ -250,6 +252,8 @@ class DesktopProfileRepositoryTest {
       repository.delete(uuid)
 
       assertEquals(emptyList(), repository.observeProfiles().first())
+      assertEquals(emptyList(), repository.queryProfiles())
+      assertEquals(null, repository.queryByUuid(uuid))
       assertEquals(null, repository.queryActive())
       assertEquals(false, home.resolve("active-profile").isRegularFile())
       assertEquals(false, home.resolve("config.yaml").isRegularFile())

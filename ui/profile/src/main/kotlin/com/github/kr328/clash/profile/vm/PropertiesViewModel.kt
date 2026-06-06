@@ -11,7 +11,8 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.glue.util.withProfile
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import kotlinx.coroutines.withContext
 
 internal class PropertiesViewModel(app: Application) :
   AndroidViewModel(app), DefaultLifecycleObserver {
+  private val profileRepository: ProfileRepository = AndroidProfileRepository()
   private var rootUuid: Uuid? = null
   private var canceled = false
 
@@ -38,7 +40,7 @@ internal class PropertiesViewModel(app: Application) :
     rootUuid = uuid
 
     viewModelScope.launch {
-      val profile = withProfile { queryByUUID(uuid) }
+      val profile = profileRepository.queryByUuid(uuid)
       if (profile == null) {
         eventState.value = EventState.Finish(false)
         return@launch
@@ -56,7 +58,7 @@ internal class PropertiesViewModel(app: Application) :
       val profile = uiState.value.profile ?: return
       viewModelScope.launch {
         runCatching {
-            withProfile { patch(profile.uuid, profile.name, profile.source, profile.interval) }
+            profileRepository.patch(profile.uuid, profile.name, profile.source, profile.interval)
           }
           .onFailure { e -> Log.e("Auto save profile failed: ${e.message}", e) }
           .onSuccess {
@@ -72,7 +74,7 @@ internal class PropertiesViewModel(app: Application) :
     rootUuid?.let { uuid ->
       Global.launch {
         try {
-          withProfile { release(uuid) }
+          profileRepository.release(uuid)
         } catch (e: Exception) {
           Log.e("Release profile failed: ${e.message}", e)
         }
@@ -136,9 +138,9 @@ internal class PropertiesViewModel(app: Application) :
     viewModelScope.launch {
       try {
         withProcessing { updateStatus ->
-          withProfile {
-            patch(profile.uuid, profile.name, profile.source, profile.interval)
-            coroutineScope { commit(profile.uuid) { launch { updateStatus(it) } } }
+          profileRepository.patch(profile.uuid, profile.name, profile.source, profile.interval)
+          coroutineScope {
+            profileRepository.commit(profile.uuid) { status -> launch { updateStatus(status) } }
           }
         }
         canceled = true

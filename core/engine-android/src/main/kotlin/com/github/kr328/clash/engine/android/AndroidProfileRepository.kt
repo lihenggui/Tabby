@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.android
 
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Broadcasts
@@ -26,6 +27,14 @@ class AndroidProfileRepository : ProfileRepository {
       }
       .flowOn(Dispatchers.IO)
 
+  override suspend fun queryProfiles(): List<Profile> {
+    return withProfile { queryAll() }
+  }
+
+  override suspend fun queryByUuid(uuid: Uuid): Profile? {
+    return withProfile { queryByUUID(uuid) }
+  }
+
   override suspend fun queryActive(): Profile? {
     return withProfile { queryActive() }
   }
@@ -46,8 +55,8 @@ class AndroidProfileRepository : ProfileRepository {
     withProfile { update(uuid) }
   }
 
-  override suspend fun commit(uuid: Uuid) {
-    withProfile { commit(uuid) }
+  override suspend fun commit(uuid: Uuid, onStatus: ((FetchStatus) -> Unit)?) {
+    withProfile { commit(uuid, onStatus) }
   }
 
   override suspend fun release(uuid: Uuid) {

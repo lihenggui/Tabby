@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.desktop
 
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
@@ -56,8 +57,18 @@ class DesktopProfileRepository(
     return profiles.asStateFlow()
   }
 
+  override suspend fun queryProfiles(): List<Profile> =
+    withContext(Dispatchers.IO) { lock.withLock { loadProfiles() } }
+
+  override suspend fun queryByUuid(uuid: Uuid): Profile? =
+    withContext(Dispatchers.IO) { lock.withLock { resolveProfile(uuid) } }
+
   override suspend fun queryActive(): Profile? =
-    withContext(Dispatchers.IO) { lock.withLock { readActiveProfileUuid()?.let(::resolveProfile) } }
+    withContext(Dispatchers.IO) {
+      lock.withLock {
+        readActiveProfileUuid()?.takeIf { database.importedExists(it) }?.let(::resolveProfile)
+      }
+    }
 
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid =
     withContext(Dispatchers.IO) {
@@ -185,7 +196,7 @@ class DesktopProfileRepository(
     }
   }
 
-  override suspend fun commit(uuid: Uuid) {
+  override suspend fun commit(uuid: Uuid, onStatus: ((FetchStatus) -> Unit)?) {
     withContext(Dispatchers.IO) {
       lock.withLock {
         val pending =
@@ -341,8 +352,12 @@ class DesktopProfileRepository(
   }
 
   private fun refreshProfiles() {
+    profiles.value = loadProfiles()
+  }
+
+  private fun loadProfiles(): List<Profile> {
     val uuids = (database.queryImportedUuids() + database.queryPendingUuids()).distinct()
-    profiles.value = uuids.mapNotNull(::resolveProfile)
+    return uuids.mapNotNull(::resolveProfile)
   }
 
   private fun readActiveProfileUuid(): Uuid? {

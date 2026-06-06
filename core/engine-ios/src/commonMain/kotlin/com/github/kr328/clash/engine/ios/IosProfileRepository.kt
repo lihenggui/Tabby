@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.ios
 
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
 import kotlin.uuid.Uuid
@@ -9,6 +10,14 @@ import kotlinx.coroutines.flow.flowOf
 class IosProfileRepository : ProfileRepository {
   override fun observeProfiles(): Flow<List<Profile>> {
     return flowOf(emptyList())
+  }
+
+  override suspend fun queryProfiles(): List<Profile> {
+    return emptyList()
+  }
+
+  override suspend fun queryByUuid(uuid: Uuid): Profile? {
+    return null
   }
 
   override suspend fun queryActive(): Profile? {
@@ -31,7 +40,7 @@ class IosProfileRepository : ProfileRepository {
     unsupported()
   }
 
-  override suspend fun commit(uuid: Uuid) {
+  override suspend fun commit(uuid: Uuid, onStatus: ((FetchStatus) -> Unit)?) {
     unsupported()
   }
 
