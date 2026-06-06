@@ -193,6 +193,16 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun launchPropertiesEventStateCarriesCreatedProfileUuid() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000009")
+
+    assertEquals(
+      NewProfileEventState.LaunchProperties(uuid),
+      newProfileLaunchPropertiesEventState(uuid),
+    )
+  }
+
+  @Test
   fun newProfileProviderSelectionActionSelectsProviderByIndex() {
     val providers =
       listOf(

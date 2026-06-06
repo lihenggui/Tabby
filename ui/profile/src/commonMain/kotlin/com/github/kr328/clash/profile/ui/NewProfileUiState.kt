@@ -120,6 +120,12 @@ internal fun newProfileQrEventState(
   }
 }
 
+internal fun newProfileLaunchPropertiesEventState(
+  uuid: Uuid
+): NewProfileEventState<Nothing, Nothing> {
+  return NewProfileEventState.LaunchProperties(uuid)
+}
+
 internal fun <T> newProfileProviderSelectionAction(
   providers: List<T>,
   index: Int,

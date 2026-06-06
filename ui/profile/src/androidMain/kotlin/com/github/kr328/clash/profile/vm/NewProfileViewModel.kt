@@ -28,6 +28,7 @@ import com.github.kr328.clash.profile.ui.newProfileDetailAction
 import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
+import com.github.kr328.clash.profile.ui.newProfileLaunchPropertiesEventState
 import com.github.kr328.clash.profile.ui.newProfileQrEventState
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
@@ -93,7 +94,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
             val profileName = application.getString(CommonR.string.new_profile)
             val uuid =
               profileRepository.create(External, action.name ?: profileName, uri.toString())
-            eventState.value = NewProfileEventState.LaunchProperties(uuid)
+            eventState.value = newProfileLaunchPropertiesEventState(uuid)
           } catch (e: Exception) {
             Log.e("Create external profile failed: ${e.message}", e)
             eventState.value =
@@ -129,7 +130,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
                 name = application.getString(CommonR.string.new_profile),
                 source = action.source,
               )
-            eventState.value = NewProfileEventState.LaunchProperties(uuid)
+            eventState.value = newProfileLaunchPropertiesEventState(uuid)
           } catch (e: Exception) {
             Log.e("Create QR profile failed: ${e.message}", e)
             eventState.value =
@@ -154,7 +155,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
       try {
         val name = application.getString(CommonR.string.new_profile)
         val uuid = profileRepository.create(type, name)
-        eventState.value = NewProfileEventState.LaunchProperties(uuid)
+        eventState.value = newProfileLaunchPropertiesEventState(uuid)
       } catch (e: Exception) {
         Log.e("Create profile failed: ${e.message}", e)
         eventState.value =
