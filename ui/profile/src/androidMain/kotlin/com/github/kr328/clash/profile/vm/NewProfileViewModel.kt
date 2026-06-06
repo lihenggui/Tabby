@@ -17,11 +17,13 @@ import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileDetailAction
+import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.newProfileDetailAction
+import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
@@ -72,16 +74,29 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun onExternalProviderResult(uri: Uri, name: String?) {
-    viewModelScope.launch {
-      try {
-        val profileName = application.getString(CommonR.string.new_profile)
-        val uuid = profileRepository.create(External, name ?: profileName, uri.toString())
-        eventState.value = EventState.LaunchProperties(uuid)
-      } catch (e: Exception) {
-        Log.e("Create external profile failed: ${e.message}", e)
-        eventState.value =
-          EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+    when (
+      val action =
+        newProfileExternalProviderResultAction(
+          resultAccepted = true,
+          sourceSelected = true,
+          name = name,
+        )
+    ) {
+      is NewProfileExternalProviderResultAction.CreateProfile -> {
+        viewModelScope.launch {
+          try {
+            val profileName = application.getString(CommonR.string.new_profile)
+            val uuid =
+              profileRepository.create(External, action.name ?: profileName, uri.toString())
+            eventState.value = EventState.LaunchProperties(uuid)
+          } catch (e: Exception) {
+            Log.e("Create external profile failed: ${e.message}", e)
+            eventState.value =
+              EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+          }
+        }
       }
+      NewProfileExternalProviderResultAction.Ignore -> Unit
     }
   }
 
