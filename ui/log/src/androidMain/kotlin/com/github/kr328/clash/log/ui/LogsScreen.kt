@@ -23,12 +23,9 @@ internal fun LogsScreen(
 
   LogsContent(
     modifier = modifier,
-    logs =
-      logs.map { file ->
-        LogListItem(fileName = file.fileName, createdText = Date(file.created).format(context))
-      },
+    logs = toLogListItems(logs) { created -> Date(created).format(context) },
     onDeleteAll = viewModel::deleteAll,
     onStartLogcat = onStartLogcat,
-    onOpenFile = { item -> LogFile.parse(item.fileName)?.let(onOpenFile) },
+    onOpenFile = { item -> item.toLogFile()?.let(onOpenFile) },
   )
 }
