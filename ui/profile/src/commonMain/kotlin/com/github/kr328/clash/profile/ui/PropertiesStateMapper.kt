@@ -24,6 +24,16 @@ internal enum class PropertiesBackAction {
   RequestClose,
 }
 
+internal sealed interface PropertiesCommitAction {
+  data class Commit(val profile: Profile) : PropertiesCommitAction
+
+  data object ShowEmptyName : PropertiesCommitAction
+
+  data object ShowEmptySource : PropertiesCommitAction
+
+  data object Ignore : PropertiesCommitAction
+}
+
 internal sealed interface PropertiesAutoSaveAction {
   data class Save(val profile: Profile) : PropertiesAutoSaveAction
 
@@ -45,6 +55,16 @@ internal fun validatePropertiesCommit(profile: Profile): PropertiesCommitValidat
   }
 
   return PropertiesCommitValidationResult.Valid
+}
+
+internal fun propertiesCommitAction(state: PropertiesUiState): PropertiesCommitAction {
+  val profile = state.profile ?: return PropertiesCommitAction.Ignore
+
+  return when (validatePropertiesCommit(profile)) {
+    PropertiesCommitValidationResult.Valid -> PropertiesCommitAction.Commit(profile)
+    PropertiesCommitValidationResult.EmptyName -> PropertiesCommitAction.ShowEmptyName
+    PropertiesCommitValidationResult.EmptySource -> PropertiesCommitAction.ShowEmptySource
+  }
 }
 
 internal fun propertiesAutoSaveAction(

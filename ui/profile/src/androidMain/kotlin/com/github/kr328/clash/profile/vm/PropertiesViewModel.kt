@@ -14,12 +14,13 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.PropertiesAutoSaveAction
-import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptyName
-import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptySource
-import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.Valid
+import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Commit
+import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Ignore
+import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptyName
+import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptySource
 import com.github.kr328.clash.profile.ui.PropertiesUiState
 import com.github.kr328.clash.profile.ui.propertiesAutoSaveAction
-import com.github.kr328.clash.profile.ui.validatePropertiesCommit
+import com.github.kr328.clash.profile.ui.propertiesCommitAction
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
@@ -119,19 +120,19 @@ internal class PropertiesViewModel(app: Application) :
   }
 
   fun onCommit() {
-    val profile = uiState.value.profile ?: return
-
-    when (validatePropertiesCommit(profile)) {
-      Valid -> Unit
-      EmptyName -> {
-        eventState.value = EventState.ShowMessage(application.getString(R.string.empty_name))
-        return
+    val profile =
+      when (val action = propertiesCommitAction(uiState.value)) {
+        Ignore -> return
+        ShowEmptyName -> {
+          eventState.value = EventState.ShowMessage(application.getString(R.string.empty_name))
+          return
+        }
+        ShowEmptySource -> {
+          eventState.value = EventState.ShowMessage(application.getString(R.string.invalid_url))
+          return
+        }
+        is Commit -> action.profile
       }
-      EmptySource -> {
-        eventState.value = EventState.ShowMessage(application.getString(R.string.invalid_url))
-        return
-      }
-    }
 
     viewModelScope.launch {
       try {

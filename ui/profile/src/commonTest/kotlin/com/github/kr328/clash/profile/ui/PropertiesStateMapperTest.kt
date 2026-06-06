@@ -68,6 +68,38 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesCommitActionIgnoresMissingProfile() {
+    assertEquals(
+      PropertiesCommitAction.Ignore,
+      propertiesCommitAction(PropertiesUiState(profile = null)),
+    )
+  }
+
+  @Test
+  fun propertiesCommitActionReportsValidationFailures() {
+    assertEquals(
+      PropertiesCommitAction.ShowEmptyName,
+      propertiesCommitAction(PropertiesUiState(profile = profile(name = "   "))),
+    )
+    assertEquals(
+      PropertiesCommitAction.ShowEmptySource,
+      propertiesCommitAction(
+        PropertiesUiState(profile = profile(type = Profile.Type.Url, source = "   "))
+      ),
+    )
+  }
+
+  @Test
+  fun propertiesCommitActionCommitsValidProfile() {
+    val profile = profile()
+
+    assertEquals(
+      PropertiesCommitAction.Commit(profile),
+      propertiesCommitAction(PropertiesUiState(profile = profile)),
+    )
+  }
+
+  @Test
   fun propertiesAutoSaveActionSavesUnsavedProfileWhenNotCanceled() {
     val profile = profile(name = "Changed")
     val state = PropertiesUiState(profile = profile, hasUnsavedChanges = true)
