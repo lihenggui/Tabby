@@ -1,9 +1,31 @@
 package com.github.kr328.clash.home.ui
 
+import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.uuid.Uuid
 
 class HomeUiStateTest {
+  @Test
+  fun homeStartActionStartsEngineForImportedActiveProfile() {
+    assertEquals(
+      HomeStartAction.StartEngine,
+      homeStartAction(profile(imported = true)),
+    )
+  }
+
+  @Test
+  fun homeStartActionShowsNoProfileMessageWhenActiveProfileIsMissingOrNotImported() {
+    assertEquals(
+      HomeStartAction.ShowNoProfileMessage,
+      homeStartAction(null),
+    )
+    assertEquals(
+      HomeStartAction.ShowNoProfileMessage,
+      homeStartAction(profile(imported = false)),
+    )
+  }
+
   @Test
   fun fetchedStateShowsModeWhenClashIsRunningAndKeepsForwardedTraffic() {
     val state =
@@ -48,5 +70,23 @@ class HomeUiStateTest {
     assertEquals("Direct", state.mode)
     assertEquals(true, state.hasProviders)
     assertEquals("Daily", state.profileName)
+  }
+
+  private fun profile(imported: Boolean): Profile {
+    return Profile(
+      uuid = Uuid.parse("00000000-0000-0000-0000-000000000001"),
+      name = "Profile",
+      type = Profile.Type.Url,
+      source = "https://example.com/config.yaml",
+      active = true,
+      interval = 0,
+      upload = 0,
+      download = 0,
+      total = 0,
+      expire = 0,
+      updatedAt = 0,
+      imported = imported,
+      pending = !imported,
+    )
   }
 }

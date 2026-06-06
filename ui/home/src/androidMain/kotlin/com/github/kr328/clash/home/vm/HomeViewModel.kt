@@ -16,7 +16,10 @@ import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
+import com.github.kr328.clash.home.ui.HomeStartAction.ShowNoProfileMessage
+import com.github.kr328.clash.home.ui.HomeStartAction.StartEngine
 import com.github.kr328.clash.home.ui.HomeUiState
+import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.withFetchedHomeState
 import com.github.kr328.clash.home.ui.withForwardedTraffic
 import kotlin.time.Duration.Companion.seconds
@@ -127,14 +130,10 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 
   private fun startClash() {
     viewModelScope.launch {
-      val active = profileRepository.queryActive()
-
-      if (active == null || !active.imported) {
-        eventState.value = EventState.ShowNoProfileMessage
-        return@launch
+      when (homeStartAction(profileRepository.queryActive())) {
+        StartEngine -> startEngine()
+        ShowNoProfileMessage -> eventState.value = EventState.ShowNoProfileMessage
       }
-
-      startEngine()
     }
   }
 
