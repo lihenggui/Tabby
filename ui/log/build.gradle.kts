@@ -16,6 +16,7 @@ kotlin {
       kotlin.srcDir("src/main/kotlin")
 
       dependencies {
+        implementation(projects.core.engineAndroid)
         implementation(projects.glue)
 
         implementation(libs.androidx.activity.compose)

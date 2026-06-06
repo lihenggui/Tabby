@@ -11,5 +11,6 @@ dependencies {
   implementation(libs.kotlin.coroutine)
   implementation(libs.kotlin.serialization.json)
 
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.kotlin.test.junit)
 }

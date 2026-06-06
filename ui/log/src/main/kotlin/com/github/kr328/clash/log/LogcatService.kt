@@ -20,11 +20,11 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.engine.android.observeAndroidLogs
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.util.LogcatCache
 import com.github.kr328.clash.log.util.LogcatWriter
 import com.github.kr328.clash.service.RemoteService
-import com.github.kr328.clash.service.remote.ILogObserver
 import com.github.kr328.clash.service.remote.IRemoteService
 import com.github.kr328.clash.service.remote.unwrap
 import java.io.IOException
@@ -35,11 +35,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 internal class LogcatService :
   Service(), CoroutineScope by CoroutineScope(Dispatchers.Default), IInterface {
@@ -107,21 +106,20 @@ internal class LogcatService :
         logsDir.mkdirs()
 
         LogcatWriter(this@LogcatService).use {
-          val observer =
-            object : ILogObserver {
-              override fun newItem(log: String) {
-                channel.trySend(json.decodeFromString<LogMessage>(log))
-              }
+          val observeJob = launch {
+            observeAndroidLogs(service).collect { message -> channel.trySend(message) }
+          }
+
+          try {
+            while (isActive) {
+              val msg = channel.receive()
+
+              it.appendMessage(msg)
+
+              cache.append(msg)
             }
-
-          service.setLogObserver(observer)
-
-          while (isActive) {
-            val msg = channel.receive()
-
-            it.appendMessage(msg)
-
-            cache.append(msg)
+          } finally {
+            observeJob.cancel()
           }
         }
       } catch (e: IOException) {
@@ -181,8 +179,4 @@ internal class LogcatService :
     val running: StateFlow<Boolean>
       field = MutableStateFlow(false)
   }
-}
-
-private val json = Json {
-  ignoreUnknownKeys = true
 }
