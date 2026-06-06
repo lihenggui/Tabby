@@ -9,6 +9,23 @@ internal data class AccessControlSettingsState(
   val showSystemApps: Boolean,
 )
 
+internal data class AccessControlPersistPlan(
+  val shouldPersistSelection: Boolean,
+  val shouldRestartService: Boolean,
+)
+
+internal fun planAccessControlPersist(
+  selected: Set<String>,
+  persistedSelection: Set<String>,
+  clashRunning: Boolean,
+): AccessControlPersistPlan {
+  val selectionChanged = selected != persistedSelection
+  return AccessControlPersistPlan(
+    shouldPersistSelection = selectionChanged,
+    shouldRestartService = selectionChanged && clashRunning,
+  )
+}
+
 internal fun updateAccessControlSelectedPackages(
   state: AccessControlSettingsState,
   selected: Set<String>,

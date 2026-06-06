@@ -72,6 +72,51 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun plansNoAccessControlPersistWorkWhenSelectionIsUnchanged() {
+    assertEquals(
+      AccessControlPersistPlan(
+        shouldPersistSelection = false,
+        shouldRestartService = false,
+      ),
+      planAccessControlPersist(
+        selected = setOf("com.example.alpha"),
+        persistedSelection = setOf("com.example.alpha"),
+        clashRunning = true,
+      ),
+    )
+  }
+
+  @Test
+  fun plansSelectionPersistWithoutRestartWhenClashIsStopped() {
+    assertEquals(
+      AccessControlPersistPlan(
+        shouldPersistSelection = true,
+        shouldRestartService = false,
+      ),
+      planAccessControlPersist(
+        selected = setOf("com.example.alpha"),
+        persistedSelection = emptySet(),
+        clashRunning = false,
+      ),
+    )
+  }
+
+  @Test
+  fun plansSelectionPersistAndRestartWhenRunningSelectionChanged() {
+    assertEquals(
+      AccessControlPersistPlan(
+        shouldPersistSelection = true,
+        shouldRestartService = true,
+      ),
+      planAccessControlPersist(
+        selected = setOf("com.example.alpha"),
+        persistedSelection = emptySet(),
+        clashRunning = true,
+      ),
+    )
+  }
+
+  @Test
   fun filtersAppsByLabelOrPackageName() {
     val apps =
       listOf(

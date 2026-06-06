@@ -29,6 +29,7 @@ import com.github.kr328.clash.settings.ui.AccessControlSettingsState
 import com.github.kr328.clash.settings.ui.AccessControlUiState
 import com.github.kr328.clash.settings.ui.exportAccessControlPackages
 import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
+import com.github.kr328.clash.settings.ui.planAccessControlPersist
 import com.github.kr328.clash.settings.ui.sortAccessControlApps
 import com.github.kr328.clash.settings.ui.withAccessControlApps
 import com.github.kr328.clash.settings.ui.withAccessControlReverse
@@ -88,12 +89,17 @@ internal class AccessControlViewModel(app: Application) :
     Global.launch {
       val selected = uiState.value.settings.selected
       val persistedSelection = serviceStore.accessControlPackages
-      val changed = selected != persistedSelection
+      val persistPlan =
+        planAccessControlPersist(
+          selected = selected,
+          persistedSelection = persistedSelection,
+          clashRunning = clashRunning.value,
+        )
 
-      if (changed) {
+      if (persistPlan.shouldPersistSelection) {
         serviceStore.accessControlPackages = selected
       }
-      if (clashRunning.value && changed) {
+      if (persistPlan.shouldRestartService) {
         appContext.stopClashService()
 
         val stopped =
