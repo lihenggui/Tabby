@@ -5,5 +5,5 @@ internal fun logFilesInitialState(): List<LogFile> {
 }
 
 internal fun selectLogFiles(fileNames: List<String>): List<LogFile> {
-  return fileNames.mapNotNull(LogFile::parse)
+  return fileNames.mapNotNull(LogFile::parse).sortedByDescending(LogFile::created)
 }

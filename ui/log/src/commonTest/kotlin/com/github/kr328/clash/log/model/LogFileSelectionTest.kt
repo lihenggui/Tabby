@@ -10,14 +10,14 @@ class LogFileSelectionTest {
   }
 
   @Test
-  fun logFilesAreSelectedInInputOrder() {
+  fun logFilesAreSelectedNewestFirst() {
     val files = selectLogFiles(listOf("clash-20.log", "clash-10.log", "clash-30.log"))
 
     assertEquals(
       listOf(
+        LogFile(fileName = "clash-30.log", created = 30),
         LogFile(fileName = "clash-20.log", created = 20),
         LogFile(fileName = "clash-10.log", created = 10),
-        LogFile(fileName = "clash-30.log", created = 30),
       ),
       files,
     )
@@ -38,8 +38,8 @@ class LogFileSelectionTest {
 
     assertEquals(
       listOf(
-        LogFile(fileName = "clash-1.log", created = 1),
         LogFile(fileName = "clash-3.log", created = 3),
+        LogFile(fileName = "clash-1.log", created = 1),
       ),
       files,
     )
