@@ -50,19 +50,29 @@ class MainApplication : Application() {
     val updateDate = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
     tabbyGeoAssets().forEach { asset ->
       val geoFile = File(clashDir, asset.outputName)
-      if (
-        tabbyGeoFileNeedsRefresh(
+      when (
+        tabbyGeoFileUpdateAction(
           fileExists = geoFile.exists(),
           fileLastModifiedMillis = geoFile.lastModified(),
           packageLastUpdateMillis = updateDate,
         )
       ) {
-        geoFile.delete()
-      }
-      if (tabbyGeoFileNeedsExtract(fileExists = geoFile.exists())) {
-        geoFile.outputStream().use { assets.open(asset.assetName).copyTo(it) }
+        TabbyGeoFileUpdateAction.DeleteStaleFile -> {
+          geoFile.delete()
+          when (tabbyGeoFileDeletedAction(fileExistsAfterDelete = geoFile.exists())) {
+            TabbyGeoFileUpdateAction.ExtractMissingFile -> extractGeoFile(asset, geoFile)
+            TabbyGeoFileUpdateAction.DeleteStaleFile,
+            TabbyGeoFileUpdateAction.Ignore -> Unit
+          }
+        }
+        TabbyGeoFileUpdateAction.ExtractMissingFile -> extractGeoFile(asset, geoFile)
+        TabbyGeoFileUpdateAction.Ignore -> Unit
       }
     }
+  }
+
+  private fun extractGeoFile(asset: TabbyGeoAsset, geoFile: File) {
+    geoFile.outputStream().use { assets.open(asset.assetName).copyTo(it) }
   }
 
   fun finalize() {

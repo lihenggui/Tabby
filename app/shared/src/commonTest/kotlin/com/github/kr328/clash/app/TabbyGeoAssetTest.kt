@@ -64,4 +64,60 @@ class TabbyGeoAssetTest {
     assertTrue(tabbyGeoFileNeedsExtract(fileExists = false))
     assertFalse(tabbyGeoFileNeedsExtract(fileExists = true))
   }
+
+  @Test
+  fun tabbyGeoFileUpdateActionDeletesStaleExistingFiles() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.DeleteStaleFile,
+      tabbyGeoFileUpdateAction(
+        fileExists = true,
+        fileLastModifiedMillis = 1,
+        packageLastUpdateMillis = 2,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyGeoFileUpdateActionExtractsMissingFiles() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.ExtractMissingFile,
+      tabbyGeoFileUpdateAction(
+        fileExists = false,
+        fileLastModifiedMillis = 1,
+        packageLastUpdateMillis = 2,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyGeoFileUpdateActionIgnoresCurrentFiles() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.Ignore,
+      tabbyGeoFileUpdateAction(
+        fileExists = true,
+        fileLastModifiedMillis = 2,
+        packageLastUpdateMillis = 2,
+      ),
+    )
+    assertEquals(
+      TabbyGeoFileUpdateAction.Ignore,
+      tabbyGeoFileUpdateAction(
+        fileExists = true,
+        fileLastModifiedMillis = 3,
+        packageLastUpdateMillis = 2,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyGeoFileDeletedActionExtractsOnlyWhenDeleteRemovedTheFile() {
+    assertEquals(
+      TabbyGeoFileUpdateAction.ExtractMissingFile,
+      tabbyGeoFileDeletedAction(fileExistsAfterDelete = false),
+    )
+    assertEquals(
+      TabbyGeoFileUpdateAction.Ignore,
+      tabbyGeoFileDeletedAction(fileExistsAfterDelete = true),
+    )
+  }
 }
