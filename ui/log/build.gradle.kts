@@ -10,6 +10,8 @@ kotlin {
     commonMain.dependencies {
       implementation(projects.core.model)
       implementation(projects.ui.shared)
+
+      implementation(libs.kotlinx.coroutines.core)
     }
 
     androidMain {

@@ -1,6 +1,5 @@
 package com.github.kr328.clash.log.util
 
-import androidx.collection.CircularArray
 import com.github.kr328.clash.core.model.LogMessage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -8,7 +7,7 @@ import kotlinx.coroutines.sync.withLock
 internal class LogcatCache {
   data class Snapshot(val messages: List<LogMessage>, val removed: Int, val appended: Int)
 
-  private val array = CircularArray<LogMessage>(CAPACITY)
+  private val messages = mutableListOf<LogMessage>()
   private val lock = Mutex()
 
   private var removed: Int = 0
@@ -16,14 +15,14 @@ internal class LogcatCache {
 
   suspend fun append(msg: LogMessage) {
     lock.withLock {
-      if (array.size() >= CAPACITY) {
-        array.removeFromStart(1)
+      if (messages.size >= CAPACITY) {
+        messages.removeAt(0)
 
         removed++
         appended--
       }
 
-      array.addLast(msg)
+      messages.add(msg)
 
       appended++
     }
@@ -36,9 +35,9 @@ internal class LogcatCache {
       }
 
       Snapshot(
-          List(array.size()) { array[it] },
+          messages.toList(),
           removed,
-          if (full) array.size() + appended else appended,
+          if (full) messages.size + appended else appended,
         )
         .also {
           removed = 0
