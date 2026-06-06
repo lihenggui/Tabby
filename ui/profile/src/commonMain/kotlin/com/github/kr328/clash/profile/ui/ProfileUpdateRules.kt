@@ -13,9 +13,33 @@ internal enum class ProfileUpdateAllAction {
   Ignore,
 }
 
+internal sealed interface ProfilesEventState {
+  data object Idle : ProfilesEventState
+
+  data object OpenCreate : ProfilesEventState
+
+  data class OpenEdit(val uuid: Uuid) : ProfilesEventState
+
+  data class ShowMessage(val message: String) : ProfilesEventState
+
+  data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventState
+}
+
 internal fun profileActivationAction(profile: Profile): ProfileActivationAction {
   return if (profile.imported) ProfileActivationAction.Activate
   else ProfileActivationAction.RequireSave
+}
+
+internal fun profileActivationEventState(
+  action: ProfileActivationAction,
+  profileUuid: Uuid,
+  requireSaveMessage: String,
+): ProfilesEventState? {
+  return when (action) {
+    ProfileActivationAction.Activate -> null
+    ProfileActivationAction.RequireSave ->
+      ProfilesEventState.ShowEditableMessage(requireSaveMessage, profileUuid)
+  }
 }
 
 internal fun profileUpdateAllAction(state: ProfilesUiState): ProfileUpdateAllAction {

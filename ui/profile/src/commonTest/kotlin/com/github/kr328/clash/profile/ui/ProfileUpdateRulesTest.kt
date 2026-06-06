@@ -33,6 +33,28 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun activationEventStateIsOnlyCreatedForUnsavedProfiles() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000006")
+
+    assertEquals(
+      null,
+      profileActivationEventState(
+        action = ProfileActivationAction.Activate,
+        profileUuid = uuid,
+        requireSaveMessage = "save first",
+      ),
+    )
+    assertEquals(
+      ProfilesEventState.ShowEditableMessage("save first", uuid),
+      profileActivationEventState(
+        action = ProfileActivationAction.RequireSave,
+        profileUuid = uuid,
+        requireSaveMessage = "save first",
+      ),
+    )
+  }
+
+  @Test
   fun updateAllActionQueriesProfilesOnlyWhenNotAlreadyUpdating() {
     assertEquals(
       ProfileUpdateAllAction.QueryProfiles,

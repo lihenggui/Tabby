@@ -35,13 +35,13 @@ internal fun ProfilesScreen(
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
-      Idle -> Unit
-      OpenCreate -> onOpenCreate()
-      is OpenEdit -> onOpenEdit(event.uuid)
-      is ShowMessage -> {
+      ProfilesEventState.Idle -> Unit
+      ProfilesEventState.OpenCreate -> onOpenCreate()
+      is ProfilesEventState.OpenEdit -> onOpenEdit(event.uuid)
+      is ProfilesEventState.ShowMessage -> {
         snackbarHostState.showSnackbar(message = event.message)
       }
-      is ShowEditableMessage -> {
+      is ProfilesEventState.ShowEditableMessage -> {
         val result =
           snackbarHostState.showSnackbar(
             message = event.message,

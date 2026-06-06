@@ -19,8 +19,10 @@ import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.Ignore
 import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.QueryProfiles
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastAction
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastEventKind
+import com.github.kr328.clash.profile.ui.ProfilesEventState
 import com.github.kr328.clash.profile.ui.ProfilesUiState
 import com.github.kr328.clash.profile.ui.profileActivationAction
+import com.github.kr328.clash.profile.ui.profileActivationEventState
 import com.github.kr328.clash.profile.ui.profileUpdateAllAction
 import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
 import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
@@ -48,8 +50,8 @@ internal class ProfilesViewModel(app: Application) :
   val uiState: StateFlow<ProfilesUiState>
     field = MutableStateFlow(ProfilesUiState(currentTime = System.currentTimeMillis()))
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<ProfilesEventState>
+    field = MutableStateFlow<ProfilesEventState>(ProfilesEventState.Idle)
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()
@@ -77,11 +79,11 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = ProfilesEventState.Idle
   }
 
   fun onOpenCreate() {
-    eventState.value = EventState.OpenCreate
+    eventState.value = ProfilesEventState.OpenCreate
   }
 
   fun onActivate(profile: Profile) {
@@ -90,9 +92,12 @@ internal class ProfilesViewModel(app: Application) :
         Activate -> profileRepository.setActive(profile)
         RequireSave -> {
           eventState.value =
-            EventState.ShowEditableMessage(
-              application.getString(R.string.active_unsaved_tips),
-              profile.uuid,
+            checkNotNull(
+              profileActivationEventState(
+                action = RequireSave,
+                profileUuid = profile.uuid,
+                requireSaveMessage = application.getString(R.string.active_unsaved_tips),
+              )
             )
         }
       }
@@ -121,13 +126,13 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun onEdit(profile: Profile) {
-    eventState.value = EventState.OpenEdit(profile.uuid)
+    eventState.value = ProfilesEventState.OpenEdit(profile.uuid)
   }
 
   fun onDuplicate(profile: Profile) {
     viewModelScope.launch {
       val uuid = profileRepository.clone(profile.uuid)
-      eventState.value = EventState.OpenEdit(uuid)
+      eventState.value = ProfilesEventState.OpenEdit(uuid)
     }
   }
 
@@ -158,7 +163,9 @@ internal class ProfilesViewModel(app: Application) :
   private suspend fun showProfileUpdateCompleted(uuid: Uuid) {
     val name = profileRepository.queryByUuid(uuid)?.name
     eventState.value =
-      EventState.ShowMessage(application.getString(R.string.toast_profile_updated_complete, name))
+      ProfilesEventState.ShowMessage(
+        application.getString(R.string.toast_profile_updated_complete, name)
+      )
   }
 
   private suspend fun showProfileUpdateFailed(uuid: Uuid, reason: String?) {
@@ -166,22 +173,10 @@ internal class ProfilesViewModel(app: Application) :
     val displayReason =
       profileUpdateFailureReasonText(reason, application.getString(CommonR.string.unknown))
     eventState.value =
-      EventState.ShowEditableMessage(
+      ProfilesEventState.ShowEditableMessage(
         application.getString(R.string.toast_profile_updated_failed, name, displayReason),
         uuid,
       )
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data object OpenCreate : EventState
-
-    data class OpenEdit(val uuid: Uuid) : EventState
-
-    data class ShowMessage(val message: String) : EventState
-
-    data class ShowEditableMessage(val message: String, val uuid: Uuid) : EventState
   }
 
   private fun Broadcasts.Event.toProfilesBroadcastAction(): ProfilesBroadcastAction {
