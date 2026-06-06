@@ -19,6 +19,12 @@ import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.LogcatService
 import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.ui.LogcatUiState
+import com.github.kr328.clash.log.ui.withExportFinished
+import com.github.kr328.clash.log.ui.withExportProgress
+import com.github.kr328.clash.log.ui.withExportStarted
+import com.github.kr328.clash.log.ui.withMessages
+import com.github.kr328.clash.log.ui.withStreaming
 import com.github.kr328.clash.log.util.LogcatFilter
 import com.github.kr328.clash.log.util.LogcatReader
 import java.io.OutputStreamWriter
@@ -45,8 +51,8 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   private var started = false
   private var initialSnapshot = true
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<LogcatUiState>
+    field = MutableStateFlow(LogcatUiState())
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -64,12 +70,12 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
 
     if (file != null) {
       currentFile = file
-      uiState.update { it.copy(streaming = false) }
+      uiState.update { it.withStreaming(false) }
       loadLocalFile(file)
       return
     }
 
-    uiState.update { it.copy(streaming = true) }
+    uiState.update { it.withStreaming(true) }
     startStreaming()
   }
 
@@ -143,7 +149,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           return@launch
         }
 
-      uiState.update { it.copy(messages = messages) }
+      uiState.update { it.withMessages(messages) }
     }
   }
 
@@ -171,7 +177,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
         if (started) {
           val snapshot = logcat?.snapshot(initialSnapshot)
           if (snapshot != null) {
-            uiState.update { it.copy(messages = snapshot.messages) }
+            uiState.update { it.withMessages(snapshot.messages) }
             initialSnapshot = false
           }
         }
@@ -270,33 +276,18 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           application,
         )
         .use { filter ->
-          uiState.update {
-            it.copy(
-              exportProgress =
-                ExportProgress(
-                  visible = true,
-                  isIndeterminate = true,
-                  progress = 0,
-                  max = messages.size,
-                )
-            )
-          }
+          uiState.update { it.withExportStarted(messages.size) }
 
           try {
             filter.writeHeader(file.created)
 
             messages.forEachIndexed { index, message ->
-              uiState.update {
-                it.copy(
-                  exportProgress =
-                    it.exportProgress.copy(isIndeterminate = false, progress = index + 1)
-                )
-              }
+              uiState.update { it.withExportProgress(index + 1) }
 
               filter.writeMessage(message)
             }
           } finally {
-            uiState.update { it.copy(exportProgress = ExportProgress()) }
+            uiState.update { it.withExportFinished() }
           }
         }
     }
@@ -309,20 +300,6 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
     conn = null
     logcat = null
   }
-
-  data class UiState(
-    val streaming: Boolean = true,
-    val messages: List<LogMessage> = emptyList(),
-    val exportProgress: ExportProgress = ExportProgress(),
-  )
-
-  data class ExportProgress(
-    val visible: Boolean = false,
-    val isIndeterminate: Boolean = true,
-    val text: String? = null,
-    val progress: Int = 0,
-    val max: Int = 0,
-  )
 
   sealed interface EventState {
     data object Idle : EventState
