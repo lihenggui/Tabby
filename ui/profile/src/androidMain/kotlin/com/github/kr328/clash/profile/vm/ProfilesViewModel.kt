@@ -18,6 +18,7 @@ import com.github.kr328.clash.profile.ui.ProfileActivationAction.RequireSave
 import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.Ignore
 import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.QueryProfiles
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastAction
+import com.github.kr328.clash.profile.ui.ProfilesBroadcastEvent
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProfilesEventState
 import com.github.kr328.clash.profile.ui.ProfilesUiState
@@ -64,7 +65,7 @@ internal class ProfilesViewModel(app: Application) :
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (val action = event.toProfilesBroadcastAction()) {
+        when (val action = profilesBroadcastAction(event.toProfilesBroadcastEvent())) {
           ProfilesBroadcastAction.FetchProfiles -> fetch()
           ProfilesBroadcastAction.Ignore -> Unit
           is ProfilesBroadcastAction.ShowUpdateCompleted -> showProfileUpdateCompleted(action.uuid)
@@ -186,24 +187,24 @@ internal class ProfilesViewModel(app: Application) :
       )
   }
 
-  private fun Broadcasts.Event.toProfilesBroadcastAction(): ProfilesBroadcastAction {
+  private fun Broadcasts.Event.toProfilesBroadcastEvent(): ProfilesBroadcastEvent {
     return when (this) {
       Broadcasts.Event.ServiceRecreated ->
-        profilesBroadcastAction(ProfilesBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started -> profilesBroadcastAction(ProfilesBroadcastEventKind.Started)
-      is Broadcasts.Event.Stopped -> profilesBroadcastAction(ProfilesBroadcastEventKind.Stopped)
+        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Stopped)
       Broadcasts.Event.ProfileChanged ->
-        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileChanged)
+        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileChanged)
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid)
+        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid)
       is Broadcasts.Event.ProfileUpdateFailed ->
-        profilesBroadcastAction(
-          ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        ProfilesBroadcastEvent(
+          kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
           uuid = uuid,
           reason = reason,
         )
       Broadcasts.Event.ProfileLoaded ->
-        profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileLoaded)
+        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded)
     }
   }
 }

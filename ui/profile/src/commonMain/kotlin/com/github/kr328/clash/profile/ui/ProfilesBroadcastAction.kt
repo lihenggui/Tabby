@@ -12,6 +12,12 @@ internal enum class ProfilesBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal data class ProfilesBroadcastEvent(
+  val kind: ProfilesBroadcastEventKind,
+  val uuid: Uuid? = null,
+  val reason: String? = null,
+)
+
 internal sealed interface ProfilesBroadcastAction {
   data object FetchProfiles : ProfilesBroadcastAction
 
@@ -20,6 +26,14 @@ internal sealed interface ProfilesBroadcastAction {
   data class ShowUpdateFailed(val uuid: Uuid, val reason: String?) : ProfilesBroadcastAction
 
   data object Ignore : ProfilesBroadcastAction
+}
+
+internal fun profilesBroadcastAction(event: ProfilesBroadcastEvent): ProfilesBroadcastAction {
+  return profilesBroadcastAction(
+    kind = event.kind,
+    uuid = event.uuid,
+    reason = event.reason,
+  )
 }
 
 internal fun profilesBroadcastAction(

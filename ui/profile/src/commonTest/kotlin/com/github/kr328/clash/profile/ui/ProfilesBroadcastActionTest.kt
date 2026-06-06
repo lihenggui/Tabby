@@ -45,6 +45,30 @@ class ProfilesBroadcastActionTest {
   }
 
   @Test
+  fun broadcastEventBoundaryMapsPayloadsToActions() {
+    assertEquals(
+      ProfilesBroadcastAction.FetchProfiles,
+      profilesBroadcastAction(ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded)),
+    )
+    assertEquals(
+      ProfilesBroadcastAction.ShowUpdateCompleted(uuid),
+      profilesBroadcastAction(
+        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid)
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastAction.ShowUpdateFailed(uuid, reason = "network"),
+      profilesBroadcastAction(
+        ProfilesBroadcastEvent(
+          kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+          uuid = uuid,
+          reason = "network",
+        )
+      ),
+    )
+  }
+
+  @Test
   fun profileUpdateEventsAreIgnoredWhenUuidIsMissing() {
     assertEquals(
       ProfilesBroadcastAction.Ignore,
@@ -53,6 +77,16 @@ class ProfilesBroadcastActionTest {
     assertEquals(
       ProfilesBroadcastAction.Ignore,
       profilesBroadcastAction(ProfilesBroadcastEventKind.ProfileUpdateFailed, reason = "network"),
+    )
+    assertEquals(
+      ProfilesBroadcastAction.Ignore,
+      profilesBroadcastAction(
+        ProfilesBroadcastEvent(
+          kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+          uuid = null,
+          reason = "network",
+        )
+      ),
     )
   }
 }
