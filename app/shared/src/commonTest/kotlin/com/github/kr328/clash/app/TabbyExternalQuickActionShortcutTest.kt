@@ -40,6 +40,67 @@ class TabbyExternalQuickActionShortcutTest {
   }
 
   @Test
+  fun tabbyExternalQuickActionShortcutPresentationResourcesMapsPresentationTokens() {
+    assertEquals(
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = 1,
+        longLabel = 2,
+        icon = 3,
+      ),
+      tabbyExternalQuickActionShortcutPresentationResources(
+        presentation = TabbyExternalQuickActionShortcutPresentation.ToggleClash,
+        toggleShortLabel = 1,
+        toggleLongLabel = 2,
+        toggleIcon = 3,
+        startShortLabel = 4,
+        startLongLabel = 5,
+        startIcon = 6,
+        stopShortLabel = 7,
+        stopLongLabel = 8,
+        stopIcon = 9,
+      ),
+    )
+    assertEquals(
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = 4,
+        longLabel = 5,
+        icon = 6,
+      ),
+      tabbyExternalQuickActionShortcutPresentationResources(
+        presentation = TabbyExternalQuickActionShortcutPresentation.StartClash,
+        toggleShortLabel = 1,
+        toggleLongLabel = 2,
+        toggleIcon = 3,
+        startShortLabel = 4,
+        startLongLabel = 5,
+        startIcon = 6,
+        stopShortLabel = 7,
+        stopLongLabel = 8,
+        stopIcon = 9,
+      ),
+    )
+    assertEquals(
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = 7,
+        longLabel = 8,
+        icon = 9,
+      ),
+      tabbyExternalQuickActionShortcutPresentationResources(
+        presentation = TabbyExternalQuickActionShortcutPresentation.StopClash,
+        toggleShortLabel = 1,
+        toggleLongLabel = 2,
+        toggleIcon = 3,
+        startShortLabel = 4,
+        startLongLabel = 5,
+        startIcon = 6,
+        stopShortLabel = 7,
+        stopLongLabel = 8,
+        stopIcon = 9,
+      ),
+    )
+  }
+
+  @Test
   fun tabbyExternalQuickActionShortcutLaunchFlagsCombinesEnabledPlatformFlags() {
     assertEquals(
       0b111,

@@ -234,12 +234,6 @@ private fun Activity.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_L
   Toast.makeText(this, resId, duration).show()
 }
 
-private data class AndroidShortcutResources(
-  @StringRes val shortLabel: Int,
-  @StringRes val longLabel: Int,
-  val icon: Int,
-)
-
 private fun TabbyExternalQuickAction.intentAction(): String =
   tabbyExternalQuickActionString(
     action = this,
@@ -277,24 +271,16 @@ private fun Intent.tabbyExternalAppAction(): TabbyExternalAppAction? =
   )
 
 private fun TabbyExternalQuickActionShortcutPresentation.androidResources():
-  AndroidShortcutResources =
-  when (this) {
-    TabbyExternalQuickActionShortcutPresentation.ToggleClash ->
-      AndroidShortcutResources(
-        shortLabel = R.string.shortcut_toggle_short,
-        longLabel = R.string.shortcut_toggle_long,
-        icon = R.drawable.ic_toggle_all,
-      )
-    TabbyExternalQuickActionShortcutPresentation.StartClash ->
-      AndroidShortcutResources(
-        shortLabel = R.string.shortcut_start_short,
-        longLabel = R.string.shortcut_start_long,
-        icon = R.drawable.ic_toggle_on,
-      )
-    TabbyExternalQuickActionShortcutPresentation.StopClash ->
-      AndroidShortcutResources(
-        shortLabel = R.string.shortcut_stop_short,
-        longLabel = R.string.shortcut_stop_long,
-        icon = R.drawable.ic_toggle_off,
-      )
-  }
+  TabbyExternalQuickActionShortcutResources =
+  tabbyExternalQuickActionShortcutPresentationResources(
+    presentation = this,
+    toggleShortLabel = R.string.shortcut_toggle_short,
+    toggleLongLabel = R.string.shortcut_toggle_long,
+    toggleIcon = R.drawable.ic_toggle_all,
+    startShortLabel = R.string.shortcut_start_short,
+    startLongLabel = R.string.shortcut_start_long,
+    startIcon = R.drawable.ic_toggle_on,
+    stopShortLabel = R.string.shortcut_stop_short,
+    stopLongLabel = R.string.shortcut_stop_long,
+    stopIcon = R.drawable.ic_toggle_off,
+  )

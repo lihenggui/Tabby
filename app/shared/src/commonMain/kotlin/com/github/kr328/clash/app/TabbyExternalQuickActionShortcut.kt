@@ -13,6 +13,12 @@ data class TabbyExternalQuickActionShortcutLaunchOptions(
   val noAnimation: Boolean,
 )
 
+data class TabbyExternalQuickActionShortcutResources(
+  val shortLabel: Int,
+  val longLabel: Int,
+  val icon: Int,
+)
+
 enum class TabbyExternalQuickActionShortcutPresentation {
   ToggleClash,
   StartClash,
@@ -56,6 +62,39 @@ fun tabbyExternalQuickActionShortcutLaunchOptions(): TabbyExternalQuickActionSho
     excludeFromRecents = true,
     noAnimation = true,
   )
+
+fun tabbyExternalQuickActionShortcutPresentationResources(
+  presentation: TabbyExternalQuickActionShortcutPresentation,
+  toggleShortLabel: Int,
+  toggleLongLabel: Int,
+  toggleIcon: Int,
+  startShortLabel: Int,
+  startLongLabel: Int,
+  startIcon: Int,
+  stopShortLabel: Int,
+  stopLongLabel: Int,
+  stopIcon: Int,
+): TabbyExternalQuickActionShortcutResources =
+  when (presentation) {
+    TabbyExternalQuickActionShortcutPresentation.ToggleClash ->
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = toggleShortLabel,
+        longLabel = toggleLongLabel,
+        icon = toggleIcon,
+      )
+    TabbyExternalQuickActionShortcutPresentation.StartClash ->
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = startShortLabel,
+        longLabel = startLongLabel,
+        icon = startIcon,
+      )
+    TabbyExternalQuickActionShortcutPresentation.StopClash ->
+      TabbyExternalQuickActionShortcutResources(
+        shortLabel = stopShortLabel,
+        longLabel = stopLongLabel,
+        icon = stopIcon,
+      )
+  }
 
 fun tabbyExternalQuickActionShortcutLaunchFlags(
   launchOptions: TabbyExternalQuickActionShortcutLaunchOptions,
