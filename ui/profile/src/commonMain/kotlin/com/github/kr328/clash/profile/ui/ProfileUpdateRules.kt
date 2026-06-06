@@ -2,6 +2,16 @@ package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.Profile
 
+internal enum class ProfileActivationAction {
+  Activate,
+  RequireSave,
+}
+
+internal fun profileActivationAction(profile: Profile): ProfileActivationAction {
+  return if (profile.imported) ProfileActivationAction.Activate
+  else ProfileActivationAction.RequireSave
+}
+
 internal fun isProfileUpdatable(profile: Profile): Boolean {
   return profile.imported && profile.type != Profile.Type.File
 }

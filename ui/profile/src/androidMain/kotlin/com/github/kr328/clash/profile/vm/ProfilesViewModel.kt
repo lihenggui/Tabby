@@ -12,8 +12,11 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.ProfileActivationAction.Activate
+import com.github.kr328.clash.profile.ui.ProfileActivationAction.RequireSave
 import com.github.kr328.clash.profile.ui.ProfilesUiState
 import com.github.kr328.clash.profile.ui.filterUpdatableProfiles
+import com.github.kr328.clash.profile.ui.profileActivationAction
 import com.github.kr328.clash.profile.ui.withAllUpdating
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withProfiles
@@ -81,14 +84,15 @@ internal class ProfilesViewModel(app: Application) :
 
   fun onActivate(profile: Profile) {
     viewModelScope.launch {
-      if (profile.imported) {
-        profileRepository.setActive(profile)
-      } else {
-        eventState.value =
-          EventState.ShowEditableMessage(
-            application.getString(R.string.active_unsaved_tips),
-            profile.uuid,
-          )
+      when (profileActivationAction(profile)) {
+        Activate -> profileRepository.setActive(profile)
+        RequireSave -> {
+          eventState.value =
+            EventState.ShowEditableMessage(
+              application.getString(R.string.active_unsaved_tips),
+              profile.uuid,
+            )
+        }
       }
     }
   }

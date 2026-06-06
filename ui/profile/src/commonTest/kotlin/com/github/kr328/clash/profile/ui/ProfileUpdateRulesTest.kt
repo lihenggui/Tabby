@@ -9,6 +9,30 @@ import kotlin.uuid.Uuid
 
 class ProfileUpdateRulesTest {
   @Test
+  fun allowsImportedProfilesToActivate() {
+    assertEquals(
+      ProfileActivationAction.Activate,
+      profileActivationAction(profile(type = Profile.Type.Url, imported = true)),
+    )
+    assertEquals(
+      ProfileActivationAction.Activate,
+      profileActivationAction(profile(type = Profile.Type.File, imported = true)),
+    )
+  }
+
+  @Test
+  fun requiresSavingProfilesBeforeActivation() {
+    assertEquals(
+      ProfileActivationAction.RequireSave,
+      profileActivationAction(profile(type = Profile.Type.Url, imported = false)),
+    )
+    assertEquals(
+      ProfileActivationAction.RequireSave,
+      profileActivationAction(profile(type = Profile.Type.External, imported = false)),
+    )
+  }
+
+  @Test
   fun marksImportedNonFileProfilesAsUpdatable() {
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.Url, imported = true)))
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.External, imported = true)))
