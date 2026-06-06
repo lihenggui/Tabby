@@ -105,7 +105,7 @@ internal class ProvidersViewModel(app: Application) :
   private fun fetch() {
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
-      val providers = engineController.queryProviders().sorted()
+      val providers = engineController.queryProviders()
       uiState.update { current -> current.withFetchedProviders(providers) }
     }
   }

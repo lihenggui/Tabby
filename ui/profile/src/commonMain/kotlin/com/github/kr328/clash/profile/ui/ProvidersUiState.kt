@@ -7,8 +7,14 @@ internal data class ProvidersUiState(
   val currentTime: Long = 0,
 )
 
+internal fun sortProvidersForDisplay(providers: List<Provider>): List<Provider> {
+  return providers.sorted()
+}
+
 internal fun ProvidersUiState.withFetchedProviders(providers: List<Provider>): ProvidersUiState {
-  return copy(providers = mergeProviderItemStates(this.providers, providers))
+  return copy(
+    providers = mergeProviderItemStates(this.providers, sortProvidersForDisplay(providers))
+  )
 }
 
 internal fun ProvidersUiState.withProviderState(

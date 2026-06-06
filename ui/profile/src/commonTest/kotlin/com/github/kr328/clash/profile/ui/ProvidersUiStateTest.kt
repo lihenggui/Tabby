@@ -27,6 +27,23 @@ class ProvidersUiStateTest {
   }
 
   @Test
+  fun fetchedProvidersAreSortedInCommonDisplayOrder() {
+    val ruleProvider = provider(name = "Rule", type = Provider.Type.Rule, updatedAt = 100)
+    val proxyB = provider(name = "B", type = Provider.Type.Proxy, updatedAt = 100)
+    val proxyA = provider(name = "A", type = Provider.Type.Proxy, updatedAt = 200)
+
+    val state =
+      ProvidersUiState(
+          providers = listOf(ProviderItemState(provider = proxyA, updatedAt = 300, updating = true))
+        )
+        .withFetchedProviders(listOf(ruleProvider, proxyB, proxyA))
+
+    assertEquals(listOf(proxyA, proxyB, ruleProvider), state.providers.map { it.provider })
+    assertEquals(true, state.providers[0].updating)
+    assertEquals(300, state.providers[0].updatedAt)
+  }
+
+  @Test
   fun providerStateUpdateChangesMatchingProviderOnly() {
     val proxy = provider(name = "Shared", type = Provider.Type.Proxy)
     val rule = provider(name = "Shared", type = Provider.Type.Rule)
