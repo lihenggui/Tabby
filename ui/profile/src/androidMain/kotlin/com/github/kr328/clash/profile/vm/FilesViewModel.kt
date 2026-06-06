@@ -13,9 +13,7 @@ import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFileExportAction
-import com.github.kr328.clash.profile.ui.ProfileFileExportResult
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
-import com.github.kr328.clash.profile.ui.ProfileFileImportResult
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
 import com.github.kr328.clash.profile.ui.ProfileFilesEventState
@@ -26,8 +24,10 @@ import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileExportRequestEventState
+import com.github.kr328.clash.profile.ui.profileFileExportResultFromPlatformPayload
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileImportRequestEventState
+import com.github.kr328.clash.profile.ui.profileFileImportResultFromPlatformPayload
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFileOpenEventState
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
@@ -146,7 +146,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     val sourceUri = uri
     val action =
       profileFileImportAction(
-        ProfileFileImportResult(
+        profileFileImportResultFromPlatformPayload(
           sourceSelected = sourceUri != null,
           sourceFileName = sourceUri?.fileName,
           targetDocumentId = targetConfigFile?.id,
@@ -182,7 +182,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     val outputUri = uri
     val action =
       profileFileExportAction(
-        ProfileFileExportResult(
+        profileFileExportResultFromPlatformPayload(
           outputSelected = outputUri != null,
           sourceDocumentId = sourceConfigFile?.id,
         )

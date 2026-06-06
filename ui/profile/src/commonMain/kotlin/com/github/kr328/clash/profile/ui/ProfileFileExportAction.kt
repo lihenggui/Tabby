@@ -11,6 +11,16 @@ internal data class ProfileFileExportResult(
   val sourceDocumentId: String?,
 )
 
+internal fun profileFileExportResultFromPlatformPayload(
+  outputSelected: Boolean,
+  sourceDocumentId: String?,
+): ProfileFileExportResult {
+  return ProfileFileExportResult(
+    outputSelected = outputSelected,
+    sourceDocumentId = if (outputSelected) sourceDocumentId else null,
+  )
+}
+
 internal fun profileFileExportAction(result: ProfileFileExportResult): ProfileFileExportAction {
   return profileFileExportAction(
     outputSelected = result.outputSelected,

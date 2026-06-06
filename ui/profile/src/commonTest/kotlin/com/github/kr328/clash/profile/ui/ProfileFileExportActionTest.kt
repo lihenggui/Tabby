@@ -5,6 +5,34 @@ import kotlin.test.assertEquals
 
 class ProfileFileExportActionTest {
   @Test
+  fun platformPayloadCreatesExportResultWithSourceDocument() {
+    assertEquals(
+      ProfileFileExportResult(
+        outputSelected = true,
+        sourceDocumentId = "root/config.yaml",
+      ),
+      profileFileExportResultFromPlatformPayload(
+        outputSelected = true,
+        sourceDocumentId = "root/config.yaml",
+      ),
+    )
+  }
+
+  @Test
+  fun platformPayloadDropsExportSourceDocumentWhenOutputIsMissing() {
+    assertEquals(
+      ProfileFileExportResult(
+        outputSelected = false,
+        sourceDocumentId = null,
+      ),
+      profileFileExportResultFromPlatformPayload(
+        outputSelected = false,
+        sourceDocumentId = "root/config.yaml",
+      ),
+    )
+  }
+
+  @Test
   fun ignoresMissingExportOutput() {
     assertEquals(
       ProfileFileExportAction.Ignore,

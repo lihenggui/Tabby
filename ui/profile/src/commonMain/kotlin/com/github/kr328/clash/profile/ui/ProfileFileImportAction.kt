@@ -18,6 +18,20 @@ internal data class ProfileFileImportResult(
   val parentDocumentId: String,
 )
 
+internal fun profileFileImportResultFromPlatformPayload(
+  sourceSelected: Boolean,
+  sourceFileName: String?,
+  targetDocumentId: String?,
+  parentDocumentId: String,
+): ProfileFileImportResult {
+  return ProfileFileImportResult(
+    sourceSelected = sourceSelected,
+    sourceFileName = if (sourceSelected) sourceFileName else null,
+    targetDocumentId = targetDocumentId,
+    parentDocumentId = parentDocumentId,
+  )
+}
+
 internal fun profileFileImportAction(result: ProfileFileImportResult): ProfileFileImportAction {
   return profileFileImportAction(
     sourceSelected = result.sourceSelected,

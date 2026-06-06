@@ -5,6 +5,42 @@ import kotlin.test.assertEquals
 
 class ProfileFileImportActionTest {
   @Test
+  fun platformPayloadCreatesImportResultWithSourceMetadata() {
+    assertEquals(
+      ProfileFileImportResult(
+        sourceSelected = true,
+        sourceFileName = "provider.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root/providers",
+      ),
+      profileFileImportResultFromPlatformPayload(
+        sourceSelected = true,
+        sourceFileName = "provider.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root/providers",
+      ),
+    )
+  }
+
+  @Test
+  fun platformPayloadDropsImportSourceMetadataWhenSourceIsMissing() {
+    assertEquals(
+      ProfileFileImportResult(
+        sourceSelected = false,
+        sourceFileName = null,
+        targetDocumentId = "root/config.yaml",
+        parentDocumentId = "root",
+      ),
+      profileFileImportResultFromPlatformPayload(
+        sourceSelected = false,
+        sourceFileName = "ignored.yaml",
+        targetDocumentId = "root/config.yaml",
+        parentDocumentId = "root",
+      ),
+    )
+  }
+
+  @Test
   fun ignoresMissingImportSource() {
     assertEquals(
       ProfileFileImportAction.Ignore,
