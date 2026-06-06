@@ -16,6 +16,9 @@ import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
+import com.github.kr328.clash.home.ui.HomeUiState
+import com.github.kr328.clash.home.ui.withFetchedHomeState
+import com.github.kr328.clash.home.ui.withForwardedTraffic
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,8 +37,8 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 
   val clashRunning: StateFlow<Boolean> = Remote.broadcasts.clashRunningFlow
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<HomeUiState>
+    field = MutableStateFlow(HomeUiState())
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -99,8 +102,9 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
       val profileName = profileRepository.queryActive()?.name
 
       uiState.update {
-        it.copy(
-          mode = if (clashRunning.value) mode else null,
+        it.withFetchedHomeState(
+          clashRunning = clashRunning.value,
+          mode = mode,
           hasProviders = providers.isNotEmpty(),
           profileName = profileName,
         )
@@ -115,7 +119,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         delay(1.seconds)
         if (clashRunning.value) {
           val total = engineController.queryTraffic()
-          uiState.update { it.copy(forwarded = total.trafficTotal()) }
+          uiState.update { it.withForwardedTraffic(total.trafficTotal()) }
         }
       }
     }
@@ -145,13 +149,6 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         EventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
     }
   }
-
-  data class UiState(
-    val forwarded: String? = null,
-    val mode: String? = null,
-    val profileName: String? = null,
-    val hasProviders: Boolean = false,
-  )
 
   sealed interface EventState {
     data object Idle : EventState
