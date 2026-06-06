@@ -16,10 +16,12 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.ui.NewProfileCreateAction
+import com.github.kr328.clash.profile.ui.NewProfileDetailAction
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
+import com.github.kr328.clash.profile.ui.newProfileDetailAction
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
 import io.github.g00fy2.quickie.QRResult
@@ -60,9 +62,13 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun onDetail(provider: ProfileProvider.External) {
-    val packageName = provider.intent.component?.packageName ?: return
-    val uri = Uri.fromParts("package", packageName, null)
-    eventState.value = EventState.OpenAppSettings(uri)
+    when (val action = newProfileDetailAction(provider.intent.component?.packageName)) {
+      is NewProfileDetailAction.OpenAppSettings -> {
+        val uri = Uri.fromParts("package", action.packageName, null)
+        eventState.value = EventState.OpenAppSettings(uri)
+      }
+      NewProfileDetailAction.Ignore -> Unit
+    }
   }
 
   fun onExternalProviderResult(uri: Uri, name: String?) {

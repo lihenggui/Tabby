@@ -62,6 +62,22 @@ class NewProfileUiStateTest {
     )
   }
 
+  @Test
+  fun newProfileDetailActionOpensExternalProviderAppSettings() {
+    assertEquals(
+      NewProfileDetailAction.OpenAppSettings("com.example.provider"),
+      newProfileDetailAction("com.example.provider"),
+    )
+  }
+
+  @Test
+  fun newProfileDetailActionIgnoresMissingExternalProviderPackage() {
+    assertEquals(
+      NewProfileDetailAction.Ignore,
+      newProfileDetailAction(null),
+    )
+  }
+
   private fun testProvider(id: String): TestProvider {
     return TestProvider(id)
   }
