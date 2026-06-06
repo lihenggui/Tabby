@@ -29,6 +29,7 @@ import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
+import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -130,10 +131,7 @@ fun PlaceholderTabbyApp(
                 )
               },
               networkSettingsContent = { onStartAccessControlList ->
-                PlaceholderScreen(
-                  title = "Network settings",
-                  "Access control" to onStartAccessControlList,
-                )
+                NetworkSettingsRouteContent(onStartAccessControlList = onStartAccessControlList)
               },
               overrideSettingsContent = { onResetCompleted ->
                 PlaceholderScreen("Override settings", "Done" to onResetCompleted)
