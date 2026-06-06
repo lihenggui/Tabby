@@ -68,6 +68,44 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesAutoSaveActionSavesUnsavedProfileWhenNotCanceled() {
+    val profile = profile(name = "Changed")
+    val state = PropertiesUiState(profile = profile, hasUnsavedChanges = true)
+
+    assertEquals(
+      PropertiesAutoSaveAction.Save(profile),
+      propertiesAutoSaveAction(canceled = false, state = state),
+    )
+  }
+
+  @Test
+  fun propertiesAutoSaveActionIgnoresCanceledOrUnchangedOrMissingProfiles() {
+    val profile = profile(name = "Changed")
+
+    assertEquals(
+      PropertiesAutoSaveAction.Ignore,
+      propertiesAutoSaveAction(
+        canceled = true,
+        state = PropertiesUiState(profile = profile, hasUnsavedChanges = true),
+      ),
+    )
+    assertEquals(
+      PropertiesAutoSaveAction.Ignore,
+      propertiesAutoSaveAction(
+        canceled = false,
+        state = PropertiesUiState(profile = profile, hasUnsavedChanges = false),
+      ),
+    )
+    assertEquals(
+      PropertiesAutoSaveAction.Ignore,
+      propertiesAutoSaveAction(
+        canceled = false,
+        state = PropertiesUiState(profile = null, hasUnsavedChanges = true),
+      ),
+    )
+  }
+
+  @Test
   fun mapsPropertiesProgressState() {
     assertEquals(
       PropertiesProgressState(

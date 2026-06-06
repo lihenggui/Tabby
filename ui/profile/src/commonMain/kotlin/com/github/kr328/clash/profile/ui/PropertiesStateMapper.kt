@@ -17,6 +17,12 @@ internal enum class PropertiesCommitValidationResult {
   EmptySource,
 }
 
+internal sealed interface PropertiesAutoSaveAction {
+  data class Save(val profile: Profile) : PropertiesAutoSaveAction
+
+  data object Ignore : PropertiesAutoSaveAction
+}
+
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {
   if (original == null) return false
 
@@ -32,6 +38,18 @@ internal fun validatePropertiesCommit(profile: Profile): PropertiesCommitValidat
   }
 
   return PropertiesCommitValidationResult.Valid
+}
+
+internal fun propertiesAutoSaveAction(
+  canceled: Boolean,
+  state: PropertiesUiState,
+): PropertiesAutoSaveAction {
+  val profile = state.profile
+  return if (!canceled && state.hasUnsavedChanges && profile != null) {
+    PropertiesAutoSaveAction.Save(profile)
+  } else {
+    PropertiesAutoSaveAction.Ignore
+  }
 }
 
 internal fun PropertiesUiState.withLoadedProfile(profile: Profile): PropertiesUiState {

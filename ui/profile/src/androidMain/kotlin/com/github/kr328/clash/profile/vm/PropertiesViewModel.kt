@@ -13,10 +13,12 @@ import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.PropertiesAutoSaveAction
 import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptyName
 import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.EmptySource
 import com.github.kr328.clash.profile.ui.PropertiesCommitValidationResult.Valid
 import com.github.kr328.clash.profile.ui.PropertiesUiState
+import com.github.kr328.clash.profile.ui.propertiesAutoSaveAction
 import com.github.kr328.clash.profile.ui.validatePropertiesCommit
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
@@ -66,15 +68,19 @@ internal class PropertiesViewModel(app: Application) :
   }
 
   override fun onStop(owner: LifecycleOwner) {
-    if (!canceled && uiState.value.hasUnsavedChanges) {
-      val profile = uiState.value.profile ?: return
-      viewModelScope.launch {
-        runCatching {
-            profileRepository.patch(profile.uuid, profile.name, profile.source, profile.interval)
-          }
-          .onFailure { e -> Log.e("Auto save profile failed: ${e.message}", e) }
-          .onSuccess { uiState.update { state -> state.withSavedProfile(profile) } }
+    when (val action = propertiesAutoSaveAction(canceled, uiState.value)) {
+      is PropertiesAutoSaveAction.Save -> {
+        val profile = action.profile
+
+        viewModelScope.launch {
+          runCatching {
+              profileRepository.patch(profile.uuid, profile.name, profile.source, profile.interval)
+            }
+            .onFailure { e -> Log.e("Auto save profile failed: ${e.message}", e) }
+            .onSuccess { uiState.update { state -> state.withSavedProfile(profile) } }
+        }
       }
+      PropertiesAutoSaveAction.Ignore -> Unit
     }
   }
 
