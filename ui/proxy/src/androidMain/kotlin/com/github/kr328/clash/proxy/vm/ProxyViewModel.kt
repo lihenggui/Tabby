@@ -15,13 +15,22 @@ import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
+import com.github.kr328.clash.proxy.ui.initialSelectedProxies
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
+import com.github.kr328.clash.proxy.ui.withCurrentPage
+import com.github.kr328.clash.proxy.ui.withExcludeNotSelectable
+import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
+import com.github.kr328.clash.proxy.ui.withOverrideMode
 import com.github.kr328.clash.proxy.ui.withProxyGroup
+import com.github.kr328.clash.proxy.ui.withProxyGroupState
+import com.github.kr328.clash.proxy.ui.withProxyLine
+import com.github.kr328.clash.proxy.ui.withProxyPreferences
+import com.github.kr328.clash.proxy.ui.withProxySort
+import com.github.kr328.clash.proxy.ui.withSelectedProxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -48,7 +57,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   init {
     uiState.update {
-      it.copy(
+      it.withProxyPreferences(
         proxyLine = uiStore.proxyLine,
         excludeNotSelectable = uiStore.proxyExcludeNotSelectable,
         proxySort = uiStore.proxySort,
@@ -91,23 +100,9 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   private suspend fun fetchInitialState() {
     val mode = engineController.querySessionMode()
     val names = engineController.queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
-    val preservedGroups =
-      with(uiState.value) { groups.takeIf { groupNames == names && groups.size == names.size } }
 
-    selectedProxies.value = List(names.size) { SelectedProxy("?") }
-
-    val initialPage = names.indexOf(uiStore.proxyLastGroup).coerceAtLeast(0)
-    val currentPage = initialPage.coerceAtMost((names.size - 1).coerceAtLeast(0))
-
-    uiState.update {
-      it.copy(
-        overrideMode = mode,
-        groupNames = names,
-        groups = preservedGroups ?: List(names.size) { ProxyGroupUiState() },
-        initialPage = initialPage,
-        currentPage = currentPage,
-      )
-    }
+    selectedProxies.value = initialSelectedProxies(names.size)
+    uiState.update { it.withInitialProxyGroups(mode, names, uiStore.proxyLastGroup) }
 
     initialized = true
     reloadAll()
@@ -115,34 +110,30 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   fun onPageChanged(index: Int) {
     val names = uiState.value.groupNames
-    uiState.update { it.copy(currentPage = index) }
+    uiState.update { it.withCurrentPage(index) }
     names.getOrNull(index)?.let { uiStore.proxyLastGroup = it }
   }
 
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
     uiStore.proxyExcludeNotSelectable = enabled
-    uiState.update { it.copy(excludeNotSelectable = enabled) }
+    uiState.update { it.withExcludeNotSelectable(enabled) }
     eventState.value = ProxyEventState.ReLaunch
   }
 
   fun onProxyLineChanged(line: Int) {
     uiStore.proxyLine = line
-    uiState.update { it.copy(proxyLine = line) }
-    // Increment refresh version on groups
-    uiState.update { current ->
-      current.copy(groups = current.groups.map { it.copy(refreshVersion = it.refreshVersion + 1) })
-    }
+    uiState.update { it.withProxyLine(line) }
     reloadAll()
   }
 
   fun onProxySortChanged(sort: ProxySort) {
     uiStore.proxySort = sort
-    uiState.update { it.copy(proxySort = sort) }
+    uiState.update { it.withProxySort(sort) }
     reloadAll()
   }
 
   fun onOverrideModeSelected(mode: TunnelState.Mode?) {
-    uiState.update { it.copy(overrideMode = mode) }
+    uiState.update { it.withOverrideMode(mode) }
     eventState.value = ProxyEventState.ShowModeSwitchTips
     viewModelScope.launch { engineController.patchSessionMode(mode) }
   }
@@ -165,9 +156,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
     viewModelScope.launch {
       engineController.patchSelector(names[index], name)
-      selectedProxies.update { list ->
-        list.toMutableList().apply { set(index, SelectedProxy(name)) }
-      }
+      selectedProxies.update { it.withSelectedProxy(index, name) }
       // trigger refresh version to redraw
       updateGroupState(index) { it.copy(refreshVersion = it.refreshVersion + 1) }
     }
@@ -226,10 +215,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     transform: (ProxyGroupUiState) -> ProxyGroupUiState,
   ) {
     uiState.update { current ->
-      if (index !in current.groups.indices) return@update current
-      val newGroups = current.groups.toMutableList()
-      newGroups[index] = transform(newGroups[index])
-      current.copy(groups = newGroups)
+      current.withProxyGroupState(index, transform)
     }
   }
 }

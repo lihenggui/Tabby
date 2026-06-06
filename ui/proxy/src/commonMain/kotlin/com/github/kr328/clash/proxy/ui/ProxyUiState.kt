@@ -89,6 +89,85 @@ internal data class ProxyItemUiState(
 
 internal data class SelectedProxy(val name: String)
 
+internal fun ProxyUiState.withProxyPreferences(
+  proxyLine: Int,
+  excludeNotSelectable: Boolean,
+  proxySort: ProxySort,
+): ProxyUiState {
+  return copy(
+    proxyLine = proxyLine,
+    excludeNotSelectable = excludeNotSelectable,
+    proxySort = proxySort,
+  )
+}
+
+internal fun ProxyUiState.withInitialProxyGroups(
+  overrideMode: TunnelState.Mode?,
+  groupNames: List<String>,
+  lastGroupName: String,
+): ProxyUiState {
+  val preservedGroups = groups.takeIf {
+    this.groupNames == groupNames && groups.size == groupNames.size
+  }
+  val initialPage = groupNames.indexOf(lastGroupName).coerceAtLeast(0)
+  val currentPage = initialPage.coerceAtMost((groupNames.size - 1).coerceAtLeast(0))
+
+  return copy(
+    overrideMode = overrideMode,
+    groupNames = groupNames,
+    groups = preservedGroups ?: List(groupNames.size) { ProxyGroupUiState() },
+    initialPage = initialPage,
+    currentPage = currentPage,
+  )
+}
+
+internal fun ProxyUiState.withCurrentPage(index: Int): ProxyUiState {
+  return copy(currentPage = index)
+}
+
+internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {
+  return copy(excludeNotSelectable = enabled)
+}
+
+internal fun ProxyUiState.withProxyLine(line: Int): ProxyUiState {
+  return copy(
+    proxyLine = line,
+    groups = groups.map { it.copy(refreshVersion = it.refreshVersion + 1) },
+  )
+}
+
+internal fun ProxyUiState.withProxySort(sort: ProxySort): ProxyUiState {
+  return copy(proxySort = sort)
+}
+
+internal fun ProxyUiState.withOverrideMode(mode: TunnelState.Mode?): ProxyUiState {
+  return copy(overrideMode = mode)
+}
+
+internal fun ProxyUiState.withProxyGroupState(
+  index: Int,
+  transform: (ProxyGroupUiState) -> ProxyGroupUiState,
+): ProxyUiState {
+  if (index !in groups.indices) return this
+
+  val newGroups = groups.toMutableList()
+  newGroups[index] = transform(newGroups[index])
+  return copy(groups = newGroups)
+}
+
+internal fun initialSelectedProxies(size: Int): List<SelectedProxy> {
+  return List(size) { SelectedProxy("?") }
+}
+
+internal fun List<SelectedProxy>.withSelectedProxy(
+  index: Int,
+  name: String,
+): List<SelectedProxy> {
+  if (index !in indices) return this
+
+  return toMutableList().apply { set(index, SelectedProxy(name)) }
+}
+
 internal fun ProxyGroup.toProxyItemSources(groupNames: List<String>): List<ProxyItemSource> {
   val nameIndexMap = groupNames.withIndex().associate { (index, name) -> name to index }
 
