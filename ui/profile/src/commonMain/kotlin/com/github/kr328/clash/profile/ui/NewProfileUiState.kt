@@ -16,6 +16,14 @@ internal enum class NewProfileProviderKind {
   External,
 }
 
+internal fun newProfileBuiltInProviderKinds(): List<NewProfileProviderKind> {
+  return listOf(
+    NewProfileProviderKind.File,
+    NewProfileProviderKind.Url,
+    NewProfileProviderKind.QR,
+  )
+}
+
 internal sealed interface NewProfileCreateAction {
   data class CreateProfile(val type: Profile.Type) : NewProfileCreateAction
 

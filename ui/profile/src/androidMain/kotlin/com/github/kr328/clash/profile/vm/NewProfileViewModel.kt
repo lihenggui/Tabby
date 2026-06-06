@@ -19,9 +19,11 @@ import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileDetailAction
 import com.github.kr328.clash.profile.ui.NewProfileEventState
 import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
+import com.github.kr328.clash.profile.ui.NewProfileProviderKind
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
+import com.github.kr328.clash.profile.ui.newProfileBuiltInProviderKinds
 import com.github.kr328.clash.profile.ui.newProfileConsumedEventState
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
 import com.github.kr328.clash.profile.ui.newProfileCreateEventState
@@ -185,13 +187,17 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
                 ProfileProvider.External(name.toString(), summary.toString(), icon, intent)
               }
 
-          listOf(
-            ProfileProvider.File(application),
-            ProfileProvider.Url(application),
-            ProfileProvider.QR(application),
-          ) + externalProviders
+          newProfileBuiltInProviderKinds().mapNotNull { it.toBuiltInProvider() } + externalProviders
         }
       uiState.update { it.withNewProfileProviders(providers) }
     }
   }
+
+  private fun NewProfileProviderKind.toBuiltInProvider(): ProfileProvider? =
+    when (this) {
+      NewProfileProviderKind.File -> ProfileProvider.File(application)
+      NewProfileProviderKind.Url -> ProfileProvider.Url(application)
+      NewProfileProviderKind.QR -> ProfileProvider.QR(application)
+      NewProfileProviderKind.External -> null
+    }
 }

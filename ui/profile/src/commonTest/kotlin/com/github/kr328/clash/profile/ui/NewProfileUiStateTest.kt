@@ -41,6 +41,18 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun builtInProviderKindsKeepDefaultCreationOrder() {
+    assertEquals(
+      listOf(
+        NewProfileProviderKind.File,
+        NewProfileProviderKind.Url,
+        NewProfileProviderKind.QR,
+      ),
+      newProfileBuiltInProviderKinds(),
+    )
+  }
+
+  @Test
   fun newProfileCreateActionCreatesFileProfile() {
     assertEquals(
       NewProfileCreateAction.CreateProfile(Profile.Type.File),
