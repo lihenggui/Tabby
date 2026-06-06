@@ -14,6 +14,7 @@ import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.hasProfilePropertiesChanges
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -87,7 +88,7 @@ internal class PropertiesViewModel(app: Application) :
       val profile = current.profile?.copy(name = name) ?: return@update current
       current.copy(
         profile = profile,
-        hasUnsavedChanges = hasUnsavedChanges(profile, current.originalProfile),
+        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
       )
     }
   }
@@ -97,7 +98,7 @@ internal class PropertiesViewModel(app: Application) :
       val profile = current.profile?.copy(source = url) ?: return@update current
       current.copy(
         profile = profile,
-        hasUnsavedChanges = hasUnsavedChanges(profile, current.originalProfile),
+        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
       )
     }
   }
@@ -107,7 +108,7 @@ internal class PropertiesViewModel(app: Application) :
       val profile = current.profile?.copy(interval = interval) ?: return@update current
       current.copy(
         profile = profile,
-        hasUnsavedChanges = hasUnsavedChanges(profile, current.originalProfile),
+        hasUnsavedChanges = hasProfilePropertiesChanges(profile, current.originalProfile),
       )
     }
   }
@@ -218,13 +219,6 @@ internal class PropertiesViewModel(app: Application) :
         }
       current.copy(progress = newProgress)
     }
-  }
-
-  private fun hasUnsavedChanges(profile: Profile, original: Profile?): Boolean {
-    if (original == null) return false
-    return profile.name != original.name ||
-      profile.source != original.source ||
-      profile.interval != original.interval
   }
 
   data class UiState(

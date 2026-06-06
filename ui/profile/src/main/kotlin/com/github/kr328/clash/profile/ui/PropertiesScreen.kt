@@ -89,7 +89,7 @@ internal fun PropertiesScreen(
 }
 
 private fun PropertiesViewModel.ProgressState.toPropertiesProgressState(): PropertiesProgressState {
-  return PropertiesProgressState(
+  return toPropertiesProgressState(
     visible = visible,
     isIndeterminate = isIndeterminate,
     text = text,
