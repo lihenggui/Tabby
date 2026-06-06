@@ -17,7 +17,10 @@ import com.github.kr328.clash.glue.util.clashDir
 import com.github.kr328.clash.settings.ui.GeoFileImportPlan
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
+import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.planGeoFileImport
+import com.github.kr328.clash.settings.ui.updateSniffProtocolOverrideDestination
+import com.github.kr328.clash.settings.ui.updateSniffProtocolPorts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -114,60 +117,27 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   }
 
   override fun updateSniffHttpPorts(value: List<String>?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff = it.sniffer.sniff.copy(http = it.sniffer.sniff.http.copy(ports = value))
-        )
-    )
+    updateSniffProtocolPorts(it, SniffProtocol.Http, value)
   }
 
   override fun updateSniffHttpOverrideDestination(value: Boolean?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff =
-            it.sniffer.sniff.copy(http = it.sniffer.sniff.http.copy(overrideDestination = value))
-        )
-    )
+    updateSniffProtocolOverrideDestination(it, SniffProtocol.Http, value)
   }
 
   override fun updateSniffTlsPorts(value: List<String>?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff = it.sniffer.sniff.copy(tls = it.sniffer.sniff.tls.copy(ports = value))
-        )
-    )
+    updateSniffProtocolPorts(it, SniffProtocol.Tls, value)
   }
 
   override fun updateSniffTlsOverrideDestination(value: Boolean?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff =
-            it.sniffer.sniff.copy(tls = it.sniffer.sniff.tls.copy(overrideDestination = value))
-        )
-    )
+    updateSniffProtocolOverrideDestination(it, SniffProtocol.Tls, value)
   }
 
   override fun updateSniffQuicPorts(value: List<String>?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff = it.sniffer.sniff.copy(quic = it.sniffer.sniff.quic.copy(ports = value))
-        )
-    )
+    updateSniffProtocolPorts(it, SniffProtocol.Quic, value)
   }
 
   override fun updateSniffQuicOverrideDestination(value: Boolean?) = configuration.update {
-    it.copy(
-      sniffer =
-        it.sniffer.copy(
-          sniff =
-            it.sniffer.sniff.copy(quic = it.sniffer.sniff.quic.copy(overrideDestination = value))
-        )
-    )
+    updateSniffProtocolOverrideDestination(it, SniffProtocol.Quic, value)
   }
 
   override fun updateForceDnsMapping(value: Boolean?) = configuration.update {
