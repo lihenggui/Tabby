@@ -107,6 +107,13 @@ internal fun newProfileExternalProviderResultAction(
   }
 }
 
+internal fun newProfileExternalProviderResultAcceptedFromPlatformResultCode(
+  resultCode: Int,
+  acceptedResultCode: Int,
+): Boolean {
+  return resultCode == acceptedResultCode
+}
+
 internal fun <ExternalProviderT> newProfileCreateEventState(
   action: NewProfileCreateAction,
   externalProvider: ExternalProviderT? = null,

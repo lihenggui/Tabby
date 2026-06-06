@@ -172,6 +172,24 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileExternalProviderResultAcceptedFromPlatformResultCodeMapsAcceptedCodeOnly() {
+    assertEquals(
+      true,
+      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
+        resultCode = 10,
+        acceptedResultCode = 10,
+      ),
+    )
+    assertEquals(
+      false,
+      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
+        resultCode = 20,
+        acceptedResultCode = 10,
+      ),
+    )
+  }
+
+  @Test
   fun createEventStateEmitsOnlyLaunchEvents() {
     val externalProvider = "external-provider-intent"
 
