@@ -143,17 +143,11 @@ class MainActivity : ComponentActivity() {
 
   private fun requestNotificationPermission() {
     when (
-      tabbyNotificationPermissionAction(
-        runtimePermissionRequired =
-          tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
-            sdkVersion = Build.VERSION.SDK_INT,
-            runtimePermissionSdkVersion = Build.VERSION_CODES.TIRAMISU,
-          ),
-        permissionGranted =
-          tabbyNotificationPermissionGrantedFromPlatformResult(
-            permissionResult = ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS),
-            grantedResult = PackageManager.PERMISSION_GRANTED,
-          ),
+      tabbyNotificationPermissionActionFromPlatformState(
+        sdkVersion = Build.VERSION.SDK_INT,
+        runtimePermissionSdkVersion = Build.VERSION_CODES.TIRAMISU,
+        permissionResult = ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS),
+        grantedResult = PackageManager.PERMISSION_GRANTED,
       )
     ) {
       TabbyNotificationPermissionAction.RequestNotificationPermission ->

@@ -79,4 +79,35 @@ class TabbyNotificationPermissionActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyNotificationPermissionActionFromPlatformStateMapsPlatformInputsToAction() {
+    assertEquals(
+      TabbyNotificationPermissionAction.Ignore,
+      tabbyNotificationPermissionActionFromPlatformState(
+        sdkVersion = 32,
+        runtimePermissionSdkVersion = 33,
+        permissionResult = -1,
+        grantedResult = 0,
+      ),
+    )
+    assertEquals(
+      TabbyNotificationPermissionAction.Ignore,
+      tabbyNotificationPermissionActionFromPlatformState(
+        sdkVersion = 33,
+        runtimePermissionSdkVersion = 33,
+        permissionResult = 0,
+        grantedResult = 0,
+      ),
+    )
+    assertEquals(
+      TabbyNotificationPermissionAction.RequestNotificationPermission,
+      tabbyNotificationPermissionActionFromPlatformState(
+        sdkVersion = 33,
+        runtimePermissionSdkVersion = 33,
+        permissionResult = -1,
+        grantedResult = 0,
+      ),
+    )
+  }
 }

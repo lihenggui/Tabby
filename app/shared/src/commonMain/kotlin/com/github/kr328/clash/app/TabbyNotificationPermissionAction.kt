@@ -29,3 +29,23 @@ fun tabbyNotificationPermissionGrantedFromPlatformResult(
 ): Boolean {
   return permissionResult == grantedResult
 }
+
+fun tabbyNotificationPermissionActionFromPlatformState(
+  sdkVersion: Int,
+  runtimePermissionSdkVersion: Int,
+  permissionResult: Int,
+  grantedResult: Int,
+): TabbyNotificationPermissionAction {
+  return tabbyNotificationPermissionAction(
+    runtimePermissionRequired =
+      tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+        sdkVersion = sdkVersion,
+        runtimePermissionSdkVersion = runtimePermissionSdkVersion,
+      ),
+    permissionGranted =
+      tabbyNotificationPermissionGrantedFromPlatformResult(
+        permissionResult = permissionResult,
+        grantedResult = grantedResult,
+      ),
+  )
+}
