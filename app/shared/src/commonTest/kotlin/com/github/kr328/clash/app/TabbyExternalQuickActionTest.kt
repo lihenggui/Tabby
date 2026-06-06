@@ -59,6 +59,35 @@ class TabbyExternalQuickActionTest {
   }
 
   @Test
+  fun tabbyExternalQuickActionHandlingPlanHandlesKnownActions() {
+    assertEquals(
+      TabbyExternalQuickActionHandlingPlan.Handle(TabbyExternalQuickActionPlan.StartClash),
+      tabbyExternalQuickActionHandlingPlan(
+        action = TabbyExternalQuickAction.ToggleClash,
+        clashRunning = false,
+      ),
+    )
+    assertEquals(
+      TabbyExternalQuickActionHandlingPlan.Handle(TabbyExternalQuickActionPlan.ShowAlreadyStarted),
+      tabbyExternalQuickActionHandlingPlan(
+        action = TabbyExternalQuickAction.StartClash,
+        clashRunning = true,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyExternalQuickActionHandlingPlanIgnoresUnknownActions() {
+    assertEquals(
+      TabbyExternalQuickActionHandlingPlan.Ignore,
+      tabbyExternalQuickActionHandlingPlan(
+        action = null,
+        clashRunning = true,
+      ),
+    )
+  }
+
+  @Test
   fun tabbyStartClashResultActionShowsVpnPermissionWhenRequired() {
     assertEquals(
       TabbyStartClashResultAction.ShowVpnPermissionRequired,

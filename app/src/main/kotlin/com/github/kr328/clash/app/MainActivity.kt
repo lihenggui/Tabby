@@ -110,14 +110,23 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun Intent.handleExternalQuickAction(): Boolean {
-    val quickAction =
-      when (action) {
-        Intents.ACTION_TOGGLE_CLASH -> TabbyExternalQuickAction.ToggleClash
-        Intents.ACTION_START_CLASH -> TabbyExternalQuickAction.StartClash
-        Intents.ACTION_STOP_CLASH -> TabbyExternalQuickAction.StopClash
-        else -> return false
+    return when (
+      val handlingPlan =
+        tabbyExternalQuickActionHandlingPlan(
+          action = tabbyExternalQuickAction(),
+          clashRunning = Remote.broadcasts.clashRunning,
+        )
+    ) {
+      is TabbyExternalQuickActionHandlingPlan.Handle -> {
+        handleExternalQuickActionPlan(handlingPlan.actionPlan)
+        true
       }
-    when (tabbyExternalQuickActionPlan(quickAction, Remote.broadcasts.clashRunning)) {
+      TabbyExternalQuickActionHandlingPlan.Ignore -> false
+    }
+  }
+
+  private fun handleExternalQuickActionPlan(plan: TabbyExternalQuickActionPlan) {
+    when (plan) {
       TabbyExternalQuickActionPlan.StartClash -> startClash()
       TabbyExternalQuickActionPlan.StopClash -> stopClash()
       TabbyExternalQuickActionPlan.ShowAlreadyStarted ->
@@ -125,7 +134,6 @@ class MainActivity : ComponentActivity() {
       TabbyExternalQuickActionPlan.ShowAlreadyStopped ->
         toast(R.string.external_control_already_stopped)
     }
-    return true
   }
 
   private fun startClash() {
@@ -250,6 +258,14 @@ private fun TabbyExternalQuickAction.intentAction(): String =
     TabbyExternalQuickAction.ToggleClash -> Intents.ACTION_TOGGLE_CLASH
     TabbyExternalQuickAction.StartClash -> Intents.ACTION_START_CLASH
     TabbyExternalQuickAction.StopClash -> Intents.ACTION_STOP_CLASH
+  }
+
+private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =
+  when (action) {
+    Intents.ACTION_TOGGLE_CLASH -> TabbyExternalQuickAction.ToggleClash
+    Intents.ACTION_START_CLASH -> TabbyExternalQuickAction.StartClash
+    Intents.ACTION_STOP_CLASH -> TabbyExternalQuickAction.StopClash
+    else -> null
   }
 
 private fun TabbyExternalQuickAction.shortcutResources(): AndroidShortcutResources =

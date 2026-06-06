@@ -18,6 +18,13 @@ sealed interface TabbyExternalQuickActionPlan {
   data object ShowAlreadyStopped : TabbyExternalQuickActionPlan
 }
 
+sealed interface TabbyExternalQuickActionHandlingPlan {
+  data class Handle(val actionPlan: TabbyExternalQuickActionPlan) :
+    TabbyExternalQuickActionHandlingPlan
+
+  data object Ignore : TabbyExternalQuickActionHandlingPlan
+}
+
 sealed interface TabbyStartClashResultAction {
   data object ShowVpnPermissionRequired : TabbyStartClashResultAction
 
@@ -43,6 +50,19 @@ fun tabbyExternalQuickActionPlan(
       if (clashRunning) TabbyExternalQuickActionPlan.StopClash
       else TabbyExternalQuickActionPlan.ShowAlreadyStopped
   }
+
+fun tabbyExternalQuickActionHandlingPlan(
+  action: TabbyExternalQuickAction?,
+  clashRunning: Boolean,
+): TabbyExternalQuickActionHandlingPlan =
+  action?.let {
+    TabbyExternalQuickActionHandlingPlan.Handle(
+      tabbyExternalQuickActionPlan(
+        action = it,
+        clashRunning = clashRunning,
+      )
+    )
+  } ?: TabbyExternalQuickActionHandlingPlan.Ignore
 
 fun tabbyStartClashResultAction(vpnPermissionRequired: Boolean): TabbyStartClashResultAction =
   if (vpnPermissionRequired) {
