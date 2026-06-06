@@ -138,7 +138,9 @@ class MainActivity : ComponentActivity() {
 
   private fun stopClash() {
     stopClashService()
-    toast(R.string.external_control_stopped)
+    when (tabbyStopClashResultAction()) {
+      TabbyStopClashResultAction.ShowStopped -> toast(R.string.external_control_stopped)
+    }
   }
 
   private fun requestNotificationPermission() {

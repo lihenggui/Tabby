@@ -73,4 +73,9 @@ class TabbyExternalQuickActionTest {
       tabbyStartClashResultAction(vpnPermissionRequired = false),
     )
   }
+
+  @Test
+  fun tabbyStopClashResultActionShowsStopped() {
+    assertEquals(TabbyStopClashResultAction.ShowStopped, tabbyStopClashResultAction())
+  }
 }

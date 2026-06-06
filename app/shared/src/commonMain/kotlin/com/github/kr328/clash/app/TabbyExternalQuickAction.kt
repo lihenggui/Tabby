@@ -24,6 +24,10 @@ sealed interface TabbyStartClashResultAction {
   data object ShowStarted : TabbyStartClashResultAction
 }
 
+sealed interface TabbyStopClashResultAction {
+  data object ShowStopped : TabbyStopClashResultAction
+}
+
 fun tabbyExternalQuickActionPlan(
   action: TabbyExternalQuickAction,
   clashRunning: Boolean,
@@ -46,3 +50,6 @@ fun tabbyStartClashResultAction(vpnPermissionRequired: Boolean): TabbyStartClash
   } else {
     TabbyStartClashResultAction.ShowStarted
   }
+
+fun tabbyStopClashResultAction(): TabbyStopClashResultAction =
+  TabbyStopClashResultAction.ShowStopped
