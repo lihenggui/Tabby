@@ -33,6 +33,18 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun updateAllActionQueriesProfilesOnlyWhenNotAlreadyUpdating() {
+    assertEquals(
+      ProfileUpdateAllAction.QueryProfiles,
+      profileUpdateAllAction(ProfilesUiState(allUpdating = false)),
+    )
+    assertEquals(
+      ProfileUpdateAllAction.Ignore,
+      profileUpdateAllAction(ProfilesUiState(allUpdating = true)),
+    )
+  }
+
+  @Test
   fun marksImportedNonFileProfilesAsUpdatable() {
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.Url, imported = true)))
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.External, imported = true)))
@@ -78,9 +90,33 @@ class ProfileUpdateRulesTest {
     )
   }
 
-  private fun profile(type: Profile.Type, imported: Boolean): Profile {
+  @Test
+  fun selectsUpdateAllTargetUuidsFromUpdatableProfiles() {
+    val urlUuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+    val externalUuid = Uuid.parse("00000000-0000-0000-0000-000000000002")
+    val fileUuid = Uuid.parse("00000000-0000-0000-0000-000000000003")
+    val pendingUuid = Uuid.parse("00000000-0000-0000-0000-000000000004")
+
+    assertEquals(
+      listOf(urlUuid, externalUuid),
+      profileUpdateAllTargets(
+        listOf(
+          profile(type = Profile.Type.File, imported = true, uuid = fileUuid),
+          profile(type = Profile.Type.Url, imported = true, uuid = urlUuid),
+          profile(type = Profile.Type.Url, imported = false, uuid = pendingUuid),
+          profile(type = Profile.Type.External, imported = true, uuid = externalUuid),
+        )
+      ),
+    )
+  }
+
+  private fun profile(
+    type: Profile.Type,
+    imported: Boolean,
+    uuid: Uuid = Uuid.parse("00000000-0000-0000-0000-000000000001"),
+  ): Profile {
     return Profile(
-      uuid = Uuid.parse("00000000-0000-0000-0000-000000000001"),
+      uuid = uuid,
       name = "Profile",
       type = type,
       source = "",

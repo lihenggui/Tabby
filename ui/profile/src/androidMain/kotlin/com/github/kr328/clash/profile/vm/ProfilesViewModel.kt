@@ -15,11 +15,14 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.ProfileActivationAction.Activate
 import com.github.kr328.clash.profile.ui.ProfileActivationAction.RequireSave
+import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.Ignore
+import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction.QueryProfiles
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastAction
 import com.github.kr328.clash.profile.ui.ProfilesBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProfilesUiState
-import com.github.kr328.clash.profile.ui.filterUpdatableProfiles
 import com.github.kr328.clash.profile.ui.profileActivationAction
+import com.github.kr328.clash.profile.ui.profileUpdateAllAction
+import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
 import com.github.kr328.clash.profile.ui.withAllUpdating
 import com.github.kr328.clash.profile.ui.withCurrentTime
@@ -96,17 +99,19 @@ internal class ProfilesViewModel(app: Application) :
   }
 
   fun onUpdateAll() {
-    if (uiState.value.allUpdating) return
-
-    viewModelScope.launch {
-      uiState.update { it.withAllUpdating(true) }
-      try {
-        filterUpdatableProfiles(profileRepository.queryProfiles()).forEach { profile ->
-          profileRepository.update(profile.uuid)
+    when (profileUpdateAllAction(uiState.value)) {
+      Ignore -> return
+      QueryProfiles ->
+        viewModelScope.launch {
+          uiState.update { it.withAllUpdating(true) }
+          try {
+            profileUpdateAllTargets(profileRepository.queryProfiles()).forEach { uuid ->
+              profileRepository.update(uuid)
+            }
+          } finally {
+            uiState.update { it.withAllUpdating(false) }
+          }
         }
-      } finally {
-        uiState.update { it.withAllUpdating(false) }
-      }
     }
   }
 
