@@ -2,21 +2,44 @@ package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.Profile
 
+internal enum class ProfileTypeTextToken {
+  File,
+  Url,
+  External,
+}
+
+internal data class ProfileTypeText(
+  val token: ProfileTypeTextToken,
+  val pending: Boolean,
+)
+
+internal fun profileTypeText(
+  type: Profile.Type,
+  pending: Boolean,
+): ProfileTypeText {
+  val token =
+    when (type) {
+      Profile.Type.File -> ProfileTypeTextToken.File
+      Profile.Type.Url -> ProfileTypeTextToken.Url
+      Profile.Type.External -> ProfileTypeTextToken.External
+    }
+
+  return ProfileTypeText(token = token, pending = pending)
+}
+
 internal fun Profile.toProfileListItem(
   currentTime: Long,
-  formatType: (Profile.Type) -> String,
-  formatUnsavedType: (String) -> String,
+  formatTypeText: (ProfileTypeText) -> String,
   formatBytes: (Long) -> String,
   formatExpire: (Long) -> String,
   formatElapsedMillis: (Long) -> String,
 ): ProfileListItem {
-  val baseTypeText = formatType(type)
   val showTraffic = showsTrafficUsage()
   val usedTraffic = download + upload
 
   return ProfileListItem(
     profile = this,
-    typeText = if (pending) formatUnsavedType(baseTypeText) else baseTypeText,
+    typeText = formatTypeText(profileTypeText(type = type, pending = pending)),
     usageText =
       if (showTraffic) {
         "${formatBytes(usedTraffic)} / ${formatBytes(total)}"
@@ -30,8 +53,7 @@ internal fun Profile.toProfileListItem(
 }
 
 internal fun ProfilesUiState.toProfileListItems(
-  formatType: (Profile.Type) -> String,
-  formatUnsavedType: (String) -> String,
+  formatTypeText: (ProfileTypeText) -> String,
   formatBytes: (Long) -> String,
   formatExpire: (Long) -> String,
   formatElapsedMillis: (Long) -> String,
@@ -39,8 +61,7 @@ internal fun ProfilesUiState.toProfileListItems(
   return profiles.map { profile ->
     profile.toProfileListItem(
       currentTime = currentTime,
-      formatType = formatType,
-      formatUnsavedType = formatUnsavedType,
+      formatTypeText = formatTypeText,
       formatBytes = formatBytes,
       formatExpire = formatExpire,
       formatElapsedMillis = formatElapsedMillis,

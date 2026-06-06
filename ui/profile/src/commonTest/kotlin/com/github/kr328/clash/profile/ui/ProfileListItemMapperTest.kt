@@ -69,8 +69,7 @@ class ProfileListItemMapperTest {
     val items =
       ProfilesUiState(profiles = listOf(first, second), currentTime = 1000)
         .toProfileListItems(
-          formatType = Profile.Type::name,
-          formatUnsavedType = { "$it (Unsaved)" },
+          formatTypeText = { it.testString() },
           formatBytes = { "${it}B" },
           formatExpire = { "expire:$it" },
           formatElapsedMillis = { "elapsed:$it" },
@@ -81,11 +80,26 @@ class ProfileListItemMapperTest {
     assertEquals(listOf("elapsed:100", "elapsed:300"), items.map(ProfileListItem::updatedAtText))
   }
 
+  @Test
+  fun profileTypeTextMapsTypeAndPendingStateToCommonTokens() {
+    assertEquals(
+      ProfileTypeText(token = ProfileTypeTextToken.File, pending = false),
+      profileTypeText(type = Profile.Type.File, pending = false),
+    )
+    assertEquals(
+      ProfileTypeText(token = ProfileTypeTextToken.Url, pending = true),
+      profileTypeText(type = Profile.Type.Url, pending = true),
+    )
+    assertEquals(
+      ProfileTypeText(token = ProfileTypeTextToken.External, pending = false),
+      profileTypeText(type = Profile.Type.External, pending = false),
+    )
+  }
+
   private fun Profile.toProfileListItem(currentTime: Long): ProfileListItem {
     return toProfileListItem(
       currentTime = currentTime,
-      formatType = Profile.Type::name,
-      formatUnsavedType = { "$it (Unsaved)" },
+      formatTypeText = { it.testString() },
       formatBytes = { "${it}B" },
       formatExpire = { "expire:$it" },
       formatElapsedMillis = { "elapsed:$it" },
@@ -116,5 +130,11 @@ class ProfileListItemMapperTest {
       imported = true,
       pending = pending,
     )
+  }
+
+  private fun ProfileTypeText.testString(): String {
+    val text = token.name
+
+    return if (pending) "$text (Unsaved)" else text
   }
 }
