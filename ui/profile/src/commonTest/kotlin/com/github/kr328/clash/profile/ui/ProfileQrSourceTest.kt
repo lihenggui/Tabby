@@ -32,6 +32,34 @@ class ProfileQrSourceTest {
   }
 
   @Test
+  fun platformPayloadCreatesSuccessfulQrScanResultWithRawPayload() {
+    val result =
+      profileQrScanResultFromPlatformPayload(
+        kind = ProfileQrResultKind.Success,
+        rawValue = "https://example.com/raw-value.yaml",
+        rawBytes = "https://example.com/raw-bytes.yaml".encodeToByteArray(),
+      )
+
+    assertEquals(ProfileQrResultKind.Success, result.kind)
+    assertEquals("https://example.com/raw-value.yaml", result.rawValue)
+    assertEquals("https://example.com/raw-bytes.yaml", result.rawBytes?.decodeToString())
+  }
+
+  @Test
+  fun platformPayloadDropsRawPayloadForNonSuccessfulQrScanResults() {
+    val result =
+      profileQrScanResultFromPlatformPayload(
+        kind = ProfileQrResultKind.Error,
+        rawValue = "https://example.com/ignored.yaml",
+        rawBytes = "https://example.com/ignored-bytes.yaml".encodeToByteArray(),
+      )
+
+    assertEquals(ProfileQrResultKind.Error, result.kind)
+    assertEquals(null, result.rawValue)
+    assertEquals(null, result.rawBytes)
+  }
+
+  @Test
   fun qrSuccessCreatesUrlProfileFromRawValue() {
     assertEquals(
       ProfileQrAction.CreateUrlProfile("https://example.com/raw-value.yaml"),

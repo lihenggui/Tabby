@@ -13,6 +13,24 @@ internal class ProfileQrScanResult(
   val rawBytes: ByteArray? = null,
 )
 
+internal fun profileQrScanResultFromPlatformPayload(
+  kind: ProfileQrResultKind,
+  rawValue: String? = null,
+  rawBytes: ByteArray? = null,
+): ProfileQrScanResult {
+  return when (kind) {
+    ProfileQrResultKind.Success ->
+      ProfileQrScanResult(
+        kind = kind,
+        rawValue = rawValue,
+        rawBytes = rawBytes,
+      )
+    ProfileQrResultKind.UserCanceled,
+    ProfileQrResultKind.MissingPermission,
+    ProfileQrResultKind.Error -> ProfileQrScanResult(kind = kind)
+  }
+}
+
 internal sealed interface ProfileQrAction {
   data class CreateUrlProfile(val source: String) : ProfileQrAction
 
