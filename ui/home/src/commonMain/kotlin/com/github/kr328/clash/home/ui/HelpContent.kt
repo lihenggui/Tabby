@@ -39,6 +39,21 @@ internal data class HelpContentState(
   val coreVersion: String = "",
 )
 
+internal fun HelpContentState.withUpdateCheckStarted(): HelpContentState {
+  return copy(checkingForUpdates = true)
+}
+
+internal fun HelpContentState.withUpdateCheckFinished(): HelpContentState {
+  return copy(checkingForUpdates = false)
+}
+
+internal fun HelpContentState.withVersionInfo(
+  appVersion: String,
+  coreVersion: String,
+): HelpContentState {
+  return copy(appVersion = appVersion, coreVersion = coreVersion)
+}
+
 @Composable
 internal fun HelpContent(
   uiState: HelpContentState,

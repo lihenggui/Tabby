@@ -69,12 +69,7 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
 
   HelpContent(
     modifier = modifier,
-    uiState =
-      HelpContentState(
-        checkingForUpdates = uiState.checkingForUpdates,
-        appVersion = uiState.appVersion,
-        coreVersion = uiState.coreVersion,
-      ),
+    uiState = uiState,
     tipsText = AnnotatedString.fromHtml(androidStringResource(R.string.tips_help)),
     appName = androidStringResource(CommonR.string.tabby),
     appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
