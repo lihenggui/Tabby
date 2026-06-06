@@ -13,6 +13,7 @@ import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
+import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,13 +149,12 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     fetchJob = viewModelScope.launch {
       try {
         val files =
-          if (inBaseDir) {
-            val list = client.list(documentId)
-            val config = list.firstOrNull { it.id.endsWith("config.yaml") }
-            if (config == null || config.size > 0) list else listOf(config)
-          } else {
-            client.list(documentId)
-          }
+          selectVisibleProfileFiles(
+            files = client.list(documentId),
+            inBaseDirectory = inBaseDir,
+            id = ConfigFile::id,
+            size = ConfigFile::size,
+          )
 
         uiState.update { it.copy(configFiles = files, currentInBaseDir = inBaseDir) }
       } catch (e: Exception) {
