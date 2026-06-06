@@ -143,6 +143,17 @@ internal fun homeNoProfileSnackbarAction(
   }
 }
 
+internal fun homeVpnPermissionResultFromPlatformResultCode(
+  resultCode: Int,
+  grantedResultCode: Int,
+): HomeVpnPermissionResult {
+  return if (resultCode == grantedResultCode) {
+    HomeVpnPermissionResult.Granted
+  } else {
+    HomeVpnPermissionResult.Denied
+  }
+}
+
 internal fun homeVpnPermissionResultAction(
   result: HomeVpnPermissionResult
 ): HomeVpnPermissionResultAction {
