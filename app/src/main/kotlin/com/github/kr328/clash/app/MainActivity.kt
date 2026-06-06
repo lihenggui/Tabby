@@ -184,34 +184,19 @@ class MainActivity : ComponentActivity() {
         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
         Intent.FLAG_ACTIVITY_NO_ANIMATION
 
-    val toggle =
-      ShortcutInfoCompat.Builder(this, "toggle_clash")
-        .setShortLabel(getString(R.string.shortcut_toggle_short))
-        .setLongLabel(getString(R.string.shortcut_toggle_long))
-        .setIcon(IconCompat.createWithResource(this, R.drawable.ic_toggle_all))
-        .setIntent(mainIntent { action = Intents.ACTION_TOGGLE_CLASH }.addFlags(flags))
-        .setRank(0)
-        .build()
+    val shortcuts =
+      tabbyExternalQuickActionShortcuts().map { shortcut ->
+        val resources = shortcut.action.shortcutResources()
+        ShortcutInfoCompat.Builder(this, shortcut.id)
+          .setShortLabel(getString(resources.shortLabel))
+          .setLongLabel(getString(resources.longLabel))
+          .setIcon(IconCompat.createWithResource(this, resources.icon))
+          .setIntent(mainIntent { action = shortcut.action.intentAction() }.addFlags(flags))
+          .setRank(shortcut.rank)
+          .build()
+      }
 
-    val start =
-      ShortcutInfoCompat.Builder(this, "start_clash")
-        .setShortLabel(getString(R.string.shortcut_start_short))
-        .setLongLabel(getString(R.string.shortcut_start_long))
-        .setIcon(IconCompat.createWithResource(this, R.drawable.ic_toggle_on))
-        .setIntent(mainIntent { action = Intents.ACTION_START_CLASH }.addFlags(flags))
-        .setRank(1)
-        .build()
-
-    val stop =
-      ShortcutInfoCompat.Builder(this, "stop_clash")
-        .setShortLabel(getString(R.string.shortcut_stop_short))
-        .setLongLabel(getString(R.string.shortcut_stop_long))
-        .setIcon(IconCompat.createWithResource(this, R.drawable.ic_toggle_off))
-        .setIntent(mainIntent { action = Intents.ACTION_STOP_CLASH }.addFlags(flags))
-        .setRank(2)
-        .build()
-
-    ShortcutManagerCompat.setDynamicShortcuts(this, listOf(toggle, start, stop))
+    ShortcutManagerCompat.setDynamicShortcuts(this, shortcuts)
   }
 
   private class ViewModel(application: Application) : AndroidViewModel(application) {
@@ -248,3 +233,38 @@ class MainActivity : ComponentActivity() {
 private fun Activity.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_LONG) {
   Toast.makeText(this, resId, duration).show()
 }
+
+private data class AndroidShortcutResources(
+  @StringRes val shortLabel: Int,
+  @StringRes val longLabel: Int,
+  val icon: Int,
+)
+
+private fun TabbyExternalQuickAction.intentAction(): String =
+  when (this) {
+    TabbyExternalQuickAction.ToggleClash -> Intents.ACTION_TOGGLE_CLASH
+    TabbyExternalQuickAction.StartClash -> Intents.ACTION_START_CLASH
+    TabbyExternalQuickAction.StopClash -> Intents.ACTION_STOP_CLASH
+  }
+
+private fun TabbyExternalQuickAction.shortcutResources(): AndroidShortcutResources =
+  when (this) {
+    TabbyExternalQuickAction.ToggleClash ->
+      AndroidShortcutResources(
+        shortLabel = R.string.shortcut_toggle_short,
+        longLabel = R.string.shortcut_toggle_long,
+        icon = R.drawable.ic_toggle_all,
+      )
+    TabbyExternalQuickAction.StartClash ->
+      AndroidShortcutResources(
+        shortLabel = R.string.shortcut_start_short,
+        longLabel = R.string.shortcut_start_long,
+        icon = R.drawable.ic_toggle_on,
+      )
+    TabbyExternalQuickAction.StopClash ->
+      AndroidShortcutResources(
+        shortLabel = R.string.shortcut_stop_short,
+        longLabel = R.string.shortcut_stop_long,
+        icon = R.drawable.ic_toggle_off,
+      )
+  }
