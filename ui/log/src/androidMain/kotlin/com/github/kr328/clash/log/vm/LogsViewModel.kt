@@ -6,6 +6,7 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.model.LogFile
+import com.github.kr328.clash.log.model.selectLogFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,7 @@ internal class LogsViewModel(app: Application) : AndroidViewModel(app) {
 
   private suspend fun loadAllLogs(): List<LogFile> =
     withContext(Dispatchers.IO) {
-      application.logsDir.listFiles()?.toList().orEmpty().mapNotNull { LogFile.parse(it.name) }
+      selectLogFiles(application.logsDir.listFiles()?.map { it.name }.orEmpty())
     }
 
   private suspend fun deleteAllLogs() =
