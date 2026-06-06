@@ -115,3 +115,28 @@ internal fun importAccessControlPackages(
 internal fun exportAccessControlPackages(selected: Set<String>): String {
   return selected.sorted().joinToString("\n")
 }
+
+internal fun <T> sortAccessControlApps(
+  apps: Iterable<T>,
+  selectedPackageNames: Set<String>,
+  sort: AccessControlSort,
+  reverse: Boolean,
+  packageName: (T) -> String,
+  label: (T) -> String,
+  installTime: (T) -> Long,
+  updateTime: (T) -> Long,
+): List<T> {
+  val selectedFirst = compareByDescending<T> { packageName(it) in selectedPackageNames }
+  val sortComparator =
+    when (sort) {
+      AccessControlSort.Label -> compareBy(label)
+      AccessControlSort.PackageName -> compareBy(packageName)
+      AccessControlSort.InstallTime -> compareBy(installTime)
+      AccessControlSort.UpdateTime -> compareBy(updateTime)
+    }
+  val comparator =
+    if (reverse) selectedFirst.thenDescending(sortComparator)
+    else selectedFirst.then(sortComparator)
+
+  return apps.sortedWith(comparator)
+}

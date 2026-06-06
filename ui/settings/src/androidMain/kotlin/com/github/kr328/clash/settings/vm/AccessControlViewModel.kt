@@ -31,6 +31,7 @@ import com.github.kr328.clash.settings.ui.importAccessControlPackages
 import com.github.kr328.clash.settings.ui.invertAccessControlPackages
 import com.github.kr328.clash.settings.ui.selectAllAccessControlPackages
 import com.github.kr328.clash.settings.ui.selectNoAccessControlPackages
+import com.github.kr328.clash.settings.ui.sortAccessControlApps
 import com.github.kr328.clash.settings.ui.toggleAccessControlSelectedPackage
 import com.github.kr328.clash.settings.ui.updateAccessControlReverse
 import com.github.kr328.clash.settings.ui.updateAccessControlSelectedPackages
@@ -215,24 +216,31 @@ internal class AccessControlViewModel(app: Application) :
     showSystemApps: Boolean,
   ): List<AppInfo> =
     withContext(Dispatchers.IO) {
-      val base = compareByDescending<AppInfo> { it.packageName in selected }
-      val comparator =
-        if (reverse) base.thenDescending(sort.appComparator) else base.then(sort.appComparator)
-
       val pm = appContext.packageManager
-      pm
-        .getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS)
-        .asSequence()
-        .filter { it.packageName != appContext.packageName }
-        .filter { it.applicationInfo != null }
-        .filter {
-          it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true ||
-            it.applicationInfo!!.uid < Process.FIRST_APPLICATION_UID
-        }
-        .filter { showSystemApps || !it.isSystemApp }
-        .map { it.toAppInfo(pm) }
-        .sortedWith(comparator)
-        .toList()
+      val apps =
+        pm
+          .getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS)
+          .asSequence()
+          .filter { it.packageName != appContext.packageName }
+          .filter { it.applicationInfo != null }
+          .filter {
+            it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true ||
+              it.applicationInfo!!.uid < Process.FIRST_APPLICATION_UID
+          }
+          .filter { showSystemApps || !it.isSystemApp }
+          .map { it.toAppInfo(pm) }
+          .toList()
+
+      sortAccessControlApps(
+        apps = apps,
+        selectedPackageNames = selected,
+        sort = sort,
+        reverse = reverse,
+        packageName = AppInfo::packageName,
+        label = AppInfo::label,
+        installTime = AppInfo::installTime,
+        updateTime = AppInfo::updateDate,
+      )
     }
 
   private val PackageInfo.isSystemApp: Boolean
@@ -243,15 +251,6 @@ internal class AccessControlViewModel(app: Application) :
     val settings: AccessControlSettingsState,
   )
 }
-
-private val AccessControlSort.appComparator: Comparator<AppInfo>
-  get() =
-    when (this) {
-      AccessControlSort.Label -> compareBy(AppInfo::label)
-      AccessControlSort.PackageName -> compareBy(AppInfo::packageName)
-      AccessControlSort.InstallTime -> compareBy(AppInfo::installTime)
-      AccessControlSort.UpdateTime -> compareBy(AppInfo::updateDate)
-    }
 
 private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {
   val applicationInfo = checkNotNull(applicationInfo)

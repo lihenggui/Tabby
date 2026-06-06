@@ -155,6 +155,116 @@ class AccessControlSelectionTest {
     assertEquals(state.showSystemApps, selectedUpdated.showSystemApps)
   }
 
+  @Test
+  fun sortsAppsWithSelectedPackagesFirstThenLabel() {
+    val apps =
+      listOf(
+        accessControlApp(packageName = "com.example.delta", label = "Delta"),
+        accessControlApp(packageName = "com.example.beta", label = "Beta"),
+        accessControlApp(packageName = "com.example.alpha", label = "Alpha"),
+      )
+
+    val sorted =
+      sortAccessControlApps(
+        apps = apps,
+        selectedPackageNames = setOf("com.example.delta", "com.example.alpha"),
+        sort = AccessControlSort.Label,
+        reverse = false,
+        packageName = TestAccessControlApp::packageName,
+        label = TestAccessControlApp::label,
+        installTime = TestAccessControlApp::installTime,
+        updateTime = TestAccessControlApp::updateTime,
+      )
+
+    assertEquals(
+      listOf("com.example.alpha", "com.example.delta", "com.example.beta"),
+      sorted.map(TestAccessControlApp::packageName),
+    )
+  }
+
+  @Test
+  fun sortsAppsWithReverseAppliedInsideSelectionGroups() {
+    val apps =
+      listOf(
+        accessControlApp(
+          packageName = "com.example.old-selected",
+          installTime = 1,
+          updateTime = 10,
+        ),
+        accessControlApp(
+          packageName = "com.example.new-selected",
+          installTime = 2,
+          updateTime = 30,
+        ),
+        accessControlApp(packageName = "com.example.new", installTime = 3, updateTime = 40),
+        accessControlApp(packageName = "com.example.old", installTime = 4, updateTime = 20),
+      )
+
+    val sorted =
+      sortAccessControlApps(
+        apps = apps,
+        selectedPackageNames = setOf("com.example.old-selected", "com.example.new-selected"),
+        sort = AccessControlSort.UpdateTime,
+        reverse = true,
+        packageName = TestAccessControlApp::packageName,
+        label = TestAccessControlApp::label,
+        installTime = TestAccessControlApp::installTime,
+        updateTime = TestAccessControlApp::updateTime,
+      )
+
+    assertEquals(
+      listOf(
+        "com.example.new-selected",
+        "com.example.old-selected",
+        "com.example.new",
+        "com.example.old",
+      ),
+      sorted.map(TestAccessControlApp::packageName),
+    )
+  }
+
+  @Test
+  fun sortsAppsByPackageNameOrInstallTime() {
+    val apps =
+      listOf(
+        accessControlApp(packageName = "com.example.delta", installTime = 30),
+        accessControlApp(packageName = "com.example.alpha", installTime = 20),
+        accessControlApp(packageName = "com.example.beta", installTime = 10),
+      )
+
+    val byPackageName =
+      sortAccessControlApps(
+        apps = apps,
+        selectedPackageNames = emptySet(),
+        sort = AccessControlSort.PackageName,
+        reverse = false,
+        packageName = TestAccessControlApp::packageName,
+        label = TestAccessControlApp::label,
+        installTime = TestAccessControlApp::installTime,
+        updateTime = TestAccessControlApp::updateTime,
+      )
+    val byInstallTime =
+      sortAccessControlApps(
+        apps = apps,
+        selectedPackageNames = emptySet(),
+        sort = AccessControlSort.InstallTime,
+        reverse = false,
+        packageName = TestAccessControlApp::packageName,
+        label = TestAccessControlApp::label,
+        installTime = TestAccessControlApp::installTime,
+        updateTime = TestAccessControlApp::updateTime,
+      )
+
+    assertEquals(
+      listOf("com.example.alpha", "com.example.beta", "com.example.delta"),
+      byPackageName.map(TestAccessControlApp::packageName),
+    )
+    assertEquals(
+      listOf("com.example.beta", "com.example.alpha", "com.example.delta"),
+      byInstallTime.map(TestAccessControlApp::packageName),
+    )
+  }
+
   private fun accessControlSettingsState(
     selected: Set<String> = setOf("com.example.alpha")
   ): AccessControlSettingsState {
@@ -165,4 +275,25 @@ class AccessControlSelectionTest {
       showSystemApps = false,
     )
   }
+
+  private fun accessControlApp(
+    packageName: String,
+    label: String = packageName.substringAfterLast('.'),
+    installTime: Long = 0,
+    updateTime: Long = 0,
+  ): TestAccessControlApp {
+    return TestAccessControlApp(
+      packageName = packageName,
+      label = label,
+      installTime = installTime,
+      updateTime = updateTime,
+    )
+  }
+
+  private data class TestAccessControlApp(
+    val packageName: String,
+    val label: String,
+    val installTime: Long,
+    val updateTime: Long,
+  )
 }
