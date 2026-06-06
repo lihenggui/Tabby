@@ -15,12 +15,14 @@ import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFileExportAction
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
+import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
 import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
+import com.github.kr328.clash.profile.ui.profileFilesBackAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -69,12 +71,12 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onBack() {
-    val updatedLocation = location.leaveDirectory()
-    if (updatedLocation == null) {
-      eventState.value = EventState.Finish
-    } else {
-      location = updatedLocation
-      fetch()
+    when (val action = profileFilesBackAction(location)) {
+      is ProfileFilesBackAction.LeaveDirectory -> {
+        location = action.location
+        fetch()
+      }
+      ProfileFilesBackAction.Finish -> eventState.value = EventState.Finish
     }
   }
 
