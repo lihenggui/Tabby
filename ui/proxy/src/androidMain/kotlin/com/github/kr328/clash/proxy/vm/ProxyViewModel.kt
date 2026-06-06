@@ -19,6 +19,8 @@ import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeEffect
+import com.github.kr328.clash.proxy.ui.ProxyPageChangedAction
+import com.github.kr328.clash.proxy.ui.ProxyPageChangedEffect
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
@@ -35,6 +37,7 @@ import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
 import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
+import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxySelectedAction
 import com.github.kr328.clash.proxy.ui.proxySelectedProxies
@@ -42,7 +45,6 @@ import com.github.kr328.clash.proxy.ui.proxySelectedUiState
 import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
-import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withProxyGroup
@@ -138,12 +140,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onPageChanged(index: Int) {
-    val names = uiState.value.groupNames
-    uiState.update { it.withCurrentPage(index) }
-    when (val action = proxyGroupSelectionAction(names, index)) {
-      is ProxyGroupSelectionAction.SelectGroup -> uiStore.proxyLastGroup = action.name
-      ProxyGroupSelectionAction.Ignore -> Unit
-    }
+    applyProxyPageChangedAction { proxyPageChangedAction(it, index) }
   }
 
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
@@ -220,6 +217,23 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
       change.state
     }
     applyProxyPreferenceChangeEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyPageChangedAction(action: (ProxyUiState) -> ProxyPageChangedAction) {
+    var effect: ProxyPageChangedEffect? = null
+    uiState.update { current ->
+      val change = action(current)
+      effect = change.effect
+      change.state
+    }
+    applyProxyPageChangedEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyPageChangedEffect(effect: ProxyPageChangedEffect) {
+    when (effect) {
+      is ProxyPageChangedEffect.SaveLastGroup -> uiStore.proxyLastGroup = effect.groupName
+      ProxyPageChangedEffect.Ignore -> Unit
+    }
   }
 
   private fun applyProxyPreferenceChangeEffect(effect: ProxyPreferenceChangeEffect) {

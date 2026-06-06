@@ -107,6 +107,17 @@ internal sealed interface ProxyGroupNamesChangeAction {
   data object Ignore : ProxyGroupNamesChangeAction
 }
 
+internal data class ProxyPageChangedAction(
+  val state: ProxyUiState,
+  val effect: ProxyPageChangedEffect,
+)
+
+internal sealed interface ProxyPageChangedEffect {
+  data class SaveLastGroup(val groupName: String) : ProxyPageChangedEffect
+
+  data object Ignore : ProxyPageChangedEffect
+}
+
 internal data class ProxyPreferenceChangeAction(
   val state: ProxyUiState,
   val effect: ProxyPreferenceChangeEffect,
@@ -228,6 +239,23 @@ internal fun proxyGroupNamesChangeAction(
 
 internal fun proxyGroupReloadIndexes(groupNames: List<String>): IntRange {
   return groupNames.indices
+}
+
+internal fun proxyPageChangedAction(
+  state: ProxyUiState,
+  index: Int,
+): ProxyPageChangedAction {
+  val effect =
+    when (val selection = proxyGroupSelectionAction(state.groupNames, index)) {
+      is ProxyGroupSelectionAction.SelectGroup ->
+        ProxyPageChangedEffect.SaveLastGroup(selection.name)
+      ProxyGroupSelectionAction.Ignore -> ProxyPageChangedEffect.Ignore
+    }
+
+  return ProxyPageChangedAction(
+    state = state.withCurrentPage(index),
+    effect = effect,
+  )
 }
 
 internal fun proxyExcludeNotSelectableChangeAction(

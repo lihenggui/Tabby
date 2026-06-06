@@ -232,6 +232,30 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyPageChangedActionUpdatesPageAndSavesGroup() {
+    val action =
+      proxyPageChangedAction(
+        state = ProxyUiState(currentPage = 0, groupNames = listOf("Proxy", "Auto")),
+        index = 1,
+      )
+
+    assertEquals(1, action.state.currentPage)
+    assertEquals(ProxyPageChangedEffect.SaveLastGroup("Auto"), action.effect)
+  }
+
+  @Test
+  fun proxyPageChangedActionUpdatesPageAndIgnoresMissingGroupIndex() {
+    val action =
+      proxyPageChangedAction(
+        state = ProxyUiState(currentPage = 0, groupNames = listOf("Proxy")),
+        index = 2,
+      )
+
+    assertEquals(2, action.state.currentPage)
+    assertEquals(ProxyPageChangedEffect.Ignore, action.effect)
+  }
+
+  @Test
   fun proxyOverrideModeActionUpdatesStateShowsTipsAndPatchesMode() {
     val action =
       proxyOverrideModeAction(
