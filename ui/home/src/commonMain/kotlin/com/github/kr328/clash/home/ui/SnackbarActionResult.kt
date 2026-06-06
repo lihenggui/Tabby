@@ -4,3 +4,13 @@ internal enum class SnackbarActionResult {
   ActionPerformed,
   Dismissed,
 }
+
+internal fun snackbarActionResultFromPlatformActionPerformed(
+  actionPerformed: Boolean
+): SnackbarActionResult {
+  return if (actionPerformed) {
+    SnackbarActionResult.ActionPerformed
+  } else {
+    SnackbarActionResult.Dismissed
+  }
+}

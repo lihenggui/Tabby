@@ -165,6 +165,18 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun snackbarActionResultFromPlatformActionPerformedMapsBooleanResult() {
+    assertEquals(
+      SnackbarActionResult.ActionPerformed,
+      snackbarActionResultFromPlatformActionPerformed(actionPerformed = true),
+    )
+    assertEquals(
+      SnackbarActionResult.Dismissed,
+      snackbarActionResultFromPlatformActionPerformed(actionPerformed = false),
+    )
+  }
+
+  @Test
   fun homeVpnPermissionResultFromPlatformResultCodeMapsGrantedCodeOnly() {
     assertEquals(
       HomeVpnPermissionResult.Granted,
