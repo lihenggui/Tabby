@@ -311,6 +311,65 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyDelayTestActionStartsDelayTestForGroupIndex() {
+    val action =
+      proxyDelayTestAction(
+        state =
+          ProxyUiState(
+            groupNames = listOf("Proxy", "Auto"),
+            groups = listOf(ProxyGroupUiState(), ProxyGroupUiState()),
+          ),
+        index = 1,
+        name = "Direct",
+      )
+
+    assertEquals(emptySet(), action.state.groups[0].delayTestingKeys)
+    assertEquals(setOf("Direct"), action.state.groups[1].delayTestingKeys)
+    assertEquals(1, action.state.groups[1].refreshVersion)
+    assertEquals(
+      ProxyDelayTestEffect.StartDelayTest(
+        index = 1,
+        groupName = "Auto",
+        proxyName = "Direct",
+      ),
+      action.effect,
+    )
+  }
+
+  @Test
+  fun proxyDelayTestActionIgnoresMissingGroupIndex() {
+    val state =
+      ProxyUiState(
+        groupNames = listOf("Proxy"),
+        groups = listOf(ProxyGroupUiState()),
+      )
+    val action = proxyDelayTestAction(state, index = 1, name = "Direct")
+
+    assertSame(state, action.state)
+    assertEquals(ProxyDelayTestEffect.Ignore, action.effect)
+  }
+
+  @Test
+  fun proxyDelayTestActionStartsEffectWhenGroupStateIsMissing() {
+    val state =
+      ProxyUiState(
+        groupNames = listOf("Proxy"),
+        groups = emptyList(),
+      )
+    val action = proxyDelayTestAction(state, index = 0, name = "Direct")
+
+    assertSame(state, action.state)
+    assertEquals(
+      ProxyDelayTestEffect.StartDelayTest(
+        index = 0,
+        groupName = "Proxy",
+        proxyName = "Direct",
+      ),
+      action.effect,
+    )
+  }
+
+  @Test
   fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
     assertEquals(
       ProxyGroupSelectionAction.SelectGroup("Auto"),

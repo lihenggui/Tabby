@@ -11,6 +11,8 @@ import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
+import com.github.kr328.clash.proxy.ui.ProxyDelayTestAction
+import com.github.kr328.clash.proxy.ui.ProxyDelayTestEffect
 import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
@@ -25,6 +27,7 @@ import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
+import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
@@ -37,7 +40,6 @@ import com.github.kr328.clash.proxy.ui.proxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
-import com.github.kr328.clash.proxy.ui.withDelayTestStarted
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
@@ -179,22 +181,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onProxyDelayTest(index: Int, name: String) {
-    val groupName =
-      when (val action = proxyGroupSelectionAction(uiState.value.groupNames, index)) {
-        is ProxyGroupSelectionAction.SelectGroup -> action.name
-        ProxyGroupSelectionAction.Ignore -> return
-      }
-
-    updateGroupState(index) { it.withDelayTestStarted(name) }
-
-    viewModelScope.launch {
-      try {
-        engineController.healthCheckProxy(groupName, name)
-        reload(index)
-      } finally {
-        updateGroupState(index) { it.withDelayTestFinished(name) }
-      }
-    }
+    applyProxyDelayTestAction { proxyDelayTestAction(it, index, name) }
   }
 
   fun reloadAll() {
@@ -279,6 +266,31 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
           reload(effect.index)
         }
       ProxyUrlTestEffect.Ignore -> Unit
+    }
+  }
+
+  private fun applyProxyDelayTestAction(action: (ProxyUiState) -> ProxyDelayTestAction) {
+    var effect: ProxyDelayTestEffect? = null
+    uiState.update { current ->
+      val change = action(current)
+      effect = change.effect
+      change.state
+    }
+    applyProxyDelayTestEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyDelayTestEffect(effect: ProxyDelayTestEffect) {
+    when (effect) {
+      is ProxyDelayTestEffect.StartDelayTest ->
+        viewModelScope.launch {
+          try {
+            engineController.healthCheckProxy(effect.groupName, effect.proxyName)
+            reload(effect.index)
+          } finally {
+            updateGroupState(effect.index) { it.withDelayTestFinished(effect.proxyName) }
+          }
+        }
+      ProxyDelayTestEffect.Ignore -> Unit
     }
   }
 

@@ -137,6 +137,21 @@ internal sealed interface ProxyUrlTestEffect {
   data object Ignore : ProxyUrlTestEffect
 }
 
+internal data class ProxyDelayTestAction(
+  val state: ProxyUiState,
+  val effect: ProxyDelayTestEffect,
+)
+
+internal sealed interface ProxyDelayTestEffect {
+  data class StartDelayTest(
+    val index: Int,
+    val groupName: String,
+    val proxyName: String,
+  ) : ProxyDelayTestEffect
+
+  data object Ignore : ProxyDelayTestEffect
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -263,6 +278,30 @@ internal fun proxyUrlTestAction(
       ProxyUrlTestAction(
         state = state,
         effect = ProxyUrlTestEffect.Ignore,
+      )
+  }
+}
+
+internal fun proxyDelayTestAction(
+  state: ProxyUiState,
+  index: Int,
+  name: String,
+): ProxyDelayTestAction {
+  return when (val selection = proxyGroupSelectionAction(state.groupNames, index)) {
+    is ProxyGroupSelectionAction.SelectGroup ->
+      ProxyDelayTestAction(
+        state = state.withProxyGroupState(index) { it.withDelayTestStarted(name) },
+        effect =
+          ProxyDelayTestEffect.StartDelayTest(
+            index = index,
+            groupName = selection.name,
+            proxyName = name,
+          ),
+      )
+    ProxyGroupSelectionAction.Ignore ->
+      ProxyDelayTestAction(
+        state = state,
+        effect = ProxyDelayTestEffect.Ignore,
       )
   }
 }
