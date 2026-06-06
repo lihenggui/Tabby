@@ -14,17 +14,14 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.PropertiesUiState
-import com.github.kr328.clash.profile.ui.withFetchConfigurationProgress
-import com.github.kr328.clash.profile.ui.withFetchProvidersProgress
+import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
 import com.github.kr328.clash.profile.ui.withProcessingStarted
 import com.github.kr328.clash.profile.ui.withProfileInterval
 import com.github.kr328.clash.profile.ui.withProfileName
 import com.github.kr328.clash.profile.ui.withProfileSource
-import com.github.kr328.clash.profile.ui.withProgress
 import com.github.kr328.clash.profile.ui.withSavedProfile
-import com.github.kr328.clash.profile.ui.withVerifyingProgress
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -158,37 +155,16 @@ internal class PropertiesViewModel(app: Application) :
 
   private fun applyProgressStatus(status: FetchStatus) {
     uiState.update { current ->
-      val newProgress =
-        when (status.action) {
-          FetchConfiguration -> {
-            current.progress.withFetchConfigurationProgress(
-              text =
-                application.getString(
-                  R.string.format_fetching_configuration,
-                  status.args.getOrNull(0).orEmpty(),
-                )
-            )
-          }
-          FetchProviders -> {
-            current.progress.withFetchProvidersProgress(
-              text =
-                application.getString(
-                  R.string.format_fetching_provider,
-                  status.args.getOrNull(0).orEmpty(),
-                ),
-              max = status.max,
-              progress = status.progress,
-            )
-          }
-          Verifying -> {
-            current.progress.withVerifyingProgress(
-              text = application.getString(R.string.verifying),
-              max = status.max,
-              progress = status.progress,
-            )
-          }
-        }
-      current.withProgress(newProgress)
+      current.withFetchStatusProgress(
+        status = status,
+        formatFetchConfiguration = { source ->
+          application.getString(R.string.format_fetching_configuration, source)
+        },
+        formatFetchProvider = { provider ->
+          application.getString(R.string.format_fetching_provider, provider)
+        },
+        verifyingText = application.getString(R.string.verifying),
+      )
     }
   }
 

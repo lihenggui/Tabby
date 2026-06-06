@@ -1,5 +1,6 @@
 package com.github.kr328.clash.profile.ui
 
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 
 internal data class PropertiesUiState(
@@ -92,6 +93,35 @@ internal fun PropertiesProgressState.withVerifyingProgress(
   progress: Int,
 ): PropertiesProgressState {
   return copy(text = text, isIndeterminate = false, max = max, progress = progress)
+}
+
+internal fun PropertiesUiState.withFetchStatusProgress(
+  status: FetchStatus,
+  formatFetchConfiguration: (String) -> String,
+  formatFetchProvider: (String) -> String,
+  verifyingText: String,
+): PropertiesUiState {
+  val newProgress =
+    when (status.action) {
+      FetchStatus.Action.FetchConfiguration ->
+        progress.withFetchConfigurationProgress(
+          text = formatFetchConfiguration(status.args.getOrNull(0).orEmpty())
+        )
+      FetchStatus.Action.FetchProviders ->
+        progress.withFetchProvidersProgress(
+          text = formatFetchProvider(status.args.getOrNull(0).orEmpty()),
+          max = status.max,
+          progress = status.progress,
+        )
+      FetchStatus.Action.Verifying ->
+        progress.withVerifyingProgress(
+          text = verifyingText,
+          max = status.max,
+          progress = status.progress,
+        )
+    }
+
+  return withProgress(newProgress)
 }
 
 internal fun toPropertiesProgressState(

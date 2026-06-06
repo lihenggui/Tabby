@@ -1,5 +1,6 @@
 package com.github.kr328.clash.profile.ui
 
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -141,6 +142,111 @@ class PropertiesStateMapperTest {
       ),
       initial.withVerifyingProgress(text = "Verifying", progress = 2, max = 3),
     )
+  }
+
+  @Test
+  fun fetchConfigurationStatusUpdatesProgressWithFormattedSource() {
+    val state =
+      PropertiesUiState(progress = PropertiesProgressState(visible = true))
+        .withFetchStatusProgress(
+          status =
+            FetchStatus(
+              action = FetchStatus.Action.FetchConfiguration,
+              args = listOf("https://example.com/config.yaml"),
+              progress = 0,
+              max = 0,
+            ),
+          formatFetchConfiguration = { "config:$it" },
+          formatFetchProvider = { "provider:$it" },
+          verifyingText = "Verifying",
+        )
+
+    assertEquals(
+      PropertiesProgressState(
+        visible = true,
+        isIndeterminate = true,
+        text = "config:https://example.com/config.yaml",
+      ),
+      state.progress,
+    )
+  }
+
+  @Test
+  fun fetchProvidersStatusUpdatesProgressWithFormattedProviderAndValues() {
+    val state =
+      PropertiesUiState(progress = PropertiesProgressState(visible = true))
+        .withFetchStatusProgress(
+          status =
+            FetchStatus(
+              action = FetchStatus.Action.FetchProviders,
+              args = listOf("rules"),
+              progress = 4,
+              max = 10,
+            ),
+          formatFetchConfiguration = { "config:$it" },
+          formatFetchProvider = { "provider:$it" },
+          verifyingText = "Verifying",
+        )
+
+    assertEquals(
+      PropertiesProgressState(
+        visible = true,
+        isIndeterminate = false,
+        text = "provider:rules",
+        progress = 4,
+        max = 10,
+      ),
+      state.progress,
+    )
+  }
+
+  @Test
+  fun verifyingStatusUpdatesProgressWithProvidedLocalizedText() {
+    val state =
+      PropertiesUiState(progress = PropertiesProgressState(visible = true))
+        .withFetchStatusProgress(
+          status =
+            FetchStatus(
+              action = FetchStatus.Action.Verifying,
+              args = emptyList(),
+              progress = 2,
+              max = 3,
+            ),
+          formatFetchConfiguration = { "config:$it" },
+          formatFetchProvider = { "provider:$it" },
+          verifyingText = "Localized verifying",
+        )
+
+    assertEquals(
+      PropertiesProgressState(
+        visible = true,
+        isIndeterminate = false,
+        text = "Localized verifying",
+        progress = 2,
+        max = 3,
+      ),
+      state.progress,
+    )
+  }
+
+  @Test
+  fun fetchStatusProgressUsesEmptyTextArgumentWhenArgsAreMissing() {
+    val state =
+      PropertiesUiState(progress = PropertiesProgressState(visible = true))
+        .withFetchStatusProgress(
+          status =
+            FetchStatus(
+              action = FetchStatus.Action.FetchConfiguration,
+              args = emptyList(),
+              progress = 0,
+              max = 0,
+            ),
+          formatFetchConfiguration = { "config:$it" },
+          formatFetchProvider = { "provider:$it" },
+          verifyingText = "Verifying",
+        )
+
+    assertEquals("config:", state.progress.text)
   }
 
   private fun profile(
