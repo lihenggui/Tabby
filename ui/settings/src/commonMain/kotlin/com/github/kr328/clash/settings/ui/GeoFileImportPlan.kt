@@ -32,6 +32,11 @@ internal sealed interface GeoFileImportResult {
   data object Failed : GeoFileImportResult
 }
 
+internal data class GeoFileImportPickerResult<T>(
+  val source: T?,
+  val pendingImportType: GeoFileImportType?,
+)
+
 internal sealed interface GeoFileImportPickerResultAction<out T> {
   data class Import<T>(val source: T?, val importType: GeoFileImportType) :
     GeoFileImportPickerResultAction<T>
@@ -54,11 +59,10 @@ internal fun geoFileImportInitialResult(): GeoFileImportResult {
 }
 
 internal fun <T> geoFileImportPickerResultAction(
-  source: T?,
-  pendingImportType: GeoFileImportType?,
+  result: GeoFileImportPickerResult<T>
 ): GeoFileImportPickerResultAction<T> {
-  val importType = pendingImportType ?: return GeoFileImportPickerResultAction.Ignore
-  return GeoFileImportPickerResultAction.Import(source = source, importType = importType)
+  val importType = result.pendingImportType ?: return GeoFileImportPickerResultAction.Ignore
+  return GeoFileImportPickerResultAction.Import(source = result.source, importType = importType)
 }
 
 internal fun geoFileImportResultDisplayAction(

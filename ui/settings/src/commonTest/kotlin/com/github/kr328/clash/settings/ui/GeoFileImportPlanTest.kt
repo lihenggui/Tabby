@@ -13,7 +13,12 @@ class GeoFileImportPlanTest {
   fun ignoresPickerResultWhenPendingImportTypeIsMissing() {
     assertEquals(
       GeoFileImportPickerResultAction.Ignore,
-      geoFileImportPickerResultAction(source = TestSource("geoip.mmdb"), pendingImportType = null),
+      geoFileImportPickerResultAction(
+        GeoFileImportPickerResult(
+          source = TestSource("geoip.mmdb"),
+          pendingImportType = null,
+        )
+      ),
     )
   }
 
@@ -27,8 +32,10 @@ class GeoFileImportPlanTest {
         importType = GeoFileImportType.GeoIp,
       ),
       geoFileImportPickerResultAction(
-        source = source,
-        pendingImportType = GeoFileImportType.GeoIp,
+        GeoFileImportPickerResult(
+          source = source,
+          pendingImportType = GeoFileImportType.GeoIp,
+        )
       ),
     )
   }
@@ -41,8 +48,10 @@ class GeoFileImportPlanTest {
         importType = GeoFileImportType.Country,
       ),
       geoFileImportPickerResultAction<TestSource>(
-        source = null,
-        pendingImportType = GeoFileImportType.Country,
+        GeoFileImportPickerResult(
+          source = null,
+          pendingImportType = GeoFileImportType.Country,
+        )
       ),
     )
   }
