@@ -14,13 +14,19 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.ui.PropertiesAutoSaveAction
+import com.github.kr328.clash.profile.ui.PropertiesBrowseFilesAction.BrowseFiles
+import com.github.kr328.clash.profile.ui.PropertiesBrowseFilesAction.Ignore as IgnoreBrowseFiles
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Commit
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Ignore
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptyName
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptySource
+import com.github.kr328.clash.profile.ui.PropertiesInitAction.Finish
+import com.github.kr328.clash.profile.ui.PropertiesInitAction.LoadProfile
 import com.github.kr328.clash.profile.ui.PropertiesUiState
 import com.github.kr328.clash.profile.ui.propertiesAutoSaveAction
+import com.github.kr328.clash.profile.ui.propertiesBrowseFilesAction
 import com.github.kr328.clash.profile.ui.propertiesCommitAction
+import com.github.kr328.clash.profile.ui.propertiesInitAction
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
@@ -55,12 +61,10 @@ internal class PropertiesViewModel(app: Application) :
     rootUuid = uuid
 
     viewModelScope.launch {
-      val profile = profileRepository.queryByUuid(uuid)
-      if (profile == null) {
-        eventState.value = EventState.Finish(false)
-        return@launch
+      when (val action = propertiesInitAction(profileRepository.queryByUuid(uuid))) {
+        is LoadProfile -> uiState.update { it.withLoadedProfile(action.profile) }
+        Finish -> eventState.value = EventState.Finish(false)
       }
-      uiState.update { it.withLoadedProfile(profile) }
     }
   }
 
@@ -110,8 +114,10 @@ internal class PropertiesViewModel(app: Application) :
   }
 
   fun onBrowseFiles() {
-    val uuid = rootUuid ?: return
-    eventState.value = EventState.BrowseFiles(uuid)
+    when (val action = propertiesBrowseFilesAction(rootUuid)) {
+      is BrowseFiles -> eventState.value = EventState.BrowseFiles(action.uuid)
+      IgnoreBrowseFiles -> Unit
+    }
   }
 
   fun onRequestClose() {

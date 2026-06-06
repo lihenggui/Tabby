@@ -2,6 +2,7 @@ package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
+import kotlin.uuid.Uuid
 
 internal data class PropertiesUiState(
   val profile: Profile? = null,
@@ -17,11 +18,23 @@ internal enum class PropertiesCommitValidationResult {
   EmptySource,
 }
 
+internal sealed interface PropertiesInitAction {
+  data class LoadProfile(val profile: Profile) : PropertiesInitAction
+
+  data object Finish : PropertiesInitAction
+}
+
 internal enum class PropertiesBackAction {
   Ignore,
   HideExitWithoutSavingDialog,
   ShowExitWithoutSavingDialog,
   RequestClose,
+}
+
+internal sealed interface PropertiesBrowseFilesAction {
+  data class BrowseFiles(val uuid: Uuid) : PropertiesBrowseFilesAction
+
+  data object Ignore : PropertiesBrowseFilesAction
 }
 
 internal sealed interface PropertiesCommitAction {
@@ -46,6 +59,15 @@ internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): 
   return profile.name != original.name ||
     profile.source != original.source ||
     profile.interval != original.interval
+}
+
+internal fun propertiesInitAction(profile: Profile?): PropertiesInitAction {
+  return profile?.let(PropertiesInitAction::LoadProfile) ?: PropertiesInitAction.Finish
+}
+
+internal fun propertiesBrowseFilesAction(rootUuid: Uuid?): PropertiesBrowseFilesAction {
+  return rootUuid?.let(PropertiesBrowseFilesAction::BrowseFiles)
+    ?: PropertiesBrowseFilesAction.Ignore
 }
 
 internal fun validatePropertiesCommit(profile: Profile): PropertiesCommitValidationResult {

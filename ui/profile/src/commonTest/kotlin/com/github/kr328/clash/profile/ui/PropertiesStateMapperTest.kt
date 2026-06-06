@@ -35,6 +35,34 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesInitActionLoadsExistingProfileOrFinishesWhenMissing() {
+    val profile = profile()
+
+    assertEquals(
+      PropertiesInitAction.LoadProfile(profile),
+      propertiesInitAction(profile),
+    )
+    assertEquals(
+      PropertiesInitAction.Finish,
+      propertiesInitAction(null),
+    )
+  }
+
+  @Test
+  fun propertiesBrowseFilesActionRequiresRootUuid() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+
+    assertEquals(
+      PropertiesBrowseFilesAction.BrowseFiles(uuid),
+      propertiesBrowseFilesAction(uuid),
+    )
+    assertEquals(
+      PropertiesBrowseFilesAction.Ignore,
+      propertiesBrowseFilesAction(null),
+    )
+  }
+
+  @Test
   fun propertiesCommitValidationRejectsBlankName() {
     assertEquals(
       PropertiesCommitValidationResult.EmptyName,
