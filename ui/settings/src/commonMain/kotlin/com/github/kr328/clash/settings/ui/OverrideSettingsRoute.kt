@@ -17,7 +17,7 @@ internal sealed interface OverrideSettingsRoute : NavKey {
 }
 
 @Composable
-internal fun OverrideSettingsRouteContent(
+internal fun OverrideSettingsNavigatorContent(
   mainContent:
     @Composable
     (

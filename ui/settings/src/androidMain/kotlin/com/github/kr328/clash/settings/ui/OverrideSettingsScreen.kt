@@ -20,7 +20,7 @@ internal fun OverrideSettingsScreen(
   viewModel: OverrideSettingsViewModel = viewModelWithLifecycle(),
   onResetCompleted: () -> Unit,
 ) {
-  OverrideSettingsRouteContent { onOpenEditableTextMap, onOpenEditableTextList ->
+  OverrideSettingsNavigatorContent { onOpenEditableTextMap, onOpenEditableTextList ->
     val configuration by viewModel.configuration.collectAsStateWithLifecycle()
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 

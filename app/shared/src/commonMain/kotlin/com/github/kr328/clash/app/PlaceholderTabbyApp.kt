@@ -30,6 +30,7 @@ import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
 import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
+import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -134,7 +135,7 @@ fun PlaceholderTabbyApp(
                 NetworkSettingsRouteContent(onStartAccessControlList = onStartAccessControlList)
               },
               overrideSettingsContent = { onResetCompleted ->
-                PlaceholderScreen("Override settings", "Done" to onResetCompleted)
+                OverrideSettingsRouteContent(onResetCompleted = onResetCompleted)
               },
               metaFeatureSettingsContent = { onResetCompleted ->
                 PlaceholderScreen("Meta feature settings", "Done" to onResetCompleted)
