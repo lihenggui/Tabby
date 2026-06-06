@@ -14,13 +14,14 @@ import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.util.clashDir
-import com.github.kr328.clash.settings.ui.GeoFileImportPlan
+import com.github.kr328.clash.settings.ui.GeoFileImportAction
+import com.github.kr328.clash.settings.ui.GeoFileImportResult
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.SniffProtocol
+import com.github.kr328.clash.settings.ui.geoFileImportAction
 import com.github.kr328.clash.settings.ui.overridePersistAction
-import com.github.kr328.clash.settings.ui.planGeoFileImport
 import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
 import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
 import com.github.kr328.clash.settings.ui.updateMetaSnifferEnable
@@ -50,8 +51,8 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   val configuration: StateFlow<ConfigurationOverride>
     field = MutableStateFlow(ConfigurationOverride())
 
-  val importResult: StateFlow<ImportResult>
-    field = MutableStateFlow<ImportResult>(ImportResult.Idle)
+  val importResult: StateFlow<GeoFileImportResult>
+    field = MutableStateFlow<GeoFileImportResult>(GeoFileImportResult.Idle)
 
   init {
     viewModelScope.launch {
@@ -76,38 +77,40 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
 
   fun importGeoFile(uri: Uri?, importType: GeoFileImportType) {
     viewModelScope.launch(Dispatchers.IO) {
-      importResult.value = ImportResult.InProgress
+      importResult.value = GeoFileImportResult.InProgress
       try {
         val resolver = appContext.contentResolver
         val cursor: Cursor =
           uri?.let { resolver.query(it, null, null, null, null, null) }
             ?: run {
-              importResult.value = ImportResult.Failed
+              importResult.value = GeoFileImportResult.Failed
               return@launch
             }
 
         importResult.value = cursor.use {
-          if (!it.moveToFirst()) return@use ImportResult.Failed
+          if (!it.moveToFirst()) return@use GeoFileImportResult.Failed
 
           val columnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
           val displayName = if (columnIndex != -1) it.getString(columnIndex).orEmpty() else ""
 
-          val plan = planGeoFileImport(displayName = displayName, importType = importType)
-          when (plan) {
-            is GeoFileImportPlan.UnsupportedFormat ->
-              return@use ImportResult.UnsupportedFormat(plan.supportedExtensionsSummary)
-            is GeoFileImportPlan.Supported -> {
-              val outputFile = appContext.clashDir.resolve(plan.outputFileName)
+          when (
+            val action = geoFileImportAction(displayName = displayName, importType = importType)
+          ) {
+            is GeoFileImportAction.UnsupportedFormat ->
+              return@use GeoFileImportResult.UnsupportedFormat(action.summary)
+            is GeoFileImportAction.Copy -> {
+              val outputFile = appContext.clashDir.resolve(action.outputFileName)
               outputFile.parentFile?.mkdirs()
-              val inputStream = resolver.openInputStream(uri) ?: return@use ImportResult.Failed
+              val inputStream =
+                resolver.openInputStream(uri) ?: return@use GeoFileImportResult.Failed
               inputStream.use { ins -> outputFile.outputStream().use { outs -> ins.copyTo(outs) } }
-              return@use ImportResult.Success(plan.displayName)
+              return@use GeoFileImportResult.Success(action.displayName)
             }
           }
         }
       } catch (e: Exception) {
         Log.e("Import geo database failed: ${e.message}", e)
-        importResult.value = ImportResult.Failed
+        importResult.value = GeoFileImportResult.Failed
       }
     }
   }
@@ -183,17 +186,5 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
 
   override fun updateSkipDstAddress(value: List<String>?) = configuration.update {
     updateMetaSnifferSkipDstAddress(it, value)
-  }
-
-  sealed interface ImportResult {
-    data object Idle : ImportResult
-
-    data object InProgress : ImportResult
-
-    data class Success(val displayName: String) : ImportResult
-
-    data class UnsupportedFormat(val summary: String) : ImportResult
-
-    data object Failed : ImportResult
   }
 }

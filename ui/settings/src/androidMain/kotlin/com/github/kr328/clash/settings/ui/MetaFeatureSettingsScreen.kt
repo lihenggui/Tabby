@@ -62,19 +62,20 @@ internal fun MetaFeatureSettingsScreen(
 
           LaunchedEffect(importResult) {
             when (val result = importResult) {
-              Idle,
-              InProgress -> Unit
+              GeoFileImportResult.Idle,
+              GeoFileImportResult.InProgress -> Unit
 
-              is Success -> {
+              is GeoFileImportResult.Success -> {
                 snackbarHostState.showSnackbar(message = importedText.format(result.displayName))
               }
 
-              is UnsupportedFormat -> {
+              is GeoFileImportResult.UnsupportedFormat -> {
                 validExtensionsSummary = result.summary
                 showUnsupportedFormatDialog = true
               }
 
-              Failed -> snackbarHostState.showSnackbar(message = importFailedText)
+              GeoFileImportResult.Failed ->
+                snackbarHostState.showSnackbar(message = importFailedText)
             }
           }
 

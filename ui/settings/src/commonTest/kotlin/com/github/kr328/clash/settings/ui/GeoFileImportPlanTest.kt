@@ -57,4 +57,20 @@ class GeoFileImportPlanTest {
       planGeoFileImport(displayName = "geoip", importType = GeoFileImportType.GeoIp),
     )
   }
+
+  @Test
+  fun createsCopyActionForSupportedImportPlan() {
+    assertEquals(
+      GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat"),
+      geoFileImportAction(displayName = "GeoSite.DAT", importType = GeoFileImportType.GeoSite),
+    )
+  }
+
+  @Test
+  fun createsUnsupportedActionForUnsupportedImportPlan() {
+    assertEquals(
+      GeoFileImportAction.UnsupportedFormat(".metadb/.db/.dat/.mmdb"),
+      geoFileImportAction(displayName = "geoip.txt", importType = GeoFileImportType.GeoIp),
+    )
+  }
 }
