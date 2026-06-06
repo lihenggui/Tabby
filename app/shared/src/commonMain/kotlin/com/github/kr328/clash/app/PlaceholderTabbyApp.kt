@@ -29,6 +29,7 @@ import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
+import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
 import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
 
@@ -138,7 +139,7 @@ fun PlaceholderTabbyApp(
                 OverrideSettingsRouteContent(onResetCompleted = onResetCompleted)
               },
               metaFeatureSettingsContent = { onResetCompleted ->
-                PlaceholderScreen("Meta feature settings", "Done" to onResetCompleted)
+                MetaFeatureSettingsRouteContent(onResetCompleted = onResetCompleted)
               },
               accessControlContent = { PlaceholderScreen("Access control") },
             )

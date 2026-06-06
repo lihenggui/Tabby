@@ -30,7 +30,7 @@ internal fun MetaFeatureSettingsScreen(
   viewModel: MetaFeatureSettingsViewModel = viewModelWithLifecycle(),
   onResetCompleted: () -> Unit,
 ) {
-  MetaFeatureSettingsRouteContent { onOpenEditableTextList ->
+  MetaFeatureSettingsNavigatorContent { onOpenEditableTextList ->
     val configuration by viewModel.configuration.collectAsStateWithLifecycle()
     val importResult by viewModel.importResult.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }

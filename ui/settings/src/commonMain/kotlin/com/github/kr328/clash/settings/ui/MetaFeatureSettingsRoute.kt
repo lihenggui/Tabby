@@ -17,7 +17,7 @@ internal sealed interface MetaFeatureSettingsRoute : NavKey {
 }
 
 @Composable
-internal fun MetaFeatureSettingsRouteContent(
+internal fun MetaFeatureSettingsNavigatorContent(
   mainContent:
     @Composable
     (
