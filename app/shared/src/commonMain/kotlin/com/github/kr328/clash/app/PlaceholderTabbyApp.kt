@@ -15,24 +15,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
 import com.github.kr328.clash.core.model.DarkMode
-import com.github.kr328.clash.crash.CrashRoute
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.home.HomeRoute
 import com.github.kr328.clash.home.homeEntries
-import com.github.kr328.clash.log.LogRoute
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
-import com.github.kr328.clash.profile.ProfilesRoute
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
-import com.github.kr328.clash.proxy.ProxyRoute
 import com.github.kr328.clash.proxy.proxyEntries
-import com.github.kr328.clash.settings.SettingsRoute
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
-import com.github.kr328.clash.ui.nav.addIfNotLast
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -44,85 +37,96 @@ fun PlaceholderTabbyApp(
   val tunnelState by engineEnvironment.engineController.state.collectAsState()
   val entryProvider =
     remember(tunnelState.mode) {
-      entryProvider<NavKey> {
-        homeEntries(
-          homeContent = {
-            PlaceholderHomeScreen(
-              engineMode = tunnelState.mode.name,
-              onOpenProxy = { backStack.addIfNotLast(ProxyRoute.Proxy) },
-              onOpenProfiles = { backStack.addIfNotLast(ProfilesRoute.Profiles()) },
-              onOpenProviders = { backStack.addIfNotLast(ProfilesRoute.Providers) },
-              onOpenLogs = { backStack.addIfNotLast(LogRoute.Root) },
-              onOpenSettings = { backStack.addIfNotLast(SettingsRoute.Root) },
-              onOpenHelp = { backStack.addIfNotLast(HomeRoute.Help) },
-              onOpenCrash = { backStack.addIfNotLast(CrashRoute.AppCrashed) },
-            )
-          },
-          helpContent = { PlaceholderScreen("Help") },
-        )
-        proxyEntries(proxyContent = { PlaceholderScreen("Proxy") })
-        profilesEntries(
-          profilesContent = { key ->
-            ProfilesRouteContent(
-              route = key,
-              profilesContent = { onOpenCreate, _ ->
-                PlaceholderScreen("Profiles", "New profile" to onOpenCreate)
+      tabbyEntryProvider(
+        backStack = backStack,
+        homeEntries = { actions ->
+          homeEntries(
+            homeContent = {
+              PlaceholderHomeScreen(
+                engineMode = tunnelState.mode.name,
+                onOpenProxy = actions.openProxy,
+                onOpenProfiles = actions.openProfiles,
+                onOpenProviders = actions.openProviders,
+                onOpenLogs = actions.openLogs,
+                onOpenSettings = actions.openSettings,
+                onOpenHelp = actions.openHelp,
+                onOpenCrash = actions.openAppCrashed,
+              )
+            },
+            helpContent = { PlaceholderScreen("Help") },
+          )
+        },
+        proxyEntries = { proxyEntries(proxyContent = { PlaceholderScreen("Proxy") }) },
+        profilesEntries = {
+          profilesEntries(
+            profilesContent = { key ->
+              ProfilesRouteContent(
+                route = key,
+                profilesContent = { onOpenCreate, _ ->
+                  PlaceholderScreen("Profiles", "New profile" to onOpenCreate)
+                },
+                newProfileContent = { _, onFinish ->
+                  PlaceholderScreen("New profile", "Done" to onFinish)
+                },
+                propertiesContent = { uuid, onBrowseFiles, onFinish ->
+                  PlaceholderScreen(
+                    title = "Profile properties",
+                    "Files" to { onBrowseFiles(uuid) },
+                    "Done" to { onFinish(true) },
+                  )
+                },
+                filesContent = { _, onFinish ->
+                  PlaceholderScreen("Profile files", "Done" to onFinish)
+                },
+              )
+            },
+            providersContent = { PlaceholderScreen("Providers") },
+          )
+        },
+        logsEntries = {
+          logsEntries {
+            LogRouteContent(
+              logcatRunning = false,
+              logsContent = { onStartLogcat, _ ->
+                PlaceholderScreen("Logs", "Logcat" to onStartLogcat)
               },
-              newProfileContent = { _, onFinish ->
-                PlaceholderScreen("New profile", "Done" to onFinish)
-              },
-              propertiesContent = { uuid, onBrowseFiles, onFinish ->
+              logcatContent = { _, onOpenLogs, _, onClose ->
                 PlaceholderScreen(
-                  title = "Profile properties",
-                  "Files" to { onBrowseFiles(uuid) },
-                  "Done" to { onFinish(true) },
+                  title = "Logcat",
+                  "Logs" to onOpenLogs,
+                  "Close" to onClose,
                 )
               },
-              filesContent = { _, onFinish ->
-                PlaceholderScreen("Profile files", "Done" to onFinish)
-              },
             )
-          },
-          providersContent = { PlaceholderScreen("Providers") },
-        )
-        logsEntries {
-          LogRouteContent(
-            logcatRunning = false,
-            logsContent = { onStartLogcat, _ ->
-              PlaceholderScreen("Logs", "Logcat" to onStartLogcat)
-            },
-            logcatContent = { _, onOpenLogs, _, onClose ->
-              PlaceholderScreen(
-                title = "Logcat",
-                "Logs" to onOpenLogs,
-                "Close" to onClose,
-              )
-            },
+          }
+        },
+        settingsEntries = {
+          settingsEntries {
+            SettingsRouteContent(
+              appSettingsContent = { PlaceholderScreen("App settings") },
+              networkSettingsContent = { onStartAccessControlList ->
+                PlaceholderScreen(
+                  title = "Network settings",
+                  "Access control" to onStartAccessControlList,
+                )
+              },
+              overrideSettingsContent = { onResetCompleted ->
+                PlaceholderScreen("Override settings", "Done" to onResetCompleted)
+              },
+              metaFeatureSettingsContent = { onResetCompleted ->
+                PlaceholderScreen("Meta feature settings", "Done" to onResetCompleted)
+              },
+              accessControlContent = { PlaceholderScreen("Access control") },
+            )
+          }
+        },
+        crashEntries = {
+          crashEntries(
+            apkBrokenContent = { PlaceholderScreen("APK broken") },
+            appCrashedContent = { PlaceholderScreen("App crashed") },
           )
-        }
-        crashEntries(
-          apkBrokenContent = { PlaceholderScreen("APK broken") },
-          appCrashedContent = { PlaceholderScreen("App crashed") },
-        )
-        settingsEntries {
-          SettingsRouteContent(
-            appSettingsContent = { PlaceholderScreen("App settings") },
-            networkSettingsContent = { onStartAccessControlList ->
-              PlaceholderScreen(
-                title = "Network settings",
-                "Access control" to onStartAccessControlList,
-              )
-            },
-            overrideSettingsContent = { onResetCompleted ->
-              PlaceholderScreen("Override settings", "Done" to onResetCompleted)
-            },
-            metaFeatureSettingsContent = { onResetCompleted ->
-              PlaceholderScreen("Meta feature settings", "Done" to onResetCompleted)
-            },
-            accessControlContent = { PlaceholderScreen("Access control") },
-          )
-        }
-      }
+        },
+      )
     }
 
   TabbyApp(
