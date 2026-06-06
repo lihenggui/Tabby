@@ -1,6 +1,5 @@
 package com.github.kr328.clash.profile.ui
 
-import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -101,7 +100,19 @@ internal fun FilesScreen(
   FilesContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    files = configFiles.map { it.toFileListItem(context, currentTime) },
+    files =
+      configFiles.map { file ->
+        toFileListItem(
+          id = file.id,
+          name = file.name,
+          sizeBytes = file.size,
+          lastModified = file.lastModified,
+          isDirectory = file.isDirectory,
+          currentTime = currentTime,
+          formatBytes = { bytes -> bytes.binaryBytes.toString() },
+          formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+        )
+      },
     currentInBaseDir = uiState.currentInBaseDir,
     configurationEditable = uiState.configurationEditable,
     onBack = viewModel::onBack,
@@ -111,17 +122,5 @@ internal fun FilesScreen(
     onExport = { item -> configFileById[item.id]?.let(viewModel::onRequestExport) },
     onRename = { item, name -> configFileById[item.id]?.let { viewModel.onRename(it, name) } },
     onDelete = { item -> configFileById[item.id]?.let(viewModel::onDelete) },
-  )
-}
-
-private fun ConfigFile.toFileListItem(context: Context, currentTime: Long): FileListItem {
-  return FileListItem(
-    id = id,
-    name = name,
-    sizeBytes = size,
-    isDirectory = isDirectory,
-    sizeText = if (isDirectory) null else size.binaryBytes.toString(),
-    updatedAtText =
-      if (isDirectory) null else (currentTime - lastModified).elapsedIntervalString(context),
   )
 }
