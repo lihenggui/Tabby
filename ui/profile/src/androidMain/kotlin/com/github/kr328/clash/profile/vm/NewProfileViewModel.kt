@@ -23,7 +23,9 @@ import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrResultKind
 import com.github.kr328.clash.profile.ui.newProfileCreateAction
+import com.github.kr328.clash.profile.ui.newProfileCreateEventState
 import com.github.kr328.clash.profile.ui.newProfileDetailAction
+import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.profileQrAction
@@ -57,10 +59,10 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     when (val action = newProfileCreateAction(provider.kind)) {
       is NewProfileCreateAction.CreateProfile -> createProfile(action.type)
       NewProfileCreateAction.LaunchQRScanner ->
-        eventState.value = NewProfileEventState.LaunchQRScanner
+        newProfileCreateEventState<Intent>(action)?.let { eventState.value = it }
       NewProfileCreateAction.LaunchExternalProvider -> {
         val externalProvider = provider as ProfileProvider.External
-        eventState.value = NewProfileEventState.LaunchExternalProvider(externalProvider.intent)
+        newProfileCreateEventState(action, externalProvider.intent)?.let { eventState.value = it }
       }
     }
   }
@@ -69,7 +71,7 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     when (val action = newProfileDetailAction(provider.intent.component?.packageName)) {
       is NewProfileDetailAction.OpenAppSettings -> {
         val uri = Uri.fromParts("package", action.packageName, null)
-        eventState.value = NewProfileEventState.OpenAppSettings(uri)
+        newProfileDetailEventState(action, uri)?.let { eventState.value = it }
       }
       NewProfileDetailAction.Ignore -> Unit
     }

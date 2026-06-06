@@ -83,6 +83,29 @@ internal fun newProfileExternalProviderResultAction(
   }
 }
 
+internal fun <ExternalProviderT> newProfileCreateEventState(
+  action: NewProfileCreateAction,
+  externalProvider: ExternalProviderT? = null,
+): NewProfileEventState<ExternalProviderT, Nothing>? {
+  return when (action) {
+    is NewProfileCreateAction.CreateProfile -> null
+    NewProfileCreateAction.LaunchQRScanner -> NewProfileEventState.LaunchQRScanner
+    NewProfileCreateAction.LaunchExternalProvider ->
+      externalProvider?.let { NewProfileEventState.LaunchExternalProvider(it) }
+  }
+}
+
+internal fun <AppSettingsTargetT> newProfileDetailEventState(
+  action: NewProfileDetailAction,
+  appSettingsTarget: AppSettingsTargetT,
+): NewProfileEventState<Nothing, AppSettingsTargetT>? {
+  return when (action) {
+    is NewProfileDetailAction.OpenAppSettings ->
+      NewProfileEventState.OpenAppSettings(appSettingsTarget)
+    NewProfileDetailAction.Ignore -> null
+  }
+}
+
 internal fun <T> newProfileProviderSelectionAction(
   providers: List<T>,
   index: Int,

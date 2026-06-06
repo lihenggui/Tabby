@@ -116,6 +116,44 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun createEventStateEmitsOnlyLaunchEvents() {
+    val externalProvider = "external-provider-intent"
+
+    assertEquals(
+      null,
+      newProfileCreateEventState<String>(NewProfileCreateAction.CreateProfile(Profile.Type.File)),
+    )
+    assertEquals(
+      NewProfileEventState.LaunchQRScanner,
+      newProfileCreateEventState<String>(NewProfileCreateAction.LaunchQRScanner),
+    )
+    assertEquals(
+      NewProfileEventState.LaunchExternalProvider(externalProvider),
+      newProfileCreateEventState(
+        NewProfileCreateAction.LaunchExternalProvider,
+        externalProvider,
+      ),
+    )
+  }
+
+  @Test
+  fun detailEventStateOpensAppSettingsOnlyForDetailActions() {
+    val appSettingsTarget = "package:com.example.provider"
+
+    assertEquals(
+      NewProfileEventState.OpenAppSettings(appSettingsTarget),
+      newProfileDetailEventState(
+        NewProfileDetailAction.OpenAppSettings("com.example.provider"),
+        appSettingsTarget,
+      ),
+    )
+    assertEquals(
+      null,
+      newProfileDetailEventState(NewProfileDetailAction.Ignore, appSettingsTarget),
+    )
+  }
+
+  @Test
   fun newProfileProviderSelectionActionSelectsProviderByIndex() {
     val providers =
       listOf(
