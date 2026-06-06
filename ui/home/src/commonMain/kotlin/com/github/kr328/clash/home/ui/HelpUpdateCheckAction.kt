@@ -24,6 +24,10 @@ internal sealed interface HelpEventState {
   data class UpdateAvailable(val releasesUrl: String) : HelpEventState
 }
 
+internal fun helpInitialEventState(): HelpEventState {
+  return HelpEventState.Idle
+}
+
 internal fun helpUpdateCheckRequestAction(state: HelpContentState): HelpUpdateCheckRequestAction {
   return if (state.checkingForUpdates) {
     HelpUpdateCheckRequestAction.Ignore

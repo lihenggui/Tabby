@@ -9,6 +9,10 @@ internal data class HomeUiState(
   val hasProviders: Boolean = false,
 )
 
+internal fun homeInitialUiState(): HomeUiState {
+  return HomeUiState()
+}
+
 internal enum class HomeStartAction {
   StartEngine,
   ShowNoProfileMessage,
@@ -48,6 +52,10 @@ internal sealed interface HomeEventState<out VpnPermissionT> {
   data object ShowNoProfileMessage : HomeEventState<Nothing>
 
   data class ShowMessage(val message: String) : HomeEventState<Nothing>
+}
+
+internal fun homeInitialEventState(): HomeEventState<Nothing> {
+  return HomeEventState.Idle
 }
 
 internal fun homeStartAction(activeProfile: Profile?): HomeStartAction {

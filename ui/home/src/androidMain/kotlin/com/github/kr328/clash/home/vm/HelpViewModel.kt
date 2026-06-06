@@ -15,6 +15,8 @@ import com.github.kr328.clash.home.ui.HelpEventState
 import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
 import com.github.kr328.clash.home.ui.helpConsumedEventState
+import com.github.kr328.clash.home.ui.helpInitialContentState
+import com.github.kr328.clash.home.ui.helpInitialEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckAction
 import com.github.kr328.clash.home.ui.helpUpdateCheckEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckFailureEventState
@@ -33,10 +35,10 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
   private val api = HelpApi()
 
   val uiState: StateFlow<HelpContentState>
-    field = MutableStateFlow(HelpContentState())
+    field = MutableStateFlow(helpInitialContentState())
 
   val eventState: StateFlow<HelpEventState>
-    field = MutableStateFlow<HelpEventState>(HelpEventState.Idle)
+    field = MutableStateFlow<HelpEventState>(helpInitialEventState())
 
   init {
     loadVersionInfo()

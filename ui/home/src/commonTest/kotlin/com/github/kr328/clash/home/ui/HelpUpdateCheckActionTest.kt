@@ -6,6 +6,11 @@ import kotlin.test.assertFailsWith
 
 class HelpUpdateCheckActionTest {
   @Test
+  fun createsInitialHelpEventState() {
+    assertEquals(HelpEventState.Idle, helpInitialEventState())
+  }
+
+  @Test
   fun updateCheckRequestStartsWhenNotAlreadyChecking() {
     assertEquals(
       HelpUpdateCheckRequestAction.StartCheck,

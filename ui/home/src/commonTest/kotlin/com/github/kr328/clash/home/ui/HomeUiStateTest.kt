@@ -7,6 +7,18 @@ import kotlin.uuid.Uuid
 
 class HomeUiStateTest {
   @Test
+  fun createsInitialHomeUiState() {
+    assertEquals(HomeUiState(), homeInitialUiState())
+  }
+
+  @Test
+  fun createsInitialHomeEventState() {
+    val event: HomeEventState<String> = homeInitialEventState()
+
+    assertEquals(HomeEventState.Idle, event)
+  }
+
+  @Test
   fun homeStartActionStartsEngineForImportedActiveProfile() {
     assertEquals(
       HomeStartAction.StartEngine,

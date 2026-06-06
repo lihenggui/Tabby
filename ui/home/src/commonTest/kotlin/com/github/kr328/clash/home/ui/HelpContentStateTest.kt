@@ -5,6 +5,11 @@ import kotlin.test.assertEquals
 
 class HelpContentStateTest {
   @Test
+  fun createsInitialHelpContentState() {
+    assertEquals(HelpContentState(), helpInitialContentState())
+  }
+
+  @Test
   fun updateCheckStateChangesPreserveVersionInfo() {
     val initial = HelpContentState(appVersion = "1.0.0", coreVersion = "Meta 1.0")
     val started = initial.withUpdateCheckStarted()

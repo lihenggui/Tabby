@@ -27,6 +27,8 @@ import com.github.kr328.clash.home.ui.HomeUiState
 import com.github.kr328.clash.home.ui.homeBroadcastAction
 import com.github.kr328.clash.home.ui.homeBroadcastEventState
 import com.github.kr328.clash.home.ui.homeConsumedEventState
+import com.github.kr328.clash.home.ui.homeInitialEventState
+import com.github.kr328.clash.home.ui.homeInitialUiState
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeStartFailureEventState
@@ -54,10 +56,10 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
   val clashRunning: StateFlow<Boolean> = Remote.broadcasts.clashRunningFlow
 
   val uiState: StateFlow<HomeUiState>
-    field = MutableStateFlow(HomeUiState())
+    field = MutableStateFlow(homeInitialUiState())
 
   val eventState: StateFlow<HomeEventState<Intent>>
-    field = MutableStateFlow<HomeEventState<Intent>>(HomeEventState.Idle)
+    field = MutableStateFlow<HomeEventState<Intent>>(homeInitialEventState())
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()

@@ -39,6 +39,10 @@ internal data class HelpContentState(
   val coreVersion: String = "",
 )
 
+internal fun helpInitialContentState(): HelpContentState {
+  return HelpContentState()
+}
+
 internal fun HelpContentState.withUpdateCheckStarted(): HelpContentState {
   return copy(checkingForUpdates = true)
 }
