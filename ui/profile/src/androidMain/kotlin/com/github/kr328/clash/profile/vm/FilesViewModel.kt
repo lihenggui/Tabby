@@ -12,9 +12,11 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
+import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
+import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -73,12 +75,15 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onOpen(configFile: ConfigFile) {
-    if (configFile.isDirectory) {
-      location = location.enterDirectory(configFile.id)
-      fetch()
-    } else {
-      val uri = client.buildDocumentUri(configFile.id)
-      eventState.value = EventState.OpenFile(uri)
+    when (val action = profileFileOpenAction(configFile.id, configFile.isDirectory)) {
+      is ProfileFileOpenAction.EnterDirectory -> {
+        location = location.enterDirectory(action.documentId)
+        fetch()
+      }
+      is ProfileFileOpenAction.OpenFile -> {
+        val uri = client.buildDocumentUri(action.documentId)
+        eventState.value = EventState.OpenFile(uri)
+      }
     }
   }
 
