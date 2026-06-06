@@ -32,6 +32,7 @@ import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestEffect
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.proxyBroadcastAction
+import com.github.kr328.clash.proxy.ui.proxyBroadcastEventKindFromPlatformPayload
 import com.github.kr328.clash.proxy.ui.proxyConsumedEventState
 import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
@@ -350,13 +351,15 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   private fun Broadcasts.Event.toProxyBroadcastEventKind(): ProxyBroadcastEventKind {
     return when (this) {
-      Broadcasts.Event.ProfileLoaded -> ProxyBroadcastEventKind.ProfileLoaded
+      Broadcasts.Event.ProfileLoaded ->
+        proxyBroadcastEventKindFromPlatformPayload(profileLoaded = true)
       Broadcasts.Event.ServiceRecreated,
       Broadcasts.Event.Started,
       Broadcasts.Event.ProfileChanged,
       is Broadcasts.Event.Stopped,
       is Broadcasts.Event.ProfileUpdateCompleted,
-      is Broadcasts.Event.ProfileUpdateFailed -> ProxyBroadcastEventKind.Other
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        proxyBroadcastEventKindFromPlatformPayload(profileLoaded = false)
     }
   }
 }

@@ -540,6 +540,18 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyBroadcastPlatformPayloadMapsProfileLoadedFlagToEventKind() {
+    assertEquals(
+      ProxyBroadcastEventKind.ProfileLoaded,
+      proxyBroadcastEventKindFromPlatformPayload(profileLoaded = true),
+    )
+    assertEquals(
+      ProxyBroadcastEventKind.Other,
+      proxyBroadcastEventKindFromPlatformPayload(profileLoaded = false),
+    )
+  }
+
+  @Test
   fun proxyBroadcastActionQueriesGroupNamesForProfileLoadedAfterInitialization() {
     assertEquals(
       ProxyBroadcastAction.QueryGroupNames,

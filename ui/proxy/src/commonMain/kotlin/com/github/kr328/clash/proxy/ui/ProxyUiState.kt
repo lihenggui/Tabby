@@ -123,6 +123,12 @@ internal enum class ProxyBroadcastEventKind {
   Other,
 }
 
+internal fun proxyBroadcastEventKindFromPlatformPayload(
+  profileLoaded: Boolean
+): ProxyBroadcastEventKind {
+  return if (profileLoaded) ProxyBroadcastEventKind.ProfileLoaded else ProxyBroadcastEventKind.Other
+}
+
 internal sealed interface ProxyBroadcastAction {
   data object QueryGroupNames : ProxyBroadcastAction
 
