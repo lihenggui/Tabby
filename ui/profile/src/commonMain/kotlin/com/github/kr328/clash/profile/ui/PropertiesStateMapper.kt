@@ -53,6 +53,16 @@ internal sealed interface PropertiesAutoSaveAction {
   data object Ignore : PropertiesAutoSaveAction
 }
 
+internal sealed interface PropertiesEventState {
+  data object Idle : PropertiesEventState
+
+  data class Finish(val success: Boolean) : PropertiesEventState
+
+  data class BrowseFiles(val uuid: Uuid) : PropertiesEventState
+
+  data class ShowMessage(val message: String) : PropertiesEventState
+}
+
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {
   if (original == null) return false
 
@@ -86,6 +96,19 @@ internal fun propertiesCommitAction(state: PropertiesUiState): PropertiesCommitA
     PropertiesCommitValidationResult.Valid -> PropertiesCommitAction.Commit(profile)
     PropertiesCommitValidationResult.EmptyName -> PropertiesCommitAction.ShowEmptyName
     PropertiesCommitValidationResult.EmptySource -> PropertiesCommitAction.ShowEmptySource
+  }
+}
+
+internal fun propertiesCommitValidationEventState(
+  action: PropertiesCommitAction,
+  emptyNameMessage: String,
+  emptySourceMessage: String,
+): PropertiesEventState? {
+  return when (action) {
+    PropertiesCommitAction.ShowEmptyName -> PropertiesEventState.ShowMessage(emptyNameMessage)
+    PropertiesCommitAction.ShowEmptySource -> PropertiesEventState.ShowMessage(emptySourceMessage)
+    is PropertiesCommitAction.Commit,
+    PropertiesCommitAction.Ignore -> null
   }
 }
 

@@ -128,6 +128,48 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesCommitValidationEventStateMapsValidationFailuresToMessages() {
+    assertEquals(
+      PropertiesEventState.ShowMessage("empty name"),
+      propertiesCommitValidationEventState(
+        action = PropertiesCommitAction.ShowEmptyName,
+        emptyNameMessage = "empty name",
+        emptySourceMessage = "empty source",
+      ),
+    )
+    assertEquals(
+      PropertiesEventState.ShowMessage("empty source"),
+      propertiesCommitValidationEventState(
+        action = PropertiesCommitAction.ShowEmptySource,
+        emptyNameMessage = "empty name",
+        emptySourceMessage = "empty source",
+      ),
+    )
+  }
+
+  @Test
+  fun propertiesCommitValidationEventStateIgnoresNonValidationActions() {
+    val profile = profile()
+
+    assertEquals(
+      null,
+      propertiesCommitValidationEventState(
+        action = PropertiesCommitAction.Ignore,
+        emptyNameMessage = "empty name",
+        emptySourceMessage = "empty source",
+      ),
+    )
+    assertEquals(
+      null,
+      propertiesCommitValidationEventState(
+        action = PropertiesCommitAction.Commit(profile),
+        emptyNameMessage = "empty name",
+        emptySourceMessage = "empty source",
+      ),
+    )
+  }
+
+  @Test
   fun propertiesAutoSaveActionSavesUnsavedProfileWhenNotCanceled() {
     val profile = profile(name = "Changed")
     val state = PropertiesUiState(profile = profile, hasUnsavedChanges = true)

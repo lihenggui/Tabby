@@ -44,14 +44,14 @@ internal fun PropertiesScreen(
 
   LaunchedEffect(eventState) {
     when (val event = eventState) {
-      Idle -> Unit
-      is BrowseFiles -> {
+      PropertiesEventState.Idle -> Unit
+      is PropertiesEventState.BrowseFiles -> {
         onBrowseFiles(event.uuid)
       }
-      is Finish -> {
+      is PropertiesEventState.Finish -> {
         onFinish(event.success)
       }
-      is ShowMessage -> {
+      is PropertiesEventState.ShowMessage -> {
         snackbarHostState.showSnackbar(message = event.message)
       }
     }

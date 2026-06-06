@@ -20,12 +20,14 @@ import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Commit
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.Ignore
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptyName
 import com.github.kr328.clash.profile.ui.PropertiesCommitAction.ShowEmptySource
+import com.github.kr328.clash.profile.ui.PropertiesEventState
 import com.github.kr328.clash.profile.ui.PropertiesInitAction.Finish
 import com.github.kr328.clash.profile.ui.PropertiesInitAction.LoadProfile
 import com.github.kr328.clash.profile.ui.PropertiesUiState
 import com.github.kr328.clash.profile.ui.propertiesAutoSaveAction
 import com.github.kr328.clash.profile.ui.propertiesBrowseFilesAction
 import com.github.kr328.clash.profile.ui.propertiesCommitAction
+import com.github.kr328.clash.profile.ui.propertiesCommitValidationEventState
 import com.github.kr328.clash.profile.ui.propertiesInitAction
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
@@ -53,8 +55,8 @@ internal class PropertiesViewModel(app: Application) :
   val uiState: StateFlow<PropertiesUiState>
     field = MutableStateFlow(PropertiesUiState())
 
-  val eventState: StateFlow<EventState>
-    field = MutableStateFlow<EventState>(EventState.Idle)
+  val eventState: StateFlow<PropertiesEventState>
+    field = MutableStateFlow<PropertiesEventState>(PropertiesEventState.Idle)
 
   fun init(uuid: Uuid) {
     if (rootUuid != null) return
@@ -63,13 +65,13 @@ internal class PropertiesViewModel(app: Application) :
     viewModelScope.launch {
       when (val action = propertiesInitAction(profileRepository.queryByUuid(uuid))) {
         is LoadProfile -> uiState.update { it.withLoadedProfile(action.profile) }
-        Finish -> eventState.value = EventState.Finish(false)
+        Finish -> eventState.value = PropertiesEventState.Finish(false)
       }
     }
   }
 
   fun consumeEvent() {
-    eventState.value = EventState.Idle
+    eventState.value = PropertiesEventState.Idle
   }
 
   override fun onStop(owner: LifecycleOwner) {
@@ -115,14 +117,14 @@ internal class PropertiesViewModel(app: Application) :
 
   fun onBrowseFiles() {
     when (val action = propertiesBrowseFilesAction(rootUuid)) {
-      is BrowseFiles -> eventState.value = EventState.BrowseFiles(action.uuid)
+      is BrowseFiles -> eventState.value = PropertiesEventState.BrowseFiles(action.uuid)
       IgnoreBrowseFiles -> Unit
     }
   }
 
   fun onRequestClose() {
     canceled = true
-    eventState.value = EventState.Finish(false)
+    eventState.value = PropertiesEventState.Finish(false)
   }
 
   fun onCommit() {
@@ -130,11 +132,25 @@ internal class PropertiesViewModel(app: Application) :
       when (val action = propertiesCommitAction(uiState.value)) {
         Ignore -> return
         ShowEmptyName -> {
-          eventState.value = EventState.ShowMessage(application.getString(R.string.empty_name))
+          eventState.value =
+            checkNotNull(
+              propertiesCommitValidationEventState(
+                action = action,
+                emptyNameMessage = application.getString(R.string.empty_name),
+                emptySourceMessage = application.getString(R.string.invalid_url),
+              )
+            )
           return
         }
         ShowEmptySource -> {
-          eventState.value = EventState.ShowMessage(application.getString(R.string.invalid_url))
+          eventState.value =
+            checkNotNull(
+              propertiesCommitValidationEventState(
+                action = action,
+                emptyNameMessage = application.getString(R.string.empty_name),
+                emptySourceMessage = application.getString(R.string.invalid_url),
+              )
+            )
           return
         }
         is Commit -> action.profile
@@ -149,11 +165,13 @@ internal class PropertiesViewModel(app: Application) :
           }
         }
         canceled = true
-        eventState.value = EventState.Finish(true)
+        eventState.value = PropertiesEventState.Finish(true)
       } catch (e: Exception) {
         Log.e("Commit profile failed: ${e.message}", e)
         eventState.value =
-          EventState.ShowMessage(e.message ?: application.getString(CommonR.string.unknown))
+          PropertiesEventState.ShowMessage(
+            e.message ?: application.getString(CommonR.string.unknown)
+          )
       }
     }
   }
@@ -185,15 +203,5 @@ internal class PropertiesViewModel(app: Application) :
         verifyingText = application.getString(R.string.verifying),
       )
     }
-  }
-
-  sealed interface EventState {
-    data object Idle : EventState
-
-    data class Finish(val success: Boolean) : EventState
-
-    data class BrowseFiles(val uuid: Uuid) : EventState
-
-    data class ShowMessage(val message: String) : EventState
   }
 }
