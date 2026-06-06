@@ -10,10 +10,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.ConfigurationOverride
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.util.clashDir
-import com.github.kr328.clash.glue.util.withClash
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 
 internal class MetaFeatureSettingsViewModel(app: Application) :
   AndroidViewModel(app), MetaFeatureSettingsActions, DefaultLifecycleObserver {
+  private val engineController: EngineController = AndroidEngineController(app)
   private val appContext = app
   private val validDatabaseExtensions = listOf(".metadb", ".db", ".dat", ".mmdb")
   @Volatile private var skipPersist = false
@@ -36,17 +37,15 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
 
   init {
     viewModelScope.launch {
-      configuration.value = withClash { queryOverride(Clash.OverrideSlot.Persist) }
+      configuration.value = engineController.queryPersistOverride()
     }
   }
 
   override fun onStop(owner: LifecycleOwner) {
     // Intended to use non-viewModel scope as we need the action to be called on disposed.
     Global.launch {
-      withClash {
-        if (skipPersist) clearOverride(Clash.OverrideSlot.Persist)
-        else patchOverride(Clash.OverrideSlot.Persist, configuration.value)
-      }
+      if (skipPersist) engineController.clearPersistOverride()
+      else engineController.patchPersistOverride(configuration.value)
     }
   }
 

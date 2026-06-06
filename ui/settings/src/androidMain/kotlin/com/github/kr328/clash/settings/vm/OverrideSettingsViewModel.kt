@@ -6,11 +6,11 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.Global
-import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.core.model.TunnelState
-import com.github.kr328.clash.glue.util.withClash
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 internal class OverrideSettingsViewModel(app: Application) :
   AndroidViewModel(app), OverrideSettingsActions, DefaultLifecycleObserver {
+  private val engineController: EngineController = AndroidEngineController(app)
   @Volatile private var skipPersist = false
 
   val configuration: StateFlow<ConfigurationOverride>
@@ -26,17 +27,15 @@ internal class OverrideSettingsViewModel(app: Application) :
 
   init {
     viewModelScope.launch {
-      configuration.value = withClash { queryOverride(Clash.OverrideSlot.Persist) }
+      configuration.value = engineController.queryPersistOverride()
     }
   }
 
   override fun onStop(owner: LifecycleOwner) {
     // Intended to use non-viewModel scope as we need the action to be called on disposed.
     Global.launch {
-      withClash {
-        if (skipPersist) clearOverride(Clash.OverrideSlot.Persist)
-        else patchOverride(Clash.OverrideSlot.Persist, configuration.value)
-      }
+      if (skipPersist) engineController.clearPersistOverride()
+      else engineController.patchPersistOverride(configuration.value)
     }
   }
 

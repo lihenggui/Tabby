@@ -3,6 +3,7 @@ package com.github.kr328.clash.engine.android
 import android.content.Context
 import android.content.Intent
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
@@ -91,6 +92,18 @@ class AndroidEngineController(
       val override = queryOverride(Clash.OverrideSlot.Session)
       patchOverride(Clash.OverrideSlot.Session, override.copy(mode = mode))
     }
+  }
+
+  override suspend fun queryPersistOverride(): ConfigurationOverride {
+    return withClash { queryOverride(Clash.OverrideSlot.Persist) }
+  }
+
+  override suspend fun patchPersistOverride(configuration: ConfigurationOverride) {
+    withClash { patchOverride(Clash.OverrideSlot.Persist, configuration) }
+  }
+
+  override suspend fun clearPersistOverride() {
+    withClash { clearOverride(Clash.OverrideSlot.Persist) }
   }
 
   private suspend fun refreshState() {

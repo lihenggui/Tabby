@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.api
 
+import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
@@ -35,4 +36,10 @@ interface EngineController {
   suspend fun querySessionMode(): TunnelState.Mode?
 
   suspend fun patchSessionMode(mode: TunnelState.Mode?)
+
+  suspend fun queryPersistOverride(): ConfigurationOverride
+
+  suspend fun patchPersistOverride(configuration: ConfigurationOverride)
+
+  suspend fun clearPersistOverride()
 }

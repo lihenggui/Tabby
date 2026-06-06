@@ -15,6 +15,7 @@ kotlin {
 
     androidMain {
       dependencies {
+        implementation(projects.core.engineAndroid)
         implementation(projects.glue)
 
         implementation(libs.androidx.activity.compose)

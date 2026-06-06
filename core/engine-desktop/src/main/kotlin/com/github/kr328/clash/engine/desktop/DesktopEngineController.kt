@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.desktop
 
+import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
@@ -72,6 +73,18 @@ class DesktopEngineController(
     (mihomoApi ?: unsupported()).patchMode(
       requireNotNull(mode) { "Desktop session mode requires a concrete mode" }
     )
+  }
+
+  override suspend fun queryPersistOverride(): ConfigurationOverride {
+    unsupported()
+  }
+
+  override suspend fun patchPersistOverride(configuration: ConfigurationOverride) {
+    unsupported()
+  }
+
+  override suspend fun clearPersistOverride() {
+    unsupported()
   }
 }
 

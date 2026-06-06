@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.ios
 
+import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
@@ -64,6 +65,18 @@ class IosEngineController : EngineController {
   }
 
   override suspend fun patchSessionMode(mode: TunnelState.Mode?) {
+    unsupported()
+  }
+
+  override suspend fun queryPersistOverride(): ConfigurationOverride {
+    unsupported()
+  }
+
+  override suspend fun patchPersistOverride(configuration: ConfigurationOverride) {
+    unsupported()
+  }
+
+  override suspend fun clearPersistOverride() {
     unsupported()
   }
 }
