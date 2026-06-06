@@ -43,11 +43,12 @@ internal fun helpUpdateCheckRequestAction(state: HelpContentState): HelpUpdateCh
 
 internal fun helpUpdateCheckAction(
   latestTag: String?,
-  localVersion: String,
+  localVersion: String?,
 ): HelpUpdateCheckAction {
   val latestVersion = latestTag ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
+  val currentVersion = localVersion ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
 
-  return if (SemVer.parse(latestVersion) > SemVer.parse(localVersion)) {
+  return if (SemVer.parse(latestVersion) > SemVer.parse(currentVersion)) {
     HelpUpdateCheckAction.ShowUpdateAvailable
   } else {
     HelpUpdateCheckAction.ShowAlreadyUpToDateMessage

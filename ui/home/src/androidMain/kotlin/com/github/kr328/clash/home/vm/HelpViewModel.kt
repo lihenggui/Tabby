@@ -54,15 +54,13 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
       uiState.update { it.withUpdateCheckStarted() }
       try {
         val latestTag = api.getLatestRelease()
-        val action =
+        val localVersion =
           if (latestTag == null) {
-            helpUpdateCheckAction(latestTag = null, localVersion = "")
+            null
           } else {
-            val localVersion =
-              application.packageManager.getPackageInfo(application.packageName, 0).versionName
-                ?: ""
-            helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
+            application.packageManager.getPackageInfo(application.packageName, 0).versionName
           }
+        val action = helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
 
         eventState.update {
           helpUpdateCheckEventState(

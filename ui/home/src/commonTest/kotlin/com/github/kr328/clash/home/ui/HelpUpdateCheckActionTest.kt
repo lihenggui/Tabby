@@ -35,6 +35,14 @@ class HelpUpdateCheckActionTest {
   }
 
   @Test
+  fun updateCheckActionShowsFailureWhenLocalVersionIsMissing() {
+    assertEquals(
+      HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,
+      helpUpdateCheckAction(latestTag = "1.2.0", localVersion = null),
+    )
+  }
+
+  @Test
   fun updateCheckActionShowsUpdateAvailableWhenLatestVersionIsNewer() {
     assertEquals(
       HelpUpdateCheckAction.ShowUpdateAvailable,
