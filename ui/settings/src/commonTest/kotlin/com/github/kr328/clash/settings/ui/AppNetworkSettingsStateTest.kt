@@ -48,6 +48,30 @@ class AppNetworkSettingsStateTest {
   }
 
   @Test
+  fun mapsAppSettingsComponentStateRules() {
+    assertEquals(true, isAppSettingsAutoRestartEnabled(AppComponentEnabledState.Enabled))
+    assertEquals(false, isAppSettingsAutoRestartEnabled(AppComponentEnabledState.Disabled))
+    assertEquals(false, isAppSettingsAutoRestartEnabled(AppComponentEnabledState.Unspecified))
+
+    assertEquals(
+      AppComponentEnabledState.Enabled,
+      appSettingsAutoRestartComponentState(autoRestart = true),
+    )
+    assertEquals(
+      AppComponentEnabledState.Disabled,
+      appSettingsAutoRestartComponentState(autoRestart = false),
+    )
+    assertEquals(
+      AppComponentEnabledState.Disabled,
+      appSettingsHideAppIconComponentState(hideAppIcon = true),
+    )
+    assertEquals(
+      AppComponentEnabledState.Enabled,
+      appSettingsHideAppIconComponentState(hideAppIcon = false),
+    )
+  }
+
+  @Test
   fun updatesNetworkSettingsBooleanFieldsAndPreservesOtherValues() {
     val uiState = networkSettingsUiState()
 

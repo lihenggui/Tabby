@@ -12,7 +12,11 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.ApplicationObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.settings.ui.AppComponentEnabledState
 import com.github.kr328.clash.settings.ui.AppSettingsUiState
+import com.github.kr328.clash.settings.ui.appSettingsAutoRestartComponentState
+import com.github.kr328.clash.settings.ui.appSettingsHideAppIconComponentState
+import com.github.kr328.clash.settings.ui.isAppSettingsAutoRestartEnabled
 import com.github.kr328.clash.settings.ui.updateAppSettingsAutoRestart
 import com.github.kr328.clash.settings.ui.updateAppSettingsDarkMode
 import com.github.kr328.clash.settings.ui.updateAppSettingsDynamicNotification
@@ -72,12 +76,10 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
   private var autoRestartValue: Boolean
     get() {
       val status = pm.getComponentEnabledSetting(restartReceiverClass.componentName)
-      return status == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      return isAppSettingsAutoRestartEnabled(status.toAppComponentEnabledState())
     }
     set(value) {
-      val status =
-        if (value) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-        else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+      val status = appSettingsAutoRestartComponentState(value).toPackageManagerComponentState()
 
       pm.setComponentEnabledSetting(
         restartReceiverClass.componentName,
@@ -87,16 +89,27 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
   private fun hideAppIcon(hide: Boolean) {
-    val newState =
-      if (hide) {
-        PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-      } else {
-        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-      }
+    val newState = appSettingsHideAppIconComponentState(hide).toPackageManagerComponentState()
     pm.setComponentEnabledSetting(
       application.mainActivityAlias,
       newState,
       PackageManager.DONT_KILL_APP,
     )
+  }
+}
+
+private fun Int.toAppComponentEnabledState(): AppComponentEnabledState {
+  return when (this) {
+    PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> AppComponentEnabledState.Enabled
+    PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> AppComponentEnabledState.Disabled
+    else -> AppComponentEnabledState.Unspecified
+  }
+}
+
+private fun AppComponentEnabledState.toPackageManagerComponentState(): Int {
+  return when (this) {
+    AppComponentEnabledState.Enabled -> PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    AppComponentEnabledState.Disabled -> PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+    AppComponentEnabledState.Unspecified -> PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
   }
 }
