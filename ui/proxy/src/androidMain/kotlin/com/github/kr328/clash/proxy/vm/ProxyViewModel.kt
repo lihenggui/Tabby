@@ -15,27 +15,29 @@ import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
+import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
+import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
+import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
 import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
+import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
+import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
 import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
 import com.github.kr328.clash.proxy.ui.withDelayTestStarted
-import com.github.kr328.clash.proxy.ui.withExcludeNotSelectable
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
 import com.github.kr328.clash.proxy.ui.withOverrideMode
 import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
-import com.github.kr328.clash.proxy.ui.withProxyLine
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
 import com.github.kr328.clash.proxy.ui.withProxySelectionRefreshed
-import com.github.kr328.clash.proxy.ui.withProxySort
 import com.github.kr328.clash.proxy.ui.withSelectedProxy
 import com.github.kr328.clash.proxy.ui.withUrlTestStarted
 import kotlinx.coroutines.Dispatchers
@@ -137,20 +139,17 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
     uiStore.proxyExcludeNotSelectable = enabled
-    uiState.update { it.withExcludeNotSelectable(enabled) }
-    eventState.value = ProxyEventState.ReLaunch
+    applyProxyPreferenceChangeAction(proxyExcludeNotSelectableChangeAction(uiState.value, enabled))
   }
 
   fun onProxyLineChanged(line: Int) {
     uiStore.proxyLine = line
-    uiState.update { it.withProxyLine(line) }
-    reloadAll()
+    applyProxyPreferenceChangeAction(proxyLineChangeAction(uiState.value, line))
   }
 
   fun onProxySortChanged(sort: ProxySort) {
     uiStore.proxySort = sort
-    uiState.update { it.withProxySort(sort) }
-    reloadAll()
+    applyProxyPreferenceChangeAction(proxySortChangeAction(uiState.value, sort))
   }
 
   fun onOverrideModeSelected(mode: TunnelState.Mode?) {
@@ -230,6 +229,14 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
         withContext(Dispatchers.Default) { group.toProxyItemSources(groupNames = names) }
 
       updateGroupState(index) { it.withProxyGroup(group, sources) }
+    }
+  }
+
+  private fun applyProxyPreferenceChangeAction(action: ProxyPreferenceChangeAction) {
+    uiState.value = action.state
+    when (action.effect) {
+      ProxyPreferenceChangeEffect.ReLaunch -> eventState.value = ProxyEventState.ReLaunch
+      ProxyPreferenceChangeEffect.ReloadAll -> reloadAll()
     }
   }
 

@@ -107,6 +107,16 @@ internal sealed interface ProxyGroupNamesChangeAction {
   data object Ignore : ProxyGroupNamesChangeAction
 }
 
+internal data class ProxyPreferenceChangeAction(
+  val state: ProxyUiState,
+  val effect: ProxyPreferenceChangeEffect,
+)
+
+internal enum class ProxyPreferenceChangeEffect {
+  ReLaunch,
+  ReloadAll,
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -173,6 +183,36 @@ internal fun proxyGroupNamesChangeAction(
 
 internal fun proxyGroupReloadIndexes(groupNames: List<String>): IntRange {
   return groupNames.indices
+}
+
+internal fun proxyExcludeNotSelectableChangeAction(
+  state: ProxyUiState,
+  enabled: Boolean,
+): ProxyPreferenceChangeAction {
+  return ProxyPreferenceChangeAction(
+    state = state.withExcludeNotSelectable(enabled),
+    effect = ProxyPreferenceChangeEffect.ReLaunch,
+  )
+}
+
+internal fun proxyLineChangeAction(
+  state: ProxyUiState,
+  line: Int,
+): ProxyPreferenceChangeAction {
+  return ProxyPreferenceChangeAction(
+    state = state.withProxyLine(line),
+    effect = ProxyPreferenceChangeEffect.ReloadAll,
+  )
+}
+
+internal fun proxySortChangeAction(
+  state: ProxyUiState,
+  sort: ProxySort,
+): ProxyPreferenceChangeAction {
+  return ProxyPreferenceChangeAction(
+    state = state.withProxySort(sort),
+    effect = ProxyPreferenceChangeEffect.ReloadAll,
+  )
 }
 
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {

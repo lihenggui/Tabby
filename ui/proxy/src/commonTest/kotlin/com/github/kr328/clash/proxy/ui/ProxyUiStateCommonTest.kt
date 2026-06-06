@@ -191,6 +191,47 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyExcludeNotSelectableChangeActionUpdatesStateAndRelaunches() {
+    val action =
+      proxyExcludeNotSelectableChangeAction(
+        state = ProxyUiState(excludeNotSelectable = false),
+        enabled = true,
+      )
+
+    assertEquals(true, action.state.excludeNotSelectable)
+    assertEquals(ProxyPreferenceChangeEffect.ReLaunch, action.effect)
+  }
+
+  @Test
+  fun proxyLineChangeActionUpdatesStateAndReloadsAll() {
+    val action =
+      proxyLineChangeAction(
+        state =
+          ProxyUiState(
+            proxyLine = 1,
+            groups = listOf(ProxyGroupUiState(refreshVersion = 2), ProxyGroupUiState()),
+          ),
+        line = 2,
+      )
+
+    assertEquals(2, action.state.proxyLine)
+    assertEquals(listOf(3, 1), action.state.groups.map(ProxyGroupUiState::refreshVersion))
+    assertEquals(ProxyPreferenceChangeEffect.ReloadAll, action.effect)
+  }
+
+  @Test
+  fun proxySortChangeActionUpdatesStateAndReloadsAll() {
+    val action =
+      proxySortChangeAction(
+        state = ProxyUiState(proxySort = ProxySort.Default),
+        sort = ProxySort.Delay,
+      )
+
+    assertEquals(ProxySort.Delay, action.state.proxySort)
+    assertEquals(ProxyPreferenceChangeEffect.ReloadAll, action.effect)
+  }
+
+  @Test
   fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
     assertEquals(
       ProxyGroupSelectionAction.SelectGroup("Auto"),
