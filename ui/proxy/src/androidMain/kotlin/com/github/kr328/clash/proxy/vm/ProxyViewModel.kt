@@ -139,17 +139,17 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
 
   fun onExcludeNotSelectableChanged(enabled: Boolean) {
     uiStore.proxyExcludeNotSelectable = enabled
-    applyProxyPreferenceChangeAction(proxyExcludeNotSelectableChangeAction(uiState.value, enabled))
+    applyProxyPreferenceChangeAction { proxyExcludeNotSelectableChangeAction(it, enabled) }
   }
 
   fun onProxyLineChanged(line: Int) {
     uiStore.proxyLine = line
-    applyProxyPreferenceChangeAction(proxyLineChangeAction(uiState.value, line))
+    applyProxyPreferenceChangeAction { proxyLineChangeAction(it, line) }
   }
 
   fun onProxySortChanged(sort: ProxySort) {
     uiStore.proxySort = sort
-    applyProxyPreferenceChangeAction(proxySortChangeAction(uiState.value, sort))
+    applyProxyPreferenceChangeAction { proxySortChangeAction(it, sort) }
   }
 
   fun onOverrideModeSelected(mode: TunnelState.Mode?) {
@@ -232,9 +232,20 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     }
   }
 
-  private fun applyProxyPreferenceChangeAction(action: ProxyPreferenceChangeAction) {
-    uiState.value = action.state
-    when (action.effect) {
+  private fun applyProxyPreferenceChangeAction(
+    action: (ProxyUiState) -> ProxyPreferenceChangeAction
+  ) {
+    var effect: ProxyPreferenceChangeEffect? = null
+    uiState.update { current ->
+      val change = action(current)
+      effect = change.effect
+      change.state
+    }
+    applyProxyPreferenceChangeEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyPreferenceChangeEffect(effect: ProxyPreferenceChangeEffect) {
+    when (effect) {
       ProxyPreferenceChangeEffect.ReLaunch -> eventState.value = ProxyEventState.ReLaunch
       ProxyPreferenceChangeEffect.ReloadAll -> reloadAll()
     }
