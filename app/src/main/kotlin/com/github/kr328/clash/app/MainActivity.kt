@@ -186,7 +186,7 @@ class MainActivity : ComponentActivity() {
       when (val plan = tabbyExternalQuickActionShortcutPlan(appIconHidden = uiStore.hideAppIcon)) {
         is TabbyExternalQuickActionShortcutPlan.Install ->
           plan.shortcuts.map { shortcut ->
-            val resources = shortcut.action.shortcutResources()
+            val resources = shortcut.presentation.androidResources()
             ShortcutInfoCompat.Builder(this, shortcut.id)
               .setShortLabel(getString(resources.shortLabel))
               .setLongLabel(getString(resources.longLabel))
@@ -268,21 +268,22 @@ private fun Intent.tabbyExternalAppAction(): TabbyExternalAppAction? =
     else -> null
   }
 
-private fun TabbyExternalQuickAction.shortcutResources(): AndroidShortcutResources =
+private fun TabbyExternalQuickActionShortcutPresentation.androidResources():
+  AndroidShortcutResources =
   when (this) {
-    TabbyExternalQuickAction.ToggleClash ->
+    TabbyExternalQuickActionShortcutPresentation.ToggleClash ->
       AndroidShortcutResources(
         shortLabel = R.string.shortcut_toggle_short,
         longLabel = R.string.shortcut_toggle_long,
         icon = R.drawable.ic_toggle_all,
       )
-    TabbyExternalQuickAction.StartClash ->
+    TabbyExternalQuickActionShortcutPresentation.StartClash ->
       AndroidShortcutResources(
         shortLabel = R.string.shortcut_start_short,
         longLabel = R.string.shortcut_start_long,
         icon = R.drawable.ic_toggle_on,
       )
-    TabbyExternalQuickAction.StopClash ->
+    TabbyExternalQuickActionShortcutPresentation.StopClash ->
       AndroidShortcutResources(
         shortLabel = R.string.shortcut_stop_short,
         longLabel = R.string.shortcut_stop_long,

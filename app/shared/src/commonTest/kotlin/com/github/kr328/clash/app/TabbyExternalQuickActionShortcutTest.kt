@@ -35,15 +35,18 @@ private val expectedQuickActionShortcuts =
       id = "toggle_clash",
       action = TabbyExternalQuickAction.ToggleClash,
       rank = 0,
+      presentation = TabbyExternalQuickActionShortcutPresentation.ToggleClash,
     ),
     TabbyExternalQuickActionShortcut(
       id = "start_clash",
       action = TabbyExternalQuickAction.StartClash,
       rank = 1,
+      presentation = TabbyExternalQuickActionShortcutPresentation.StartClash,
     ),
     TabbyExternalQuickActionShortcut(
       id = "stop_clash",
       action = TabbyExternalQuickAction.StopClash,
       rank = 2,
+      presentation = TabbyExternalQuickActionShortcutPresentation.StopClash,
     ),
   )
