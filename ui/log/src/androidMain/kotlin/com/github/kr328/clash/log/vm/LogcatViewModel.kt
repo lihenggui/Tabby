@@ -24,13 +24,16 @@ import com.github.kr328.clash.log.ui.LogcatCloseAction
 import com.github.kr328.clash.log.ui.LogcatDeleteAction
 import com.github.kr328.clash.log.ui.LogcatExportAction
 import com.github.kr328.clash.log.ui.LogcatInitialAction
+import com.github.kr328.clash.log.ui.LogcatPollAction
 import com.github.kr328.clash.log.ui.LogcatRequestExportAction
 import com.github.kr328.clash.log.ui.LogcatUiState
 import com.github.kr328.clash.log.ui.logcatCloseAction
 import com.github.kr328.clash.log.ui.logcatDeleteAction
 import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatInitialAction
+import com.github.kr328.clash.log.ui.logcatPollAction
 import com.github.kr328.clash.log.ui.logcatRequestExportAction
+import com.github.kr328.clash.log.ui.logcatSnapshotAction
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
@@ -194,12 +197,21 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
     pollJob?.cancel()
     pollJob = viewModelScope.launch {
       while (isActive) {
-        if (started) {
-          val snapshot = logcat?.snapshot(initialSnapshot)
-          if (snapshot != null) {
-            uiState.update { it.withMessages(snapshot.messages) }
-            initialSnapshot = false
+        when (val action = logcatPollAction(started, initialSnapshot)) {
+          is LogcatPollAction.QuerySnapshot -> {
+            val snapshot = logcat?.snapshot(action.initialSnapshot)
+            uiState.update { current ->
+              val snapshotAction =
+                logcatSnapshotAction(
+                  state = current,
+                  initialSnapshot = action.initialSnapshot,
+                  messages = snapshot?.messages,
+                )
+              initialSnapshot = snapshotAction.initialSnapshot
+              snapshotAction.state
+            }
           }
+          LogcatPollAction.Ignore -> Unit
         }
         delay(500.milliseconds)
       }

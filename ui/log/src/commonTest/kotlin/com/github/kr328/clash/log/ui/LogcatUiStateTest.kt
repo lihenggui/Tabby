@@ -95,6 +95,58 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatPollActionQueriesSnapshotsOnlyWhenStarted() {
+    assertEquals(
+      LogcatPollAction.QuerySnapshot(initialSnapshot = true),
+      logcatPollAction(started = true, initialSnapshot = true),
+    )
+    assertEquals(
+      LogcatPollAction.QuerySnapshot(initialSnapshot = false),
+      logcatPollAction(started = true, initialSnapshot = false),
+    )
+    assertEquals(
+      LogcatPollAction.Ignore,
+      logcatPollAction(started = false, initialSnapshot = true),
+    )
+  }
+
+  @Test
+  fun logcatSnapshotActionPreservesStateAndInitialFlagWhenSnapshotIsMissing() {
+    val message = logMessage(1)
+    val state = LogcatUiState(messages = listOf(message))
+
+    assertEquals(
+      LogcatSnapshotAction(
+        state = state,
+        initialSnapshot = true,
+      ),
+      logcatSnapshotAction(
+        state = state,
+        initialSnapshot = true,
+        messages = null,
+      ),
+    )
+  }
+
+  @Test
+  fun logcatSnapshotActionReplacesMessagesAndClearsInitialFlagWhenSnapshotExists() {
+    val oldMessage = logMessage(1)
+    val newMessages = listOf(logMessage(2), logMessage(3))
+
+    assertEquals(
+      LogcatSnapshotAction(
+        state = LogcatUiState(messages = newMessages),
+        initialSnapshot = false,
+      ),
+      logcatSnapshotAction(
+        state = LogcatUiState(messages = listOf(oldMessage)),
+        initialSnapshot = true,
+        messages = newMessages,
+      ),
+    )
+  }
+
+  @Test
   fun streamingUpdatesPreserveMessagesAndExportProgress() {
     val message = logMessage(1)
     val state =

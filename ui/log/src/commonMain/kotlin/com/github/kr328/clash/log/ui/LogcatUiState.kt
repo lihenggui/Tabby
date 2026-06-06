@@ -48,6 +48,17 @@ internal sealed interface LogcatExportAction {
   data object Ignore : LogcatExportAction
 }
 
+internal sealed interface LogcatPollAction {
+  data class QuerySnapshot(val initialSnapshot: Boolean) : LogcatPollAction
+
+  data object Ignore : LogcatPollAction
+}
+
+internal data class LogcatSnapshotAction(
+  val state: LogcatUiState,
+  val initialSnapshot: Boolean,
+)
+
 internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
   val file = fileName?.let(LogFile::parse)
   return when {
@@ -79,6 +90,35 @@ internal fun logcatExportAction(
   if (!hasDestination) return LogcatExportAction.Ignore
 
   return LogcatExportAction.ExportFile(file)
+}
+
+internal fun logcatPollAction(
+  started: Boolean,
+  initialSnapshot: Boolean,
+): LogcatPollAction {
+  return if (started) {
+    LogcatPollAction.QuerySnapshot(initialSnapshot)
+  } else {
+    LogcatPollAction.Ignore
+  }
+}
+
+internal fun logcatSnapshotAction(
+  state: LogcatUiState,
+  initialSnapshot: Boolean,
+  messages: List<LogMessage>?,
+): LogcatSnapshotAction {
+  return if (messages == null) {
+    LogcatSnapshotAction(
+      state = state,
+      initialSnapshot = initialSnapshot,
+    )
+  } else {
+    LogcatSnapshotAction(
+      state = state.withMessages(messages),
+      initialSnapshot = false,
+    )
+  }
 }
 
 internal fun LogcatUiState.withStreaming(streaming: Boolean): LogcatUiState {
