@@ -15,6 +15,22 @@ sealed interface TabbyTileEvent {
   data class ProfileLoaded(val profileName: String?) : TabbyTileEvent
 }
 
+sealed interface TabbyTileClickState {
+  data object Active : TabbyTileClickState
+
+  data object Inactive : TabbyTileClickState
+
+  data object Other : TabbyTileClickState
+}
+
+sealed interface TabbyTileClickAction {
+  data object StartClash : TabbyTileClickAction
+
+  data object StopClash : TabbyTileClickAction
+
+  data object Ignore : TabbyTileClickAction
+}
+
 fun tabbyTileInitialState(currentProfile: String?): TabbyTileState =
   TabbyTileState(
     clashRunning = currentProfile != null,
@@ -38,4 +54,11 @@ fun reduceTabbyTileState(
         currentProfile = "",
       )
     is TabbyTileEvent.ProfileLoaded -> state.copy(currentProfile = event.profileName.orEmpty())
+  }
+
+fun tabbyTileClickAction(clickState: TabbyTileClickState): TabbyTileClickAction =
+  when (clickState) {
+    TabbyTileClickState.Active -> TabbyTileClickAction.StopClash
+    TabbyTileClickState.Inactive -> TabbyTileClickAction.StartClash
+    TabbyTileClickState.Other -> TabbyTileClickAction.Ignore
   }

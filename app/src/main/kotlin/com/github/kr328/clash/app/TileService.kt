@@ -20,13 +20,10 @@ class TileService : android.service.quicksettings.TileService() {
   override fun onClick() {
     val tile = qsTile ?: return
 
-    when (tile.state) {
-      Tile.STATE_INACTIVE -> {
-        startClashService()
-      }
-      Tile.STATE_ACTIVE -> {
-        stopClashService()
-      }
+    when (tabbyTileClickAction(tile.tabbyTileClickState())) {
+      TabbyTileClickAction.StartClash -> startClashService()
+      TabbyTileClickAction.StopClash -> stopClashService()
+      TabbyTileClickAction.Ignore -> Unit
     }
   }
 
@@ -87,3 +84,10 @@ class TileService : android.service.quicksettings.TileService() {
       }
     }
 }
+
+private fun Tile.tabbyTileClickState(): TabbyTileClickState =
+  when (state) {
+    Tile.STATE_ACTIVE -> TabbyTileClickState.Active
+    Tile.STATE_INACTIVE -> TabbyTileClickState.Inactive
+    else -> TabbyTileClickState.Other
+  }

@@ -66,4 +66,28 @@ class TabbyTileStateTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyTileClickActionStartsClashWhenInactive() {
+    assertEquals(
+      TabbyTileClickAction.StartClash,
+      tabbyTileClickAction(TabbyTileClickState.Inactive),
+    )
+  }
+
+  @Test
+  fun tabbyTileClickActionStopsClashWhenActive() {
+    assertEquals(
+      TabbyTileClickAction.StopClash,
+      tabbyTileClickAction(TabbyTileClickState.Active),
+    )
+  }
+
+  @Test
+  fun tabbyTileClickActionIgnoresOtherStates() {
+    assertEquals(
+      TabbyTileClickAction.Ignore,
+      tabbyTileClickAction(TabbyTileClickState.Other),
+    )
+  }
 }
