@@ -142,6 +142,74 @@ class AppNetworkSettingsStateTest {
   }
 
   @Test
+  fun mapsAutoRestartFromPlatformComponentState() {
+    assertEquals(
+      true,
+      appSettingsAutoRestartEnabledFromPlatformComponentState(
+        state = 10,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+    assertEquals(
+      false,
+      appSettingsAutoRestartEnabledFromPlatformComponentState(
+        state = 20,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+    assertEquals(
+      false,
+      appSettingsAutoRestartEnabledFromPlatformComponentState(
+        state = 30,
+        enabledState = 10,
+        disabledState = 20,
+      ),
+    )
+  }
+
+  @Test
+  fun mapsAppSettingsComponentRulesToPlatformComponentStates() {
+    assertEquals(
+      10,
+      appSettingsAutoRestartPlatformComponentState(
+        autoRestart = true,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+    assertEquals(
+      20,
+      appSettingsAutoRestartPlatformComponentState(
+        autoRestart = false,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+    assertEquals(
+      20,
+      appSettingsHideAppIconPlatformComponentState(
+        hideAppIcon = true,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+    assertEquals(
+      10,
+      appSettingsHideAppIconPlatformComponentState(
+        hideAppIcon = false,
+        enabledState = 10,
+        disabledState = 20,
+        defaultState = 30,
+      ),
+    )
+  }
+
+  @Test
   fun createsInitialNetworkSettingsState() {
     assertEquals(
       networkSettingsUiState(),

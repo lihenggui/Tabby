@@ -53,6 +53,48 @@ internal fun appComponentEnabledStateToPlatformState(
   }
 }
 
+internal fun appSettingsAutoRestartEnabledFromPlatformComponentState(
+  state: Int,
+  enabledState: Int,
+  disabledState: Int,
+): Boolean {
+  return isAppSettingsAutoRestartEnabled(
+    appComponentEnabledStateFromPlatformState(
+      state = state,
+      enabledState = enabledState,
+      disabledState = disabledState,
+    )
+  )
+}
+
+internal fun appSettingsAutoRestartPlatformComponentState(
+  autoRestart: Boolean,
+  enabledState: Int,
+  disabledState: Int,
+  defaultState: Int,
+): Int {
+  return appComponentEnabledStateToPlatformState(
+    state = appSettingsAutoRestartComponentState(autoRestart),
+    enabledState = enabledState,
+    disabledState = disabledState,
+    defaultState = defaultState,
+  )
+}
+
+internal fun appSettingsHideAppIconPlatformComponentState(
+  hideAppIcon: Boolean,
+  enabledState: Int,
+  disabledState: Int,
+  defaultState: Int,
+): Int {
+  return appComponentEnabledStateToPlatformState(
+    state = appSettingsHideAppIconComponentState(hideAppIcon),
+    enabledState = enabledState,
+    disabledState = disabledState,
+    defaultState = defaultState,
+  )
+}
+
 internal fun updateAppSettingsAutoRestart(
   uiState: AppSettingsUiState,
   autoRestart: Boolean,

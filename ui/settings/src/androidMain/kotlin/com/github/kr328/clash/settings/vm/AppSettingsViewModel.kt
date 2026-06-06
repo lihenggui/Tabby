@@ -12,14 +12,11 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.ApplicationObserver
 import com.github.kr328.clash.service.store.ServiceStore
-import com.github.kr328.clash.settings.ui.AppComponentEnabledState
 import com.github.kr328.clash.settings.ui.AppSettingsUiState
-import com.github.kr328.clash.settings.ui.appComponentEnabledStateFromPlatformState
-import com.github.kr328.clash.settings.ui.appComponentEnabledStateToPlatformState
-import com.github.kr328.clash.settings.ui.appSettingsAutoRestartComponentState
-import com.github.kr328.clash.settings.ui.appSettingsHideAppIconComponentState
+import com.github.kr328.clash.settings.ui.appSettingsAutoRestartEnabledFromPlatformComponentState
+import com.github.kr328.clash.settings.ui.appSettingsAutoRestartPlatformComponentState
+import com.github.kr328.clash.settings.ui.appSettingsHideAppIconPlatformComponentState
 import com.github.kr328.clash.settings.ui.appSettingsInitialUiState
-import com.github.kr328.clash.settings.ui.isAppSettingsAutoRestartEnabled
 import com.github.kr328.clash.settings.ui.updateAppSettingsAutoRestart
 import com.github.kr328.clash.settings.ui.updateAppSettingsDarkMode
 import com.github.kr328.clash.settings.ui.updateAppSettingsDynamicNotification
@@ -79,10 +76,20 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
   private var autoRestartValue: Boolean
     get() {
       val status = pm.getComponentEnabledSetting(restartReceiverClass.componentName)
-      return isAppSettingsAutoRestartEnabled(status.toAppComponentEnabledState())
+      return appSettingsAutoRestartEnabledFromPlatformComponentState(
+        state = status,
+        enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+        disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      )
     }
     set(value) {
-      val status = appSettingsAutoRestartComponentState(value).toPackageManagerComponentState()
+      val status =
+        appSettingsAutoRestartPlatformComponentState(
+          autoRestart = value,
+          enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+          disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+          defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+        )
 
       pm.setComponentEnabledSetting(
         restartReceiverClass.componentName,
@@ -92,28 +99,17 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
   private fun hideAppIcon(hide: Boolean) {
-    val newState = appSettingsHideAppIconComponentState(hide).toPackageManagerComponentState()
+    val newState =
+      appSettingsHideAppIconPlatformComponentState(
+        hideAppIcon = hide,
+        enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+        disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+      )
     pm.setComponentEnabledSetting(
       application.mainActivityAlias,
       newState,
       PackageManager.DONT_KILL_APP,
     )
   }
-}
-
-private fun Int.toAppComponentEnabledState(): AppComponentEnabledState {
-  return appComponentEnabledStateFromPlatformState(
-    state = this,
-    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-  )
-}
-
-private fun AppComponentEnabledState.toPackageManagerComponentState(): Int {
-  return appComponentEnabledStateToPlatformState(
-    state = this,
-    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-    defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
-  )
 }
