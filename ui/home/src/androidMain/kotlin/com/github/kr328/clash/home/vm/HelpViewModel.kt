@@ -16,6 +16,7 @@ import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.formatAppVersionInfo
 import com.github.kr328.clash.home.ui.helpUpdateCheckAction
 import com.github.kr328.clash.home.ui.helpUpdateCheckEventState
+import com.github.kr328.clash.home.ui.helpUpdateCheckFailureEventState
 import com.github.kr328.clash.home.ui.helpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
@@ -71,7 +72,7 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
       } catch (e: Exception) {
         Log.e("Check for updates failed: ${e.message}", e)
         eventState.update {
-          HelpEventState.ShowMessage(application.getString(R.string.check_update_failed))
+          helpUpdateCheckFailureEventState(application.getString(R.string.check_update_failed))
         }
       } finally {
         uiState.update { it.withUpdateCheckFinished() }

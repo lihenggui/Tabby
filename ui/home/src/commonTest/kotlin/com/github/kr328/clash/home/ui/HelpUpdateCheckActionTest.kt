@@ -94,4 +94,12 @@ class HelpUpdateCheckActionTest {
       ),
     )
   }
+
+  @Test
+  fun updateCheckFailureEventStateMapsToFailureMessage() {
+    assertEquals(
+      HelpEventState.ShowMessage("failed"),
+      helpUpdateCheckFailureEventState(updateCheckFailedMessage = "failed"),
+    )
+  }
 }

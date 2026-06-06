@@ -59,3 +59,7 @@ internal fun helpUpdateCheckEventState(
       HelpEventState.ShowMessage(updateCheckFailedMessage)
   }
 }
+
+internal fun helpUpdateCheckFailureEventState(updateCheckFailedMessage: String): HelpEventState {
+  return HelpEventState.ShowMessage(updateCheckFailedMessage)
+}
