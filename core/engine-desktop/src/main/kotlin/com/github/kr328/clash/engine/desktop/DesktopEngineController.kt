@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.desktop
 
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.Traffic
@@ -27,6 +28,14 @@ class DesktopEngineController(
 
   override suspend fun queryTraffic(): Traffic {
     return (mihomoApi ?: unsupported()).queryTraffic()
+  }
+
+  override suspend fun queryProviders(): List<Provider> {
+    return (mihomoApi ?: unsupported()).queryProviders()
+  }
+
+  override suspend fun updateProvider(type: Provider.Type, name: String) {
+    (mihomoApi ?: unsupported()).updateProvider(type, name)
   }
 
   override suspend fun queryProxyGroupNames(excludeNotSelectable: Boolean): List<String> {

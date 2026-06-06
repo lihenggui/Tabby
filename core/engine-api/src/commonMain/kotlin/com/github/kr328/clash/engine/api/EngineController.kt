@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.api
 
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.Traffic
@@ -14,6 +15,10 @@ interface EngineController {
   suspend fun stop()
 
   suspend fun queryTraffic(): Traffic
+
+  suspend fun queryProviders(): List<Provider>
+
+  suspend fun updateProvider(type: Provider.Type, name: String)
 
   suspend fun queryProxyGroupNames(excludeNotSelectable: Boolean): List<String>
 

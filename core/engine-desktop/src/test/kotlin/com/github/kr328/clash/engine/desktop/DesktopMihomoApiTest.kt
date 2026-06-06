@@ -1,6 +1,7 @@
 package com.github.kr328.clash.engine.desktop
 
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.Traffic
@@ -178,6 +179,119 @@ class DesktopMihomoApiTest {
       listOf(Traffic.fromBytes(120, 340), Traffic.fromBytes(560, 780)),
       api.observeTraffic().take(2).toList(),
     )
+  }
+
+  @Test
+  fun queryProvidersCombinesProxyAndRuleProviders() = runTest {
+    var requestIndex = 0
+    val api =
+      DesktopMihomoApi(
+        DesktopMihomoEndpoint("127.0.0.1:9090"),
+        createTabbyHttpClient(
+          MockEngine { request ->
+            when (requestIndex++) {
+              0 -> {
+                assertEquals(HttpMethod.Get, request.method)
+                assertEquals(
+                  listOf("providers", "proxies"),
+                  request.url.segments,
+                )
+                respond(
+                  """
+                  {
+                    "providers": {
+                      "ProxyRemote": {
+                        "name": "ProxyRemote",
+                        "type": "Proxy",
+                        "vehicleType": "HTTP",
+                        "updatedAt": 1234
+                      },
+                      "Compat": {
+                        "name": "Compat",
+                        "type": "Proxy",
+                        "vehicleType": "Compatible",
+                        "updatedAt": 0
+                      }
+                    }
+                  }
+                  """,
+                  HttpStatusCode.OK,
+                  headers = JSON_HEADERS,
+                )
+              }
+              1 -> {
+                assertEquals(HttpMethod.Get, request.method)
+                assertEquals(
+                  listOf("providers", "rules"),
+                  request.url.segments,
+                )
+                respond(
+                  """
+                  {
+                    "providers": {
+                      "RuleRemote": {
+                        "name": "RuleRemote",
+                        "type": "Rule",
+                        "vehicleType": "File",
+                        "updatedAt": "1970-01-01T00:00:02Z"
+                      }
+                    }
+                  }
+                  """,
+                  HttpStatusCode.OK,
+                  headers = JSON_HEADERS,
+                )
+              }
+              else -> error("Unexpected request: ${request.url}")
+            }
+          }
+        ),
+      )
+
+    assertEquals(
+      listOf(
+        Provider("ProxyRemote", Provider.Type.Proxy, Provider.VehicleType.HTTP, 1234),
+        Provider("RuleRemote", Provider.Type.Rule, Provider.VehicleType.File, 2000),
+      ),
+      api.queryProviders().sorted(),
+    )
+    assertEquals(2, requestIndex)
+  }
+
+  @Test
+  fun updateProviderUsesTypeSpecificProviderEndpoint() = runTest {
+    var requestIndex = 0
+    val api =
+      DesktopMihomoApi(
+        DesktopMihomoEndpoint("127.0.0.1:9090", secret = "token"),
+        createTabbyHttpClient(
+          MockEngine { request ->
+            assertEquals(HttpMethod.Put, request.method)
+            assertEquals("Bearer token", request.headers[HttpHeaders.Authorization])
+
+            when (requestIndex++) {
+              0 ->
+                assertEquals(
+                  listOf("providers", "proxies", "Proxy/A"),
+                  request.url.segments,
+                )
+              1 ->
+                assertEquals(
+                  listOf("providers", "rules", "Rule/B"),
+                  request.url.segments,
+                )
+              else -> error("Unexpected request: ${request.url}")
+            }
+
+            respond("", HttpStatusCode.NoContent)
+          }
+        ),
+      )
+
+    api.updateProvider(Provider.Type.Proxy, "Proxy/A")
+    api.updateProvider(Provider.Type.Rule, "Rule/B")
+
+    assertEquals(2, requestIndex)
   }
 
   @Test

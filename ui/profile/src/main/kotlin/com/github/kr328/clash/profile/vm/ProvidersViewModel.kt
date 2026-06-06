@@ -8,8 +8,9 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Provider
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
-import com.github.kr328.clash.glue.util.withClash
 import com.github.kr328.clash.profile.R
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 
 internal class ProvidersViewModel(app: Application) :
   AndroidViewModel(app), DefaultLifecycleObserver {
+  private val engineController: EngineController = AndroidEngineController(app)
   private var broadcastEventsJob: Job? = null
   private var elapsedJob: Job? = null
   private var fetchJob: Job? = null
@@ -70,7 +72,7 @@ internal class ProvidersViewModel(app: Application) :
 
     viewModelScope.launch {
       try {
-        withClash { updateProvider(provider.type, provider.name) }
+        engineController.updateProvider(provider.type, provider.name)
         updateProviderState(provider) {
           it.copy(updating = false, updatedAt = System.currentTimeMillis())
         }
@@ -113,7 +115,7 @@ internal class ProvidersViewModel(app: Application) :
   private fun fetch() {
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
-      val providers = withClash { queryProviders().sorted() }
+      val providers = engineController.queryProviders().sorted()
       uiState.update { current ->
         val existingMap = current.providers.associateBy { providerKey(it.provider) }
         val newStates = providers.map { provider ->

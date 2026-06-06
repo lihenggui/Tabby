@@ -1,6 +1,7 @@
 package com.github.kr328.clash.engine.desktop
 
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
@@ -25,6 +26,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import io.ktor.utils.io.readLine
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -96,6 +98,18 @@ class DesktopMihomoApi(
 
   suspend fun queryTraffic(): Traffic {
     return observeTraffic().first()
+  }
+
+  suspend fun queryProviders(): List<Provider> {
+    return queryProviders(Provider.Type.Proxy, PROVIDER_PROXY_PATH_SEGMENT) +
+      queryProviders(Provider.Type.Rule, PROVIDER_RULE_PATH_SEGMENT)
+  }
+
+  suspend fun updateProvider(type: Provider.Type, name: String) {
+    val response =
+      httpClient.put(endpoint.url("providers", type.providerPathSegment(), name)) { authorize() }
+
+    response.requireSuccess()
   }
 
   suspend fun queryMode(): TunnelState.Mode? {
@@ -205,6 +219,15 @@ class DesktopMihomoApi(
       ?: emptyMap()
   }
 
+  private suspend fun queryProviders(
+    defaultType: Provider.Type,
+    pathSegment: String,
+  ): List<Provider> {
+    return getJson("providers", pathSegment).providerMap(defaultType).filterNot {
+      it.vehicleType == Provider.VehicleType.Compatible
+    }
+  }
+
   private suspend fun getJson(
     vararg pathSegments: String,
     queryParameters: List<Pair<String, String>> = emptyList(),
@@ -293,6 +316,8 @@ private const val GLOBAL_PROXY_GROUP = "GLOBAL"
 private const val DEFAULT_HEALTH_CHECK_URL = "https://www.gstatic.com/generate_204"
 private const val DEFAULT_HEALTH_CHECK_TIMEOUT_MILLIS = 5_000
 private const val DEFAULT_HEALTH_CHECK_EXPECTED_STATUS = "204"
+private const val PROVIDER_PROXY_PATH_SEGMENT = "proxies"
+private const val PROVIDER_RULE_PATH_SEGMENT = "rules"
 
 private fun healthCheckQueryParameters(): List<Pair<String, String>> {
   return listOf(
@@ -366,6 +391,73 @@ private fun String.toProxyType(): Proxy.Type {
 
 private fun String.normalizeProxyType(): String {
   return lowercase().filterNot { it == '-' || it == '_' || it == ' ' }
+}
+
+private fun JsonObject.providerMap(defaultType: Provider.Type): List<Provider> {
+  val providers = this["providers"]?.jsonObjectOrNull() ?: return emptyList()
+
+  return providers.mapNotNull { (name, element) ->
+    element.jsonObjectOrNull()?.toProvider(defaultName = name, defaultType = defaultType)
+  }
+}
+
+private fun JsonObject.toProvider(
+  defaultName: String,
+  defaultType: Provider.Type,
+): Provider? {
+  val name =
+    string("name")?.takeIf { it.isNotBlank() }
+      ?: defaultName.takeIf { it.isNotBlank() }
+      ?: return null
+
+  return Provider(
+    name = name,
+    type = string("type")?.toProviderType(defaultType) ?: defaultType,
+    vehicleType = string("vehicleType")?.toProviderVehicleType() ?: Provider.VehicleType.Compatible,
+    updatedAt = providerUpdatedAt(),
+  )
+}
+
+private fun Provider.Type.providerPathSegment(): String {
+  return when (this) {
+    Provider.Type.Proxy -> PROVIDER_PROXY_PATH_SEGMENT
+    Provider.Type.Rule -> PROVIDER_RULE_PATH_SEGMENT
+  }
+}
+
+private fun String.toProviderType(default: Provider.Type): Provider.Type {
+  return when (normalizeProviderValue()) {
+    "proxy" -> Provider.Type.Proxy
+    "rule" -> Provider.Type.Rule
+    else -> default
+  }
+}
+
+private fun String.toProviderVehicleType(): Provider.VehicleType {
+  return when (normalizeProviderValue()) {
+    "http" -> Provider.VehicleType.HTTP
+    "file" -> Provider.VehicleType.File
+    "inline" -> Provider.VehicleType.Inline
+    "compatible" -> Provider.VehicleType.Compatible
+    else -> Provider.VehicleType.Compatible
+  }
+}
+
+private fun String.normalizeProviderValue(): String {
+  return lowercase().filterNot { it == '-' || it == '_' || it == ' ' }
+}
+
+private fun JsonObject.providerUpdatedAt(): Long {
+  val primitive = this["updatedAt"]?.jsonPrimitive ?: return 0
+
+  primitive.longOrNull?.let {
+    return it
+  }
+
+  val content = primitive.contentOrNull ?: return 0
+
+  return content.toLongOrNull()
+    ?: runCatching { Instant.parse(content).toEpochMilli() }.getOrDefault(0)
 }
 
 private fun JsonObject.lastDelay(): Int {

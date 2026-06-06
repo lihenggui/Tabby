@@ -1,5 +1,6 @@
 package com.github.kr328.clash.engine.ios
 
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.Traffic
@@ -23,6 +24,14 @@ class IosEngineController : EngineController {
   }
 
   override suspend fun queryTraffic(): Traffic {
+    unsupported()
+  }
+
+  override suspend fun queryProviders(): List<Provider> {
+    unsupported()
+  }
+
+  override suspend fun updateProvider(type: Provider.Type, name: String) {
     unsupported()
   }
 

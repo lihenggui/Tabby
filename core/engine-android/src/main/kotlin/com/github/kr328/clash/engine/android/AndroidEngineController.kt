@@ -3,6 +3,7 @@ package com.github.kr328.clash.engine.android
 import android.content.Context
 import android.content.Intent
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.Traffic
@@ -47,6 +48,14 @@ class AndroidEngineController(
 
   override suspend fun queryTraffic(): Traffic {
     return withClash { queryTrafficTotal() }
+  }
+
+  override suspend fun queryProviders(): List<Provider> {
+    return withClash { queryProviders() }
+  }
+
+  override suspend fun updateProvider(type: Provider.Type, name: String) {
+    withClash { updateProvider(type, name) }
   }
 
   override suspend fun queryProxyGroupNames(excludeNotSelectable: Boolean): List<String> {

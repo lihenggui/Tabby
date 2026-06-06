@@ -90,7 +90,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
       val state = withClash { queryTunnelState() }
-      val providers = withClash { queryProviders() }
+      val providers = engineController.queryProviders()
       val mode =
         when (state.mode) {
           Direct -> application.getString(CommonR.string.direct_mode)
