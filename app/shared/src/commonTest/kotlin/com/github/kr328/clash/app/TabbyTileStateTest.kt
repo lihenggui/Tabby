@@ -5,6 +5,102 @@ import kotlin.test.assertEquals
 
 class TabbyTileStateTest {
   @Test
+  fun tabbyTileBroadcastActionFromStringParsesKnownPlatformActions() {
+    assertEquals(
+      TabbyTileBroadcastAction.ClashStarted,
+      tabbyTileBroadcastActionFromString(
+        action = "clash-started",
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+    assertEquals(
+      TabbyTileBroadcastAction.ClashStopped,
+      tabbyTileBroadcastActionFromString(
+        action = "clash-stopped",
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+    assertEquals(
+      TabbyTileBroadcastAction.ServiceRecreated,
+      tabbyTileBroadcastActionFromString(
+        action = "service-recreated",
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+    assertEquals(
+      TabbyTileBroadcastAction.ProfileLoaded,
+      tabbyTileBroadcastActionFromString(
+        action = "profile-loaded",
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyTileBroadcastActionFromStringIgnoresUnknownPlatformActions() {
+    assertEquals(
+      null,
+      tabbyTileBroadcastActionFromString(
+        action = "unknown",
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyTileBroadcastActionFromString(
+        action = null,
+        clashStartedAction = "clash-started",
+        clashStoppedAction = "clash-stopped",
+        serviceRecreatedAction = "service-recreated",
+        profileLoadedAction = "profile-loaded",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyTileClickStateFromPlatformStateMapsPlatformStates() {
+    assertEquals(
+      TabbyTileClickState.Active,
+      tabbyTileClickStateFromPlatformState(
+        state = 2,
+        activeState = 2,
+        inactiveState = 1,
+      ),
+    )
+    assertEquals(
+      TabbyTileClickState.Inactive,
+      tabbyTileClickStateFromPlatformState(
+        state = 1,
+        activeState = 2,
+        inactiveState = 1,
+      ),
+    )
+    assertEquals(
+      TabbyTileClickState.Other,
+      tabbyTileClickStateFromPlatformState(
+        state = 0,
+        activeState = 2,
+        inactiveState = 1,
+      ),
+    )
+  }
+
+  @Test
   fun tabbyTileInitialStateUsesCurrentProfilePresenceAsRunningState() {
     assertEquals(
       TabbyTileState(),

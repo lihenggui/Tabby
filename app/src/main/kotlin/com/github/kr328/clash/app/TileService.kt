@@ -84,17 +84,17 @@ class TileService : android.service.quicksettings.TileService() {
 }
 
 private fun Intent.tabbyTileBroadcastAction(): TabbyTileBroadcastAction? =
-  when (action) {
-    Intents.ACTION_CLASH_STARTED -> TabbyTileBroadcastAction.ClashStarted
-    Intents.ACTION_CLASH_STOPPED -> TabbyTileBroadcastAction.ClashStopped
-    Intents.ACTION_SERVICE_RECREATED -> TabbyTileBroadcastAction.ServiceRecreated
-    Intents.ACTION_PROFILE_LOADED -> TabbyTileBroadcastAction.ProfileLoaded
-    else -> null
-  }
+  tabbyTileBroadcastActionFromString(
+    action = action,
+    clashStartedAction = Intents.ACTION_CLASH_STARTED,
+    clashStoppedAction = Intents.ACTION_CLASH_STOPPED,
+    serviceRecreatedAction = Intents.ACTION_SERVICE_RECREATED,
+    profileLoadedAction = Intents.ACTION_PROFILE_LOADED,
+  )
 
 private fun Tile.tabbyTileClickState(): TabbyTileClickState =
-  when (state) {
-    Tile.STATE_ACTIVE -> TabbyTileClickState.Active
-    Tile.STATE_INACTIVE -> TabbyTileClickState.Inactive
-    else -> TabbyTileClickState.Other
-  }
+  tabbyTileClickStateFromPlatformState(
+    state = state,
+    activeState = Tile.STATE_ACTIVE,
+    inactiveState = Tile.STATE_INACTIVE,
+  )

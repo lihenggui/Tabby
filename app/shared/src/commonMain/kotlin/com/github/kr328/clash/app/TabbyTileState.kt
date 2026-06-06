@@ -54,6 +54,32 @@ data class TabbyTilePresentation(
   val profileName: String?,
 )
 
+fun tabbyTileBroadcastActionFromString(
+  action: String?,
+  clashStartedAction: String,
+  clashStoppedAction: String,
+  serviceRecreatedAction: String,
+  profileLoadedAction: String,
+): TabbyTileBroadcastAction? =
+  when (action) {
+    clashStartedAction -> TabbyTileBroadcastAction.ClashStarted
+    clashStoppedAction -> TabbyTileBroadcastAction.ClashStopped
+    serviceRecreatedAction -> TabbyTileBroadcastAction.ServiceRecreated
+    profileLoadedAction -> TabbyTileBroadcastAction.ProfileLoaded
+    else -> null
+  }
+
+fun tabbyTileClickStateFromPlatformState(
+  state: Int,
+  activeState: Int,
+  inactiveState: Int,
+): TabbyTileClickState =
+  when (state) {
+    activeState -> TabbyTileClickState.Active
+    inactiveState -> TabbyTileClickState.Inactive
+    else -> TabbyTileClickState.Other
+  }
+
 fun tabbyTileInitialState(currentProfile: String?): TabbyTileState =
   TabbyTileState(
     clashRunning = currentProfile != null,
