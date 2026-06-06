@@ -43,7 +43,7 @@ internal fun Project.configureKotlinMultiplatform(configureIosFrameworks: Boolea
 
           compilerOptions {
             allWarningsAsErrors.set(allWarningsAsErrorsForTask)
-            freeCompilerArgs.addAll("-Xcontext-sensitive-resolution", "-Xexpect-actual-classes")
+            freeCompilerArgs.add("-Xcontext-sensitive-resolution")
           }
         }
       }
