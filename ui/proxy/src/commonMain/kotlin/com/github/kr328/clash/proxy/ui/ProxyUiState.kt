@@ -117,6 +117,15 @@ internal enum class ProxyPreferenceChangeEffect {
   ReloadAll,
 }
 
+internal data class ProxyOverrideModeAction(
+  val state: ProxyUiState,
+  val effect: ProxyOverrideModeEffect,
+)
+
+internal sealed interface ProxyOverrideModeEffect {
+  data class ShowTipsAndPatchMode(val mode: TunnelState.Mode?) : ProxyOverrideModeEffect
+}
+
 internal fun ProxyUiState.withProxyPreferences(
   proxyLine: Int,
   excludeNotSelectable: Boolean,
@@ -212,6 +221,16 @@ internal fun proxySortChangeAction(
   return ProxyPreferenceChangeAction(
     state = state.withProxySort(sort),
     effect = ProxyPreferenceChangeEffect.ReloadAll,
+  )
+}
+
+internal fun proxyOverrideModeAction(
+  state: ProxyUiState,
+  mode: TunnelState.Mode?,
+): ProxyOverrideModeAction {
+  return ProxyOverrideModeAction(
+    state = state.withOverrideMode(mode),
+    effect = ProxyOverrideModeEffect.ShowTipsAndPatchMode(mode),
   )
 }
 

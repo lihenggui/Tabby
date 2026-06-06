@@ -232,6 +232,36 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyOverrideModeActionUpdatesStateShowsTipsAndPatchesMode() {
+    val action =
+      proxyOverrideModeAction(
+        state = ProxyUiState(overrideMode = null),
+        mode = TunnelState.Mode.Rule,
+      )
+
+    assertEquals(TunnelState.Mode.Rule, action.state.overrideMode)
+    assertEquals(
+      ProxyOverrideModeEffect.ShowTipsAndPatchMode(TunnelState.Mode.Rule),
+      action.effect,
+    )
+  }
+
+  @Test
+  fun proxyOverrideModeActionClearsModeAndPatchesNullMode() {
+    val action =
+      proxyOverrideModeAction(
+        state = ProxyUiState(overrideMode = TunnelState.Mode.Global),
+        mode = null,
+      )
+
+    assertEquals(null, action.state.overrideMode)
+    assertEquals(
+      ProxyOverrideModeEffect.ShowTipsAndPatchMode(null),
+      action.effect,
+    )
+  }
+
+  @Test
   fun proxyGroupSelectionActionSelectsGroupNameByIndex() {
     assertEquals(
       ProxyGroupSelectionAction.SelectGroup("Auto"),

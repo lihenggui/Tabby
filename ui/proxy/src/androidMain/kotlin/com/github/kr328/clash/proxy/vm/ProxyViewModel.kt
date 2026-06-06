@@ -15,6 +15,8 @@ import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
+import com.github.kr328.clash.proxy.ui.ProxyOverrideModeAction
+import com.github.kr328.clash.proxy.ui.ProxyOverrideModeEffect
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
@@ -26,6 +28,7 @@ import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
 import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
+import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.proxySortChangeAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
@@ -33,7 +36,6 @@ import com.github.kr328.clash.proxy.ui.withCurrentPage
 import com.github.kr328.clash.proxy.ui.withDelayTestFinished
 import com.github.kr328.clash.proxy.ui.withDelayTestStarted
 import com.github.kr328.clash.proxy.ui.withInitialProxyGroups
-import com.github.kr328.clash.proxy.ui.withOverrideMode
 import com.github.kr328.clash.proxy.ui.withProxyGroup
 import com.github.kr328.clash.proxy.ui.withProxyGroupState
 import com.github.kr328.clash.proxy.ui.withProxyPreferences
@@ -153,9 +155,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onOverrideModeSelected(mode: TunnelState.Mode?) {
-    uiState.update { it.withOverrideMode(mode) }
-    eventState.value = ProxyEventState.ShowModeSwitchTips
-    viewModelScope.launch { engineController.patchSessionMode(mode) }
+    applyProxyOverrideModeAction { proxyOverrideModeAction(it, mode) }
   }
 
   fun onUrlTest(index: Int) {
@@ -248,6 +248,25 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
     when (effect) {
       ProxyPreferenceChangeEffect.ReLaunch -> eventState.value = ProxyEventState.ReLaunch
       ProxyPreferenceChangeEffect.ReloadAll -> reloadAll()
+    }
+  }
+
+  private fun applyProxyOverrideModeAction(action: (ProxyUiState) -> ProxyOverrideModeAction) {
+    var effect: ProxyOverrideModeEffect? = null
+    uiState.update { current ->
+      val change = action(current)
+      effect = change.effect
+      change.state
+    }
+    applyProxyOverrideModeEffect(checkNotNull(effect))
+  }
+
+  private fun applyProxyOverrideModeEffect(effect: ProxyOverrideModeEffect) {
+    when (effect) {
+      is ProxyOverrideModeEffect.ShowTipsAndPatchMode -> {
+        eventState.value = ProxyEventState.ShowModeSwitchTips
+        viewModelScope.launch { engineController.patchSessionMode(effect.mode) }
+      }
     }
   }
 
