@@ -13,7 +13,10 @@ import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
+import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
+import com.github.kr328.clash.profile.ui.withConfigFiles
+import com.github.kr328.clash.profile.ui.withConfigurationEditable
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +30,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   private var location = ProfileFilesLocation()
   private var fetchJob: Job? = null
 
-  val uiState: StateFlow<UiState>
-    field = MutableStateFlow(UiState())
+  val uiState: StateFlow<ProfileFilesUiState<ConfigFile>>
+    field = MutableStateFlow(ProfileFilesUiState())
 
   val eventState: StateFlow<EventState>
     field = MutableStateFlow<EventState>(EventState.Idle)
@@ -43,7 +46,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
         eventState.value = EventState.Finish
         return@launch
       }
-      uiState.update { it.copy(configurationEditable = profile.type == Url) }
+      uiState.update { it.withConfigurationEditable(profile.type == Url) }
       fetch()
     }
   }
@@ -156,19 +159,13 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
             size = ConfigFile::size,
           )
 
-        uiState.update { it.copy(configFiles = files, currentInBaseDir = inBaseDir) }
+        uiState.update { it.withConfigFiles(configFiles = files, currentInBaseDir = inBaseDir) }
       } catch (e: Exception) {
         Log.e("List files failed: ${e.message}", e)
         eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
       }
     }
   }
-
-  data class UiState(
-    val configFiles: List<ConfigFile> = emptyList(),
-    val currentInBaseDir: Boolean = true,
-    val configurationEditable: Boolean = false,
-  )
 
   sealed interface EventState {
     data object Idle : EventState
