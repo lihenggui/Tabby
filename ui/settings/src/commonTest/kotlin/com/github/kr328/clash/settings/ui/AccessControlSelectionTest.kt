@@ -179,7 +179,7 @@ class AccessControlSelectionTest {
     val packages =
       listOf(
         accessControlPackage(packageName = "io.github.goooler.tabby", hasInternetPermission = true),
-        accessControlPackage(packageName = "com.example.without-info", hasApplicationInfo = false),
+        accessControlPackage(packageName = "com.example.without-info", hasAppMetadata = false),
         accessControlPackage(packageName = "com.example.without-network"),
         accessControlPackage(
           packageName = "com.example.internet",
@@ -202,7 +202,7 @@ class AccessControlSelectionTest {
         currentPackageName = "io.github.goooler.tabby",
         showSystemApps = false,
         packageName = TestAccessControlPackage::packageName,
-        hasApplicationInfo = TestAccessControlPackage::hasApplicationInfo,
+        hasAppMetadata = TestAccessControlPackage::hasAppMetadata,
         hasInternetPermission = TestAccessControlPackage::hasInternetPermission,
         hasSystemUid = TestAccessControlPackage::hasSystemUid,
         isSystemApp = TestAccessControlPackage::isSystemApp,
@@ -231,7 +231,7 @@ class AccessControlSelectionTest {
         currentPackageName = "io.github.goooler.tabby",
         showSystemApps = true,
         packageName = TestAccessControlPackage::packageName,
-        hasApplicationInfo = TestAccessControlPackage::hasApplicationInfo,
+        hasAppMetadata = TestAccessControlPackage::hasAppMetadata,
         hasInternetPermission = TestAccessControlPackage::hasInternetPermission,
         hasSystemUid = TestAccessControlPackage::hasSystemUid,
         isSystemApp = TestAccessControlPackage::isSystemApp,
@@ -240,6 +240,64 @@ class AccessControlSelectionTest {
     assertEquals(
       listOf("com.example.system-app"),
       visible.map(TestAccessControlPackage::packageName),
+    )
+  }
+
+  @Test
+  fun loadsAccessControlAppsByFilteringMappingAndSorting() {
+    val packages =
+      listOf(
+        accessControlPackage(packageName = "io.github.goooler.tabby", hasInternetPermission = true),
+        accessControlPackage(
+          packageName = "com.example.without-info",
+          hasAppMetadata = false,
+          hasInternetPermission = true,
+        ),
+        accessControlPackage(packageName = "com.example.without-network"),
+        accessControlPackage(
+          packageName = "com.example.hidden-system-app",
+          hasInternetPermission = true,
+          isSystemApp = true,
+        ),
+        accessControlPackage(packageName = "com.example.beta", hasInternetPermission = true),
+        accessControlPackage(packageName = "com.example.alpha", hasInternetPermission = true),
+        accessControlPackage(packageName = "com.example.selected", hasInternetPermission = true),
+      )
+    val mappedPackageNames = mutableListOf<String>()
+
+    val apps =
+      loadAccessControlApps(
+        packages = packages,
+        selectedPackageNames = setOf("com.example.selected"),
+        sort = AccessControlSort.Label,
+        reverse = false,
+        currentPackageName = "io.github.goooler.tabby",
+        showSystemApps = false,
+        packageName = TestAccessControlPackage::packageName,
+        hasAppMetadata = TestAccessControlPackage::hasAppMetadata,
+        hasInternetPermission = TestAccessControlPackage::hasInternetPermission,
+        hasSystemUid = TestAccessControlPackage::hasSystemUid,
+        isSystemApp = TestAccessControlPackage::isSystemApp,
+        toApp = {
+          mappedPackageNames += it.packageName
+          accessControlApp(
+            packageName = it.packageName,
+            label = it.packageName.substringAfterLast('.'),
+          )
+        },
+        appPackageName = TestAccessControlApp::packageName,
+        appLabel = TestAccessControlApp::label,
+        appInstallTime = TestAccessControlApp::installTime,
+        appUpdateTime = TestAccessControlApp::updateTime,
+      )
+
+    assertEquals(
+      listOf("com.example.beta", "com.example.alpha", "com.example.selected"),
+      mappedPackageNames,
+    )
+    assertEquals(
+      listOf("com.example.selected", "com.example.alpha", "com.example.beta"),
+      apps.map(TestAccessControlApp::packageName),
     )
   }
 
@@ -587,14 +645,14 @@ class AccessControlSelectionTest {
 
   private fun accessControlPackage(
     packageName: String,
-    hasApplicationInfo: Boolean = true,
+    hasAppMetadata: Boolean = true,
     hasInternetPermission: Boolean = false,
     hasSystemUid: Boolean = false,
     isSystemApp: Boolean = false,
   ): TestAccessControlPackage {
     return TestAccessControlPackage(
       packageName = packageName,
-      hasApplicationInfo = hasApplicationInfo,
+      hasAppMetadata = hasAppMetadata,
       hasInternetPermission = hasInternetPermission,
       hasSystemUid = hasSystemUid,
       isSystemApp = isSystemApp,
@@ -603,7 +661,7 @@ class AccessControlSelectionTest {
 
   private data class TestAccessControlPackage(
     val packageName: String,
-    val hasApplicationInfo: Boolean,
+    val hasAppMetadata: Boolean,
     val hasInternetPermission: Boolean,
     val hasSystemUid: Boolean,
     val isSystemApp: Boolean,

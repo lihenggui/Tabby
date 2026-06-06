@@ -29,9 +29,8 @@ import com.github.kr328.clash.settings.ui.AccessControlUiState
 import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
 import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
 import com.github.kr328.clash.settings.ui.accessControlInitialUiState
-import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
+import com.github.kr328.clash.settings.ui.loadAccessControlApps
 import com.github.kr328.clash.settings.ui.planAccessControlPersist
-import com.github.kr328.clash.settings.ui.sortAccessControlApps
 import com.github.kr328.clash.settings.ui.withAccessControlApps
 import com.github.kr328.clash.settings.ui.withAccessControlReverse
 import com.github.kr328.clash.settings.ui.withAccessControlSelectedPackages
@@ -211,34 +210,27 @@ internal class AccessControlViewModel(app: Application) :
   ): List<AppInfo> =
     withContext(Dispatchers.IO) {
       val pm = appContext.packageManager
-      val apps =
-        filterAccessControlPackageCandidates(
-            packages = pm.getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS),
-            currentPackageName = appContext.packageName,
-            showSystemApps = showSystemApps,
-            packageName = PackageInfo::packageName,
-            hasApplicationInfo = { it.applicationInfo != null },
-            hasInternetPermission = {
-              it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true
-            },
-            hasSystemUid = {
-              it.applicationInfo?.uid?.let { uid -> uid < Process.FIRST_APPLICATION_UID } == true
-            },
-            isSystemApp = { it.isSystemApp },
-          )
-          .asSequence()
-          .map { it.toAppInfo(pm) }
-          .toList()
-
-      sortAccessControlApps(
-        apps = apps,
+      loadAccessControlApps(
+        packages = pm.getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS),
         selectedPackageNames = selected,
         sort = sort,
         reverse = reverse,
-        packageName = AppInfo::packageName,
-        label = AppInfo::label,
-        installTime = AppInfo::installTime,
-        updateTime = AppInfo::updateDate,
+        currentPackageName = appContext.packageName,
+        showSystemApps = showSystemApps,
+        packageName = PackageInfo::packageName,
+        hasAppMetadata = { it.applicationInfo != null },
+        hasInternetPermission = {
+          it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true
+        },
+        hasSystemUid = {
+          it.applicationInfo?.uid?.let { uid -> uid < Process.FIRST_APPLICATION_UID } == true
+        },
+        isSystemApp = { it.isSystemApp },
+        toApp = { it.toAppInfo(pm) },
+        appPackageName = AppInfo::packageName,
+        appLabel = AppInfo::label,
+        appInstallTime = AppInfo::installTime,
+        appUpdateTime = AppInfo::updateDate,
       )
     }
 

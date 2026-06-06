@@ -152,17 +152,60 @@ internal fun <T> filterAccessControlPackageCandidates(
   currentPackageName: String,
   showSystemApps: Boolean,
   packageName: (T) -> String,
-  hasApplicationInfo: (T) -> Boolean,
+  hasAppMetadata: (T) -> Boolean,
   hasInternetPermission: (T) -> Boolean,
   hasSystemUid: (T) -> Boolean,
   isSystemApp: (T) -> Boolean,
 ): List<T> {
   return packages.filter {
     packageName(it) != currentPackageName &&
-      hasApplicationInfo(it) &&
+      hasAppMetadata(it) &&
       (hasInternetPermission(it) || hasSystemUid(it)) &&
       (showSystemApps || !isSystemApp(it))
   }
+}
+
+internal fun <P, A> loadAccessControlApps(
+  packages: Iterable<P>,
+  selectedPackageNames: Set<String>,
+  sort: AccessControlSort,
+  reverse: Boolean,
+  currentPackageName: String,
+  showSystemApps: Boolean,
+  packageName: (P) -> String,
+  hasAppMetadata: (P) -> Boolean,
+  hasInternetPermission: (P) -> Boolean,
+  hasSystemUid: (P) -> Boolean,
+  isSystemApp: (P) -> Boolean,
+  toApp: (P) -> A,
+  appPackageName: (A) -> String,
+  appLabel: (A) -> String,
+  appInstallTime: (A) -> Long,
+  appUpdateTime: (A) -> Long,
+): List<A> {
+  val apps =
+    filterAccessControlPackageCandidates(
+        packages = packages,
+        currentPackageName = currentPackageName,
+        showSystemApps = showSystemApps,
+        packageName = packageName,
+        hasAppMetadata = hasAppMetadata,
+        hasInternetPermission = hasInternetPermission,
+        hasSystemUid = hasSystemUid,
+        isSystemApp = isSystemApp,
+      )
+      .map(toApp)
+
+  return sortAccessControlApps(
+    apps = apps,
+    selectedPackageNames = selectedPackageNames,
+    sort = sort,
+    reverse = reverse,
+    packageName = appPackageName,
+    label = appLabel,
+    installTime = appInstallTime,
+    updateTime = appUpdateTime,
+  )
 }
 
 internal fun <T> sortAccessControlApps(
