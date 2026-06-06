@@ -70,6 +70,8 @@ internal sealed interface LogcatExportAction {
   data object Ignore : LogcatExportAction
 }
 
+internal data class LogcatExportResult(val destinationSelected: Boolean)
+
 internal sealed interface LogcatPollAction {
   data class QuerySnapshot(val initialSnapshot: Boolean) : LogcatPollAction
 
@@ -147,10 +149,10 @@ internal fun logcatRequestExportEventState(action: LogcatRequestExportAction): L
 
 internal fun logcatExportAction(
   currentFile: LogFile?,
-  hasDestination: Boolean,
+  result: LogcatExportResult,
 ): LogcatExportAction {
   val file = currentFile ?: return LogcatExportAction.Ignore
-  if (!hasDestination) return LogcatExportAction.Ignore
+  if (!result.destinationSelected) return LogcatExportAction.Ignore
 
   return LogcatExportAction.ExportFile(file)
 }

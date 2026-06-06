@@ -24,6 +24,7 @@ import com.github.kr328.clash.log.ui.LogcatCloseAction
 import com.github.kr328.clash.log.ui.LogcatDeleteAction
 import com.github.kr328.clash.log.ui.LogcatEventState
 import com.github.kr328.clash.log.ui.LogcatExportAction
+import com.github.kr328.clash.log.ui.LogcatExportResult
 import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatPollAction
 import com.github.kr328.clash.log.ui.LogcatUiState
@@ -128,15 +129,22 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
   }
 
   fun exportTo(uri: Uri?) {
-    when (val action = logcatExportAction(currentFile, hasDestination = uri != null)) {
+    val destination = uri
+    when (
+      val action =
+        logcatExportAction(
+          currentFile,
+          LogcatExportResult(destinationSelected = destination != null),
+        )
+    ) {
       is LogcatExportAction.ExportFile -> {
-        val destination = checkNotNull(uri)
+        val selectedDestination = checkNotNull(destination)
         viewModelScope.launch {
           val messages = uiState.value.messages
 
           eventState.value =
             try {
-              writeLogTo(messages, action.file, destination)
+              writeLogTo(messages, action.file, selectedDestination)
               logcatExportResultEventState(
                 success = true,
                 errorMessage = null,

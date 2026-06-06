@@ -157,15 +157,24 @@ class LogcatUiStateTest {
 
     assertEquals(
       LogcatExportAction.ExportFile(file),
-      logcatExportAction(currentFile = file, hasDestination = true),
+      logcatExportAction(
+        currentFile = file,
+        result = LogcatExportResult(destinationSelected = true),
+      ),
     )
     assertEquals(
       LogcatExportAction.Ignore,
-      logcatExportAction(currentFile = file, hasDestination = false),
+      logcatExportAction(
+        currentFile = file,
+        result = LogcatExportResult(destinationSelected = false),
+      ),
     )
     assertEquals(
       LogcatExportAction.Ignore,
-      logcatExportAction(currentFile = null, hasDestination = true),
+      logcatExportAction(
+        currentFile = null,
+        result = LogcatExportResult(destinationSelected = true),
+      ),
     )
   }
 
