@@ -16,6 +16,7 @@ import com.github.kr328.clash.profile.ui.ProfileFileExportAction
 import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
+import com.github.kr328.clash.profile.ui.ProfileFilesFetchAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
 import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
@@ -23,6 +24,7 @@ import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
+import com.github.kr328.clash.profile.ui.profileFilesFetchAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -183,20 +185,27 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
 
   private fun fetch() {
     fetchJob?.cancel()
-    if (!location.initialized) return
-    val documentId = location.currentDocumentId
-    val inBaseDir = location.currentInBaseDir
+    val fetchAction =
+      when (val action = profileFilesFetchAction(location)) {
+        is ProfileFilesFetchAction.Fetch -> action
+        ProfileFilesFetchAction.Ignore -> return
+      }
     fetchJob = viewModelScope.launch {
       try {
         val files =
           selectVisibleProfileFiles(
-            files = client.list(documentId),
-            inBaseDirectory = inBaseDir,
+            files = client.list(fetchAction.documentId),
+            inBaseDirectory = fetchAction.inBaseDirectory,
             id = ConfigFile::id,
             size = ConfigFile::size,
           )
 
-        uiState.update { it.withConfigFiles(configFiles = files, currentInBaseDir = inBaseDir) }
+        uiState.update {
+          it.withConfigFiles(
+            configFiles = files,
+            currentInBaseDir = fetchAction.inBaseDirectory,
+          )
+        }
       } catch (e: Exception) {
         Log.e("List files failed: ${e.message}", e)
         eventState.value = EventState.ShowMessage(e.message ?: "Unknown error")
