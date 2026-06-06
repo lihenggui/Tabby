@@ -12,6 +12,9 @@ import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.ProviderItemState
+import com.github.kr328.clash.profile.ui.mergeProviderItemStates
+import com.github.kr328.clash.profile.ui.updateProviderItemState
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -92,23 +95,12 @@ internal class ProvidersViewModel(app: Application) :
     }
   }
 
-  private fun providerKey(provider: Provider): String {
-    return "${provider.type}-${provider.name}"
-  }
-
   private fun updateProviderState(
     provider: Provider,
-    transform: (UiState.ProviderItemState) -> UiState.ProviderItemState,
+    transform: (ProviderItemState) -> ProviderItemState,
   ) {
-    val key = providerKey(provider)
-
     uiState.update { current ->
-      current.copy(
-        providers =
-          current.providers.map { state ->
-            if (providerKey(state.provider) == key) transform(state) else state
-          }
-      )
+      current.copy(providers = current.providers.updateProviderItemState(provider, transform))
     }
   }
 
@@ -117,24 +109,7 @@ internal class ProvidersViewModel(app: Application) :
     fetchJob = viewModelScope.launch {
       val providers = engineController.queryProviders().sorted()
       uiState.update { current ->
-        val existingMap = current.providers.associateBy { providerKey(it.provider) }
-        val newStates = providers.map { provider ->
-          val key = providerKey(provider)
-          existingMap[key]?.let { existing ->
-            existing.copy(
-              provider = provider,
-              updatedAt =
-                if (existing.updating) existing.updatedAt
-                else maxOf(existing.updatedAt, provider.updatedAt),
-            )
-          }
-            ?: UiState.ProviderItemState(
-              provider = provider,
-              updatedAt = provider.updatedAt,
-              updating = false,
-            )
-        }
-        current.copy(providers = newStates)
+        current.copy(providers = mergeProviderItemStates(current.providers, providers))
       }
     }
   }
@@ -152,9 +127,7 @@ internal class ProvidersViewModel(app: Application) :
   data class UiState(
     val providers: List<ProviderItemState> = emptyList(),
     val currentTime: Long = System.currentTimeMillis(),
-  ) {
-    data class ProviderItemState(val provider: Provider, val updatedAt: Long, val updating: Boolean)
-  }
+  )
 
   sealed interface EventState {
     data object Idle : EventState
