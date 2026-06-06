@@ -12,9 +12,10 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.filterUpdatableProfiles
+import com.github.kr328.clash.profile.ui.hasUpdatableProfiles
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.Uuid
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 internal class ProfilesViewModel(app: Application) :
   AndroidViewModel(app), DefaultLifecycleObserver {
@@ -96,10 +96,8 @@ internal class ProfilesViewModel(app: Application) :
     viewModelScope.launch {
       uiState.update { it.copy(allUpdating = true) }
       try {
-        profileRepository.queryProfiles().forEach { profile ->
-          if (profile.imported && profile.type != File) {
-            profileRepository.update(profile.uuid)
-          }
+        filterUpdatableProfiles(profileRepository.queryProfiles()).forEach { profile ->
+          profileRepository.update(profile.uuid)
         }
       } finally {
         uiState.update { it.copy(allUpdating = false) }
@@ -130,10 +128,10 @@ internal class ProfilesViewModel(app: Application) :
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch {
       val profiles = profileRepository.queryProfiles()
-      val hasUpdatableProfile =
-        withContext(Dispatchers.Default) { profiles.any { it.imported && it.type != File } }
 
-      uiState.update { it.copy(profiles = profiles, hasUpdatableProfile = hasUpdatableProfile) }
+      uiState.update {
+        it.copy(profiles = profiles, hasUpdatableProfile = hasUpdatableProfiles(profiles))
+      }
     }
   }
 
