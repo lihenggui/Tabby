@@ -6,6 +6,54 @@ import kotlin.test.assertEquals
 
 class MetaFeatureSettingsStateTest {
   @Test
+  fun updatesMetaBooleanBasicOptionsAndPreservesOtherState() {
+    val configuration = configurationWithMetaBasicOptions()
+
+    val unifiedDelayUpdated = updateMetaUnifiedDelay(configuration, false)
+    val geodataModeUpdated = updateMetaGeodataMode(configuration, null)
+    val tcpConcurrentUpdated = updateMetaTcpConcurrent(configuration, true)
+
+    assertEquals(false, unifiedDelayUpdated.unifiedDelay)
+    assertEquals(configuration.geodataMode, unifiedDelayUpdated.geodataMode)
+    assertEquals(configuration.tcpConcurrent, unifiedDelayUpdated.tcpConcurrent)
+    assertEquals(configuration.findProcessMode, unifiedDelayUpdated.findProcessMode)
+    assertEquals(configuration.sniffer, unifiedDelayUpdated.sniffer)
+
+    assertEquals(null, geodataModeUpdated.geodataMode)
+    assertEquals(configuration.unifiedDelay, geodataModeUpdated.unifiedDelay)
+    assertEquals(configuration.tcpConcurrent, geodataModeUpdated.tcpConcurrent)
+    assertEquals(configuration.findProcessMode, geodataModeUpdated.findProcessMode)
+    assertEquals(configuration.sniffer, geodataModeUpdated.sniffer)
+
+    assertEquals(true, tcpConcurrentUpdated.tcpConcurrent)
+    assertEquals(configuration.unifiedDelay, tcpConcurrentUpdated.unifiedDelay)
+    assertEquals(configuration.geodataMode, tcpConcurrentUpdated.geodataMode)
+    assertEquals(configuration.findProcessMode, tcpConcurrentUpdated.findProcessMode)
+    assertEquals(configuration.sniffer, tcpConcurrentUpdated.sniffer)
+  }
+
+  @Test
+  fun updatesFindProcessModeAndPreservesOtherState() {
+    val configuration = configurationWithMetaBasicOptions()
+
+    val strictUpdated =
+      updateMetaFindProcessMode(configuration, ConfigurationOverride.FindProcessMode.Strict)
+    val cleared = updateMetaFindProcessMode(configuration, null)
+
+    assertEquals(ConfigurationOverride.FindProcessMode.Strict, strictUpdated.findProcessMode)
+    assertEquals(configuration.unifiedDelay, strictUpdated.unifiedDelay)
+    assertEquals(configuration.geodataMode, strictUpdated.geodataMode)
+    assertEquals(configuration.tcpConcurrent, strictUpdated.tcpConcurrent)
+    assertEquals(configuration.sniffer, strictUpdated.sniffer)
+
+    assertEquals(null, cleared.findProcessMode)
+    assertEquals(configuration.unifiedDelay, cleared.unifiedDelay)
+    assertEquals(configuration.geodataMode, cleared.geodataMode)
+    assertEquals(configuration.tcpConcurrent, cleared.tcpConcurrent)
+    assertEquals(configuration.sniffer, cleared.sniffer)
+  }
+
+  @Test
   fun updatesHttpSniffPortsAndPreservesOtherProtocols() {
     val configuration = configurationWithSniffProtocols()
 
@@ -163,6 +211,16 @@ class MetaFeatureSettingsStateTest {
                 ),
             ),
         )
+    )
+  }
+
+  private fun configurationWithMetaBasicOptions(): ConfigurationOverride {
+    return ConfigurationOverride(
+      unifiedDelay = true,
+      geodataMode = false,
+      tcpConcurrent = false,
+      findProcessMode = ConfigurationOverride.FindProcessMode.Always,
+      sniffer = configurationWithSnifferOptions().sniffer,
     )
   }
 

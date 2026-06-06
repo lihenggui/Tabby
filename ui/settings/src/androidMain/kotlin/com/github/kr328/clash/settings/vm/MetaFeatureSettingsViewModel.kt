@@ -19,6 +19,8 @@ import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.planGeoFileImport
+import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
+import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
 import com.github.kr328.clash.settings.ui.updateMetaSnifferEnable
 import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDnsMapping
 import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDomain
@@ -27,6 +29,8 @@ import com.github.kr328.clash.settings.ui.updateMetaSnifferParsePureIp
 import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDomain
 import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDstAddress
 import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipSrcAddress
+import com.github.kr328.clash.settings.ui.updateMetaTcpConcurrent
+import com.github.kr328.clash.settings.ui.updateMetaUnifiedDelay
 import com.github.kr328.clash.settings.ui.updateSniffProtocolOverrideDestination
 import com.github.kr328.clash.settings.ui.updateSniffProtocolPorts
 import kotlinx.coroutines.Dispatchers
@@ -104,20 +108,20 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   }
 
   override fun updateUnifiedDelay(value: Boolean?) = configuration.update {
-    it.copy(unifiedDelay = value)
+    updateMetaUnifiedDelay(it, value)
   }
 
   override fun updateGeodataMode(value: Boolean?) = configuration.update {
-    it.copy(geodataMode = value)
+    updateMetaGeodataMode(it, value)
   }
 
   override fun updateTcpConcurrent(value: Boolean?) = configuration.update {
-    it.copy(tcpConcurrent = value)
+    updateMetaTcpConcurrent(it, value)
   }
 
   override fun updateFindProcessMode(value: ConfigurationOverride.FindProcessMode?) =
     configuration.update {
-      it.copy(findProcessMode = value)
+      updateMetaFindProcessMode(it, value)
     }
 
   override fun updateSnifferEnable(value: Boolean?) = configuration.update {

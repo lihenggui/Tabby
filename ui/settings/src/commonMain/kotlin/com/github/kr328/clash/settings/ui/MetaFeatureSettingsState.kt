@@ -8,6 +8,34 @@ internal enum class SniffProtocol {
   Quic,
 }
 
+internal fun updateMetaUnifiedDelay(
+  configuration: ConfigurationOverride,
+  unifiedDelay: Boolean?,
+): ConfigurationOverride {
+  return configuration.copy(unifiedDelay = unifiedDelay)
+}
+
+internal fun updateMetaGeodataMode(
+  configuration: ConfigurationOverride,
+  geodataMode: Boolean?,
+): ConfigurationOverride {
+  return configuration.copy(geodataMode = geodataMode)
+}
+
+internal fun updateMetaTcpConcurrent(
+  configuration: ConfigurationOverride,
+  tcpConcurrent: Boolean?,
+): ConfigurationOverride {
+  return configuration.copy(tcpConcurrent = tcpConcurrent)
+}
+
+internal fun updateMetaFindProcessMode(
+  configuration: ConfigurationOverride,
+  findProcessMode: ConfigurationOverride.FindProcessMode?,
+): ConfigurationOverride {
+  return configuration.copy(findProcessMode = findProcessMode)
+}
+
 internal fun updateSniffProtocolPorts(
   configuration: ConfigurationOverride,
   protocol: SniffProtocol,
