@@ -34,6 +34,8 @@ import com.github.kr328.clash.profile.ui.profileFilesConsumedEventState
 import com.github.kr328.clash.profile.ui.profileFilesErrorEventState
 import com.github.kr328.clash.profile.ui.profileFilesFetchAction
 import com.github.kr328.clash.profile.ui.profileFilesInitAction
+import com.github.kr328.clash.profile.ui.profileFilesInitialEventState
+import com.github.kr328.clash.profile.ui.profileFilesInitialUiState
 import com.github.kr328.clash.profile.ui.profileFilesLoadedAction
 import com.github.kr328.clash.profile.ui.profileFilesLoadedEventState
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
@@ -53,10 +55,10 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   private var fetchJob: Job? = null
 
   val uiState: StateFlow<ProfileFilesUiState<ConfigFile>>
-    field = MutableStateFlow(ProfileFilesUiState())
+    field = MutableStateFlow(profileFilesInitialUiState())
 
   val eventState: StateFlow<ProfileFilesEventState<ConfigFile, Uri>>
-    field = MutableStateFlow<ProfileFilesEventState<ConfigFile, Uri>>(ProfileFilesEventState.Idle)
+    field = MutableStateFlow(profileFilesInitialEventState<ConfigFile, Uri>())
 
   fun init(uuid: Uuid) {
     when (val action = profileFilesInitAction(location, uuid.toString())) {

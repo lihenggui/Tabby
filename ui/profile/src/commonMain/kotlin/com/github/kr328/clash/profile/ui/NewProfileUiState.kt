@@ -5,6 +5,10 @@ import kotlin.uuid.Uuid
 
 internal data class NewProfileUiState<T>(val providers: List<T> = emptyList())
 
+internal fun <T> newProfileInitialUiState(): NewProfileUiState<T> {
+  return NewProfileUiState()
+}
+
 internal enum class NewProfileProviderKind {
   File,
   Url,
@@ -55,6 +59,11 @@ internal sealed interface NewProfileEventState<out ExternalProviderT, out AppSet
   data class ShowMessage(val message: String) : NewProfileEventState<Nothing, Nothing>
 
   data object Finish : NewProfileEventState<Nothing, Nothing>
+}
+
+internal fun <ExternalProviderT, AppSettingsTargetT> newProfileInitialEventState():
+  NewProfileEventState<ExternalProviderT, AppSettingsTargetT> {
+  return NewProfileEventState.Idle
 }
 
 internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCreateAction {

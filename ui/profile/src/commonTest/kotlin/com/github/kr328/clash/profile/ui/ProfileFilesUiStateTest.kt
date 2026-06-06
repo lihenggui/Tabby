@@ -9,6 +9,15 @@ import kotlin.uuid.Uuid
 
 class ProfileFilesUiStateTest {
   @Test
+  fun initialStatesUseDefaultUiStateAndIdleEvent() {
+    val state: ProfileFilesUiState<TestFile> = profileFilesInitialUiState()
+    val event: ProfileFilesEventState<TestFile, String> = profileFilesInitialEventState()
+
+    assertEquals(ProfileFilesUiState(), state)
+    assertEquals(ProfileFilesEventState.Idle, event)
+  }
+
+  @Test
   fun onlyUrlProfileConfigurationIsEditable() {
     assertTrue(isProfileConfigurationEditable(profile(type = Profile.Type.Url)))
     assertFalse(isProfileConfigurationEditable(profile(type = Profile.Type.File)))

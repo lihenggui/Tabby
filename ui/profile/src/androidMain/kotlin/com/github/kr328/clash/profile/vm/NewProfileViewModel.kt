@@ -29,6 +29,8 @@ import com.github.kr328.clash.profile.ui.newProfileDetailAction
 import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
+import com.github.kr328.clash.profile.ui.newProfileInitialEventState
+import com.github.kr328.clash.profile.ui.newProfileInitialUiState
 import com.github.kr328.clash.profile.ui.newProfileLaunchPropertiesEventState
 import com.github.kr328.clash.profile.ui.newProfileQrEventState
 import com.github.kr328.clash.profile.ui.profileQrAction
@@ -45,10 +47,10 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
   val uiState: StateFlow<NewProfileUiState<ProfileProvider>>
-    field = MutableStateFlow(NewProfileUiState())
+    field = MutableStateFlow(newProfileInitialUiState())
 
   val eventState: StateFlow<NewProfileEventState<Intent, Uri>>
-    field = MutableStateFlow<NewProfileEventState<Intent, Uri>>(NewProfileEventState.Idle)
+    field = MutableStateFlow(newProfileInitialEventState<Intent, Uri>())
 
   init {
     loadProviders()

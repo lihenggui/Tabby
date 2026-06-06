@@ -8,6 +8,10 @@ internal data class ProfileFilesUiState<T>(
   val configurationEditable: Boolean = false,
 )
 
+internal fun <T> profileFilesInitialUiState(): ProfileFilesUiState<T> {
+  return ProfileFilesUiState()
+}
+
 internal sealed interface ProfileFilesEventState<out ConfigFileT, out OpenFileT> {
   data object Idle : ProfileFilesEventState<Nothing, Nothing>
 
@@ -23,6 +27,11 @@ internal sealed interface ProfileFilesEventState<out ConfigFileT, out OpenFileT>
     ProfileFilesEventState<ConfigFileT, Nothing>
 
   data class ShowMessage(val message: String) : ProfileFilesEventState<Nothing, Nothing>
+}
+
+internal fun <ConfigFileT, OpenFileT> profileFilesInitialEventState():
+  ProfileFilesEventState<ConfigFileT, OpenFileT> {
+  return ProfileFilesEventState.Idle
 }
 
 internal fun isProfileConfigurationEditable(profile: Profile): Boolean {

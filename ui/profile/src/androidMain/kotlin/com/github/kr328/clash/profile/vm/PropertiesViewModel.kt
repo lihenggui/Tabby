@@ -34,6 +34,8 @@ import com.github.kr328.clash.profile.ui.propertiesErrorEventState
 import com.github.kr328.clash.profile.ui.propertiesFinishEventState
 import com.github.kr328.clash.profile.ui.propertiesInitAction
 import com.github.kr328.clash.profile.ui.propertiesInitEventState
+import com.github.kr328.clash.profile.ui.propertiesInitialEventState
+import com.github.kr328.clash.profile.ui.propertiesInitialUiState
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
@@ -58,10 +60,10 @@ internal class PropertiesViewModel(app: Application) :
   private var canceled = false
 
   val uiState: StateFlow<PropertiesUiState>
-    field = MutableStateFlow(PropertiesUiState())
+    field = MutableStateFlow(propertiesInitialUiState())
 
   val eventState: StateFlow<PropertiesEventState>
-    field = MutableStateFlow<PropertiesEventState>(PropertiesEventState.Idle)
+    field = MutableStateFlow(propertiesInitialEventState())
 
   fun init(uuid: Uuid) {
     if (rootUuid != null) return

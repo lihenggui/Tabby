@@ -21,6 +21,8 @@ import com.github.kr328.clash.profile.ui.ProvidersUpdateAllAction
 import com.github.kr328.clash.profile.ui.providerUpdateFailureEventState
 import com.github.kr328.clash.profile.ui.providersBroadcastAction
 import com.github.kr328.clash.profile.ui.providersConsumedEventState
+import com.github.kr328.clash.profile.ui.providersInitialEventState
+import com.github.kr328.clash.profile.ui.providersInitialUiState
 import com.github.kr328.clash.profile.ui.providersUpdateAllAction
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withFetchedProviders
@@ -44,10 +46,10 @@ internal class ProvidersViewModel(app: Application) :
   private var fetchJob: Job? = null
 
   val uiState: StateFlow<ProvidersUiState>
-    field = MutableStateFlow(ProvidersUiState(currentTime = System.currentTimeMillis()))
+    field = MutableStateFlow(providersInitialUiState(currentTime = System.currentTimeMillis()))
 
   val eventState: StateFlow<ProvidersEventState>
-    field = MutableStateFlow<ProvidersEventState>(ProvidersEventState.Idle)
+    field = MutableStateFlow(providersInitialEventState())
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()

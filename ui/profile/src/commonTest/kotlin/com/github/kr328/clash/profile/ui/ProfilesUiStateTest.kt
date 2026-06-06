@@ -7,6 +7,12 @@ import kotlin.uuid.Uuid
 
 class ProfilesUiStateTest {
   @Test
+  fun initialStatesUseProvidedCurrentTimeAndIdleEvent() {
+    assertEquals(ProfilesUiState(currentTime = 123), profilesInitialUiState(currentTime = 123))
+    assertEquals(ProfilesEventState.Idle, profilesInitialEventState())
+  }
+
+  @Test
   fun profileListUpdateRefreshesUpdatableFlagAndPreservesOtherFields() {
     val updatable = profile(type = Profile.Type.Url, imported = true)
     val state =

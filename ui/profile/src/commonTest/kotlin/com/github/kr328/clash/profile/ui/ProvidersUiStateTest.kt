@@ -6,6 +6,12 @@ import kotlin.test.assertEquals
 
 class ProvidersUiStateTest {
   @Test
+  fun initialStatesUseProvidedCurrentTimeAndIdleEvent() {
+    assertEquals(ProvidersUiState(currentTime = 123), providersInitialUiState(currentTime = 123))
+    assertEquals(ProvidersEventState.Idle, providersInitialEventState())
+  }
+
+  @Test
   fun fetchedProvidersMergeWithExistingItemStateAndPreserveCurrentTime() {
     val existingProvider = provider(name = "Remote", updatedAt = 100)
     val fetchedProvider = existingProvider.copy(updatedAt = 200)

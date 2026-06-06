@@ -8,6 +8,15 @@ import kotlin.uuid.Uuid
 
 class NewProfileUiStateTest {
   @Test
+  fun initialStatesUseDefaultUiStateAndIdleEvent() {
+    val state: NewProfileUiState<TestProvider> = newProfileInitialUiState()
+    val event: NewProfileEventState<String, String> = newProfileInitialEventState()
+
+    assertEquals(NewProfileUiState(), state)
+    assertEquals(NewProfileEventState.Idle, event)
+  }
+
+  @Test
   fun defaultProvidersAreEmpty() {
     val state = NewProfileUiState<TestProvider>()
 

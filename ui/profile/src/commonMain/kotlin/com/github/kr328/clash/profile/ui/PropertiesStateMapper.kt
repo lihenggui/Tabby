@@ -12,6 +12,10 @@ internal data class PropertiesUiState(
   val hasUnsavedChanges: Boolean = false,
 )
 
+internal fun propertiesInitialUiState(): PropertiesUiState {
+  return PropertiesUiState()
+}
+
 internal enum class PropertiesCommitValidationResult {
   Valid,
   EmptyName,
@@ -61,6 +65,10 @@ internal sealed interface PropertiesEventState {
   data class BrowseFiles(val uuid: Uuid) : PropertiesEventState
 
   data class ShowMessage(val message: String) : PropertiesEventState
+}
+
+internal fun propertiesInitialEventState(): PropertiesEventState {
+  return PropertiesEventState.Idle
 }
 
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {

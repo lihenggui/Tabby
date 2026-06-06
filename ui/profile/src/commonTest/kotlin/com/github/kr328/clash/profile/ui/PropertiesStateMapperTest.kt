@@ -10,6 +10,12 @@ import kotlin.uuid.Uuid
 
 class PropertiesStateMapperTest {
   @Test
+  fun initialStatesUseDefaultUiStateAndIdleEvent() {
+    assertEquals(PropertiesUiState(), propertiesInitialUiState())
+    assertEquals(PropertiesEventState.Idle, propertiesInitialEventState())
+  }
+
+  @Test
   fun detectsEditableProfilePropertyChanges() {
     val original = profile(name = "Original", source = "https://example.com/a.yaml", interval = 0)
 

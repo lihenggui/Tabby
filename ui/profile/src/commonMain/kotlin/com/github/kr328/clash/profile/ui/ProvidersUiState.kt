@@ -7,6 +7,10 @@ internal data class ProvidersUiState(
   val currentTime: Long = 0,
 )
 
+internal fun providersInitialUiState(currentTime: Long): ProvidersUiState {
+  return ProvidersUiState(currentTime = currentTime)
+}
+
 internal sealed interface ProvidersUpdateAllAction {
   data class UpdateProviders(val providers: List<Provider>) : ProvidersUpdateAllAction
 
@@ -17,6 +21,10 @@ internal sealed interface ProvidersEventState {
   data object Idle : ProvidersEventState
 
   data class ShowMessage(val message: String) : ProvidersEventState
+}
+
+internal fun providersInitialEventState(): ProvidersEventState {
+  return ProvidersEventState.Idle
 }
 
 internal fun sortProvidersForDisplay(providers: List<Provider>): List<Provider> {

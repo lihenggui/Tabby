@@ -25,6 +25,10 @@ internal sealed interface ProfilesEventState {
   data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventState
 }
 
+internal fun profilesInitialEventState(): ProfilesEventState {
+  return ProfilesEventState.Idle
+}
+
 internal fun profileActivationAction(profile: Profile): ProfileActivationAction {
   return if (profile.imported) ProfileActivationAction.Activate
   else ProfileActivationAction.RequireSave

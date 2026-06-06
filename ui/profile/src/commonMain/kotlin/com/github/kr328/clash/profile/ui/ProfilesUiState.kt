@@ -9,6 +9,10 @@ internal data class ProfilesUiState(
   val currentTime: Long = 0,
 )
 
+internal fun profilesInitialUiState(currentTime: Long): ProfilesUiState {
+  return ProfilesUiState(currentTime = currentTime)
+}
+
 internal fun ProfilesUiState.withProfiles(profiles: List<Profile>): ProfilesUiState {
   return copy(
     profiles = profiles,

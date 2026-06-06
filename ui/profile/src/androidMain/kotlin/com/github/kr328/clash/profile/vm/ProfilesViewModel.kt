@@ -30,6 +30,8 @@ import com.github.kr328.clash.profile.ui.profileUpdateFailedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
 import com.github.kr328.clash.profile.ui.profilesConsumedEventState
+import com.github.kr328.clash.profile.ui.profilesInitialEventState
+import com.github.kr328.clash.profile.ui.profilesInitialUiState
 import com.github.kr328.clash.profile.ui.profilesOpenCreateEventState
 import com.github.kr328.clash.profile.ui.profilesOpenEditEventState
 import com.github.kr328.clash.profile.ui.withAllUpdating
@@ -53,10 +55,10 @@ internal class ProfilesViewModel(app: Application) :
   private var fetchJob: Job? = null
 
   val uiState: StateFlow<ProfilesUiState>
-    field = MutableStateFlow(ProfilesUiState(currentTime = System.currentTimeMillis()))
+    field = MutableStateFlow(profilesInitialUiState(currentTime = System.currentTimeMillis()))
 
   val eventState: StateFlow<ProfilesEventState>
-    field = MutableStateFlow<ProfilesEventState>(ProfilesEventState.Idle)
+    field = MutableStateFlow(profilesInitialEventState())
 
   override fun onStart(owner: LifecycleOwner) {
     broadcastEventsJob?.cancel()
