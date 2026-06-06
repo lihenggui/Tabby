@@ -23,6 +23,7 @@ import com.github.kr328.clash.profile.ui.ProfilesUiState
 import com.github.kr328.clash.profile.ui.profileActivationAction
 import com.github.kr328.clash.profile.ui.profileUpdateAllAction
 import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
+import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
 import com.github.kr328.clash.profile.ui.withAllUpdating
 import com.github.kr328.clash.profile.ui.withCurrentTime
@@ -163,7 +164,7 @@ internal class ProfilesViewModel(app: Application) :
   private suspend fun showProfileUpdateFailed(uuid: Uuid, reason: String?) {
     val name = profileRepository.queryByUuid(uuid)?.name
     val displayReason =
-      reason?.takeUnless { it.isBlank() } ?: application.getString(CommonR.string.unknown)
+      profileUpdateFailureReasonText(reason, application.getString(CommonR.string.unknown))
     eventState.value =
       EventState.ShowEditableMessage(
         application.getString(R.string.toast_profile_updated_failed, name, displayReason),

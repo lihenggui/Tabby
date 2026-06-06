@@ -110,6 +110,21 @@ class ProfileUpdateRulesTest {
     )
   }
 
+  @Test
+  fun updateFailureReasonUsesProvidedReasonWhenNotBlank() {
+    assertEquals(
+      "network unavailable",
+      profileUpdateFailureReasonText(reason = "network unavailable", unknownText = "Unknown"),
+    )
+  }
+
+  @Test
+  fun updateFailureReasonFallsBackToUnknownTextWhenMissingOrBlank() {
+    assertEquals("Unknown", profileUpdateFailureReasonText(reason = null, unknownText = "Unknown"))
+    assertEquals("Unknown", profileUpdateFailureReasonText(reason = "", unknownText = "Unknown"))
+    assertEquals("Unknown", profileUpdateFailureReasonText(reason = "  ", unknownText = "Unknown"))
+  }
+
   private fun profile(
     type: Profile.Type,
     imported: Boolean,

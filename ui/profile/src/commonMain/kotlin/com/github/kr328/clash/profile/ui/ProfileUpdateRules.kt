@@ -38,3 +38,7 @@ internal fun filterUpdatableProfiles(profiles: List<Profile>): List<Profile> {
 internal fun profileUpdateAllTargets(profiles: List<Profile>): List<Uuid> {
   return filterUpdatableProfiles(profiles).map(Profile::uuid)
 }
+
+internal fun profileUpdateFailureReasonText(reason: String?, unknownText: String): String {
+  return reason?.takeUnless { it.isBlank() } ?: unknownText
+}
