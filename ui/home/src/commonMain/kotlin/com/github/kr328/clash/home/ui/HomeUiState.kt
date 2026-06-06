@@ -1,6 +1,7 @@
 package com.github.kr328.clash.home.ui
 
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.TunnelState
 
 internal data class HomeUiState(
   val forwarded: String? = null,
@@ -41,6 +42,12 @@ internal enum class HomeToggleAction {
 internal enum class HomeTrafficPollAction {
   QueryTraffic,
   Ignore,
+}
+
+internal enum class HomeModeLabel {
+  Direct,
+  Global,
+  Rule,
 }
 
 internal sealed interface HomeEventState<out VpnPermissionT> {
@@ -110,6 +117,14 @@ internal fun homeToggleAction(clashRunning: Boolean): HomeToggleAction {
 
 internal fun homeTrafficPollAction(clashRunning: Boolean): HomeTrafficPollAction {
   return if (clashRunning) HomeTrafficPollAction.QueryTraffic else HomeTrafficPollAction.Ignore
+}
+
+internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
+  return when (mode) {
+    TunnelState.Mode.Direct -> HomeModeLabel.Direct
+    TunnelState.Mode.Global -> HomeModeLabel.Global
+    TunnelState.Mode.Rule -> HomeModeLabel.Rule
+  }
 }
 
 internal fun HomeUiState.withFetchedHomeState(

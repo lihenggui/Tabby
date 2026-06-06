@@ -1,6 +1,7 @@
 package com.github.kr328.clash.home.ui
 
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.TunnelState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.uuid.Uuid
@@ -149,6 +150,13 @@ class HomeUiStateTest {
       HomeTrafficPollAction.Ignore,
       homeTrafficPollAction(clashRunning = false),
     )
+  }
+
+  @Test
+  fun homeModeLabelMapsTunnelStateModes() {
+    assertEquals(HomeModeLabel.Direct, homeModeLabel(TunnelState.Mode.Direct))
+    assertEquals(HomeModeLabel.Global, homeModeLabel(TunnelState.Mode.Global))
+    assertEquals(HomeModeLabel.Rule, homeModeLabel(TunnelState.Mode.Rule))
   }
 
   @Test

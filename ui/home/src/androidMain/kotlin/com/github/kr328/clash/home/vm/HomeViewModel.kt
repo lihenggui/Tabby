@@ -19,6 +19,7 @@ import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.home.ui.HomeBroadcastEventKind
 import com.github.kr328.clash.home.ui.HomeEventState
+import com.github.kr328.clash.home.ui.HomeModeLabel
 import com.github.kr328.clash.home.ui.HomeToggleAction.StartClash
 import com.github.kr328.clash.home.ui.HomeToggleAction.StopClash
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
@@ -29,6 +30,7 @@ import com.github.kr328.clash.home.ui.homeBroadcastEventState
 import com.github.kr328.clash.home.ui.homeConsumedEventState
 import com.github.kr328.clash.home.ui.homeInitialEventState
 import com.github.kr328.clash.home.ui.homeInitialUiState
+import com.github.kr328.clash.home.ui.homeModeLabel
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeStartFailureEventState
@@ -102,12 +104,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     fetchJob = viewModelScope.launch {
       val state = engineController.queryState()
       val providers = engineController.queryProviders()
-      val mode =
-        when (state.mode) {
-          Direct -> application.getString(CommonR.string.direct_mode)
-          Global -> application.getString(CommonR.string.global_mode)
-          Rule -> application.getString(CommonR.string.rule_mode)
-        }
+      val mode = homeModeLabel(state.mode).stringValue(application)
       val profileName = profileRepository.queryActive()?.name
 
       uiState.update {
@@ -173,3 +170,10 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
       Broadcasts.Event.ProfileLoaded -> homeBroadcastAction(HomeBroadcastEventKind.ProfileLoaded)
     }
 }
+
+private fun HomeModeLabel.stringValue(application: Application): String =
+  when (this) {
+    HomeModeLabel.Direct -> application.getString(CommonR.string.direct_mode)
+    HomeModeLabel.Global -> application.getString(CommonR.string.global_mode)
+    HomeModeLabel.Rule -> application.getString(CommonR.string.rule_mode)
+  }
