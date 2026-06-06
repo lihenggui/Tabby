@@ -69,6 +69,38 @@ class ProfilesBroadcastActionTest {
   }
 
   @Test
+  fun platformPayloadBoundaryDropsFieldsForNonUpdateEvents() {
+    assertEquals(
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded),
+      profilesBroadcastEventFromPlatformPayload(
+        kind = ProfilesBroadcastEventKind.ProfileLoaded,
+        uuid = uuid,
+        reason = "ignored",
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid),
+      profilesBroadcastEventFromPlatformPayload(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        uuid = uuid,
+        reason = "ignored",
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = "network",
+      ),
+      profilesBroadcastEventFromPlatformPayload(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = "network",
+      ),
+    )
+  }
+
+  @Test
   fun profileUpdateEventsAreIgnoredWhenUuidIsMissing() {
     assertEquals(
       ProfilesBroadcastAction.Ignore,

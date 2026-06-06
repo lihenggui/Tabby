@@ -18,6 +18,24 @@ internal data class ProfilesBroadcastEvent(
   val reason: String? = null,
 )
 
+internal fun profilesBroadcastEventFromPlatformPayload(
+  kind: ProfilesBroadcastEventKind,
+  uuid: Uuid? = null,
+  reason: String? = null,
+): ProfilesBroadcastEvent {
+  return when (kind) {
+    ProfilesBroadcastEventKind.ProfileUpdateCompleted ->
+      ProfilesBroadcastEvent(kind = kind, uuid = uuid)
+    ProfilesBroadcastEventKind.ProfileUpdateFailed ->
+      ProfilesBroadcastEvent(kind = kind, uuid = uuid, reason = reason)
+    ProfilesBroadcastEventKind.ServiceRecreated,
+    ProfilesBroadcastEventKind.Started,
+    ProfilesBroadcastEventKind.Stopped,
+    ProfilesBroadcastEventKind.ProfileChanged,
+    ProfilesBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEvent(kind)
+  }
+}
+
 internal sealed interface ProfilesBroadcastAction {
   data object FetchProfiles : ProfilesBroadcastAction
 

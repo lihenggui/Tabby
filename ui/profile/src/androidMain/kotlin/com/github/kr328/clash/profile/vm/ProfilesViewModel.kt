@@ -30,6 +30,7 @@ import com.github.kr328.clash.profile.ui.profileUpdateCompletedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailedEventState
 import com.github.kr328.clash.profile.ui.profileUpdateFailureReasonText
 import com.github.kr328.clash.profile.ui.profilesBroadcastAction
+import com.github.kr328.clash.profile.ui.profilesBroadcastEventFromPlatformPayload
 import com.github.kr328.clash.profile.ui.profilesConsumedEventState
 import com.github.kr328.clash.profile.ui.profilesInitialEventState
 import com.github.kr328.clash.profile.ui.profilesInitialUiState
@@ -190,21 +191,26 @@ internal class ProfilesViewModel(app: Application) :
   private fun Broadcasts.Event.toProfilesBroadcastEvent(): ProfilesBroadcastEvent {
     return when (this) {
       Broadcasts.Event.ServiceRecreated ->
-        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Started)
-      is Broadcasts.Event.Stopped -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Stopped)
+        profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started ->
+        profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped ->
+        profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.Stopped)
       Broadcasts.Event.ProfileChanged ->
-        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileChanged)
+        profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ProfileChanged)
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid)
+        profilesBroadcastEventFromPlatformPayload(
+          kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+          uuid = uuid,
+        )
       is Broadcasts.Event.ProfileUpdateFailed ->
-        ProfilesBroadcastEvent(
+        profilesBroadcastEventFromPlatformPayload(
           kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
           uuid = uuid,
           reason = reason,
         )
       Broadcasts.Event.ProfileLoaded ->
-        ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded)
+        profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ProfileLoaded)
     }
   }
 }
