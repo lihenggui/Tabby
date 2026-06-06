@@ -317,12 +317,8 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           uiState.update { it.withExportStarted(messages.size) }
 
           try {
-            filter.writeHeader(file.created)
-
-            messages.forEachIndexed { index, message ->
-              uiState.update { it.withExportProgress(index + 1) }
-
-              filter.writeMessage(message)
+            filter.writeLogFile(file.created, messages) { progress ->
+              uiState.update { it.withExportProgress(progress) }
             }
           } finally {
             uiState.update { it.withExportFinished() }

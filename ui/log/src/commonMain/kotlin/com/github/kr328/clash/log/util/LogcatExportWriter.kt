@@ -14,4 +14,16 @@ internal class LogcatExportWriter(
   fun writeMessage(message: LogMessage) {
     output.appendLine(LogExportFormatter.message(formatMessageTime(message.time), message))
   }
+
+  fun writeLogFile(
+    created: Long,
+    messages: List<LogMessage>,
+    onProgress: (Int) -> Unit,
+  ) {
+    writeHeader(created)
+    messages.forEachIndexed { index, message ->
+      onProgress(index + 1)
+      writeMessage(message)
+    }
+  }
 }

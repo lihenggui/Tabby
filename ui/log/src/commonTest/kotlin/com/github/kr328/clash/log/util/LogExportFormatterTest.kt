@@ -35,6 +35,7 @@ class LogExportFormatterTest {
   @Test
   fun exportWriterWritesHeaderAndMessagesWithFormattedTimes() {
     val output = StringBuilder()
+    val progress = mutableListOf<Int>()
     val writer =
       LogcatExportWriter(
         output = output,
@@ -42,12 +43,22 @@ class LogExportFormatterTest {
         formatMessageTime = { time -> "time:$time" },
       )
 
-    writer.writeHeader(1000)
-    writer.writeMessage(LogMessage(LogMessage.Level.Debug, "debug message", 2000))
+    writer.writeLogFile(
+      created = 1000,
+      messages =
+        listOf(
+          LogMessage(LogMessage.Level.Debug, "debug message", 2000),
+          LogMessage(LogMessage.Level.Info, "info message", 3000),
+        ),
+      onProgress = progress::add,
+    )
 
     assertEquals(
-      "# Capture on created:1000\n" + "   time:2000   Debug: debug message\n",
+      "# Capture on created:1000\n" +
+        "   time:2000   Debug: debug message\n" +
+        "   time:3000    Info: info message\n",
       output.toString(),
     )
+    assertEquals(listOf(1, 2), progress)
   }
 }
