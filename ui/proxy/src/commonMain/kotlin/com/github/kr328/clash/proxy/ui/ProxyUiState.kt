@@ -107,6 +107,17 @@ internal sealed interface ProxyGroupNamesChangeAction {
   data object Ignore : ProxyGroupNamesChangeAction
 }
 
+internal sealed interface ProxyReloadAction {
+  data class QueryGroup(
+    val index: Int,
+    val groupName: String,
+    val groupNames: List<String>,
+    val sort: ProxySort,
+  ) : ProxyReloadAction
+
+  data object Ignore : ProxyReloadAction
+}
+
 internal data class ProxyPageChangedAction(
   val state: ProxyUiState,
   val effect: ProxyPageChangedEffect,
@@ -239,6 +250,22 @@ internal fun proxyGroupNamesChangeAction(
 
 internal fun proxyGroupReloadIndexes(groupNames: List<String>): IntRange {
   return groupNames.indices
+}
+
+internal fun proxyReloadAction(
+  state: ProxyUiState,
+  index: Int,
+): ProxyReloadAction {
+  return when (val selection = proxyGroupSelectionAction(state.groupNames, index)) {
+    is ProxyGroupSelectionAction.SelectGroup ->
+      ProxyReloadAction.QueryGroup(
+        index = index,
+        groupName = selection.name,
+        groupNames = state.groupNames,
+        sort = state.proxySort,
+      )
+    ProxyGroupSelectionAction.Ignore -> ProxyReloadAction.Ignore
+  }
 }
 
 internal fun proxyPageChangedAction(

@@ -525,4 +525,31 @@ class ProxyUiStateCommonTest {
       proxyGroupReloadIndexes(emptyList()).toList(),
     )
   }
+
+  @Test
+  fun proxyReloadActionQueriesGroupByIndexWithStateSortAndGroupNames() {
+    assertEquals(
+      ProxyReloadAction.QueryGroup(
+        index = 1,
+        groupName = "Auto",
+        groupNames = listOf("Proxy", "Auto"),
+        sort = ProxySort.Delay,
+      ),
+      proxyReloadAction(
+        state = ProxyUiState(groupNames = listOf("Proxy", "Auto"), proxySort = ProxySort.Delay),
+        index = 1,
+      ),
+    )
+  }
+
+  @Test
+  fun proxyReloadActionIgnoresMissingGroupIndex() {
+    assertEquals(
+      ProxyReloadAction.Ignore,
+      proxyReloadAction(
+        state = ProxyUiState(groupNames = listOf("Proxy")),
+        index = 1,
+      ),
+    )
+  }
 }

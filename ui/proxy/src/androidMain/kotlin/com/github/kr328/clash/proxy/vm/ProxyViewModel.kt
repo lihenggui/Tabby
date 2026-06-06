@@ -15,7 +15,6 @@ import com.github.kr328.clash.proxy.ui.ProxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.ProxyDelayTestEffect
 import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupNamesChangeAction
-import com.github.kr328.clash.proxy.ui.ProxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.ProxyOverrideModeEffect
@@ -24,6 +23,7 @@ import com.github.kr328.clash.proxy.ui.ProxyPageChangedEffect
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeAction
 import com.github.kr328.clash.proxy.ui.ProxyPreferenceChangeEffect
 import com.github.kr328.clash.proxy.ui.ProxyProfileLoadedAction
+import com.github.kr328.clash.proxy.ui.ProxyReloadAction
 import com.github.kr328.clash.proxy.ui.ProxySelectedAction
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.ProxyUrlTestAction
@@ -34,11 +34,11 @@ import com.github.kr328.clash.proxy.ui.proxyDelayTestAction
 import com.github.kr328.clash.proxy.ui.proxyExcludeNotSelectableChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
 import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
-import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.proxyLineChangeAction
 import com.github.kr328.clash.proxy.ui.proxyOverrideModeAction
 import com.github.kr328.clash.proxy.ui.proxyPageChangedAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
+import com.github.kr328.clash.proxy.ui.proxyReloadAction
 import com.github.kr328.clash.proxy.ui.proxySelectedAction
 import com.github.kr328.clash.proxy.ui.proxySelectedProxies
 import com.github.kr328.clash.proxy.ui.proxySelectedUiState
@@ -186,24 +186,23 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   private fun reload(index: Int) {
-    viewModelScope.launch {
-      val names = uiState.value.groupNames
-      val groupName =
-        when (val action = proxyGroupSelectionAction(names, index)) {
-          is ProxyGroupSelectionAction.SelectGroup -> action.name
-          ProxyGroupSelectionAction.Ignore -> return@launch
+    when (val action = proxyReloadAction(uiState.value, index)) {
+      is ProxyReloadAction.QueryGroup ->
+        viewModelScope.launch {
+          val group = reloadLock.withPermit {
+            engineController.queryProxyGroup(action.groupName, action.sort)
+          }
+
+          selectedProxies.update { it.withSelectedProxy(action.index, group.now) }
+
+          val sources =
+            withContext(Dispatchers.Default) {
+              group.toProxyItemSources(groupNames = action.groupNames)
+            }
+
+          updateGroupState(action.index) { it.withProxyGroup(group, sources) }
         }
-
-      val sort = uiStore.proxySort
-
-      val group = reloadLock.withPermit { engineController.queryProxyGroup(groupName, sort) }
-
-      selectedProxies.update { it.withSelectedProxy(index, group.now) }
-
-      val sources =
-        withContext(Dispatchers.Default) { group.toProxyItemSources(groupNames = names) }
-
-      updateGroupState(index) { it.withProxyGroup(group, sources) }
+      ProxyReloadAction.Ignore -> Unit
     }
   }
 
