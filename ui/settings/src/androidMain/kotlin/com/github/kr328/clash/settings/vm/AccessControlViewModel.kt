@@ -29,6 +29,7 @@ import com.github.kr328.clash.settings.ui.AccessControlUiState
 import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
 import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
 import com.github.kr328.clash.settings.ui.accessControlInitialUiState
+import com.github.kr328.clash.settings.ui.accessControlSystemAppFromPlatformFlags
 import com.github.kr328.clash.settings.ui.loadAccessControlApps
 import com.github.kr328.clash.settings.ui.planAccessControlPersist
 import com.github.kr328.clash.settings.ui.withAccessControlApps
@@ -235,7 +236,11 @@ internal class AccessControlViewModel(app: Application) :
     }
 
   private val PackageInfo.isSystemApp: Boolean
-    get() = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
+    get() =
+      accessControlSystemAppFromPlatformFlags(
+        flags = applicationInfo?.flags,
+        systemAppFlag = ApplicationInfo.FLAG_SYSTEM,
+      )
 }
 
 private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {

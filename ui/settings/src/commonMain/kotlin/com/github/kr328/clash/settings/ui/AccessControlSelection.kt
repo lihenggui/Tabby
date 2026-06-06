@@ -133,6 +133,13 @@ internal fun exportAccessControlPackages(selected: Set<String>): String {
   return selected.sorted().joinToString("\n")
 }
 
+internal fun accessControlSystemAppFromPlatformFlags(
+  flags: Int?,
+  systemAppFlag: Int,
+): Boolean {
+  return flags?.let { it and systemAppFlag != 0 } == true
+}
+
 internal fun <T> filterAccessControlApps(
   apps: Iterable<T>,
   keyword: String,
