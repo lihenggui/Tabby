@@ -27,6 +27,49 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeBroadcastActionFetchesForStateChangingEvents() {
+    listOf(
+        HomeBroadcastEventKind.ServiceRecreated,
+        HomeBroadcastEventKind.Started,
+        HomeBroadcastEventKind.ProfileChanged,
+        HomeBroadcastEventKind.ProfileLoaded,
+      )
+      .forEach { kind ->
+        assertEquals(
+          HomeBroadcastAction(shouldFetch = true),
+          homeBroadcastAction(kind),
+        )
+      }
+  }
+
+  @Test
+  fun homeBroadcastActionFetchesStoppedEventAndPreservesOptionalMessage() {
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system"),
+      homeBroadcastAction(
+        HomeBroadcastEventKind.Stopped,
+        stoppedMessage = "Stopped by system",
+      ),
+    )
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = true),
+      homeBroadcastAction(HomeBroadcastEventKind.Stopped),
+    )
+  }
+
+  @Test
+  fun homeBroadcastActionIgnoresProfileUpdateEvents() {
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = false),
+      homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateCompleted),
+    )
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = false),
+      homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateFailed),
+    )
+  }
+
+  @Test
   fun homeToggleActionStopsRunningClashAndStartsStoppedClash() {
     assertEquals(
       HomeToggleAction.StopClash,

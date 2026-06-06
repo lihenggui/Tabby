@@ -14,6 +14,21 @@ internal enum class HomeStartAction {
   ShowNoProfileMessage,
 }
 
+internal enum class HomeBroadcastEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
+internal data class HomeBroadcastAction(
+  val shouldFetch: Boolean,
+  val stoppedMessage: String? = null,
+)
+
 internal enum class HomeToggleAction {
   StartClash,
   StopClash,
@@ -27,6 +42,22 @@ internal enum class HomeTrafficPollAction {
 internal fun homeStartAction(activeProfile: Profile?): HomeStartAction {
   return if (activeProfile?.imported == true) HomeStartAction.StartEngine
   else HomeStartAction.ShowNoProfileMessage
+}
+
+internal fun homeBroadcastAction(
+  kind: HomeBroadcastEventKind,
+  stoppedMessage: String? = null,
+): HomeBroadcastAction {
+  return when (kind) {
+    HomeBroadcastEventKind.ServiceRecreated,
+    HomeBroadcastEventKind.Started,
+    HomeBroadcastEventKind.ProfileChanged,
+    HomeBroadcastEventKind.ProfileLoaded -> HomeBroadcastAction(shouldFetch = true)
+    HomeBroadcastEventKind.Stopped ->
+      HomeBroadcastAction(shouldFetch = true, stoppedMessage = stoppedMessage)
+    HomeBroadcastEventKind.ProfileUpdateCompleted,
+    HomeBroadcastEventKind.ProfileUpdateFailed -> HomeBroadcastAction(shouldFetch = false)
+  }
 }
 
 internal fun homeToggleAction(clashRunning: Boolean): HomeToggleAction {

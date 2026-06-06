@@ -15,7 +15,9 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
+import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
+import com.github.kr328.clash.home.ui.HomeBroadcastEventKind
 import com.github.kr328.clash.home.ui.HomeStartAction.ShowNoProfileMessage
 import com.github.kr328.clash.home.ui.HomeStartAction.StartEngine
 import com.github.kr328.clash.home.ui.HomeToggleAction.StartClash
@@ -23,6 +25,7 @@ import com.github.kr328.clash.home.ui.HomeToggleAction.StopClash
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.Ignore
 import com.github.kr328.clash.home.ui.HomeTrafficPollAction.QueryTraffic
 import com.github.kr328.clash.home.ui.HomeUiState
+import com.github.kr328.clash.home.ui.homeBroadcastAction
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeToggleAction
 import com.github.kr328.clash.home.ui.homeTrafficPollAction
@@ -56,18 +59,12 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (event) {
-          ServiceRecreated,
-          Started,
-          ProfileChanged,
-          ProfileLoaded -> fetch()
-          is Stopped -> {
-            event.cause?.let { message -> eventState.update { EventState.ShowMessage(message) } }
-            fetch()
-          }
-          is ProfileUpdateCompleted,
-          is ProfileUpdateFailed -> Unit
+        val action = event.toHomeBroadcastAction()
+
+        action.stoppedMessage?.let { message ->
+          eventState.update { EventState.ShowMessage(message) }
         }
+        if (action.shouldFetch) fetch()
       }
     }
     startTrafficPolling()
@@ -156,6 +153,21 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         EventState.ShowMessage(application.getString(CommonR.string.unable_to_start_vpn))
     }
   }
+
+  private fun Broadcasts.Event.toHomeBroadcastAction() =
+    when (this) {
+      Broadcasts.Event.ServiceRecreated ->
+        homeBroadcastAction(HomeBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started -> homeBroadcastAction(HomeBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped ->
+        homeBroadcastAction(HomeBroadcastEventKind.Stopped, stoppedMessage = cause)
+      Broadcasts.Event.ProfileChanged -> homeBroadcastAction(HomeBroadcastEventKind.ProfileChanged)
+      is Broadcasts.Event.ProfileUpdateCompleted ->
+        homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateCompleted)
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        homeBroadcastAction(HomeBroadcastEventKind.ProfileUpdateFailed)
+      Broadcasts.Event.ProfileLoaded -> homeBroadcastAction(HomeBroadcastEventKind.ProfileLoaded)
+    }
 
   sealed interface EventState {
     data object Idle : EventState
