@@ -8,14 +8,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.home.homeEntries
+import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
 import com.github.kr328.clash.profile.ProfilesRouteContent
@@ -31,23 +30,22 @@ fun PlaceholderTabbyApp(
   modifier: Modifier = Modifier,
 ) {
   val backStack = remember { tabbyInitialBackStack() }
-  val tunnelState by engineEnvironment.engineController.state.collectAsState()
   val entryProvider =
-    remember(tunnelState.mode) {
+    remember(engineEnvironment) {
       tabbyEntryProvider(
         backStack = backStack,
         homeEntries = { actions ->
           homeEntries(
             homeContent = {
-              PlaceholderHomeScreen(
-                engineMode = tunnelState.mode.name,
+              HomeRouteContent(
+                engineController = engineEnvironment.engineController,
+                profileRepository = engineEnvironment.profileRepository,
                 onOpenProxy = actions.openProxy,
                 onOpenProfiles = actions.openProfiles,
                 onOpenProviders = actions.openProviders,
                 onOpenLogs = actions.openLogs,
                 onOpenSettings = actions.openSettings,
                 onOpenHelp = actions.openHelp,
-                onOpenCrash = actions.openAppCrashed,
               )
             },
             helpContent = { PlaceholderScreen("Help") },
@@ -131,32 +129,6 @@ fun PlaceholderTabbyApp(
     backStack = backStack,
     entryProvider = entryProvider,
     onBack = { backStack.removeLastOrNull() },
-    modifier = modifier,
-  )
-}
-
-@Composable
-private fun PlaceholderHomeScreen(
-  engineMode: String,
-  onOpenProxy: () -> Unit,
-  onOpenProfiles: () -> Unit,
-  onOpenProviders: () -> Unit,
-  onOpenLogs: () -> Unit,
-  onOpenSettings: () -> Unit,
-  onOpenHelp: () -> Unit,
-  onOpenCrash: () -> Unit,
-  modifier: Modifier = Modifier,
-) {
-  PlaceholderScreen(
-    title = "Tabby",
-    "Proxy" to onOpenProxy,
-    "Profiles" to onOpenProfiles,
-    "Providers" to onOpenProviders,
-    "Logs" to onOpenLogs,
-    "Settings" to onOpenSettings,
-    "Help" to onOpenHelp,
-    "Crash" to onOpenCrash,
-    subtitle = "Engine mode: $engineMode",
     modifier = modifier,
   )
 }

@@ -8,6 +8,7 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
+      implementation(projects.core.engineApi)
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
       implementation(libs.semver)
