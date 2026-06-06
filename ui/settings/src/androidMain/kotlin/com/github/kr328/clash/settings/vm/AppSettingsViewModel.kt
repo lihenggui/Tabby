@@ -16,6 +16,7 @@ import com.github.kr328.clash.settings.ui.AppComponentEnabledState
 import com.github.kr328.clash.settings.ui.AppSettingsUiState
 import com.github.kr328.clash.settings.ui.appSettingsAutoRestartComponentState
 import com.github.kr328.clash.settings.ui.appSettingsHideAppIconComponentState
+import com.github.kr328.clash.settings.ui.appSettingsInitialUiState
 import com.github.kr328.clash.settings.ui.isAppSettingsAutoRestartEnabled
 import com.github.kr328.clash.settings.ui.updateAppSettingsAutoRestart
 import com.github.kr328.clash.settings.ui.updateAppSettingsDarkMode
@@ -37,7 +38,7 @@ internal class AppSettingsViewModel(app: Application) : AndroidViewModel(app) {
   val uiState: StateFlow<AppSettingsUiState>
     field =
       MutableStateFlow(
-        AppSettingsUiState(
+        appSettingsInitialUiState(
           autoRestart = autoRestartValue,
           darkMode = uiStore.darkMode,
           hideAppIcon = uiStore.hideAppIcon,

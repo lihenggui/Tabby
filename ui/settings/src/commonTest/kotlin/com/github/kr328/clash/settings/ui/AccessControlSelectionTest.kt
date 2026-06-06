@@ -450,6 +450,25 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun createsInitialAccessControlUiState() {
+    val apps = listOf(accessControlApp(packageName = "com.example.alpha"))
+    val state =
+      accessControlInitialUiState(
+        selected = setOf("com.example.alpha"),
+        sort = AccessControlSort.UpdateTime,
+        reverse = true,
+        showSystemApps = true,
+        apps = apps,
+      )
+
+    assertEquals(apps, state.apps)
+    assertEquals(setOf("com.example.alpha"), state.settings.selected)
+    assertEquals(AccessControlSort.UpdateTime, state.settings.sort)
+    assertEquals(true, state.settings.reverse)
+    assertEquals(true, state.settings.showSystemApps)
+  }
+
+  @Test
   fun accessControlUiStateReducersUpdateSettingsAndPreserveApps() {
     val apps =
       listOf(

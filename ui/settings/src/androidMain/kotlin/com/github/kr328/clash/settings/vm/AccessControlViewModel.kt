@@ -25,10 +25,10 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
-import com.github.kr328.clash.settings.ui.AccessControlSettingsState
 import com.github.kr328.clash.settings.ui.AccessControlUiState
 import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
 import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
+import com.github.kr328.clash.settings.ui.accessControlInitialUiState
 import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
 import com.github.kr328.clash.settings.ui.planAccessControlPersist
 import com.github.kr328.clash.settings.ui.sortAccessControlApps
@@ -62,15 +62,10 @@ internal class AccessControlViewModel(app: Application) :
   val uiState: StateFlow<AccessControlUiState<AppInfo>>
     field =
       MutableStateFlow(
-        AccessControlUiState(
-          apps = emptyList(),
-          settings =
-            AccessControlSettingsState(
-              selected = emptySet(),
-              sort = uiStore.accessControlSort,
-              reverse = uiStore.accessControlReverse,
-              showSystemApps = uiStore.accessControlSystemApp,
-            ),
+        accessControlInitialUiState(
+          sort = uiStore.accessControlSort,
+          reverse = uiStore.accessControlReverse,
+          showSystemApps = uiStore.accessControlSystemApp,
         )
       )
 

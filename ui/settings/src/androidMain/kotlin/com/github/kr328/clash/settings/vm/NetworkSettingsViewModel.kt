@@ -8,6 +8,7 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.NetworkSettingsUiState
+import com.github.kr328.clash.settings.ui.networkSettingsInitialUiState
 import com.github.kr328.clash.settings.ui.updateNetworkSettingsAccessControlMode
 import com.github.kr328.clash.settings.ui.updateNetworkSettingsAllowBypass
 import com.github.kr328.clash.settings.ui.updateNetworkSettingsAllowIpv6
@@ -29,7 +30,7 @@ internal class NetworkSettingsViewModel(app: Application) : AndroidViewModel(app
   val uiState: StateFlow<NetworkSettingsUiState>
     field =
       MutableStateFlow(
-        NetworkSettingsUiState(
+        networkSettingsInitialUiState(
           hasSystemProxyOption = Build.VERSION.SDK_INT >= 29,
           enableVpn = uiStore.enableVpn,
           bypassPrivateNetwork = serviceStore.bypassPrivateNetwork,

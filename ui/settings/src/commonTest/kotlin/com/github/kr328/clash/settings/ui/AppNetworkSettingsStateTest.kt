@@ -7,6 +7,20 @@ import kotlin.test.assertEquals
 
 class AppNetworkSettingsStateTest {
   @Test
+  fun createsInitialAppSettingsState() {
+    assertEquals(
+      appSettingsUiState(),
+      appSettingsInitialUiState(
+        autoRestart = true,
+        darkMode = DarkMode.Auto,
+        hideAppIcon = false,
+        hideFromRecents = false,
+        dynamicNotification = true,
+      ),
+    )
+  }
+
+  @Test
   fun updatesAppSettingsFieldsAndPreservesOtherValues() {
     val uiState = appSettingsUiState()
 
@@ -68,6 +82,24 @@ class AppNetworkSettingsStateTest {
     assertEquals(
       AppComponentEnabledState.Enabled,
       appSettingsHideAppIconComponentState(hideAppIcon = false),
+    )
+  }
+
+  @Test
+  fun createsInitialNetworkSettingsState() {
+    assertEquals(
+      networkSettingsUiState(),
+      networkSettingsInitialUiState(
+        hasSystemProxyOption = true,
+        enableVpn = true,
+        bypassPrivateNetwork = true,
+        dnsHijacking = true,
+        allowBypass = true,
+        allowIpv6 = false,
+        systemProxy = true,
+        tunStackMode = "system",
+        accessControlMode = AccessControlMode.AcceptAll,
+      ),
     )
   }
 

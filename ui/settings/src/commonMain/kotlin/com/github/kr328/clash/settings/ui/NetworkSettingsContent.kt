@@ -61,6 +61,30 @@ internal data class NetworkSettingsUiState(
   val accessControlMode: AccessControlMode,
 )
 
+internal fun networkSettingsInitialUiState(
+  hasSystemProxyOption: Boolean,
+  enableVpn: Boolean,
+  bypassPrivateNetwork: Boolean,
+  dnsHijacking: Boolean,
+  allowBypass: Boolean,
+  allowIpv6: Boolean,
+  systemProxy: Boolean,
+  tunStackMode: String,
+  accessControlMode: AccessControlMode,
+): NetworkSettingsUiState {
+  return NetworkSettingsUiState(
+    hasSystemProxyOption = hasSystemProxyOption,
+    enableVpn = enableVpn,
+    bypassPrivateNetwork = bypassPrivateNetwork,
+    dnsHijacking = dnsHijacking,
+    allowBypass = allowBypass,
+    allowIpv6 = allowIpv6,
+    systemProxy = systemProxy,
+    tunStackMode = tunStackMode,
+    accessControlMode = accessControlMode,
+  )
+}
+
 @Composable
 internal fun NetworkSettingsContent(
   clashRunning: Boolean,

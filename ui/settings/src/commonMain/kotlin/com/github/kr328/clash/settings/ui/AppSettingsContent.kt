@@ -47,6 +47,22 @@ internal data class AppSettingsUiState(
   val dynamicNotification: Boolean,
 )
 
+internal fun appSettingsInitialUiState(
+  autoRestart: Boolean,
+  darkMode: DarkMode,
+  hideAppIcon: Boolean,
+  hideFromRecents: Boolean,
+  dynamicNotification: Boolean,
+): AppSettingsUiState {
+  return AppSettingsUiState(
+    autoRestart = autoRestart,
+    darkMode = darkMode,
+    hideAppIcon = hideAppIcon,
+    hideFromRecents = hideFromRecents,
+    dynamicNotification = dynamicNotification,
+  )
+}
+
 @Composable
 internal fun AppSettingsContent(
   clashRunning: Boolean,

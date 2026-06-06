@@ -7,6 +7,25 @@ internal data class AccessControlUiState<T>(
   val settings: AccessControlSettingsState,
 )
 
+internal fun <T> accessControlInitialUiState(
+  selected: Set<String> = emptySet(),
+  sort: AccessControlSort,
+  reverse: Boolean,
+  showSystemApps: Boolean,
+  apps: List<T> = emptyList(),
+): AccessControlUiState<T> {
+  return AccessControlUiState(
+    apps = apps,
+    settings =
+      AccessControlSettingsState(
+        selected = selected,
+        sort = sort,
+        reverse = reverse,
+        showSystemApps = showSystemApps,
+      ),
+  )
+}
+
 internal fun <T> AccessControlUiState<T>.withAccessControlApps(
   apps: List<T>
 ): AccessControlUiState<T> {
