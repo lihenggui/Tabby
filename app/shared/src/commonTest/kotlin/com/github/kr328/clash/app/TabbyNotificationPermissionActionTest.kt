@@ -36,4 +36,29 @@ class TabbyNotificationPermissionActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyNotificationRuntimePermissionRequiredFromPlatformSdkUsesMinimumSdkVersion() {
+    assertEquals(
+      false,
+      tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+        sdkVersion = 32,
+        runtimePermissionSdkVersion = 33,
+      ),
+    )
+    assertEquals(
+      true,
+      tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+        sdkVersion = 33,
+        runtimePermissionSdkVersion = 33,
+      ),
+    )
+    assertEquals(
+      true,
+      tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+        sdkVersion = 34,
+        runtimePermissionSdkVersion = 33,
+      ),
+    )
+  }
 }

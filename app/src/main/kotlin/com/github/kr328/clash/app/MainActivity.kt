@@ -144,7 +144,11 @@ class MainActivity : ComponentActivity() {
   private fun requestNotificationPermission() {
     when (
       tabbyNotificationPermissionAction(
-        runtimePermissionRequired = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+        runtimePermissionRequired =
+          tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+            sdkVersion = Build.VERSION.SDK_INT,
+            runtimePermissionSdkVersion = Build.VERSION_CODES.TIRAMISU,
+          ),
         permissionGranted =
           ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED,

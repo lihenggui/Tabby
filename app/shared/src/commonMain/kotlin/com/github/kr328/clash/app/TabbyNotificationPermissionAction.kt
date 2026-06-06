@@ -15,3 +15,10 @@ fun tabbyNotificationPermissionAction(
   } else {
     TabbyNotificationPermissionAction.Ignore
   }
+
+fun tabbyNotificationRuntimePermissionRequiredFromPlatformSdk(
+  sdkVersion: Int,
+  runtimePermissionSdkVersion: Int,
+): Boolean {
+  return sdkVersion >= runtimePermissionSdkVersion
+}
