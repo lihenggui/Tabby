@@ -130,6 +130,75 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun filtersPackageCandidatesForAccessControl() {
+    val packages =
+      listOf(
+        accessControlPackage(packageName = "io.github.goooler.tabby", hasInternetPermission = true),
+        accessControlPackage(packageName = "com.example.without-info", hasApplicationInfo = false),
+        accessControlPackage(packageName = "com.example.without-network"),
+        accessControlPackage(
+          packageName = "com.example.internet",
+          hasInternetPermission = true,
+        ),
+        accessControlPackage(
+          packageName = "com.example.system-uid",
+          hasSystemUid = true,
+        ),
+        accessControlPackage(
+          packageName = "com.example.system-app",
+          hasInternetPermission = true,
+          isSystemApp = true,
+        ),
+      )
+
+    val visible =
+      filterAccessControlPackageCandidates(
+        packages = packages,
+        currentPackageName = "io.github.goooler.tabby",
+        showSystemApps = false,
+        packageName = TestAccessControlPackage::packageName,
+        hasApplicationInfo = TestAccessControlPackage::hasApplicationInfo,
+        hasInternetPermission = TestAccessControlPackage::hasInternetPermission,
+        hasSystemUid = TestAccessControlPackage::hasSystemUid,
+        isSystemApp = TestAccessControlPackage::isSystemApp,
+      )
+
+    assertEquals(
+      listOf("com.example.internet", "com.example.system-uid"),
+      visible.map(TestAccessControlPackage::packageName),
+    )
+  }
+
+  @Test
+  fun keepsSystemPackageCandidatesWhenShowSystemAppsEnabled() {
+    val packages =
+      listOf(
+        accessControlPackage(
+          packageName = "com.example.system-app",
+          hasInternetPermission = true,
+          isSystemApp = true,
+        )
+      )
+
+    val visible =
+      filterAccessControlPackageCandidates(
+        packages = packages,
+        currentPackageName = "io.github.goooler.tabby",
+        showSystemApps = true,
+        packageName = TestAccessControlPackage::packageName,
+        hasApplicationInfo = TestAccessControlPackage::hasApplicationInfo,
+        hasInternetPermission = TestAccessControlPackage::hasInternetPermission,
+        hasSystemUid = TestAccessControlPackage::hasSystemUid,
+        isSystemApp = TestAccessControlPackage::isSystemApp,
+      )
+
+    assertEquals(
+      listOf("com.example.system-app"),
+      visible.map(TestAccessControlPackage::packageName),
+    )
+  }
+
+  @Test
   fun updatesAccessControlSettingsSelectionState() {
     val state =
       accessControlSettingsState(selected = setOf("com.example.alpha", "com.example.missing"))
@@ -353,5 +422,29 @@ class AccessControlSelectionTest {
     val label: String,
     val installTime: Long,
     val updateTime: Long,
+  )
+
+  private fun accessControlPackage(
+    packageName: String,
+    hasApplicationInfo: Boolean = true,
+    hasInternetPermission: Boolean = false,
+    hasSystemUid: Boolean = false,
+    isSystemApp: Boolean = false,
+  ): TestAccessControlPackage {
+    return TestAccessControlPackage(
+      packageName = packageName,
+      hasApplicationInfo = hasApplicationInfo,
+      hasInternetPermission = hasInternetPermission,
+      hasSystemUid = hasSystemUid,
+      isSystemApp = isSystemApp,
+    )
+  }
+
+  private data class TestAccessControlPackage(
+    val packageName: String,
+    val hasApplicationInfo: Boolean,
+    val hasInternetPermission: Boolean,
+    val hasSystemUid: Boolean,
+    val isSystemApp: Boolean,
   )
 }

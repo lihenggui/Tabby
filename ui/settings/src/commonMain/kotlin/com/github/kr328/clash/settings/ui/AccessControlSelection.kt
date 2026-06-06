@@ -130,6 +130,24 @@ internal fun <T> filterAccessControlApps(
   }
 }
 
+internal fun <T> filterAccessControlPackageCandidates(
+  packages: Iterable<T>,
+  currentPackageName: String,
+  showSystemApps: Boolean,
+  packageName: (T) -> String,
+  hasApplicationInfo: (T) -> Boolean,
+  hasInternetPermission: (T) -> Boolean,
+  hasSystemUid: (T) -> Boolean,
+  isSystemApp: (T) -> Boolean,
+): List<T> {
+  return packages.filter {
+    packageName(it) != currentPackageName &&
+      hasApplicationInfo(it) &&
+      (hasInternetPermission(it) || hasSystemUid(it)) &&
+      (showSystemApps || !isSystemApp(it))
+  }
+}
+
 internal fun <T> sortAccessControlApps(
   apps: Iterable<T>,
   selectedPackageNames: Set<String>,

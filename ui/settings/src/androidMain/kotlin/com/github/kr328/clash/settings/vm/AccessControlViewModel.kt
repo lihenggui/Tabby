@@ -27,6 +27,7 @@ import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
 import com.github.kr328.clash.settings.ui.AccessControlSettingsState
 import com.github.kr328.clash.settings.ui.exportAccessControlPackages
+import com.github.kr328.clash.settings.ui.filterAccessControlPackageCandidates
 import com.github.kr328.clash.settings.ui.importAccessControlPackages
 import com.github.kr328.clash.settings.ui.invertAccessControlPackages
 import com.github.kr328.clash.settings.ui.selectAllAccessControlPackages
@@ -218,16 +219,21 @@ internal class AccessControlViewModel(app: Application) :
     withContext(Dispatchers.IO) {
       val pm = appContext.packageManager
       val apps =
-        pm
-          .getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS)
+        filterAccessControlPackageCandidates(
+            packages = pm.getInstalledPackagesCompat(PackageManager.GET_PERMISSIONS),
+            currentPackageName = appContext.packageName,
+            showSystemApps = showSystemApps,
+            packageName = PackageInfo::packageName,
+            hasApplicationInfo = { it.applicationInfo != null },
+            hasInternetPermission = {
+              it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true
+            },
+            hasSystemUid = {
+              it.applicationInfo?.uid?.let { uid -> uid < Process.FIRST_APPLICATION_UID } == true
+            },
+            isSystemApp = { it.isSystemApp },
+          )
           .asSequence()
-          .filter { it.packageName != appContext.packageName }
-          .filter { it.applicationInfo != null }
-          .filter {
-            it.requestedPermissions?.contains(Manifest.permission.INTERNET) == true ||
-              it.applicationInfo!!.uid < Process.FIRST_APPLICATION_UID
-          }
-          .filter { showSystemApps || !it.isSystemApp }
           .map { it.toAppInfo(pm) }
           .toList()
 
