@@ -10,9 +10,13 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.profile.R
+import com.github.kr328.clash.profile.ui.ProvidersBroadcastAction
+import com.github.kr328.clash.profile.ui.ProvidersBroadcastEventKind
 import com.github.kr328.clash.profile.ui.ProvidersUiState
+import com.github.kr328.clash.profile.ui.providersBroadcastAction
 import com.github.kr328.clash.profile.ui.providersPendingUpdate
 import com.github.kr328.clash.profile.ui.withCurrentTime
 import com.github.kr328.clash.profile.ui.withFetchedProviders
@@ -45,9 +49,9 @@ internal class ProvidersViewModel(app: Application) :
     broadcastEventsJob?.cancel()
     broadcastEventsJob = viewModelScope.launch {
       Remote.broadcasts.event.collect { event ->
-        when (event) {
-          ProfileLoaded -> fetch()
-          else -> Unit
+        when (event.toProvidersBroadcastAction()) {
+          ProvidersBroadcastAction.FetchProviders -> fetch()
+          ProvidersBroadcastAction.Ignore -> Unit
         }
       }
     }
@@ -118,5 +122,22 @@ internal class ProvidersViewModel(app: Application) :
     data object Idle : EventState
 
     data class ShowMessage(val message: String) : EventState
+  }
+
+  private fun Broadcasts.Event.toProvidersBroadcastAction(): ProvidersBroadcastAction {
+    return when (this) {
+      Broadcasts.Event.ServiceRecreated ->
+        providersBroadcastAction(ProvidersBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started -> providersBroadcastAction(ProvidersBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped -> providersBroadcastAction(ProvidersBroadcastEventKind.Stopped)
+      Broadcasts.Event.ProfileChanged ->
+        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileChanged)
+      is Broadcasts.Event.ProfileUpdateCompleted ->
+        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileUpdateCompleted)
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileUpdateFailed)
+      Broadcasts.Event.ProfileLoaded ->
+        providersBroadcastAction(ProvidersBroadcastEventKind.ProfileLoaded)
+    }
   }
 }
