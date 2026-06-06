@@ -116,6 +116,20 @@ internal fun exportAccessControlPackages(selected: Set<String>): String {
   return selected.sorted().joinToString("\n")
 }
 
+internal fun <T> filterAccessControlApps(
+  apps: Iterable<T>,
+  keyword: String,
+  label: (T) -> String,
+  packageName: (T) -> String,
+): List<T> {
+  if (keyword.isBlank()) return emptyList()
+
+  return apps.filter {
+    label(it).contains(keyword, ignoreCase = true) ||
+      packageName(it).contains(keyword, ignoreCase = true)
+  }
+}
+
 internal fun <T> sortAccessControlApps(
   apps: Iterable<T>,
   selectedPackageNames: Set<String>,

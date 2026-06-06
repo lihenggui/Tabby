@@ -207,10 +207,12 @@ private fun ColumnScope.AccessControlSearchContent(
           emptyList()
         } else {
           withContext(Dispatchers.Default) {
-            apps.filter {
-              it.label.contains(currentKeyword, ignoreCase = true) ||
-                it.packageName.contains(currentKeyword, ignoreCase = true)
-            }
+            filterAccessControlApps(
+              apps = apps,
+              keyword = currentKeyword,
+              label = AppInfo::label,
+              packageName = AppInfo::packageName,
+            )
           }
         }
       }

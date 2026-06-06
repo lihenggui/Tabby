@@ -72,6 +72,64 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun filtersAppsByLabelOrPackageName() {
+    val apps =
+      listOf(
+        accessControlApp(packageName = "com.example.alpha", label = "Alpha Tool"),
+        accessControlApp(packageName = "com.example.beta", label = "Beta Tool"),
+        accessControlApp(packageName = "io.sample.gamma", label = "Gamma Tool"),
+      )
+
+    val byLabel =
+      filterAccessControlApps(
+        apps = apps,
+        keyword = "alpha",
+        label = TestAccessControlApp::label,
+        packageName = TestAccessControlApp::packageName,
+      )
+    val byPackageName =
+      filterAccessControlApps(
+        apps = apps,
+        keyword = "SAMPLE",
+        label = TestAccessControlApp::label,
+        packageName = TestAccessControlApp::packageName,
+      )
+
+    assertEquals(listOf("com.example.alpha"), byLabel.map(TestAccessControlApp::packageName))
+    assertEquals(listOf("io.sample.gamma"), byPackageName.map(TestAccessControlApp::packageName))
+  }
+
+  @Test
+  fun returnsNoAppsForBlankSearchKeyword() {
+    val apps = listOf(accessControlApp(packageName = "com.example.alpha", label = "Alpha Tool"))
+
+    assertEquals(
+      emptyList(),
+      filterAccessControlApps(
+        apps = apps,
+        keyword = "  ",
+        label = TestAccessControlApp::label,
+        packageName = TestAccessControlApp::packageName,
+      ),
+    )
+  }
+
+  @Test
+  fun keepsWhitespaceSensitiveSearchKeyword() {
+    val apps = listOf(accessControlApp(packageName = "com.example.alpha", label = "Alpha Tool"))
+
+    assertEquals(
+      emptyList(),
+      filterAccessControlApps(
+        apps = apps,
+        keyword = " alpha ",
+        label = TestAccessControlApp::label,
+        packageName = TestAccessControlApp::packageName,
+      ),
+    )
+  }
+
+  @Test
   fun updatesAccessControlSettingsSelectionState() {
     val state =
       accessControlSettingsState(selected = setOf("com.example.alpha", "com.example.missing"))
