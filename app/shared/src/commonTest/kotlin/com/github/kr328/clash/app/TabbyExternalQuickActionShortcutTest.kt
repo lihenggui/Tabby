@@ -23,11 +23,29 @@ class TabbyExternalQuickActionShortcutTest {
   @Test
   fun tabbyExternalQuickActionShortcutPlanInstallsShortcutsWhenAppIconIsVisible() {
     assertEquals(
-      TabbyExternalQuickActionShortcutPlan.Install(expectedQuickActionShortcuts),
+      TabbyExternalQuickActionShortcutPlan.Install(
+        shortcuts = expectedQuickActionShortcuts,
+        launchOptions = expectedQuickActionShortcutLaunchOptions,
+      ),
       tabbyExternalQuickActionShortcutPlan(appIconHidden = false),
     )
   }
+
+  @Test
+  fun tabbyExternalQuickActionShortcutLaunchOptionsUseTaskSafeDefaults() {
+    assertEquals(
+      expectedQuickActionShortcutLaunchOptions,
+      tabbyExternalQuickActionShortcutLaunchOptions(),
+    )
+  }
 }
+
+private val expectedQuickActionShortcutLaunchOptions =
+  TabbyExternalQuickActionShortcutLaunchOptions(
+    openInNewTask = true,
+    excludeFromRecents = true,
+    noAnimation = true,
+  )
 
 private val expectedQuickActionShortcuts =
   listOf(

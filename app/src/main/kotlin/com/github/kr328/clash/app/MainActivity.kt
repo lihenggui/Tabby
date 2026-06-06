@@ -177,14 +177,10 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupShortcuts() {
-    val flags =
-      Intent.FLAG_ACTIVITY_NEW_TASK or
-        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
-        Intent.FLAG_ACTIVITY_NO_ANIMATION
-
     val shortcuts =
       when (val plan = tabbyExternalQuickActionShortcutPlan(appIconHidden = uiStore.hideAppIcon)) {
-        is TabbyExternalQuickActionShortcutPlan.Install ->
+        is TabbyExternalQuickActionShortcutPlan.Install -> {
+          val flags = plan.launchOptions.androidIntentFlags()
           plan.shortcuts.map { shortcut ->
             val resources = shortcut.presentation.androidResources()
             ShortcutInfoCompat.Builder(this, shortcut.id)
@@ -195,6 +191,7 @@ class MainActivity : ComponentActivity() {
               .setRank(shortcut.rank)
               .build()
           }
+        }
         TabbyExternalQuickActionShortcutPlan.Skip -> return
       }
 
@@ -249,6 +246,14 @@ private fun TabbyExternalQuickAction.intentAction(): String =
     TabbyExternalQuickAction.StartClash -> Intents.ACTION_START_CLASH
     TabbyExternalQuickAction.StopClash -> Intents.ACTION_STOP_CLASH
   }
+
+private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): Int {
+  var flags = 0
+  if (openInNewTask) flags = flags or Intent.FLAG_ACTIVITY_NEW_TASK
+  if (excludeFromRecents) flags = flags or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+  if (noAnimation) flags = flags or Intent.FLAG_ACTIVITY_NO_ANIMATION
+  return flags
+}
 
 private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =
   when (action) {

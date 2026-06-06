@@ -7,6 +7,12 @@ data class TabbyExternalQuickActionShortcut(
   val presentation: TabbyExternalQuickActionShortcutPresentation,
 )
 
+data class TabbyExternalQuickActionShortcutLaunchOptions(
+  val openInNewTask: Boolean,
+  val excludeFromRecents: Boolean,
+  val noAnimation: Boolean,
+)
+
 enum class TabbyExternalQuickActionShortcutPresentation {
   ToggleClash,
   StartClash,
@@ -14,8 +20,10 @@ enum class TabbyExternalQuickActionShortcutPresentation {
 }
 
 sealed interface TabbyExternalQuickActionShortcutPlan {
-  data class Install(val shortcuts: List<TabbyExternalQuickActionShortcut>) :
-    TabbyExternalQuickActionShortcutPlan
+  data class Install(
+    val shortcuts: List<TabbyExternalQuickActionShortcut>,
+    val launchOptions: TabbyExternalQuickActionShortcutLaunchOptions,
+  ) : TabbyExternalQuickActionShortcutPlan
 
   data object Skip : TabbyExternalQuickActionShortcutPlan
 }
@@ -42,11 +50,21 @@ fun tabbyExternalQuickActionShortcuts(): List<TabbyExternalQuickActionShortcut> 
     ),
   )
 
+fun tabbyExternalQuickActionShortcutLaunchOptions(): TabbyExternalQuickActionShortcutLaunchOptions =
+  TabbyExternalQuickActionShortcutLaunchOptions(
+    openInNewTask = true,
+    excludeFromRecents = true,
+    noAnimation = true,
+  )
+
 fun tabbyExternalQuickActionShortcutPlan(
   appIconHidden: Boolean
 ): TabbyExternalQuickActionShortcutPlan =
   if (appIconHidden) {
     TabbyExternalQuickActionShortcutPlan.Skip
   } else {
-    TabbyExternalQuickActionShortcutPlan.Install(tabbyExternalQuickActionShortcuts())
+    TabbyExternalQuickActionShortcutPlan.Install(
+      shortcuts = tabbyExternalQuickActionShortcuts(),
+      launchOptions = tabbyExternalQuickActionShortcutLaunchOptions(),
+    )
   }
