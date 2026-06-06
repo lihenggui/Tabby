@@ -4,10 +4,11 @@ Thank you for contributing to this project.
 
 ## Project Overview
 
-**Tabby** is an Android GUI application for [Mihomo](https://github.com/MetaCubeX/mihomo)
+**Tabby** is a GUI application for [Mihomo](https://github.com/MetaCubeX/mihomo)
 (formerly Clash Meta), a rule-based proxy kernel.
-The app is written in Kotlin with Jetpack Compose for the UI, and embeds a compiled Go binary
-(`libclash.so`) built from the Mihomo submodule.
+The Android app is written in Kotlin with Jetpack Compose and is being migrated toward Compose
+Multiplatform shared UI. The Android shell still embeds a compiled Go binary (`libclash.so`) built
+from the Mihomo submodule.
 
 - **Application ID**: `io.github.goooler.tabby`
 - **Min SDK**: 28 | **Compile SDK**: 37 | **Target SDK**: 35
@@ -17,29 +18,46 @@ The app is written in Kotlin with Jetpack Compose for the UI, and embeds a compi
 
 ```text
 Tabby/
-├── app/          # Application shell: MainActivity, MainApplication, AppModule (Koin), BroadcastReceivers, TileService
-├── core/         # Mihomo bridge: Go/JNI bindings, data models, C++ CMake layer
-│                 #   └── src/foss/golang/clash/  (git submodule → MetaCubeX/mihomo)
-├── service/      # Background VPN service, IPC via kaidl, SQLDelight-backed profile storage
-│                 #   └── legacy Room database remains as the Android migration source
-├── common/       # Shared constants, store providers, and utility extensions; includes Android-specific helpers
-├── glue/         # Dependency-injection wiring via Koin; exposes api() of core, service, common
-└── ui/           # Shared UI components, theme, icons (also a library module)
-    ├── crash/    # Crash reporting screen
-    ├── home/     # Dashboard / tunnel toggle
-    ├── log/      # Real-time logcat viewer
-    ├── proxy/    # Proxy group selector
-    ├── profile/  # Profile management
-    └── settings/ # App settings
+├── app/                  # Android application shell: Activity, Application, Koin module, receivers, tile service
+│   ├── shared/           # Compose Multiplatform app shell and shared route environment
+│   └── desktop/          # Compose desktop JVM packaging shell
+├── core/                 # Android Mihomo Go/JNI bridge and C++ CMake layer
+│                         #   └── src/foss/golang/clash/  (git submodule -> MetaCubeX/mihomo)
+│   ├── model/            # Pure common models, no Android Parcelable
+│   ├── common/           # Pure common utilities and store abstractions
+│   ├── database/         # SQLDelight KMP profile database and drivers
+│   ├── network/          # Ktor KMP networking
+│   ├── settings-store/   # Multiplatform settings-store adapter layer
+│   ├── engine-api/       # Common engine/profile/log contracts
+│   ├── engine-android/   # Android adapters around existing service/glue/core behavior
+│   ├── engine-desktop/   # Desktop Mihomo process and external-controller implementation
+│   └── engine-ios/       # iOS stub engine boundary for future Network Extension work
+├── service/              # Android VPN service, IPC via kaidl, SQLDelight-backed profile storage
+│                         #   └── legacy Room database remains as the Android migration source
+├── common/               # Android-specific shared constants, stores, and utility extensions
+├── glue/                 # Android remote/service glue and Koin-facing stores
+└── ui/                   # Compose Multiplatform feature modules
+    ├── shared/           # Theme, icons, shared components, Navigation3 display
+    ├── crash/            # Crash reporting screen
+    ├── home/             # Dashboard / tunnel toggle
+    ├── log/              # Real-time logcat viewer
+    ├── proxy/            # Proxy group selector
+    ├── profile/          # Profile management
+    └── settings/         # App settings
 ```
 
 ### Module dependency graph (simplified)
 
 ```text
-app → glue → core → common
-               └── service → core
-                          └── common
-app → ui/*
+app -> app:shared
+app -> glue -> service -> core/database
+app -> glue -> core
+app -> ui/*
+ui/* -> ui:shared
+ui/home, ui/profile, ui/settings -> core/engine-android -> core/engine-api
+core/engine-android -> glue, service, core
+core/engine-desktop, core/engine-ios -> core/engine-api
+app:shared -> core/engine-api, ui/*
 ```
 
 ## Tech Stack
