@@ -26,9 +26,13 @@ import com.github.kr328.clash.profile.ui.PropertiesInitAction.LoadProfile
 import com.github.kr328.clash.profile.ui.PropertiesUiState
 import com.github.kr328.clash.profile.ui.propertiesAutoSaveAction
 import com.github.kr328.clash.profile.ui.propertiesBrowseFilesAction
+import com.github.kr328.clash.profile.ui.propertiesBrowseFilesEventState
 import com.github.kr328.clash.profile.ui.propertiesCommitAction
 import com.github.kr328.clash.profile.ui.propertiesCommitValidationEventState
+import com.github.kr328.clash.profile.ui.propertiesErrorEventState
+import com.github.kr328.clash.profile.ui.propertiesFinishEventState
 import com.github.kr328.clash.profile.ui.propertiesInitAction
+import com.github.kr328.clash.profile.ui.propertiesInitEventState
 import com.github.kr328.clash.profile.ui.withFetchStatusProgress
 import com.github.kr328.clash.profile.ui.withLoadedProfile
 import com.github.kr328.clash.profile.ui.withProcessingFinished
@@ -65,7 +69,7 @@ internal class PropertiesViewModel(app: Application) :
     viewModelScope.launch {
       when (val action = propertiesInitAction(profileRepository.queryByUuid(uuid))) {
         is LoadProfile -> uiState.update { it.withLoadedProfile(action.profile) }
-        Finish -> eventState.value = PropertiesEventState.Finish(false)
+        Finish -> propertiesInitEventState(action)?.let { eventState.value = it }
       }
     }
   }
@@ -117,14 +121,14 @@ internal class PropertiesViewModel(app: Application) :
 
   fun onBrowseFiles() {
     when (val action = propertiesBrowseFilesAction(rootUuid)) {
-      is BrowseFiles -> eventState.value = PropertiesEventState.BrowseFiles(action.uuid)
+      is BrowseFiles -> propertiesBrowseFilesEventState(action)?.let { eventState.value = it }
       IgnoreBrowseFiles -> Unit
     }
   }
 
   fun onRequestClose() {
     canceled = true
-    eventState.value = PropertiesEventState.Finish(false)
+    eventState.value = propertiesFinishEventState(success = false)
   }
 
   fun onCommit() {
@@ -165,13 +169,11 @@ internal class PropertiesViewModel(app: Application) :
           }
         }
         canceled = true
-        eventState.value = PropertiesEventState.Finish(true)
+        eventState.value = propertiesFinishEventState(success = true)
       } catch (e: Exception) {
         Log.e("Commit profile failed: ${e.message}", e)
         eventState.value =
-          PropertiesEventState.ShowMessage(
-            e.message ?: application.getString(CommonR.string.unknown)
-          )
+          propertiesErrorEventState(e.message, application.getString(CommonR.string.unknown))
       }
     }
   }

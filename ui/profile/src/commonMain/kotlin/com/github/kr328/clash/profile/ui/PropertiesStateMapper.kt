@@ -75,9 +75,25 @@ internal fun propertiesInitAction(profile: Profile?): PropertiesInitAction {
   return profile?.let(PropertiesInitAction::LoadProfile) ?: PropertiesInitAction.Finish
 }
 
+internal fun propertiesInitEventState(action: PropertiesInitAction): PropertiesEventState? {
+  return when (action) {
+    is PropertiesInitAction.LoadProfile -> null
+    PropertiesInitAction.Finish -> PropertiesEventState.Finish(success = false)
+  }
+}
+
 internal fun propertiesBrowseFilesAction(rootUuid: Uuid?): PropertiesBrowseFilesAction {
   return rootUuid?.let(PropertiesBrowseFilesAction::BrowseFiles)
     ?: PropertiesBrowseFilesAction.Ignore
+}
+
+internal fun propertiesBrowseFilesEventState(
+  action: PropertiesBrowseFilesAction
+): PropertiesEventState? {
+  return when (action) {
+    is PropertiesBrowseFilesAction.BrowseFiles -> PropertiesEventState.BrowseFiles(action.uuid)
+    PropertiesBrowseFilesAction.Ignore -> null
+  }
 }
 
 internal fun validatePropertiesCommit(profile: Profile): PropertiesCommitValidationResult {
@@ -110,6 +126,17 @@ internal fun propertiesCommitValidationEventState(
     is PropertiesCommitAction.Commit,
     PropertiesCommitAction.Ignore -> null
   }
+}
+
+internal fun propertiesFinishEventState(success: Boolean): PropertiesEventState {
+  return PropertiesEventState.Finish(success)
+}
+
+internal fun propertiesErrorEventState(
+  message: String?,
+  unknownMessage: String,
+): PropertiesEventState {
+  return PropertiesEventState.ShowMessage(message ?: unknownMessage)
 }
 
 internal fun propertiesAutoSaveAction(

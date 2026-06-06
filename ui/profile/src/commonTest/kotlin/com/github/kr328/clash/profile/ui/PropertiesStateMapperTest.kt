@@ -49,6 +49,20 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesInitEventStateFinishesOnlyWhenProfileIsMissing() {
+    val profile = profile()
+
+    assertEquals(
+      null,
+      propertiesInitEventState(PropertiesInitAction.LoadProfile(profile)),
+    )
+    assertEquals(
+      PropertiesEventState.Finish(success = false),
+      propertiesInitEventState(PropertiesInitAction.Finish),
+    )
+  }
+
+  @Test
   fun propertiesBrowseFilesActionRequiresRootUuid() {
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
 
@@ -59,6 +73,20 @@ class PropertiesStateMapperTest {
     assertEquals(
       PropertiesBrowseFilesAction.Ignore,
       propertiesBrowseFilesAction(null),
+    )
+  }
+
+  @Test
+  fun propertiesBrowseFilesEventStateBrowsesOnlyForBrowseAction() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+
+    assertEquals(
+      PropertiesEventState.BrowseFiles(uuid),
+      propertiesBrowseFilesEventState(PropertiesBrowseFilesAction.BrowseFiles(uuid)),
+    )
+    assertEquals(
+      null,
+      propertiesBrowseFilesEventState(PropertiesBrowseFilesAction.Ignore),
     )
   }
 
@@ -166,6 +194,24 @@ class PropertiesStateMapperTest {
         emptyNameMessage = "empty name",
         emptySourceMessage = "empty source",
       ),
+    )
+  }
+
+  @Test
+  fun propertiesFinishEventStateCarriesSuccessFlag() {
+    assertEquals(PropertiesEventState.Finish(success = true), propertiesFinishEventState(true))
+    assertEquals(PropertiesEventState.Finish(success = false), propertiesFinishEventState(false))
+  }
+
+  @Test
+  fun propertiesErrorEventStateFallsBackToUnknownMessage() {
+    assertEquals(
+      PropertiesEventState.ShowMessage("commit failed"),
+      propertiesErrorEventState("commit failed", "Unknown error"),
+    )
+    assertEquals(
+      PropertiesEventState.ShowMessage("Unknown error"),
+      propertiesErrorEventState(null, "Unknown error"),
     )
   }
 
