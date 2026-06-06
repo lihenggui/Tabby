@@ -11,7 +11,9 @@ import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
+import com.github.kr328.clash.settings.ui.overridePersistAction
 import com.github.kr328.clash.settings.ui.updateOverrideAllowLan
 import com.github.kr328.clash.settings.ui.updateOverrideAllowOrigins
 import com.github.kr328.clash.settings.ui.updateOverrideAllowPrivateNetwork
@@ -68,8 +70,11 @@ internal class OverrideSettingsViewModel(app: Application) :
   override fun onStop(owner: LifecycleOwner) {
     // Intended to use non-viewModel scope as we need the action to be called on disposed.
     Global.launch {
-      if (skipPersist) engineController.clearPersistOverride()
-      else engineController.patchPersistOverride(configuration.value)
+      when (val action = overridePersistAction(skipPersist, configuration.value)) {
+        OverridePersistAction.Clear -> engineController.clearPersistOverride()
+        is OverridePersistAction.Patch ->
+          engineController.patchPersistOverride(action.configuration)
+      }
     }
   }
 

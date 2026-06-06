@@ -17,7 +17,9 @@ import com.github.kr328.clash.glue.util.clashDir
 import com.github.kr328.clash.settings.ui.GeoFileImportPlan
 import com.github.kr328.clash.settings.ui.GeoFileImportType
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
+import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.SniffProtocol
+import com.github.kr328.clash.settings.ui.overridePersistAction
 import com.github.kr328.clash.settings.ui.planGeoFileImport
 import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
 import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
@@ -60,8 +62,11 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   override fun onStop(owner: LifecycleOwner) {
     // Intended to use non-viewModel scope as we need the action to be called on disposed.
     Global.launch {
-      if (skipPersist) engineController.clearPersistOverride()
-      else engineController.patchPersistOverride(configuration.value)
+      when (val action = overridePersistAction(skipPersist, configuration.value)) {
+        OverridePersistAction.Clear -> engineController.clearPersistOverride()
+        is OverridePersistAction.Patch ->
+          engineController.patchPersistOverride(action.configuration)
+      }
     }
   }
 

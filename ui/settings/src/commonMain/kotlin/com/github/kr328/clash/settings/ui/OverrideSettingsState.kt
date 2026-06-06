@@ -4,6 +4,23 @@ import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.core.model.TunnelState
 
+internal sealed interface OverridePersistAction {
+  data object Clear : OverridePersistAction
+
+  data class Patch(val configuration: ConfigurationOverride) : OverridePersistAction
+}
+
+internal fun overridePersistAction(
+  skipPersist: Boolean,
+  configuration: ConfigurationOverride,
+): OverridePersistAction {
+  return if (skipPersist) {
+    OverridePersistAction.Clear
+  } else {
+    OverridePersistAction.Patch(configuration)
+  }
+}
+
 internal fun updateOverrideHttpPort(
   configuration: ConfigurationOverride,
   httpPort: Int?,

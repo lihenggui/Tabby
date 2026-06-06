@@ -8,6 +8,24 @@ import kotlin.test.assertEquals
 
 class OverrideSettingsStateTest {
   @Test
+  fun plansPatchPersistWhenResetWasNotRequested() {
+    val configuration = ConfigurationOverride(httpPort = 7890)
+
+    assertEquals(
+      OverridePersistAction.Patch(configuration),
+      overridePersistAction(skipPersist = false, configuration = configuration),
+    )
+  }
+
+  @Test
+  fun plansClearPersistWhenResetWasRequested() {
+    assertEquals(
+      OverridePersistAction.Clear,
+      overridePersistAction(skipPersist = true, configuration = ConfigurationOverride()),
+    )
+  }
+
+  @Test
   fun updatesPortOverridesAndPreservesNestedState() {
     val configuration = configurationWithGeneralOverrides()
 
