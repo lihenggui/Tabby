@@ -171,11 +171,7 @@ class MainActivity : ComponentActivity() {
 
   private fun edgeToEdge(darkMode: DarkMode) {
     val systemBars =
-      when (tabbyEdgeToEdgeStyle(darkMode)) {
-        TabbyEdgeToEdgeStyle.ForceDark -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { true }
-        TabbyEdgeToEdgeStyle.ForceLight -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { false }
-        TabbyEdgeToEdgeStyle.Auto -> SystemBarStyle.auto(TRANSPARENT, TRANSPARENT)
-      }
+      tabbyEdgeToEdgeSystemBarMode(tabbyEdgeToEdgeStyle(darkMode)).androidSystemBarStyle()
     enableEdgeToEdge(statusBarStyle = systemBars, navigationBarStyle = systemBars)
     // TODO: https://issuetracker.google.com/issues/298296168
     //  Fix for three-button nav not properly going edge-to-edge.
@@ -233,6 +229,12 @@ class MainActivity : ComponentActivity() {
 
 private fun Activity.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_LONG) {
   Toast.makeText(this, resId, duration).show()
+}
+
+private fun TabbyEdgeToEdgeSystemBarMode.androidSystemBarStyle(): SystemBarStyle {
+  return forcedDarkMode?.let { forcedDarkMode ->
+    SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { forcedDarkMode }
+  } ?: SystemBarStyle.auto(TRANSPARENT, TRANSPARENT)
 }
 
 private fun Intent.tabbyExternalQuickAction(): TabbyExternalQuickAction? =

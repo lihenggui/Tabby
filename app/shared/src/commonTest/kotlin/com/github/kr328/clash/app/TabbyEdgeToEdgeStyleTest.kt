@@ -28,4 +28,24 @@ class TabbyEdgeToEdgeStyleTest {
       tabbyEdgeToEdgeStyle(DarkMode.ForceDark),
     )
   }
+
+  @Test
+  fun tabbyEdgeToEdgeSystemBarModeKeepsAutoDetectionForAutoStyle() {
+    assertEquals(
+      TabbyEdgeToEdgeSystemBarMode(forcedDarkMode = null),
+      tabbyEdgeToEdgeSystemBarMode(TabbyEdgeToEdgeStyle.Auto),
+    )
+  }
+
+  @Test
+  fun tabbyEdgeToEdgeSystemBarModeForcesLightOrDarkDetection() {
+    assertEquals(
+      TabbyEdgeToEdgeSystemBarMode(forcedDarkMode = false),
+      tabbyEdgeToEdgeSystemBarMode(TabbyEdgeToEdgeStyle.ForceLight),
+    )
+    assertEquals(
+      TabbyEdgeToEdgeSystemBarMode(forcedDarkMode = true),
+      tabbyEdgeToEdgeSystemBarMode(TabbyEdgeToEdgeStyle.ForceDark),
+    )
+  }
 }
