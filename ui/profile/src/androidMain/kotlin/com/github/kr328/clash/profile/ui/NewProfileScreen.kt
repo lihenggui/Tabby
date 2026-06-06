@@ -82,9 +82,22 @@ internal fun NewProfileScreen(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     providers = providers.map { it.toNewProfileProviderItem() },
-    onCreate = { index -> providers.getOrNull(index)?.let(viewModel::onCreate) },
+    onCreate = { index ->
+      when (val action = newProfileProviderSelectionAction(providers, index)) {
+        is NewProfileProviderSelectionAction.SelectProvider -> viewModel.onCreate(action.provider)
+        NewProfileProviderSelectionAction.Ignore -> Unit
+      }
+    },
     onDetail = { index ->
-      (providers.getOrNull(index) as? ProfileProvider.External)?.let(viewModel::onDetail)
+      when (
+        val action =
+          newProfileProviderDetailSelectionAction(providers, index) { provider ->
+            provider as? ProfileProvider.External
+          }
+      ) {
+        is NewProfileProviderSelectionAction.SelectProvider -> viewModel.onDetail(action.provider)
+        NewProfileProviderSelectionAction.Ignore -> Unit
+      }
     },
   )
 }

@@ -114,9 +114,77 @@ class NewProfileUiStateTest {
     )
   }
 
-  private fun testProvider(id: String): TestProvider {
-    return TestProvider(id)
+  @Test
+  fun newProfileProviderSelectionActionSelectsProviderByIndex() {
+    val providers =
+      listOf(
+        testProvider("file", detail = false),
+        testProvider("external", detail = true),
+      )
+
+    assertEquals(
+      NewProfileProviderSelectionAction.SelectProvider(providers[1]),
+      newProfileProviderSelectionAction(providers, index = 1),
+    )
   }
 
-  private data class TestProvider(val id: String)
+  @Test
+  fun newProfileProviderSelectionActionIgnoresMissingIndex() {
+    assertEquals(
+      NewProfileProviderSelectionAction.Ignore,
+      newProfileProviderSelectionAction(listOf(testProvider("file")), index = 1),
+    )
+  }
+
+  @Test
+  fun newProfileProviderDetailSelectionActionSelectsDetailProvider() {
+    val providers =
+      listOf(
+        testProvider("file", detail = false),
+        testProvider("external", detail = true),
+      )
+
+    assertEquals(
+      NewProfileProviderSelectionAction.SelectProvider(providers[1]),
+      newProfileProviderDetailSelectionAction(providers, index = 1) { provider ->
+        provider.takeIf { it.detail }
+      },
+    )
+  }
+
+  @Test
+  fun newProfileProviderDetailSelectionActionIgnoresNonDetailProvider() {
+    assertEquals(
+      NewProfileProviderSelectionAction.Ignore,
+      newProfileProviderDetailSelectionAction(
+        listOf(testProvider("file", detail = false)),
+        index = 0,
+      ) { provider ->
+        provider.takeIf { it.detail }
+      },
+    )
+  }
+
+  @Test
+  fun newProfileProviderDetailSelectionActionIgnoresMissingIndex() {
+    assertEquals(
+      NewProfileProviderSelectionAction.Ignore,
+      newProfileProviderDetailSelectionAction(
+        listOf(testProvider("external", detail = true)),
+        index = 1,
+      ) { provider ->
+        provider.takeIf { it.detail }
+      },
+    )
+  }
+
+  private fun testProvider(id: String): TestProvider {
+    return testProvider(id, detail = false)
+  }
+
+  private fun testProvider(id: String, detail: Boolean): TestProvider {
+    return TestProvider(id, detail)
+  }
+
+  private data class TestProvider(val id: String, val detail: Boolean)
 }

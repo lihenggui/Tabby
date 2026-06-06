@@ -31,6 +31,12 @@ internal sealed interface NewProfileExternalProviderResultAction {
   data object Ignore : NewProfileExternalProviderResultAction
 }
 
+internal sealed interface NewProfileProviderSelectionAction<out T> {
+  data class SelectProvider<T>(val provider: T) : NewProfileProviderSelectionAction<T>
+
+  data object Ignore : NewProfileProviderSelectionAction<Nothing>
+}
+
 internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCreateAction {
   return when (kind) {
     NewProfileProviderKind.File -> NewProfileCreateAction.CreateProfile(Profile.Type.File)
@@ -55,6 +61,26 @@ internal fun newProfileExternalProviderResultAction(
   } else {
     NewProfileExternalProviderResultAction.Ignore
   }
+}
+
+internal fun <T> newProfileProviderSelectionAction(
+  providers: List<T>,
+  index: Int,
+): NewProfileProviderSelectionAction<T> {
+  val provider = providers.getOrNull(index) ?: return NewProfileProviderSelectionAction.Ignore
+
+  return NewProfileProviderSelectionAction.SelectProvider(provider)
+}
+
+internal fun <T, R : T> newProfileProviderDetailSelectionAction(
+  providers: List<T>,
+  index: Int,
+  detailProvider: (T) -> R?,
+): NewProfileProviderSelectionAction<R> {
+  val provider = providers.getOrNull(index) ?: return NewProfileProviderSelectionAction.Ignore
+  val selected = detailProvider(provider) ?: return NewProfileProviderSelectionAction.Ignore
+
+  return NewProfileProviderSelectionAction.SelectProvider(selected)
 }
 
 internal fun <T> NewProfileUiState<T>.withNewProfileProviders(
