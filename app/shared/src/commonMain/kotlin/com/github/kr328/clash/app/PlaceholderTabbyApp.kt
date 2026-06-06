@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
+import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
 import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
@@ -125,7 +126,12 @@ fun PlaceholderTabbyApp(
         },
         crashEntries = {
           crashEntries(
-            apkBrokenContent = { PlaceholderScreen("APK broken") },
+            apkBrokenContent = {
+              ApkBrokenRouteContent(
+                releasesUrl = TABBY_GITHUB_URL,
+                onOpenReleases = {},
+              )
+            },
             appCrashedContent = { PlaceholderScreen("App crashed") },
           )
         },
@@ -140,6 +146,8 @@ fun PlaceholderTabbyApp(
     modifier = modifier,
   )
 }
+
+private const val TABBY_GITHUB_URL = "https://github.com/Goooler/Tabby"
 
 @Composable
 private fun PlaceholderScreen(

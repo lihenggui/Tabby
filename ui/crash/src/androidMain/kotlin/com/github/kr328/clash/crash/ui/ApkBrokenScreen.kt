@@ -8,5 +8,8 @@ import com.github.kr328.clash.glue.util.openLink
 @Composable
 internal fun ApkBrokenScreen() {
   val context = LocalContext.current
-  ApkBrokenContent(releasesUrl = TABBY_GITHUB, onOpenReleases = { context.openLink(TABBY_GITHUB) })
+  ApkBrokenRouteContent(
+    releasesUrl = TABBY_GITHUB,
+    onOpenReleases = { context.openLink(TABBY_GITHUB) },
+  )
 }

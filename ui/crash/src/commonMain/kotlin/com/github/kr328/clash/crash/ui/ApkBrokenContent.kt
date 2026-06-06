@@ -20,8 +20,15 @@ import tabby.ui.crash.generated.resources.github_releases
 import tabby.ui.crash.generated.resources.reinstall
 
 @Composable
-internal fun ApkBrokenContent(releasesUrl: String, onOpenReleases: () -> Unit) {
-  TabbyScaffold(title = stringResource(CrashRes.string.application_broken)) { innerPadding ->
+internal fun ApkBrokenContent(
+  releasesUrl: String,
+  onOpenReleases: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  TabbyScaffold(
+    modifier = modifier,
+    title = stringResource(CrashRes.string.application_broken),
+  ) { innerPadding ->
     ProvidePreferenceLocals {
       LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = innerPadding) {
         preference(
