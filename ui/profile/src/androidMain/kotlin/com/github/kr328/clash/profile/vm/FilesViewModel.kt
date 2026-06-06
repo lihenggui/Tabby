@@ -17,14 +17,17 @@ import com.github.kr328.clash.profile.ui.ProfileFileImportAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
 import com.github.kr328.clash.profile.ui.ProfileFilesFetchAction
+import com.github.kr328.clash.profile.ui.ProfileFilesInitAction
+import com.github.kr328.clash.profile.ui.ProfileFilesLoadedAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
-import com.github.kr328.clash.profile.ui.isProfileConfigurationEditable
 import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileImportAction
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
 import com.github.kr328.clash.profile.ui.profileFilesFetchAction
+import com.github.kr328.clash.profile.ui.profileFilesInitAction
+import com.github.kr328.clash.profile.ui.profileFilesLoadedAction
 import com.github.kr328.clash.profile.ui.selectVisibleProfileFiles
 import com.github.kr328.clash.profile.ui.withConfigFiles
 import com.github.kr328.clash.profile.ui.withConfigurationEditable
@@ -48,17 +51,19 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     field = MutableStateFlow<EventState>(EventState.Idle)
 
   fun init(uuid: Uuid) {
-    if (location.initialized) return
-    location = location.initialize(uuid.toString())
+    when (val action = profileFilesInitAction(location, uuid.toString())) {
+      is ProfileFilesInitAction.Initialize -> location = action.location
+      ProfileFilesInitAction.Ignore -> return
+    }
 
     viewModelScope.launch {
-      val profile = profileRepository.queryByUuid(uuid)
-      if (profile == null) {
-        eventState.value = EventState.Finish
-        return@launch
+      when (val action = profileFilesLoadedAction(profileRepository.queryByUuid(uuid))) {
+        is ProfileFilesLoadedAction.LoadFiles -> {
+          uiState.update { it.withConfigurationEditable(action.configurationEditable) }
+          fetch()
+        }
+        ProfileFilesLoadedAction.Finish -> eventState.value = EventState.Finish
       }
-      uiState.update { it.withConfigurationEditable(isProfileConfigurationEditable(profile)) }
-      fetch()
     }
   }
 
