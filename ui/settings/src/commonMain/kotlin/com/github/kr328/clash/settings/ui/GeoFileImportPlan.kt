@@ -26,6 +26,10 @@ internal sealed interface GeoFileImportResult {
   data object Failed : GeoFileImportResult
 }
 
+internal fun geoFileImportInitialResult(): GeoFileImportResult {
+  return GeoFileImportResult.Idle
+}
+
 internal fun planGeoFileImport(
   displayName: String,
   importType: GeoFileImportType,

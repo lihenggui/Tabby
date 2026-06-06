@@ -14,6 +14,7 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.OverrideSettingsActions
 import com.github.kr328.clash.settings.ui.overridePersistAction
+import com.github.kr328.clash.settings.ui.overrideSettingsInitialConfiguration
 import com.github.kr328.clash.settings.ui.updateOverrideAllowLan
 import com.github.kr328.clash.settings.ui.updateOverrideAllowOrigins
 import com.github.kr328.clash.settings.ui.updateOverrideAllowPrivateNetwork
@@ -59,7 +60,7 @@ internal class OverrideSettingsViewModel(app: Application) :
   @Volatile private var skipPersist = false
 
   val configuration: StateFlow<ConfigurationOverride>
-    field = MutableStateFlow(ConfigurationOverride())
+    field = MutableStateFlow(overrideSettingsInitialConfiguration())
 
   init {
     viewModelScope.launch {

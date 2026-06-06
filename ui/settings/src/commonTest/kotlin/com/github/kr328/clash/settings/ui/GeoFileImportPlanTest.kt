@@ -5,6 +5,11 @@ import kotlin.test.assertEquals
 
 class GeoFileImportPlanTest {
   @Test
+  fun initialResultUsesIdleState() {
+    assertEquals(GeoFileImportResult.Idle, geoFileImportInitialResult())
+  }
+
+  @Test
   fun createsGeoIpImportPlanForSupportedExtension() {
     assertEquals(
       GeoFileImportPlan.Supported(

@@ -8,6 +8,10 @@ internal enum class SniffProtocol {
   Quic,
 }
 
+internal fun metaFeatureSettingsInitialConfiguration(): ConfigurationOverride {
+  return ConfigurationOverride()
+}
+
 internal fun updateMetaUnifiedDelay(
   configuration: ConfigurationOverride,
   unifiedDelay: Boolean?,

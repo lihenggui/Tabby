@@ -6,6 +6,11 @@ import kotlin.test.assertEquals
 
 class MetaFeatureSettingsStateTest {
   @Test
+  fun initialConfigurationUsesDefaultOverrideState() {
+    assertEquals(ConfigurationOverride(), metaFeatureSettingsInitialConfiguration())
+  }
+
+  @Test
   fun updatesMetaBooleanBasicOptionsAndPreservesOtherState() {
     val configuration = configurationWithMetaBasicOptions()
 

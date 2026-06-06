@@ -10,6 +10,10 @@ internal sealed interface OverridePersistAction {
   data class Patch(val configuration: ConfigurationOverride) : OverridePersistAction
 }
 
+internal fun overrideSettingsInitialConfiguration(): ConfigurationOverride {
+  return ConfigurationOverride()
+}
+
 internal fun overridePersistAction(
   skipPersist: Boolean,
   configuration: ConfigurationOverride,

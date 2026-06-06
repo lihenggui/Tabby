@@ -22,8 +22,10 @@ import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.geoFileImportAction
 import com.github.kr328.clash.settings.ui.geoFileImportFailedResult
+import com.github.kr328.clash.settings.ui.geoFileImportInitialResult
 import com.github.kr328.clash.settings.ui.geoFileImportResult
 import com.github.kr328.clash.settings.ui.geoFileImportStartedResult
+import com.github.kr328.clash.settings.ui.metaFeatureSettingsInitialConfiguration
 import com.github.kr328.clash.settings.ui.overridePersistAction
 import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
 import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
@@ -52,10 +54,10 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
   @Volatile private var skipPersist = false
 
   val configuration: StateFlow<ConfigurationOverride>
-    field = MutableStateFlow(ConfigurationOverride())
+    field = MutableStateFlow(metaFeatureSettingsInitialConfiguration())
 
   val importResult: StateFlow<GeoFileImportResult>
-    field = MutableStateFlow<GeoFileImportResult>(GeoFileImportResult.Idle)
+    field = MutableStateFlow(geoFileImportInitialResult())
 
   init {
     viewModelScope.launch {

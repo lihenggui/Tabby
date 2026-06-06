@@ -8,6 +8,11 @@ import kotlin.test.assertEquals
 
 class OverrideSettingsStateTest {
   @Test
+  fun initialConfigurationUsesDefaultOverrideState() {
+    assertEquals(ConfigurationOverride(), overrideSettingsInitialConfiguration())
+  }
+
+  @Test
   fun plansPatchPersistWhenResetWasNotRequested() {
     val configuration = ConfigurationOverride(httpPort = 7890)
 
