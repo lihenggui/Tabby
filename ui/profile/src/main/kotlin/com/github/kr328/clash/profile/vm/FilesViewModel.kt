@@ -12,6 +12,7 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
+import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +23,7 @@ import kotlinx.coroutines.launch
 internal class FilesViewModel(app: Application) : AndroidViewModel(app), DefaultLifecycleObserver {
   private val profileRepository: ProfileRepository = AndroidProfileRepository()
   private val client = FilesClient(app)
-  private val stack = ArrayDeque<String>()
-  private var root: String = ""
+  private var location = ProfileFilesLocation()
   private var fetchJob: Job? = null
 
   val uiState: StateFlow<UiState>
@@ -33,8 +33,8 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
     field = MutableStateFlow<EventState>(EventState.Idle)
 
   fun init(uuid: Uuid) {
-    if (root.isNotEmpty()) return
-    root = uuid.toString()
+    if (location.initialized) return
+    location = location.initialize(uuid.toString())
 
     viewModelScope.launch {
       val profile = profileRepository.queryByUuid(uuid)
@@ -52,23 +52,24 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   override fun onStart(owner: LifecycleOwner) {
-    if (root.isNotEmpty()) {
+    if (location.initialized) {
       fetch()
     }
   }
 
   fun onBack() {
-    if (stack.isEmpty()) {
+    val updatedLocation = location.leaveDirectory()
+    if (updatedLocation == null) {
       eventState.value = EventState.Finish
     } else {
-      stack.removeLast()
+      location = updatedLocation
       fetch()
     }
   }
 
   fun onOpen(configFile: ConfigFile) {
     if (configFile.isDirectory) {
-      stack.addLast(configFile.id)
+      location = location.enterDirectory(configFile.id)
       fetch()
     } else {
       val uri = client.buildDocumentUri(configFile.id)
@@ -106,7 +107,7 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
 
   fun onImportResult(uri: Uri?, targetConfigFile: ConfigFile?) {
     if (uri == null) return
-    val parentId = if (stack.isEmpty()) root else stack.last()
+    val parentId = location.currentDocumentId
     viewModelScope.launch {
       try {
         if (targetConfigFile == null) {
@@ -141,9 +142,9 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
 
   private fun fetch() {
     fetchJob?.cancel()
-    val documentId = stack.lastOrNull() ?: root
-    if (root.isEmpty()) return
-    val inBaseDir = stack.isEmpty()
+    if (!location.initialized) return
+    val documentId = location.currentDocumentId
+    val inBaseDir = location.currentInBaseDir
     fetchJob = viewModelScope.launch {
       try {
         val files =
