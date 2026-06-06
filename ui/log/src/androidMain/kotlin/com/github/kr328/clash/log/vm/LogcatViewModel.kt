@@ -26,15 +26,18 @@ import com.github.kr328.clash.log.ui.LogcatEventState
 import com.github.kr328.clash.log.ui.LogcatExportAction
 import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatPollAction
-import com.github.kr328.clash.log.ui.LogcatRequestExportAction
 import com.github.kr328.clash.log.ui.LogcatUiState
 import com.github.kr328.clash.log.ui.logcatCloseAction
 import com.github.kr328.clash.log.ui.logcatCloseEventState
 import com.github.kr328.clash.log.ui.logcatDeleteAction
+import com.github.kr328.clash.log.ui.logcatDeleteEventState
 import com.github.kr328.clash.log.ui.logcatExportAction
+import com.github.kr328.clash.log.ui.logcatExportResultEventState
 import com.github.kr328.clash.log.ui.logcatInitialAction
+import com.github.kr328.clash.log.ui.logcatInitialEventState
 import com.github.kr328.clash.log.ui.logcatPollAction
 import com.github.kr328.clash.log.ui.logcatRequestExportAction
+import com.github.kr328.clash.log.ui.logcatRequestExportEventState
 import com.github.kr328.clash.log.ui.logcatSnapshotAction
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
@@ -90,7 +93,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
         loadLocalFile(action.file)
       }
       LogcatInitialAction.InvalidFile -> {
-        eventState.value = LogcatEventState.InvalidFile
+        logcatInitialEventState(action)?.let { eventState.value = it }
       }
     }
   }
@@ -108,17 +111,15 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
       is LogcatDeleteAction.DeleteFile ->
         viewModelScope.launch {
           withContext(Dispatchers.IO) { application.logsDir.resolve(action.file.fileName).delete() }
-          eventState.value = LogcatEventState.Close
+          logcatDeleteEventState(action)?.let { eventState.value = it }
         }
       LogcatDeleteAction.Ignore -> Unit
     }
   }
 
   fun requestExport() {
-    when (val action = logcatRequestExportAction(currentFile)) {
-      is LogcatRequestExportAction.RequestExport ->
-        eventState.value = LogcatEventState.RequestExport(action.fileName)
-      LogcatRequestExportAction.Ignore -> Unit
+    logcatRequestExportEventState(logcatRequestExportAction(currentFile))?.let {
+      eventState.value = it
     }
   }
 
@@ -132,11 +133,19 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           eventState.value =
             try {
               writeLogTo(messages, action.file, destination)
-              LogcatEventState.ShowMessage(application.getString(R.string.file_exported))
+              logcatExportResultEventState(
+                success = true,
+                errorMessage = null,
+                exportedMessage = application.getString(R.string.file_exported),
+                unknownMessage = "",
+              )
             } catch (e: Exception) {
               Log.e("Export log file failed: ${e.message}", e)
-              LogcatEventState.ShowMessage(
-                e.message ?: application.getString(CommonR.string.unknown)
+              logcatExportResultEventState(
+                success = false,
+                errorMessage = e.message,
+                exportedMessage = "",
+                unknownMessage = application.getString(CommonR.string.unknown),
               )
             }
         }

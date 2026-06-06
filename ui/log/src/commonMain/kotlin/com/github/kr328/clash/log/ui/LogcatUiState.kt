@@ -94,13 +94,35 @@ internal fun logcatCloseEventState(action: LogcatCloseAction): LogcatEventState 
   }
 }
 
+internal fun logcatInitialEventState(action: LogcatInitialAction): LogcatEventState? {
+  return when (action) {
+    LogcatInitialAction.InvalidFile -> LogcatEventState.InvalidFile
+    is LogcatInitialAction.LoadFile,
+    LogcatInitialAction.StartStreaming -> null
+  }
+}
+
 internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {
   return currentFile?.let(LogcatDeleteAction::DeleteFile) ?: LogcatDeleteAction.Ignore
+}
+
+internal fun logcatDeleteEventState(action: LogcatDeleteAction): LogcatEventState? {
+  return when (action) {
+    is LogcatDeleteAction.DeleteFile -> LogcatEventState.Close
+    LogcatDeleteAction.Ignore -> null
+  }
 }
 
 internal fun logcatRequestExportAction(currentFile: LogFile?): LogcatRequestExportAction {
   return currentFile?.let { LogcatRequestExportAction.RequestExport(it.fileName) }
     ?: LogcatRequestExportAction.Ignore
+}
+
+internal fun logcatRequestExportEventState(action: LogcatRequestExportAction): LogcatEventState? {
+  return when (action) {
+    is LogcatRequestExportAction.RequestExport -> LogcatEventState.RequestExport(action.fileName)
+    LogcatRequestExportAction.Ignore -> null
+  }
 }
 
 internal fun logcatExportAction(
@@ -111,6 +133,17 @@ internal fun logcatExportAction(
   if (!hasDestination) return LogcatExportAction.Ignore
 
   return LogcatExportAction.ExportFile(file)
+}
+
+internal fun logcatExportResultEventState(
+  success: Boolean,
+  errorMessage: String?,
+  exportedMessage: String,
+  unknownMessage: String,
+): LogcatEventState {
+  val message = if (success) exportedMessage else errorMessage ?: unknownMessage
+
+  return LogcatEventState.ShowMessage(message)
 }
 
 internal fun logcatPollAction(

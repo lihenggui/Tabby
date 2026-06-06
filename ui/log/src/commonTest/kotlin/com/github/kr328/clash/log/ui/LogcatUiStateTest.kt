@@ -33,6 +33,22 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatInitialEventStateOnlyRejectsInvalidFiles() {
+    assertEquals(
+      null,
+      logcatInitialEventState(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      null,
+      logcatInitialEventState(LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234))),
+    )
+    assertEquals(
+      LogcatEventState.InvalidFile,
+      logcatInitialEventState(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
   fun logcatCloseActionStopsStreamingAndOpensLogsWhenStreaming() {
     assertEquals(
       LogcatCloseAction.StopStreamingAndOpenLogs,
@@ -75,6 +91,17 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatDeleteEventStateClosesOnlyAfterDeletingAFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatEventState.Close,
+      logcatDeleteEventState(LogcatDeleteAction.DeleteFile(file)),
+    )
+    assertEquals(null, logcatDeleteEventState(LogcatDeleteAction.Ignore))
+  }
+
+  @Test
   fun logcatRequestExportActionRequestsCurrentFileNameAndIgnoresMissingFile() {
     val file = LogFile("clash-1234.log", 1234)
 
@@ -86,6 +113,15 @@ class LogcatUiStateTest {
       LogcatRequestExportAction.Ignore,
       logcatRequestExportAction(null),
     )
+  }
+
+  @Test
+  fun logcatRequestExportEventStateRequestsExportOnlyForExportAction() {
+    assertEquals(
+      LogcatEventState.RequestExport("clash-1234.log"),
+      logcatRequestExportEventState(LogcatRequestExportAction.RequestExport("clash-1234.log")),
+    )
+    assertEquals(null, logcatRequestExportEventState(LogcatRequestExportAction.Ignore))
   }
 
   @Test
@@ -103,6 +139,37 @@ class LogcatUiStateTest {
     assertEquals(
       LogcatExportAction.Ignore,
       logcatExportAction(currentFile = null, hasDestination = true),
+    )
+  }
+
+  @Test
+  fun logcatExportResultEventStateShowsSuccessOrFallbackErrorMessage() {
+    assertEquals(
+      LogcatEventState.ShowMessage("exported"),
+      logcatExportResultEventState(
+        success = true,
+        errorMessage = null,
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
+    )
+    assertEquals(
+      LogcatEventState.ShowMessage("write failed"),
+      logcatExportResultEventState(
+        success = false,
+        errorMessage = "write failed",
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
+    )
+    assertEquals(
+      LogcatEventState.ShowMessage("unknown"),
+      logcatExportResultEventState(
+        success = false,
+        errorMessage = null,
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
     )
   }
 
