@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
-import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.android.AndroidEngineController
@@ -14,9 +13,10 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.proxy.ui.ProxyEventState
 import com.github.kr328.clash.proxy.ui.ProxyGroupUiState
-import com.github.kr328.clash.proxy.ui.ProxyItemSource
 import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
+import com.github.kr328.clash.proxy.ui.toProxyItemSources
+import com.github.kr328.clash.proxy.ui.withProxyGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -215,26 +215,9 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
       }
 
       val sources =
-        withContext(Dispatchers.Default) {
-          val nameIndexMap = names.withIndex().associate { (index, name) -> name to index }
-          group.proxies.map { proxy ->
-            ProxyItemSource(
-              proxy = proxy,
-              linkIndex = if (proxy.type.group) nameIndexMap[proxy.name] ?: -1 else -1,
-            )
-          }
-        }
+        withContext(Dispatchers.Default) { group.toProxyItemSources(groupNames = names) }
 
-      updateGroupState(index) {
-        it.copy(
-          selectable = group.type == Proxy.Type.Selector,
-          urlTesting = false,
-          sources = sources,
-          delayTestingKeys =
-            it.delayTestingKeys.intersect(sources.mapTo(mutableSetOf()) { s -> s.proxy.name }),
-          refreshVersion = it.refreshVersion + 1,
-        )
-      }
+      updateGroupState(index) { it.withProxyGroup(group, sources) }
     }
   }
 

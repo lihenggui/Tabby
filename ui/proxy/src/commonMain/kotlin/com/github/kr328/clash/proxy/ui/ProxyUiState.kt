@@ -2,6 +2,7 @@ package com.github.kr328.clash.proxy.ui
 
 import androidx.compose.ui.graphics.Color
 import com.github.kr328.clash.core.model.Proxy
+import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
 
@@ -87,6 +88,30 @@ internal data class ProxyItemUiState(
 )
 
 internal data class SelectedProxy(val name: String)
+
+internal fun ProxyGroup.toProxyItemSources(groupNames: List<String>): List<ProxyItemSource> {
+  val nameIndexMap = groupNames.withIndex().associate { (index, name) -> name to index }
+
+  return proxies.map { proxy ->
+    ProxyItemSource(
+      proxy = proxy,
+      linkIndex = if (proxy.type.group) nameIndexMap[proxy.name] ?: -1 else -1,
+    )
+  }
+}
+
+internal fun ProxyGroupUiState.withProxyGroup(
+  group: ProxyGroup,
+  sources: List<ProxyItemSource>,
+): ProxyGroupUiState =
+  copy(
+    selectable = group.type == Proxy.Type.Selector,
+    urlTesting = false,
+    sources = sources,
+    delayTestingKeys =
+      delayTestingKeys.intersect(sources.mapTo(mutableSetOf()) { source -> source.proxy.name }),
+    refreshVersion = refreshVersion + 1,
+  )
 
 internal sealed interface ProxyEventState {
   data object Idle : ProxyEventState
