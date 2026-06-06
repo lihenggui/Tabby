@@ -20,6 +20,7 @@ import com.github.kr328.clash.proxy.ui.ProxyUiState
 import com.github.kr328.clash.proxy.ui.SelectedProxy
 import com.github.kr328.clash.proxy.ui.initialSelectedProxies
 import com.github.kr328.clash.proxy.ui.proxyGroupNamesChangeAction
+import com.github.kr328.clash.proxy.ui.proxyGroupReloadIndexes
 import com.github.kr328.clash.proxy.ui.proxyGroupSelectionAction
 import com.github.kr328.clash.proxy.ui.proxyProfileLoadedAction
 import com.github.kr328.clash.proxy.ui.toProxyItemSources
@@ -207,8 +208,7 @@ internal class ProxyViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun reloadAll() {
-    val names = uiState.value.groupNames
-    names.indices.forEach { idx -> reload(idx) }
+    proxyGroupReloadIndexes(uiState.value.groupNames).forEach { idx -> reload(idx) }
   }
 
   private fun reload(index: Int) {

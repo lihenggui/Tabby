@@ -171,6 +171,10 @@ internal fun proxyGroupNamesChangeAction(
   }
 }
 
+internal fun proxyGroupReloadIndexes(groupNames: List<String>): IntRange {
+  return groupNames.indices
+}
+
 internal fun ProxyUiState.withExcludeNotSelectable(enabled: Boolean): ProxyUiState {
   return copy(excludeNotSelectable = enabled)
 }

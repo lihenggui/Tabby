@@ -251,4 +251,20 @@ class ProxyUiStateCommonTest {
       ),
     )
   }
+
+  @Test
+  fun proxyGroupReloadIndexesReturnsIndexesForGroupNames() {
+    assertEquals(
+      listOf(0, 1, 2),
+      proxyGroupReloadIndexes(listOf("Proxy", "Auto", "Fallback")).toList(),
+    )
+  }
+
+  @Test
+  fun proxyGroupReloadIndexesReturnsEmptyIndexesForEmptyGroupNames() {
+    assertEquals(
+      emptyList(),
+      proxyGroupReloadIndexes(emptyList()).toList(),
+    )
+  }
 }
