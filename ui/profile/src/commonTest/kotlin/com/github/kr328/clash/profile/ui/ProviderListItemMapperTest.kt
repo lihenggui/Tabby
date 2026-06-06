@@ -42,7 +42,7 @@ class ProviderListItemMapperTest {
           currentTime = 1000,
         )
         .toProviderListItems(
-          formatType = { "${it.type}/${it.vehicleType}" },
+          formatTypeText = { it.testString() },
           formatElapsedMillis = { "elapsed:$it" },
         )
 
@@ -50,6 +50,41 @@ class ProviderListItemMapperTest {
     assertEquals(listOf("Proxy/HTTP", "Rule/File"), items.map(ProviderListItem::typeText))
     assertEquals(listOf("elapsed:100", "elapsed:300"), items.map(ProviderListItem::updatedAtText))
     assertEquals(listOf(true, false), items.map(ProviderListItem::updating))
+  }
+
+  @Test
+  fun providerTypeTextMapsProviderTypeAndVehicleToCommonTokens() {
+    assertEquals(
+      ProviderTypeText(
+        typeToken = ProviderTypeTextToken.Proxy,
+        vehicleToken = ProviderVehicleTextToken.Http,
+      ),
+      providerTypeText(type = Provider.Type.Proxy, vehicleType = Provider.VehicleType.HTTP),
+    )
+    assertEquals(
+      ProviderTypeText(
+        typeToken = ProviderTypeTextToken.Rule,
+        vehicleToken = ProviderVehicleTextToken.File,
+      ),
+      providerTypeText(type = Provider.Type.Rule, vehicleType = Provider.VehicleType.File),
+    )
+    assertEquals(
+      ProviderTypeText(
+        typeToken = ProviderTypeTextToken.Proxy,
+        vehicleToken = ProviderVehicleTextToken.Inline,
+      ),
+      providerTypeText(type = Provider.Type.Proxy, vehicleType = Provider.VehicleType.Inline),
+    )
+    assertEquals(
+      ProviderTypeText(
+        typeToken = ProviderTypeTextToken.Rule,
+        vehicleToken = ProviderVehicleTextToken.Compatible,
+      ),
+      providerTypeText(
+        type = Provider.Type.Rule,
+        vehicleType = Provider.VehicleType.Compatible,
+      ),
+    )
   }
 
   private fun Provider.toProviderListItem(
@@ -61,8 +96,21 @@ class ProviderListItemMapperTest {
       currentTime = currentTime,
       updatedAt = updatedAt,
       updating = updating,
-      formatType = { "${it.type}/${it.vehicleType}" },
+      formatTypeText = { it.testString() },
       formatElapsedMillis = { "elapsed:$it" },
     )
+  }
+
+  private fun ProviderTypeText.testString(): String {
+    return "${typeToken.name}/${vehicleToken.testString()}"
+  }
+
+  private fun ProviderVehicleTextToken.testString(): String {
+    return when (this) {
+      ProviderVehicleTextToken.Http -> "HTTP"
+      ProviderVehicleTextToken.File -> "File"
+      ProviderVehicleTextToken.Inline -> "Inline"
+      ProviderVehicleTextToken.Compatible -> "Compatible"
+    }
   }
 }
