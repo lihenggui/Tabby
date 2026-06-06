@@ -8,7 +8,7 @@ import java.io.BufferedWriter
 
 internal class LogcatWriter(
   context: Context,
-  file: LogFile = LogFile.new(),
+  file: LogFile = LogFile.fromCreatedTime(System.currentTimeMillis()),
   private val writer: BufferedWriter = context.logsDir.resolve(file.fileName).bufferedWriter(),
 ) : AutoCloseable by writer {
 
