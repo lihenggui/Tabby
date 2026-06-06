@@ -45,14 +45,20 @@ internal fun helpUpdateCheckAction(
   latestTag: String?,
   localVersion: String?,
 ): HelpUpdateCheckAction {
-  val latestVersion = latestTag ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
-  val currentVersion = localVersion ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
+  val latestVersion =
+    latestTag?.toSemVerOrNull() ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
+  val currentVersion =
+    localVersion?.toSemVerOrNull() ?: return HelpUpdateCheckAction.ShowUpdateCheckFailedMessage
 
-  return if (SemVer.parse(latestVersion) > SemVer.parse(currentVersion)) {
+  return if (latestVersion > currentVersion) {
     HelpUpdateCheckAction.ShowUpdateAvailable
   } else {
     HelpUpdateCheckAction.ShowAlreadyUpToDateMessage
   }
+}
+
+private fun String.toSemVerOrNull(): SemVer? {
+  return runCatching { SemVer.parse(this) }.getOrNull()
 }
 
 internal fun helpUpdateCheckEventState(

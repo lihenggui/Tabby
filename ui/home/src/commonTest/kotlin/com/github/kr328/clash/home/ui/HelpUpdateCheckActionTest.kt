@@ -2,7 +2,6 @@ package com.github.kr328.clash.home.ui
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class HelpUpdateCheckActionTest {
   @Test
@@ -67,10 +66,19 @@ class HelpUpdateCheckActionTest {
   }
 
   @Test
-  fun updateCheckActionKeepsInvalidVersionHandlingWithCaller() {
-    assertFailsWith<IllegalArgumentException> {
-      helpUpdateCheckAction(latestTag = "not-a-version", localVersion = "1.0.0")
-    }
+  fun updateCheckActionShowsFailureWhenLatestVersionIsInvalid() {
+    assertEquals(
+      HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,
+      helpUpdateCheckAction(latestTag = "not-a-version", localVersion = "1.0.0"),
+    )
+  }
+
+  @Test
+  fun updateCheckActionShowsFailureWhenLocalVersionIsInvalid() {
+    assertEquals(
+      HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,
+      helpUpdateCheckAction(latestTag = "1.2.0", localVersion = "not-a-version"),
+    )
   }
 
   @Test
