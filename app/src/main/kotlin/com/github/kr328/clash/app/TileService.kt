@@ -62,7 +62,11 @@ class TileService : android.service.quicksettings.TileService() {
         inactiveState = Tile.STATE_INACTIVE,
       )
 
-    tile.label = presentation.profileName ?: getText(CommonR.string.tabby)
+    tile.label =
+      tabbyTilePresentationLabel(
+        presentation = presentation,
+        defaultLabel = getString(CommonR.string.tabby),
+      )
 
     tile.icon = Icon.createWithResource(this, CommonR.drawable.ic_tabby_small)
 

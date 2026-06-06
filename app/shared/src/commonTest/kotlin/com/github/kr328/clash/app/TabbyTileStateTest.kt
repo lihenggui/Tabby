@@ -232,6 +232,24 @@ class TabbyTileStateTest {
   }
 
   @Test
+  fun tabbyTilePresentationLabelUsesProfileNameOrDefaultLabel() {
+    assertEquals(
+      "profile-a",
+      tabbyTilePresentationLabel(
+        presentation = TabbyTilePresentation(active = true, profileName = "profile-a"),
+        defaultLabel = "Tabby",
+      ),
+    )
+    assertEquals(
+      "Tabby",
+      tabbyTilePresentationLabel(
+        presentation = TabbyTilePresentation(active = false, profileName = null),
+        defaultLabel = "Tabby",
+      ),
+    )
+  }
+
+  @Test
   fun tabbyTileBroadcastPlanReducesDirectTileEvents() {
     assertEquals(
       TabbyTileBroadcastPlan.Reduce(TabbyTileEvent.ClashStarted),

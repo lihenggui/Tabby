@@ -127,6 +127,13 @@ fun tabbyTilePresentationPlatformState(
   return if (presentation.active) activeState else inactiveState
 }
 
+fun tabbyTilePresentationLabel(
+  presentation: TabbyTilePresentation,
+  defaultLabel: String,
+): String {
+  return presentation.profileName ?: defaultLabel
+}
+
 fun tabbyTileBroadcastPlan(action: TabbyTileBroadcastAction?): TabbyTileBroadcastPlan =
   when (action) {
     TabbyTileBroadcastAction.ClashStarted ->
