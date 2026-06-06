@@ -32,4 +32,20 @@ class AppCrashedLogFormatterTest {
 
     assertEquals("------ not a separator\nTabby: marker", log)
   }
+
+  @Test
+  fun dumpResultUsesLogForSuccessfulLogcatExit() {
+    assertEquals(
+      AppCrashLogDumpResult.UseLog("AndroidRuntime: crash"),
+      appCrashLogDumpResult(exitCode = 0, log = "AndroidRuntime: crash"),
+    )
+  }
+
+  @Test
+  fun dumpResultReportsLogcatExitCodeFailures() {
+    assertEquals(
+      AppCrashLogDumpResult.LogcatFailed("logcat exited with code 2: AndroidRuntime: crash"),
+      appCrashLogDumpResult(exitCode = 2, log = "AndroidRuntime: crash"),
+    )
+  }
 }

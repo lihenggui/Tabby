@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.crash.ui.AppCrashLogDumpResult
+import com.github.kr328.clash.crash.ui.appCrashLogDumpResult
 import com.github.kr328.clash.crash.ui.formatAppCrashLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,10 +41,10 @@ internal class AppCrashedViewModel(app: Application) : AndroidViewModel(app) {
       val result = formatAppCrashLog(process.inputStream.bufferedReader().readLines())
       val exitCode = process.waitFor()
 
-      if (exitCode != 0) {
-        error("logcat exited with code $exitCode: $result")
+      when (val dumpResult = appCrashLogDumpResult(exitCode, result)) {
+        is AppCrashLogDumpResult.UseLog -> dumpResult.log
+        is AppCrashLogDumpResult.LogcatFailed -> error(dumpResult.message)
       }
-      result
     }
 }
 
