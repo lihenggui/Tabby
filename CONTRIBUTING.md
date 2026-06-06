@@ -20,7 +20,8 @@ Tabby/
 ├── app/          # Application shell: MainActivity, MainApplication, AppModule (Koin), BroadcastReceivers, TileService
 ├── core/         # Mihomo bridge: Go/JNI bindings, data models, C++ CMake layer
 │                 #   └── src/foss/golang/clash/  (git submodule → MetaCubeX/mihomo)
-├── service/      # Background VPN service, Room database, IPC via kaidl, OkHttp profile fetching
+├── service/      # Background VPN service, IPC via kaidl, SQLDelight-backed profile storage
+│                 #   └── legacy Room database remains as the Android migration source
 ├── common/       # Shared constants, store providers, and utility extensions; includes Android-specific helpers
 ├── glue/         # Dependency-injection wiring via Koin; exposes api() of core, service, common
 └── ui/           # Shared UI components, theme, icons (also a library module)
@@ -49,8 +50,8 @@ app → ui/*
 | UI         | Jetpack Compose + Material 3, Navigation3                                |
 | DI         | Koin 4                                                                   |
 | IPC        | kaidl (custom AIDL generator)                                            |
-| DB         | Room                                                                     |
-| Network    | OkHttp 5                                                                 |
+| DB         | SQLDelight for profile storage; legacy Room only as Android migration source |
+| Network    | Ktor client                                                              |
 | Core proxy | Mihomo (Go submodule via golang-gradle-plugin)                           |
 | Code style | ktfmt (Google style) via Spotless                                        |
 | Build      | Gradle 9+ with Kotlin DSL, Version Catalog (`gradle/libs.versions.toml`) |
