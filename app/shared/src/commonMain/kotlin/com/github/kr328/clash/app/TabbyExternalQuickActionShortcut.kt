@@ -6,6 +6,13 @@ data class TabbyExternalQuickActionShortcut(
   val rank: Int,
 )
 
+sealed interface TabbyExternalQuickActionShortcutPlan {
+  data class Install(val shortcuts: List<TabbyExternalQuickActionShortcut>) :
+    TabbyExternalQuickActionShortcutPlan
+
+  data object Skip : TabbyExternalQuickActionShortcutPlan
+}
+
 fun tabbyExternalQuickActionShortcuts(): List<TabbyExternalQuickActionShortcut> =
   listOf(
     TabbyExternalQuickActionShortcut(
@@ -24,3 +31,12 @@ fun tabbyExternalQuickActionShortcuts(): List<TabbyExternalQuickActionShortcut> 
       rank = 2,
     ),
   )
+
+fun tabbyExternalQuickActionShortcutPlan(
+  appIconHidden: Boolean
+): TabbyExternalQuickActionShortcutPlan =
+  if (appIconHidden) {
+    TabbyExternalQuickActionShortcutPlan.Skip
+  } else {
+    TabbyExternalQuickActionShortcutPlan.Install(tabbyExternalQuickActionShortcuts())
+  }

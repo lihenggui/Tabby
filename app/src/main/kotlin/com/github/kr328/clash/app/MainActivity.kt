@@ -180,24 +180,25 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupShortcuts() {
-    // Skip dynamic shortcut setup when the app icon is hidden.
-    if (uiStore.hideAppIcon) return
-
     val flags =
       Intent.FLAG_ACTIVITY_NEW_TASK or
         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
         Intent.FLAG_ACTIVITY_NO_ANIMATION
 
     val shortcuts =
-      tabbyExternalQuickActionShortcuts().map { shortcut ->
-        val resources = shortcut.action.shortcutResources()
-        ShortcutInfoCompat.Builder(this, shortcut.id)
-          .setShortLabel(getString(resources.shortLabel))
-          .setLongLabel(getString(resources.longLabel))
-          .setIcon(IconCompat.createWithResource(this, resources.icon))
-          .setIntent(mainIntent { action = shortcut.action.intentAction() }.addFlags(flags))
-          .setRank(shortcut.rank)
-          .build()
+      when (val plan = tabbyExternalQuickActionShortcutPlan(appIconHidden = uiStore.hideAppIcon)) {
+        is TabbyExternalQuickActionShortcutPlan.Install ->
+          plan.shortcuts.map { shortcut ->
+            val resources = shortcut.action.shortcutResources()
+            ShortcutInfoCompat.Builder(this, shortcut.id)
+              .setShortLabel(getString(resources.shortLabel))
+              .setLongLabel(getString(resources.longLabel))
+              .setIcon(IconCompat.createWithResource(this, resources.icon))
+              .setIntent(mainIntent { action = shortcut.action.intentAction() }.addFlags(flags))
+              .setRank(shortcut.rank)
+              .build()
+          }
+        TabbyExternalQuickActionShortcutPlan.Skip -> return
       }
 
     ShortcutManagerCompat.setDynamicShortcuts(this, shortcuts)
