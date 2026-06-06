@@ -178,6 +178,16 @@ class NewProfileUiStateTest {
         name = "External config",
       ),
     )
+    assertEquals(
+      NewProfileExternalProviderResultAction.CreateProfile("External config"),
+      newProfileExternalProviderResultAction(
+        NewProfileExternalProviderResult(
+          resultAccepted = true,
+          sourceSelected = true,
+          name = "External config",
+        )
+      ),
+    )
   }
 
   @Test
@@ -190,6 +200,16 @@ class NewProfileUiStateTest {
         name = "Ignored",
       ),
     )
+    assertEquals(
+      NewProfileExternalProviderResultAction.Ignore,
+      newProfileExternalProviderResultAction(
+        NewProfileExternalProviderResult(
+          resultAccepted = false,
+          sourceSelected = true,
+          name = "Ignored",
+        )
+      ),
+    )
   }
 
   @Test
@@ -200,6 +220,16 @@ class NewProfileUiStateTest {
         resultAccepted = true,
         sourceSelected = false,
         name = "Ignored",
+      ),
+    )
+    assertEquals(
+      NewProfileExternalProviderResultAction.Ignore,
+      newProfileExternalProviderResultAction(
+        NewProfileExternalProviderResult(
+          resultAccepted = true,
+          sourceSelected = false,
+          name = "Ignored",
+        )
       ),
     )
   }

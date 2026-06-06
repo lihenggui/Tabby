@@ -98,6 +98,12 @@ internal sealed interface NewProfileExternalProviderResultAction {
   data object Ignore : NewProfileExternalProviderResultAction
 }
 
+internal data class NewProfileExternalProviderResult(
+  val resultAccepted: Boolean,
+  val sourceSelected: Boolean,
+  val name: String?,
+)
+
 internal sealed interface NewProfileProviderSelectionAction<out T> {
   data class SelectProvider<T>(val provider: T) : NewProfileProviderSelectionAction<T>
 
@@ -140,6 +146,16 @@ internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCre
 internal fun newProfileDetailAction(packageName: String?): NewProfileDetailAction {
   return if (packageName == null) NewProfileDetailAction.Ignore
   else NewProfileDetailAction.OpenAppSettings(packageName)
+}
+
+internal fun newProfileExternalProviderResultAction(
+  result: NewProfileExternalProviderResult
+): NewProfileExternalProviderResultAction {
+  return newProfileExternalProviderResultAction(
+    resultAccepted = result.resultAccepted,
+    sourceSelected = result.sourceSelected,
+    name = result.name,
+  )
 }
 
 internal fun newProfileExternalProviderResultAction(

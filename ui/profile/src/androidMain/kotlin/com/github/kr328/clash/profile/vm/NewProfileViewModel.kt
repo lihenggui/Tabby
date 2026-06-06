@@ -18,7 +18,6 @@ import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.profile.ui.NewProfileCreateAction
 import com.github.kr328.clash.profile.ui.NewProfileDetailAction
 import com.github.kr328.clash.profile.ui.NewProfileEventState
-import com.github.kr328.clash.profile.ui.NewProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.NewProfileProviderKind
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
@@ -29,7 +28,6 @@ import com.github.kr328.clash.profile.ui.newProfileCreateEventState
 import com.github.kr328.clash.profile.ui.newProfileDetailAction
 import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
-import com.github.kr328.clash.profile.ui.newProfileExternalProviderResultAction
 import com.github.kr328.clash.profile.ui.newProfileInitialEventState
 import com.github.kr328.clash.profile.ui.newProfileInitialUiState
 import com.github.kr328.clash.profile.ui.newProfileLaunchPropertiesEventState
@@ -84,29 +82,16 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   }
 
   fun onExternalProviderResult(uri: Uri, name: String?) {
-    when (
-      val action =
-        newProfileExternalProviderResultAction(
-          resultAccepted = true,
-          sourceSelected = true,
-          name = name,
-        )
-    ) {
-      is NewProfileExternalProviderResultAction.CreateProfile -> {
-        viewModelScope.launch {
-          try {
-            val profileName = application.getString(CommonR.string.new_profile)
-            val uuid =
-              profileRepository.create(External, action.name ?: profileName, uri.toString())
-            eventState.value = newProfileLaunchPropertiesEventState(uuid)
-          } catch (e: Exception) {
-            Log.e("Create external profile failed: ${e.message}", e)
-            eventState.value =
-              newProfileErrorEventState(e.message, application.getString(CommonR.string.unknown))
-          }
-        }
+    viewModelScope.launch {
+      try {
+        val profileName = application.getString(CommonR.string.new_profile)
+        val uuid = profileRepository.create(External, name ?: profileName, uri.toString())
+        eventState.value = newProfileLaunchPropertiesEventState(uuid)
+      } catch (e: Exception) {
+        Log.e("Create external profile failed: ${e.message}", e)
+        eventState.value =
+          newProfileErrorEventState(e.message, application.getString(CommonR.string.unknown))
       }
-      NewProfileExternalProviderResultAction.Ignore -> Unit
     }
   }
 
