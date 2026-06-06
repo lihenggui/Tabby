@@ -42,20 +42,17 @@ internal fun MetaFeatureSettingsScreen(
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(importResult) {
-      when (val result = importResult) {
-        GeoFileImportResult.Idle,
-        GeoFileImportResult.InProgress -> Unit
-
-        is GeoFileImportResult.Success -> {
-          snackbarHostState.showSnackbar(message = importedText.format(result.displayName))
+      when (val action = geoFileImportResultDisplayAction(importResult)) {
+        is GeoFileImportResultDisplayAction.ShowImported -> {
+          snackbarHostState.showSnackbar(message = importedText.format(action.displayName))
         }
-
-        is GeoFileImportResult.UnsupportedFormat -> {
-          validExtensionsSummary = result.summary
+        is GeoFileImportResultDisplayAction.ShowUnsupportedFormat -> {
+          validExtensionsSummary = action.summary
           showUnsupportedFormatDialog = true
         }
-
-        GeoFileImportResult.Failed -> snackbarHostState.showSnackbar(message = importFailedText)
+        GeoFileImportResultDisplayAction.ShowFailed ->
+          snackbarHostState.showSnackbar(message = importFailedText)
+        GeoFileImportResultDisplayAction.Ignore -> Unit
       }
     }
 

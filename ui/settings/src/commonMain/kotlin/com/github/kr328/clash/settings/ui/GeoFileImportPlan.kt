@@ -33,6 +33,16 @@ internal sealed interface GeoFileImportPickerResultAction<out T> {
   data object Ignore : GeoFileImportPickerResultAction<Nothing>
 }
 
+internal sealed interface GeoFileImportResultDisplayAction {
+  data class ShowImported(val displayName: String) : GeoFileImportResultDisplayAction
+
+  data class ShowUnsupportedFormat(val summary: String) : GeoFileImportResultDisplayAction
+
+  data object ShowFailed : GeoFileImportResultDisplayAction
+
+  data object Ignore : GeoFileImportResultDisplayAction
+}
+
 internal fun geoFileImportInitialResult(): GeoFileImportResult {
   return GeoFileImportResult.Idle
 }
@@ -43,6 +53,20 @@ internal fun <T> geoFileImportPickerResultAction(
 ): GeoFileImportPickerResultAction<T> {
   val importType = pendingImportType ?: return GeoFileImportPickerResultAction.Ignore
   return GeoFileImportPickerResultAction.Import(source = source, importType = importType)
+}
+
+internal fun geoFileImportResultDisplayAction(
+  result: GeoFileImportResult
+): GeoFileImportResultDisplayAction {
+  return when (result) {
+    GeoFileImportResult.Idle,
+    GeoFileImportResult.InProgress -> GeoFileImportResultDisplayAction.Ignore
+    is GeoFileImportResult.Success ->
+      GeoFileImportResultDisplayAction.ShowImported(result.displayName)
+    is GeoFileImportResult.UnsupportedFormat ->
+      GeoFileImportResultDisplayAction.ShowUnsupportedFormat(result.summary)
+    GeoFileImportResult.Failed -> GeoFileImportResultDisplayAction.ShowFailed
+  }
 }
 
 internal fun planGeoFileImport(

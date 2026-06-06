@@ -48,6 +48,44 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun ignoresIdleAndInProgressImportResultsForDisplay() {
+    assertEquals(
+      GeoFileImportResultDisplayAction.Ignore,
+      geoFileImportResultDisplayAction(GeoFileImportResult.Idle),
+    )
+    assertEquals(
+      GeoFileImportResultDisplayAction.Ignore,
+      geoFileImportResultDisplayAction(GeoFileImportResult.InProgress),
+    )
+  }
+
+  @Test
+  fun mapsSuccessfulImportResultToImportedDisplayAction() {
+    assertEquals(
+      GeoFileImportResultDisplayAction.ShowImported("GeoSite.DAT"),
+      geoFileImportResultDisplayAction(GeoFileImportResult.Success("GeoSite.DAT")),
+    )
+  }
+
+  @Test
+  fun mapsUnsupportedImportResultToUnsupportedFormatDisplayAction() {
+    assertEquals(
+      GeoFileImportResultDisplayAction.ShowUnsupportedFormat(".metadb/.db/.dat/.mmdb"),
+      geoFileImportResultDisplayAction(
+        GeoFileImportResult.UnsupportedFormat(".metadb/.db/.dat/.mmdb")
+      ),
+    )
+  }
+
+  @Test
+  fun mapsFailedImportResultToFailedDisplayAction() {
+    assertEquals(
+      GeoFileImportResultDisplayAction.ShowFailed,
+      geoFileImportResultDisplayAction(GeoFileImportResult.Failed),
+    )
+  }
+
+  @Test
   fun createsGeoIpImportPlanForSupportedExtension() {
     assertEquals(
       GeoFileImportPlan.Supported(
