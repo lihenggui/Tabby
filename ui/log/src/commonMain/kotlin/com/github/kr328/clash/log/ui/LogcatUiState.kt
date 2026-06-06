@@ -72,6 +72,12 @@ internal sealed interface LogcatExportAction {
 
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
+internal fun logcatExportResultFromPlatformPayload(
+  destinationSelected: Boolean
+): LogcatExportResult {
+  return LogcatExportResult(destinationSelected = destinationSelected)
+}
+
 internal sealed interface LogcatPollAction {
   data class QuerySnapshot(val initialSnapshot: Boolean) : LogcatPollAction
 

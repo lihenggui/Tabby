@@ -24,7 +24,6 @@ import com.github.kr328.clash.log.ui.LogcatCloseAction
 import com.github.kr328.clash.log.ui.LogcatDeleteAction
 import com.github.kr328.clash.log.ui.LogcatEventState
 import com.github.kr328.clash.log.ui.LogcatExportAction
-import com.github.kr328.clash.log.ui.LogcatExportResult
 import com.github.kr328.clash.log.ui.LogcatInitialAction
 import com.github.kr328.clash.log.ui.LogcatPollAction
 import com.github.kr328.clash.log.ui.LogcatUiState
@@ -35,6 +34,7 @@ import com.github.kr328.clash.log.ui.logcatDeleteAction
 import com.github.kr328.clash.log.ui.logcatDeleteEventState
 import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatExportResultEventState
+import com.github.kr328.clash.log.ui.logcatExportResultFromPlatformPayload
 import com.github.kr328.clash.log.ui.logcatInitialAction
 import com.github.kr328.clash.log.ui.logcatInitialEventState
 import com.github.kr328.clash.log.ui.logcatInitialUiState
@@ -134,7 +134,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
       val action =
         logcatExportAction(
           currentFile,
-          LogcatExportResult(destinationSelected = destination != null),
+          logcatExportResultFromPlatformPayload(destinationSelected = destination != null),
         )
     ) {
       is LogcatExportAction.ExportFile -> {
