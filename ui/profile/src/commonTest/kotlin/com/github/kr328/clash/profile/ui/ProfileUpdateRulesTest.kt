@@ -82,6 +82,18 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun editableSnackbarActionOpensEditOnlyWhenActionIsPerformed() {
+    assertEquals(
+      ProfilesEditableSnackbarAction.OpenEdit,
+      profilesEditableSnackbarAction(ProfileSnackbarActionResult.ActionPerformed),
+    )
+    assertEquals(
+      ProfilesEditableSnackbarAction.Ignore,
+      profilesEditableSnackbarAction(ProfileSnackbarActionResult.Dismissed),
+    )
+  }
+
+  @Test
   fun updateAllActionQueriesProfilesOnlyWhenNotAlreadyUpdating() {
     assertEquals(
       ProfileUpdateAllAction.QueryProfiles,

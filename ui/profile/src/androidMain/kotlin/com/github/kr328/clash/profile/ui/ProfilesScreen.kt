@@ -2,7 +2,6 @@ package com.github.kr328.clash.profile.ui
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,8 +48,9 @@ internal fun ProfilesScreen(
             duration = SnackbarDuration.Long,
           )
 
-        if (result == SnackbarResult.ActionPerformed) {
-          onOpenEdit(event.uuid)
+        when (profilesEditableSnackbarAction(result.toProfileSnackbarActionResult())) {
+          ProfilesEditableSnackbarAction.OpenEdit -> onOpenEdit(event.uuid)
+          ProfilesEditableSnackbarAction.Ignore -> Unit
         }
       }
     }

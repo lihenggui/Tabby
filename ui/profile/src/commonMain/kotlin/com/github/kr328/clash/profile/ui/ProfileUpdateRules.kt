@@ -13,6 +13,11 @@ internal enum class ProfileUpdateAllAction {
   Ignore,
 }
 
+internal enum class ProfilesEditableSnackbarAction {
+  OpenEdit,
+  Ignore,
+}
+
 internal sealed interface ProfilesEventState {
   data object Idle : ProfilesEventState
 
@@ -67,6 +72,15 @@ internal fun profileUpdateFailedEventState(
 
 internal fun profilesConsumedEventState(): ProfilesEventState {
   return ProfilesEventState.Idle
+}
+
+internal fun profilesEditableSnackbarAction(
+  result: ProfileSnackbarActionResult
+): ProfilesEditableSnackbarAction {
+  return when (result) {
+    ProfileSnackbarActionResult.ActionPerformed -> ProfilesEditableSnackbarAction.OpenEdit
+    ProfileSnackbarActionResult.Dismissed -> ProfilesEditableSnackbarAction.Ignore
+  }
 }
 
 internal fun profileUpdateAllAction(state: ProfilesUiState): ProfileUpdateAllAction {
