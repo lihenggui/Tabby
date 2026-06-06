@@ -49,6 +49,18 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatFailureEventStatesMapToRecoveryEvents() {
+    assertEquals(
+      LogcatEventState.InvalidFile,
+      logcatLoadFileFailureEventState(),
+    )
+    assertEquals(
+      LogcatEventState.OpenLogs,
+      logcatStartStreamingFailureEventState(),
+    )
+  }
+
+  @Test
   fun logcatCloseActionStopsStreamingAndOpensLogsWhenStreaming() {
     assertEquals(
       LogcatCloseAction.StopStreamingAndOpenLogs,

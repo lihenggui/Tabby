@@ -102,6 +102,14 @@ internal fun logcatInitialEventState(action: LogcatInitialAction): LogcatEventSt
   }
 }
 
+internal fun logcatLoadFileFailureEventState(): LogcatEventState {
+  return LogcatEventState.InvalidFile
+}
+
+internal fun logcatStartStreamingFailureEventState(): LogcatEventState {
+  return LogcatEventState.OpenLogs
+}
+
 internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {
   return currentFile?.let(LogcatDeleteAction::DeleteFile) ?: LogcatDeleteAction.Ignore
 }

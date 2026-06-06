@@ -35,10 +35,12 @@ import com.github.kr328.clash.log.ui.logcatExportAction
 import com.github.kr328.clash.log.ui.logcatExportResultEventState
 import com.github.kr328.clash.log.ui.logcatInitialAction
 import com.github.kr328.clash.log.ui.logcatInitialEventState
+import com.github.kr328.clash.log.ui.logcatLoadFileFailureEventState
 import com.github.kr328.clash.log.ui.logcatPollAction
 import com.github.kr328.clash.log.ui.logcatRequestExportAction
 import com.github.kr328.clash.log.ui.logcatRequestExportEventState
 import com.github.kr328.clash.log.ui.logcatSnapshotAction
+import com.github.kr328.clash.log.ui.logcatStartStreamingFailureEventState
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
@@ -178,7 +180,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
           LogcatReader(application, file).use { it.readAll() }
         } catch (e: Exception) {
           Log.e("Fail to read log file ${file.fileName}: ${e.message}", e)
-          eventState.value = LogcatEventState.InvalidFile
+          eventState.value = logcatLoadFileFailureEventState()
           return@launch
         }
 
@@ -198,7 +200,7 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
         runCatching { application.stopService(LogcatService::class.intent) }
           .onFailure { ex -> Log.e("Stop logcat service failed: ${ex.message}", ex) }
         reset()
-        eventState.value = LogcatEventState.OpenLogs
+        eventState.value = logcatStartStreamingFailureEventState()
       }
     }
   }
