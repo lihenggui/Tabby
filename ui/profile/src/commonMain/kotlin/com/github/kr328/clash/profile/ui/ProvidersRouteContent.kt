@@ -76,18 +76,24 @@ private fun providerTypeTextString(typeText: ProviderTypeText): String {
 
 @Composable
 private fun ProviderTypeTextToken.stringResource(): String {
-  return when (this) {
-    ProviderTypeTextToken.Proxy -> stringResource(SharedRes.string.proxy)
-    ProviderTypeTextToken.Rule -> stringResource(SharedRes.string.rule)
-  }
+  return stringResource(
+    providerTypeTextPlatformToken(
+      token = this,
+      proxy = SharedRes.string.proxy,
+      rule = SharedRes.string.rule,
+    )
+  )
 }
 
 @Composable
 private fun ProviderVehicleTextToken.stringResource(): String {
-  return when (this) {
-    ProviderVehicleTextToken.Http -> stringResource(SharedRes.string.http)
-    ProviderVehicleTextToken.File -> stringResource(SharedRes.string.file)
-    ProviderVehicleTextToken.Inline -> stringResource(SharedRes.string.inline)
-    ProviderVehicleTextToken.Compatible -> stringResource(SharedRes.string.compatible)
-  }
+  return stringResource(
+    providerVehicleTextPlatformToken(
+      token = this,
+      http = SharedRes.string.http,
+      file = SharedRes.string.file,
+      inline = SharedRes.string.inline,
+      compatible = SharedRes.string.compatible,
+    )
+  )
 }

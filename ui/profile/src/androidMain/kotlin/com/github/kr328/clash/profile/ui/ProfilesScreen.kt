@@ -89,9 +89,12 @@ private fun ProfileTypeText.androidString(context: Context): String {
 }
 
 private fun ProfileTypeTextToken.androidString(context: Context): String {
-  return when (this) {
-    ProfileTypeTextToken.File -> context.getString(CommonR.string.file)
-    ProfileTypeTextToken.Url -> context.getString(CommonR.string.url)
-    ProfileTypeTextToken.External -> context.getString(CommonR.string.external)
-  }
+  return context.getString(
+    profileTypeTextPlatformToken(
+      token = this,
+      file = CommonR.string.file,
+      url = CommonR.string.url,
+      external = CommonR.string.external,
+    )
+  )
 }

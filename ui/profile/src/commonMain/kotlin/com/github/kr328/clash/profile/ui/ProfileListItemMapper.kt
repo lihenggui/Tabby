@@ -27,6 +27,19 @@ internal fun profileTypeText(
   return ProfileTypeText(token = token, pending = pending)
 }
 
+internal fun <T> profileTypeTextPlatformToken(
+  token: ProfileTypeTextToken,
+  file: T,
+  url: T,
+  external: T,
+): T {
+  return when (token) {
+    ProfileTypeTextToken.File -> file
+    ProfileTypeTextToken.Url -> url
+    ProfileTypeTextToken.External -> external
+  }
+}
+
 internal fun Profile.toProfileListItem(
   currentTime: Long,
   formatTypeText: (ProfileTypeText) -> String,

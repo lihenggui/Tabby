@@ -87,6 +87,70 @@ class ProviderListItemMapperTest {
     )
   }
 
+  @Test
+  fun providerTypeTextPlatformTokenMapsTypeTokens() {
+    assertEquals(
+      "proxy",
+      providerTypeTextPlatformToken(
+        token = ProviderTypeTextToken.Proxy,
+        proxy = "proxy",
+        rule = "rule",
+      ),
+    )
+    assertEquals(
+      "rule",
+      providerTypeTextPlatformToken(
+        token = ProviderTypeTextToken.Rule,
+        proxy = "proxy",
+        rule = "rule",
+      ),
+    )
+  }
+
+  @Test
+  fun providerVehicleTextPlatformTokenMapsVehicleTokens() {
+    assertEquals(
+      "http",
+      providerVehicleTextPlatformToken(
+        token = ProviderVehicleTextToken.Http,
+        http = "http",
+        file = "file",
+        inline = "inline",
+        compatible = "compatible",
+      ),
+    )
+    assertEquals(
+      "file",
+      providerVehicleTextPlatformToken(
+        token = ProviderVehicleTextToken.File,
+        http = "http",
+        file = "file",
+        inline = "inline",
+        compatible = "compatible",
+      ),
+    )
+    assertEquals(
+      "inline",
+      providerVehicleTextPlatformToken(
+        token = ProviderVehicleTextToken.Inline,
+        http = "http",
+        file = "file",
+        inline = "inline",
+        compatible = "compatible",
+      ),
+    )
+    assertEquals(
+      "compatible",
+      providerVehicleTextPlatformToken(
+        token = ProviderVehicleTextToken.Compatible,
+        http = "http",
+        file = "file",
+        inline = "inline",
+        compatible = "compatible",
+      ),
+    )
+  }
+
   private fun Provider.toProviderListItem(
     currentTime: Long,
     updatedAt: Long,

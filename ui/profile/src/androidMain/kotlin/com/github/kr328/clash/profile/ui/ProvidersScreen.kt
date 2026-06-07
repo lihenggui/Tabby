@@ -55,17 +55,23 @@ private fun ProviderTypeText.androidString(context: Context): String {
 }
 
 private fun ProviderTypeTextToken.androidString(context: Context): String {
-  return when (this) {
-    ProviderTypeTextToken.Proxy -> context.getString(CommonR.string.proxy)
-    ProviderTypeTextToken.Rule -> context.getString(CommonR.string.rule)
-  }
+  return context.getString(
+    providerTypeTextPlatformToken(
+      token = this,
+      proxy = CommonR.string.proxy,
+      rule = CommonR.string.rule,
+    )
+  )
 }
 
 private fun ProviderVehicleTextToken.androidString(context: Context): String {
-  return when (this) {
-    ProviderVehicleTextToken.Http -> context.getString(CommonR.string.http)
-    ProviderVehicleTextToken.File -> context.getString(CommonR.string.file)
-    ProviderVehicleTextToken.Inline -> context.getString(CommonR.string.inline)
-    ProviderVehicleTextToken.Compatible -> context.getString(CommonR.string.compatible)
-  }
+  return context.getString(
+    providerVehicleTextPlatformToken(
+      token = this,
+      http = CommonR.string.http,
+      file = CommonR.string.file,
+      inline = CommonR.string.inline,
+      compatible = CommonR.string.compatible,
+    )
+  )
 }

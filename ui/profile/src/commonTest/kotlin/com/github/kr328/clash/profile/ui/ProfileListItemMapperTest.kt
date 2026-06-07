@@ -96,6 +96,37 @@ class ProfileListItemMapperTest {
     )
   }
 
+  @Test
+  fun profileTypeTextPlatformTokenMapsTypeTokens() {
+    assertEquals(
+      "file",
+      profileTypeTextPlatformToken(
+        token = ProfileTypeTextToken.File,
+        file = "file",
+        url = "url",
+        external = "external",
+      ),
+    )
+    assertEquals(
+      "url",
+      profileTypeTextPlatformToken(
+        token = ProfileTypeTextToken.Url,
+        file = "file",
+        url = "url",
+        external = "external",
+      ),
+    )
+    assertEquals(
+      "external",
+      profileTypeTextPlatformToken(
+        token = ProfileTypeTextToken.External,
+        file = "file",
+        url = "url",
+        external = "external",
+      ),
+    )
+  }
+
   private fun Profile.toProfileListItem(currentTime: Long): ProfileListItem {
     return toProfileListItem(
       currentTime = currentTime,

@@ -93,11 +93,14 @@ private fun List<Profile>.toProfileRouteListItems(
 @Composable
 private fun profileTypeTextString(typeText: ProfileTypeText): String {
   val text =
-    when (typeText.token) {
-      ProfileTypeTextToken.File -> stringResource(SharedRes.string.file)
-      ProfileTypeTextToken.Url -> stringResource(SharedRes.string.url)
-      ProfileTypeTextToken.External -> stringResource(SharedRes.string.external)
-    }
+    stringResource(
+      profileTypeTextPlatformToken(
+        token = typeText.token,
+        file = SharedRes.string.file,
+        url = SharedRes.string.url,
+        external = SharedRes.string.external,
+      )
+    )
 
   return if (typeText.pending) {
     stringResource(ProfileRes.string.format_type_unsaved, text)

@@ -39,6 +39,32 @@ internal fun providerTypeText(
   return ProviderTypeText(typeToken = typeToken, vehicleToken = vehicleToken)
 }
 
+internal fun <T> providerTypeTextPlatformToken(
+  token: ProviderTypeTextToken,
+  proxy: T,
+  rule: T,
+): T {
+  return when (token) {
+    ProviderTypeTextToken.Proxy -> proxy
+    ProviderTypeTextToken.Rule -> rule
+  }
+}
+
+internal fun <T> providerVehicleTextPlatformToken(
+  token: ProviderVehicleTextToken,
+  http: T,
+  file: T,
+  inline: T,
+  compatible: T,
+): T {
+  return when (token) {
+    ProviderVehicleTextToken.Http -> http
+    ProviderVehicleTextToken.File -> file
+    ProviderVehicleTextToken.Inline -> inline
+    ProviderVehicleTextToken.Compatible -> compatible
+  }
+}
+
 internal fun Provider.toProviderListItem(
   currentTime: Long,
   updatedAt: Long,
