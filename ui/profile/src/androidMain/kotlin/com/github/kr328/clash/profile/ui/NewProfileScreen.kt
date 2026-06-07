@@ -115,11 +115,11 @@ internal fun NewProfileScreen(
 
 @Composable
 private fun ProfileProvider.toNewProfileProviderItem(): NewProfileProviderItem {
-  return NewProfileProviderItem(
+  return newProfileProviderItem(
     name = name,
     summary = summary,
     iconPainter = rememberProfileProviderPainter(icon),
-    hasDetail = this is ProfileProvider.External,
+    kind = kind,
   )
 }
 

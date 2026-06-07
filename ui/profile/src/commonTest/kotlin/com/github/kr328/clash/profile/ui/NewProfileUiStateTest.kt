@@ -229,6 +229,65 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun providerItemUsesCommonDetailRuleForProviderKind() {
+    assertEquals(false, newProfileProviderHasDetail(NewProfileProviderKind.File))
+    assertEquals(false, newProfileProviderHasDetail(NewProfileProviderKind.Url))
+    assertEquals(false, newProfileProviderHasDetail(NewProfileProviderKind.QR))
+    assertEquals(true, newProfileProviderHasDetail(NewProfileProviderKind.External))
+  }
+
+  @Test
+  fun providerItemCopiesPresentationAndDefaultsDetailFromProviderKind() {
+    assertEquals(
+      NewProfileProviderItem(
+        name = "External",
+        summary = "External provider",
+        iconPainter = null,
+        hasDetail = true,
+      ),
+      newProfileProviderItem(
+        name = "External",
+        summary = "External provider",
+        iconPainter = null,
+        kind = NewProfileProviderKind.External,
+      ),
+    )
+    assertEquals(
+      NewProfileProviderItem(
+        name = "File",
+        summary = "Import from file",
+        iconPainter = null,
+        hasDetail = false,
+      ),
+      newProfileProviderItem(
+        name = "File",
+        summary = "Import from file",
+        iconPainter = null,
+        kind = NewProfileProviderKind.File,
+      ),
+    )
+  }
+
+  @Test
+  fun providerItemAllowsRouteSpecificDetailOverride() {
+    assertEquals(
+      NewProfileProviderItem(
+        name = "External",
+        summary = "External provider",
+        iconPainter = null,
+        hasDetail = false,
+      ),
+      newProfileProviderItem(
+        name = "External",
+        summary = "External provider",
+        iconPainter = null,
+        kind = NewProfileProviderKind.External,
+        hasDetail = false,
+      ),
+    )
+  }
+
+  @Test
   fun providerListKeepsBuiltInProvidersBeforeExternalProviders() {
     val externalProviders = listOf(testProvider("external-a"), testProvider("external-b"))
 

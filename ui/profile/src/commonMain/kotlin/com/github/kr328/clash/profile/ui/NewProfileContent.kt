@@ -32,6 +32,25 @@ internal data class NewProfileProviderItem(
   val hasDetail: Boolean,
 )
 
+internal fun newProfileProviderHasDetail(kind: NewProfileProviderKind): Boolean {
+  return kind == NewProfileProviderKind.External
+}
+
+internal fun newProfileProviderItem(
+  name: String,
+  summary: String,
+  iconPainter: Painter?,
+  kind: NewProfileProviderKind,
+  hasDetail: Boolean = newProfileProviderHasDetail(kind),
+): NewProfileProviderItem {
+  return NewProfileProviderItem(
+    name = name,
+    summary = summary,
+    iconPainter = iconPainter,
+    hasDetail = hasDetail,
+  )
+}
+
 @Composable
 internal fun NewProfileContent(
   modifier: Modifier = Modifier,

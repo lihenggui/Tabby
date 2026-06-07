@@ -106,10 +106,11 @@ private fun NewProfileRouteProvider.toNewProfileProviderItem(): NewProfileProvid
   return when (this) {
     is NewProfileRouteProvider.BuiltIn -> provider.toNewProfileProviderItem()
     is NewProfileRouteProvider.External ->
-      NewProfileProviderItem(
+      newProfileProviderItem(
         name = provider.name,
         summary = provider.summary,
         iconPainter = provider.iconPainter,
+        kind = NewProfileProviderKind.External,
         hasDetail = provider.hasDetail,
       )
   }
@@ -119,11 +120,11 @@ private fun NewProfileRouteProvider.toNewProfileProviderItem(): NewProfileProvid
 private fun NewProfileRouteBuiltInProvider.toNewProfileProviderItem(): NewProfileProviderItem {
   val presentation = checkNotNull(newProfileBuiltInProviderPresentation(toProviderKind()))
 
-  return NewProfileProviderItem(
+  return newProfileProviderItem(
     name = presentation.nameToken.text(),
     summary = presentation.summaryToken.text(),
     iconPainter = presentation.graphicToken.iconPainter(),
-    hasDetail = false,
+    kind = toProviderKind(),
   )
 }
 
