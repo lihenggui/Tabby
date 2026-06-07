@@ -1,6 +1,5 @@
 package com.github.kr328.clash.profile.ui
 
-import android.content.Context
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -11,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.glue.util.toDateStr
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.vm.ProfilesViewModel
@@ -56,18 +54,15 @@ internal fun ProfilesScreen(
     viewModel.consumeEvent()
   }
 
-  ProfilesContent(
+  ProfilesListRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    profiles =
-      uiState.toProfileListItems(
-        formatTypeText = { typeText -> typeText.androidString(context) },
-        formatBytes = ::profileBinaryBytesText,
-        formatExpire = { expire -> expire.toDateStr() },
-        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
-      ),
+    profiles = uiState.profiles,
     allUpdating = uiState.allUpdating,
-    hasUpdatableProfile = uiState.hasUpdatableProfile,
+    currentTimeMillis = uiState.currentTime,
+    formatBytes = ::profileBinaryBytesText,
+    formatExpire = { expire -> expire.toDateStr() },
+    formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
     onUpdateAll = viewModel::onUpdateAll,
     onCreate = viewModel::onOpenCreate,
     onActivate = viewModel::onActivate,
@@ -75,26 +70,5 @@ internal fun ProfilesScreen(
     onEdit = viewModel::onEdit,
     onDuplicate = viewModel::onDuplicate,
     onDelete = viewModel::onDelete,
-  )
-}
-
-private fun ProfileTypeText.androidString(context: Context): String {
-  val typeText = token.androidString(context)
-
-  return if (pending) {
-    context.getString(R.string.format_type_unsaved, typeText)
-  } else {
-    typeText
-  }
-}
-
-private fun ProfileTypeTextToken.androidString(context: Context): String {
-  return context.getString(
-    profileTypeTextPlatformToken(
-      token = this,
-      file = CommonR.string.file,
-      url = CommonR.string.url,
-      external = CommonR.string.external,
-    )
   )
 }

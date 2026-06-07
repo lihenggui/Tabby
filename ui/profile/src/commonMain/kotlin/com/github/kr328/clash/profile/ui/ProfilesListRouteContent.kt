@@ -20,11 +20,13 @@ import tabby.ui.shared.generated.resources.url
 @Composable
 fun ProfilesListRouteContent(
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   profiles: List<Profile> = emptyList(),
   allUpdating: Boolean = false,
   currentTimeMillis: Long = 0,
   formatBytes: (Long) -> String = ::profileBinaryBytesText,
   formatExpire: (Long) -> String = ::profileExpireDateString,
+  formatElapsedMillis: @Composable (Long) -> String = { elapsedTimeTextString(it) },
   onUpdateAll: () -> Unit = {},
   onCreate: () -> Unit = {},
   onActivate: (Profile) -> Unit = {},
@@ -33,7 +35,6 @@ fun ProfilesListRouteContent(
   onDuplicate: (Profile) -> Unit = {},
   onDelete: (Profile) -> Unit = {},
 ) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val effectiveCurrentTime =
     maxOf(currentTimeMillis, profiles.maxOfOrNull { it.updatedAt } ?: currentTimeMillis)
 
@@ -45,6 +46,7 @@ fun ProfilesListRouteContent(
         currentTimeMillis = effectiveCurrentTime,
         formatBytes = formatBytes,
         formatExpire = formatExpire,
+        formatElapsedMillis = formatElapsedMillis,
       ),
     allUpdating = allUpdating,
     hasUpdatableProfile = hasUpdatableProfiles(profiles),
@@ -63,6 +65,7 @@ private fun List<Profile>.toProfileRouteListItems(
   currentTimeMillis: Long,
   formatBytes: (Long) -> String,
   formatExpire: (Long) -> String,
+  formatElapsedMillis: @Composable (Long) -> String,
 ): List<ProfileListItem> {
   val items = ArrayList<ProfileListItem>(size)
 
@@ -82,7 +85,7 @@ private fun List<Profile>.toProfileRouteListItems(
             null
           },
         expireText = profile.expire.takeIf { it != 0L }?.let(formatExpire),
-        updatedAtText = elapsedTimeTextString(currentTimeMillis - profile.updatedAt),
+        updatedAtText = formatElapsedMillis(currentTimeMillis - profile.updatedAt),
         trafficProgress = if (showTraffic) profile.trafficProgress(usedTraffic) else 0,
       )
   }
