@@ -12,11 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import com.github.kr328.clash.core.model.Profile
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.profile.generated.resources.Res as ProfileRes
 import tabby.ui.profile.generated.resources.empty_name
+import tabby.ui.profile.generated.resources.initializing
 import tabby.ui.profile.generated.resources.invalid_url
+import tabby.ui.shared.generated.resources.Res as SharedRes
+import tabby.ui.shared.generated.resources.unavailable
 
 @Composable
 fun PropertiesRouteContent(
@@ -24,14 +28,16 @@ fun PropertiesRouteContent(
   profile: Profile = defaultPropertiesRouteProfile(),
   tipsProperties: AnnotatedString = AnnotatedString("Accept Only Tabby Config"),
   onBrowseFiles: (Profile) -> Unit = {},
-  onCommit: (Profile) -> Unit = {},
+  onCommit: suspend (Profile) -> Unit = {},
   onProfileChange: (Profile) -> Unit = {},
   onFinish: (success: Boolean) -> Unit = {},
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
   val emptyNameMessage = stringResource(ProfileRes.string.empty_name)
+  val initializingMessage = stringResource(ProfileRes.string.initializing)
   val invalidUrlMessage = stringResource(ProfileRes.string.invalid_url)
+  val unavailableMessage = stringResource(SharedRes.string.unavailable)
   var uiState by
     remember(profile) { mutableStateOf(propertiesInitialUiState().withLoadedProfile(profile)) }
   var showExitWithoutSavingDialog by
@@ -76,11 +82,24 @@ fun PropertiesRouteContent(
     onBrowseFiles = { uiState.profile?.let(onBrowseFiles) },
     onCommit = {
       when (val action = propertiesCommitAction(uiState)) {
-        is PropertiesCommitAction.Commit -> {
-          onCommit(action.profile)
-          uiState = uiState.withSavedProfile(action.profile)
-          onFinish(true)
-        }
+        is PropertiesCommitAction.Commit ->
+          coroutineScope.launch {
+            uiState = uiState.withProcessingStarted(initializingMessage)
+            try {
+              onCommit(action.profile)
+              uiState = uiState.withSavedProfile(action.profile)
+              onFinish(true)
+            } catch (e: CancellationException) {
+              throw e
+            } catch (e: Exception) {
+              uiState = uiState.withProcessingFinished()
+              snackbarHostState.showSnackbar(e.message ?: unavailableMessage)
+            } finally {
+              if (uiState.processing) {
+                uiState = uiState.withProcessingFinished()
+              }
+            }
+          }
         PropertiesCommitAction.ShowEmptyName ->
           coroutineScope.launch { snackbarHostState.showSnackbar(emptyNameMessage) }
         PropertiesCommitAction.ShowEmptySource ->
