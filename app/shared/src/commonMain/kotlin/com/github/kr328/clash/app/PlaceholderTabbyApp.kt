@@ -21,7 +21,6 @@ import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent
 import com.github.kr328.clash.profile.ui.NewProfileRouteContent
-import com.github.kr328.clash.profile.ui.ProfilesListRouteContent
 import com.github.kr328.clash.profile.ui.PropertiesRouteContent
 import com.github.kr328.clash.profile.ui.ProvidersRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
@@ -80,8 +79,12 @@ fun PlaceholderTabbyApp(
             profilesContent = { key ->
               ProfilesRouteContent(
                 route = key,
-                profilesContent = { onOpenCreate, _ ->
-                  ProfilesListRouteContent(onCreate = onOpenCreate)
+                profilesContent = { onOpenCreate, onOpenEdit ->
+                  ProfileRepositoryProfilesListRouteContent(
+                    profileRepository = engineEnvironment.profileRepository,
+                    onCreate = onOpenCreate,
+                    onEdit = onOpenEdit,
+                  )
                 },
                 newProfileContent = { _, onFinish ->
                   NewProfileRouteContent(onCreateBuiltIn = { onFinish() })
