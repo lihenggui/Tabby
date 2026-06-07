@@ -7,7 +7,7 @@ internal data class AccessControlUiState<T>(
   val settings: AccessControlSettingsState,
 )
 
-internal data class AccessControlClipboardImportPayload(
+data class AccessControlClipboardImportPayload(
   val hasPrimaryClipItem: Boolean,
   val clipboardText: String?,
 )

@@ -17,7 +17,9 @@ fun AccessControlSettingsRepositoryRouteContent(
   onSortChange: (AccessControlSort) -> Unit = {},
   onReverseChange: (Boolean) -> Unit = {},
   onShowSystemAppsChange: (Boolean) -> Unit = {},
-  onImportClipboardText: () -> String? = { null },
+  onImportClipboardPayload: () -> AccessControlClipboardImportPayload = {
+    AccessControlClipboardImportPayload(hasPrimaryClipItem = false, clipboardText = null)
+  },
   onExportClipboardText: (String) -> Unit = {},
 ) {
   val settings = remember(repository, defaults) { repository.query(defaults) }
@@ -45,7 +47,7 @@ fun AccessControlSettingsRepositoryRouteContent(
       repository.setShowSystemApps(value)
       onShowSystemAppsChange(value)
     },
-    onImportClipboardText = onImportClipboardText,
+    onImportClipboardPayload = onImportClipboardPayload,
     onExportClipboardText = onExportClipboardText,
   )
 }

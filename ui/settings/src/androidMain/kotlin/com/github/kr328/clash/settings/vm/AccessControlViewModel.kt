@@ -24,13 +24,9 @@ import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
-import com.github.kr328.clash.settings.ui.AccessControlActions
-import com.github.kr328.clash.settings.ui.AccessControlClipboardImportAction
+import com.github.kr328.clash.settings.ui.AccessControlClipboardImportPayload
 import com.github.kr328.clash.settings.ui.AccessControlUiState
-import com.github.kr328.clash.settings.ui.accessControlClipboardImportAction
 import com.github.kr328.clash.settings.ui.accessControlClipboardImportPayloadFromPlatformPayload
-import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
-import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
 import com.github.kr328.clash.settings.ui.accessControlInitialUiState
 import com.github.kr328.clash.settings.ui.accessControlSystemAppFromPlatformFlags
 import com.github.kr328.clash.settings.ui.loadAccessControlApps
@@ -40,10 +36,6 @@ import com.github.kr328.clash.settings.ui.withAccessControlReverse
 import com.github.kr328.clash.settings.ui.withAccessControlSelectedPackages
 import com.github.kr328.clash.settings.ui.withAccessControlShowSystemApps
 import com.github.kr328.clash.settings.ui.withAccessControlSort
-import com.github.kr328.clash.settings.ui.withAllVisibleAccessControlPackages
-import com.github.kr328.clash.settings.ui.withInvertedVisibleAccessControlPackages
-import com.github.kr328.clash.settings.ui.withNoAccessControlPackages
-import com.github.kr328.clash.settings.ui.withToggledAccessControlPackage
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,7 +48,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 internal class AccessControlViewModel(app: Application) :
-  AndroidViewModel(app), AccessControlActions, DefaultLifecycleObserver {
+  AndroidViewModel(app), DefaultLifecycleObserver {
   private val appContext = app
   private val uiStore = UiStore(app)
   private val serviceStore = ServiceStore(app)
@@ -116,88 +108,41 @@ internal class AccessControlViewModel(app: Application) :
     }
   }
 
-  override fun toggleApp(packageName: String) {
-    uiState.update { state -> state.withToggledAccessControlPackage(packageName) }
+  fun setSelectedPackages(selected: Set<String>) {
+    uiState.update { it.withAccessControlSelectedPackages(selected) }
   }
 
-  override fun selectAll() {
-    viewModelScope.launch {
-      val all =
-        withContext(Dispatchers.Default) {
-          val state = uiState.value
-          state.withAllVisibleAccessControlPackages(AppInfo::packageName)
-        }
-      uiState.update { all }
-    }
-  }
-
-  override fun selectNone() {
-    uiState.update { it.withNoAccessControlPackages() }
-  }
-
-  override fun selectInvert() {
-    viewModelScope.launch {
-      val selected =
-        withContext(Dispatchers.Default) {
-          val state = uiState.value
-          state.withInvertedVisibleAccessControlPackages(AppInfo::packageName)
-        }
-      uiState.update { selected }
-    }
-  }
-
-  override fun importFromClipboard() {
+  fun importClipboardPayload(): AccessControlClipboardImportPayload {
     val clipboard = appContext.getSystemService<ClipboardManager>()
     val data = clipboard?.primaryClip
     val hasPrimaryClipItem = data != null && data.itemCount > 0
     val clipboardText = if (hasPrimaryClipItem) data.getItemAt(0).text?.toString() else null
 
-    when (
-      val action =
-        accessControlClipboardImportAction(
-          accessControlClipboardImportPayloadFromPlatformPayload(
-            hasPrimaryClipItem = hasPrimaryClipItem,
-            clipboardText = clipboardText,
-          )
-        )
-    ) {
-      is AccessControlClipboardImportAction.Import -> {
-        val state = uiState.value
-        val selected =
-          accessControlImportClipboardState(
-            state = state,
-            clipboardText = action.clipboardText,
-            packageName = AppInfo::packageName,
-          )
-        uiState.update { selected }
-      }
-      AccessControlClipboardImportAction.Ignore -> Unit
-    }
+    return accessControlClipboardImportPayloadFromPlatformPayload(
+      hasPrimaryClipItem = hasPrimaryClipItem,
+      clipboardText = clipboardText,
+    )
   }
 
-  override fun exportToClipboard() {
+  fun exportClipboardText(text: String) {
     val clipboard = appContext.getSystemService<ClipboardManager>()
-    val data =
-      ClipData.newPlainText(
-        "packages",
-        accessControlExportClipboardText(uiState.value),
-      )
+    val data = ClipData.newPlainText("packages", text)
     clipboard?.setPrimaryClip(data)
   }
 
-  override fun updateSort(sort: AccessControlSort) {
+  fun setSort(sort: AccessControlSort) {
     uiStore.accessControlSort = sort
     uiState.update { it.withAccessControlSort(sort) }
     reloadApps()
   }
 
-  override fun updateReverse(reverse: Boolean) {
+  fun setReverse(reverse: Boolean) {
     uiStore.accessControlReverse = reverse
     uiState.update { it.withAccessControlReverse(reverse) }
     reloadApps()
   }
 
-  override fun updateShowSystemApps(show: Boolean) {
+  fun setShowSystemApps(show: Boolean) {
     uiStore.accessControlSystemApp = show
     uiState.update { it.withAccessControlShowSystemApps(show) }
     reloadApps()

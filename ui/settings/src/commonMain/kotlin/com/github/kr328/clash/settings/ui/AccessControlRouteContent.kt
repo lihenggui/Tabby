@@ -28,8 +28,11 @@ fun AccessControlRouteContent(
   onSortChange: (AccessControlSort) -> Unit = {},
   onReverseChange: (Boolean) -> Unit = {},
   onShowSystemAppsChange: (Boolean) -> Unit = {},
-  onImportClipboardText: () -> String? = { null },
+  onImportClipboardPayload: () -> AccessControlClipboardImportPayload = {
+    AccessControlClipboardImportPayload(hasPrimaryClipItem = false, clipboardText = null)
+  },
   onExportClipboardText: (String) -> Unit = {},
+  appIcon: @Composable (AccessControlPackage) -> Unit = {},
 ) {
   var uiState by remember {
     mutableStateOf(
@@ -95,14 +98,19 @@ fun AccessControlRouteContent(
         }
 
         override fun importFromClipboard() {
-          uiState =
-            accessControlImportClipboardState(
-                state = uiState,
-                clipboardText = onImportClipboardText(),
-                packageName = AccessControlPackage::packageName,
-              )
-              .withSortedPackages()
-          onSelectedChange(uiState.settings.selected)
+          when (val action = accessControlClipboardImportAction(onImportClipboardPayload())) {
+            is AccessControlClipboardImportAction.Import -> {
+              uiState =
+                accessControlImportClipboardState(
+                    state = uiState,
+                    clipboardText = action.clipboardText,
+                    packageName = AccessControlPackage::packageName,
+                  )
+                  .withSortedPackages()
+              onSelectedChange(uiState.settings.selected)
+            }
+            AccessControlClipboardImportAction.Ignore -> Unit
+          }
         }
 
         override fun exportToClipboard() {
@@ -127,6 +135,7 @@ fun AccessControlRouteContent(
     appPackageName = AccessControlPackage::packageName,
     appLabel = AccessControlPackage::label,
     modifier = modifier,
+    appIcon = appIcon,
   )
 }
 
