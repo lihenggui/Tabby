@@ -6,6 +6,11 @@ import kotlin.test.assertEquals
 
 class LogListItemMapperTest {
   @Test
+  fun logFileCreatedTextFormatsEpochMillisAsInstant() {
+    assertEquals("1970-01-01T00:00:01Z", logFileCreatedText(1000))
+  }
+
+  @Test
   fun mapsLogFilesInInputOrderUsingCreatedFormatter() {
     val items =
       toLogListItems(

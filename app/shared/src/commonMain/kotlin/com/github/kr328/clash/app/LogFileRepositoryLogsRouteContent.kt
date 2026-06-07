@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.log.model.LogFileRepository
 import com.github.kr328.clash.log.ui.LogsRouteContent
-import kotlin.time.Instant
+import com.github.kr328.clash.log.ui.logFileCreatedText
 import kotlinx.coroutines.launch
 
 @Composable
@@ -20,7 +20,7 @@ internal fun LogFileRepositoryLogsRouteContent(
   onStartLogcat: () -> Unit,
   onOpenFile: (String) -> Unit,
   modifier: Modifier = Modifier,
-  formatCreated: (Long) -> String = ::tabbyLogFileCreatedText,
+  formatCreated: (Long) -> String = ::logFileCreatedText,
   onActionError: (Throwable) -> Unit = {},
 ) {
   val scope = rememberCoroutineScope()
@@ -50,6 +50,3 @@ internal fun LogFileRepositoryLogsRouteContent(
     onOpenFile = { file: LogFile -> onOpenFile(file.fileName) },
   )
 }
-
-internal fun tabbyLogFileCreatedText(created: Long): String =
-  Instant.fromEpochMilliseconds(created).toString()

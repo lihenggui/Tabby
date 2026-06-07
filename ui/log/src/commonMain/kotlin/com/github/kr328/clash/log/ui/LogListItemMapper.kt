@@ -1,6 +1,9 @@
 package com.github.kr328.clash.log.ui
 
 import com.github.kr328.clash.log.model.LogFile
+import kotlin.time.Instant
+
+fun logFileCreatedText(created: Long): String = Instant.fromEpochMilliseconds(created).toString()
 
 internal fun toLogListItems(
   files: List<LogFile>,

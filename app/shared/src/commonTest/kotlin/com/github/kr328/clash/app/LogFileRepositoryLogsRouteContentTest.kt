@@ -13,9 +13,4 @@ class LogFileRepositoryLogsRouteContentTest {
     repository.deleteAllLogFiles()
     assertEquals(emptyList(), repository.queryLogFiles())
   }
-
-  @Test
-  fun logFileCreatedTextFormatsEpochMillisAsInstant() {
-    assertEquals("1970-01-01T00:00:01Z", tabbyLogFileCreatedText(1000))
-  }
 }
