@@ -6,6 +6,8 @@ import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.AccessControlSort
 import com.github.kr328.clash.settings.ui.AccessControlPackage
 import com.github.kr328.clash.settings.ui.AccessControlRouteContent
+import com.github.kr328.clash.settingsstore.TabbyAccessControlSettings
+import com.github.kr328.clash.settingsstore.TabbyAccessControlSettingsRepository
 
 @Composable
 internal fun AccessControlSettingsRepositoryRouteContent(

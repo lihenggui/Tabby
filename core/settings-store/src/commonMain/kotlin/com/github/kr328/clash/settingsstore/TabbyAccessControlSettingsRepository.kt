@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.settingsstore
 
 import com.github.kr328.clash.common.store.Store
 import com.github.kr328.clash.common.store.StoreProvider

@@ -21,6 +21,7 @@ import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
+import com.github.kr328.clash.settingsstore.TabbyAppSettings
 
 @Composable
 fun PlaceholderTabbyApp(

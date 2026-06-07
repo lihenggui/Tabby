@@ -1,7 +1,6 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.settingsstore
 
 import com.github.kr328.clash.core.model.AccessControlSort
-import com.github.kr328.clash.settingsstore.asStoreProvider
 import com.russhwolf.settings.MapSettings
 import kotlin.test.Test
 import kotlin.test.assertEquals

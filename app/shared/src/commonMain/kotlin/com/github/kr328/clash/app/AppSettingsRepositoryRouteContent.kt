@@ -5,6 +5,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
+import com.github.kr328.clash.settingsstore.TabbyAppSettings
+import com.github.kr328.clash.settingsstore.TabbyAppSettingsRepository
 
 @Composable
 internal fun AppSettingsRepositoryRouteContent(
