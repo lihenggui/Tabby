@@ -15,23 +15,15 @@ import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
-import com.github.kr328.clash.profile.ui.NewProfileCreateAction
-import com.github.kr328.clash.profile.ui.NewProfileDetailAction
 import com.github.kr328.clash.profile.ui.NewProfileEventState
-import com.github.kr328.clash.profile.ui.NewProfileProviderKind
 import com.github.kr328.clash.profile.ui.NewProfileUiState
 import com.github.kr328.clash.profile.ui.ProfileQrAction
 import com.github.kr328.clash.profile.ui.ProfileQrScanResult
 import com.github.kr328.clash.profile.ui.newProfileConsumedEventState
-import com.github.kr328.clash.profile.ui.newProfileCreateAction
-import com.github.kr328.clash.profile.ui.newProfileCreateEventState
-import com.github.kr328.clash.profile.ui.newProfileDetailAction
-import com.github.kr328.clash.profile.ui.newProfileDetailEventState
 import com.github.kr328.clash.profile.ui.newProfileErrorEventState
 import com.github.kr328.clash.profile.ui.newProfileInitialEventState
 import com.github.kr328.clash.profile.ui.newProfileInitialUiState
 import com.github.kr328.clash.profile.ui.newProfileLaunchPropertiesEventState
-import com.github.kr328.clash.profile.ui.newProfileProviderList
 import com.github.kr328.clash.profile.ui.newProfileQrEventState
 import com.github.kr328.clash.profile.ui.profileQrAction
 import com.github.kr328.clash.profile.ui.withNewProfileProviders
@@ -45,7 +37,7 @@ import kotlinx.coroutines.withContext
 internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
   private val profileRepository: ProfileRepository = AndroidProfileRepository()
 
-  val uiState: StateFlow<NewProfileUiState<ProfileProvider>>
+  val uiState: StateFlow<NewProfileUiState<ProfileProvider.External>>
     field = MutableStateFlow(newProfileInitialUiState())
 
   val eventState: StateFlow<NewProfileEventState<Intent, Uri>>
@@ -59,26 +51,8 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
     eventState.value = newProfileConsumedEventState()
   }
 
-  fun onCreate(provider: ProfileProvider) {
-    when (val action = newProfileCreateAction(provider.kind)) {
-      is NewProfileCreateAction.CreateProfile -> createProfile(action.type)
-      NewProfileCreateAction.LaunchQRScanner ->
-        newProfileCreateEventState<Intent>(action)?.let { eventState.value = it }
-      NewProfileCreateAction.LaunchExternalProvider -> {
-        val externalProvider = provider as ProfileProvider.External
-        newProfileCreateEventState(action, externalProvider.intent)?.let { eventState.value = it }
-      }
-    }
-  }
-
-  fun onDetail(provider: ProfileProvider.External) {
-    when (val action = newProfileDetailAction(provider.intent.component?.packageName)) {
-      is NewProfileDetailAction.OpenAppSettings -> {
-        val uri = Uri.fromParts("package", action.packageName, null)
-        newProfileDetailEventState(action, uri)?.let { eventState.value = it }
-      }
-      NewProfileDetailAction.Ignore -> Unit
-    }
+  fun onCreateBuiltIn(type: Profile.Type) {
+    createProfile(type)
   }
 
   fun onExternalProviderResult(uri: Uri, name: String?) {
@@ -159,19 +133,9 @@ internal class NewProfileViewModel(app: Application) : AndroidViewModel(app) {
                 ProfileProvider.External(name.toString(), summary.toString(), icon, intent)
               }
 
-          newProfileProviderList(externalProviders = externalProviders) { kind ->
-            kind.toBuiltInProvider()
-          }
+          externalProviders
         }
       uiState.update { it.withNewProfileProviders(providers) }
     }
   }
-
-  private fun NewProfileProviderKind.toBuiltInProvider(): ProfileProvider? =
-    when (this) {
-      NewProfileProviderKind.File -> ProfileProvider.File(application)
-      NewProfileProviderKind.Url -> ProfileProvider.Url(application)
-      NewProfileProviderKind.QR -> ProfileProvider.QR(application)
-      NewProfileProviderKind.External -> null
-    }
 }

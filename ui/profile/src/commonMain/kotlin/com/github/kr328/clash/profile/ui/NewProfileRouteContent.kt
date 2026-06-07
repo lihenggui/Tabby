@@ -44,12 +44,12 @@ data class NewProfileRouteExternalProvider(
 @Composable
 fun NewProfileRouteContent(
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   externalProviders: List<NewProfileRouteExternalProvider> = emptyList(),
   onCreateBuiltIn: (NewProfileRouteBuiltInProvider) -> Unit = {},
   onCreateExternal: (NewProfileRouteExternalProvider) -> Unit = {},
   onDetailExternal: (NewProfileRouteExternalProvider) -> Unit = {},
 ) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val providers =
     newProfileRouteBuiltInProviders().map(NewProfileRouteProvider::BuiltIn) +
       externalProviders.map(NewProfileRouteProvider::External)

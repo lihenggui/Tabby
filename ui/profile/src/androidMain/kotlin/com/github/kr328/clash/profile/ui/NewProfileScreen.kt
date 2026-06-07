@@ -3,6 +3,7 @@ package com.github.kr328.clash.profile.ui
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -15,8 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.core.graphics.drawable.toBitmap
@@ -42,6 +41,9 @@ internal fun NewProfileScreen(
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val eventState by viewModel.eventState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
+  val externalProviders = uiState.providers
+  val externalProvidersByKey =
+    remember(externalProviders) { externalProviders.associateBy { it.key } }
 
   val qrLauncher =
     rememberLauncherForActivityResult(ScanQRCode()) { result ->
@@ -88,38 +90,35 @@ internal fun NewProfileScreen(
     viewModel.consumeEvent()
   }
 
-  val providers = uiState.providers
-  NewProfileContent(
+  NewProfileRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    providers = providers.map { it.toNewProfileProviderItem() },
-    onCreate = { index ->
-      when (val action = newProfileProviderSelectionAction(providers, index)) {
-        is NewProfileProviderSelectionAction.SelectProvider -> viewModel.onCreate(action.provider)
-        NewProfileProviderSelectionAction.Ignore -> Unit
+    externalProviders = externalProviders.map { it.toNewProfileRouteExternalProvider() },
+    onCreateBuiltIn = { provider ->
+      when (val action = newProfileRouteCreateAction(provider)) {
+        is NewProfileRouteCreateAction.CreateProfile -> viewModel.onCreateBuiltIn(action.type)
+        NewProfileRouteCreateAction.LaunchQrScanner -> qrLauncher.launch(null)
       }
     },
-    onDetail = { index ->
-      when (
-        val action =
-          newProfileProviderDetailSelectionAction(providers, index) { provider ->
-            provider as? ProfileProvider.External
-          }
-      ) {
-        is NewProfileProviderSelectionAction.SelectProvider -> viewModel.onDetail(action.provider)
-        NewProfileProviderSelectionAction.Ignore -> Unit
+    onCreateExternal = { provider ->
+      externalProvidersByKey[provider.key]?.let { externalProvider ->
+        externalProviderLauncher.launch(externalProvider.intent)
       }
+    },
+    onDetailExternal = { provider ->
+      externalProvidersByKey[provider.key]?.openAppSettings(context::startActivity)
     },
   )
 }
 
 @Composable
-private fun ProfileProvider.toNewProfileProviderItem(): NewProfileProviderItem {
-  return newProfileProviderItem(
+private fun ProfileProvider.External.toNewProfileRouteExternalProvider():
+  NewProfileRouteExternalProvider {
+  return NewProfileRouteExternalProvider(
+    key = key,
     name = name,
     summary = summary,
     iconPainter = rememberProfileProviderPainter(icon),
-    kind = kind,
   )
 }
 
@@ -128,11 +127,6 @@ private fun rememberProfileProviderPainter(icon: Any?): Painter? {
   val density = LocalDensity.current
   val headerSize = tabbyDimens.itemHeaderComponentSize
   val iconSizePx = with(density) { headerSize.toPx().roundToInt() }
-
-  val iconVector = icon as? ImageVector
-  if (iconVector != null) {
-    return rememberVectorPainter(iconVector)
-  }
 
   val iconDrawable = icon as? Drawable
   return remember(iconDrawable, iconSizePx) {
@@ -156,5 +150,19 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
     QRMissingPermission ->
       profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.MissingPermission)
     is QRError -> profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.Error)
+  }
+}
+
+private val ProfileProvider.External.key: String
+  get() = intent.component?.flattenToString() ?: name
+
+private fun ProfileProvider.External.openAppSettings(startActivity: (Intent) -> Unit) {
+  when (val action = newProfileDetailAction(intent.component?.packageName)) {
+    is NewProfileDetailAction.OpenAppSettings ->
+      startActivity(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+          .setData(Uri.fromParts("package", action.packageName, null))
+      )
+    NewProfileDetailAction.Ignore -> Unit
   }
 }
