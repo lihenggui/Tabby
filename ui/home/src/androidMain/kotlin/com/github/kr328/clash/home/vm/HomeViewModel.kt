@@ -9,7 +9,6 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.core.util.trafficTotal
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.engine.android.VpnPermissionRequiredException
@@ -37,6 +36,7 @@ import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeStartFailureEventState
 import com.github.kr328.clash.home.ui.homeToggleAction
 import com.github.kr328.clash.home.ui.homeTrafficPollAction
+import com.github.kr328.clash.home.ui.homeTrafficTotalText
 import com.github.kr328.clash.home.ui.homeVpnPermissionEventState
 import com.github.kr328.clash.home.ui.withFetchedHomeState
 import com.github.kr328.clash.home.ui.withForwardedTraffic
@@ -127,7 +127,7 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
         when (homeTrafficPollAction(clashRunning.value)) {
           QueryTraffic -> {
             val total = engineController.queryTraffic()
-            uiState.update { it.withForwardedTraffic(total.trafficTotal()) }
+            uiState.update { it.withForwardedTraffic(homeTrafficTotalText(total)) }
           }
           Ignore -> Unit
         }
