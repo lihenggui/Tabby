@@ -93,38 +93,35 @@ internal fun FilesScreen(
   val configFiles = uiState.configFiles
   val configFileById = remember(configFiles) { configFiles.associateBy(ConfigFile::id) }
 
-  fun handleSelectedConfigFile(item: FileListItem, action: (ConfigFile) -> Unit) {
-    when (val selection = profileFileListItemSelection(item, configFileById)) {
-      is ProfileFileListItemSelection.Select -> action(selection.file)
-      ProfileFileListItemSelection.Ignore -> Unit
-    }
+  fun handleSelectedRouteItem(item: ProfileFileRouteItem, action: (ConfigFile) -> Unit) {
+    configFileById[item.id]?.let(action)
   }
 
   BackHandler(onBack = viewModel::onBack)
 
-  FilesContent(
+  FilesRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     files =
-      toFileListItems(
-        files = configFiles,
-        currentTime = currentTime,
-        id = ConfigFile::id,
-        name = ConfigFile::name,
-        sizeBytes = ConfigFile::size,
-        lastModified = ConfigFile::lastModified,
-        isDirectory = ConfigFile::isDirectory,
-        formatBytes = ::profileBinaryBytesText,
-        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
-      ),
+      configFiles.map { file ->
+        ProfileFileRouteItem(
+          id = file.id,
+          name = file.name,
+          sizeBytes = file.size,
+          lastModified = file.lastModified,
+          isDirectory = file.isDirectory,
+        )
+      },
+    currentTimeMillis = currentTime,
     currentInBaseDir = uiState.currentInBaseDir,
     configurationEditable = uiState.configurationEditable,
+    formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
     onBack = viewModel::onBack,
-    onOpen = { item -> handleSelectedConfigFile(item, viewModel::onOpen) },
+    onOpen = { item -> handleSelectedRouteItem(item, viewModel::onOpen) },
     onNew = { viewModel.onRequestImport(null) },
-    onImport = { item -> handleSelectedConfigFile(item, viewModel::onRequestImport) },
-    onExport = { item -> handleSelectedConfigFile(item, viewModel::onRequestExport) },
-    onRename = { item, name -> handleSelectedConfigFile(item) { viewModel.onRename(it, name) } },
-    onDelete = { item -> handleSelectedConfigFile(item, viewModel::onDelete) },
+    onImport = { item -> handleSelectedRouteItem(item, viewModel::onRequestImport) },
+    onExport = { item -> handleSelectedRouteItem(item, viewModel::onRequestExport) },
+    onRename = { item, name -> handleSelectedRouteItem(item) { viewModel.onRename(it, name) } },
+    onDelete = { item -> handleSelectedRouteItem(item, viewModel::onDelete) },
   )
 }

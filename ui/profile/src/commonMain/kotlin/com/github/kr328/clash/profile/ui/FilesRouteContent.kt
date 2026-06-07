@@ -16,6 +16,7 @@ data class ProfileFileRouteItem(
 @Composable
 fun FilesRouteContent(
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   files: List<ProfileFileRouteItem> = emptyList(),
   currentTimeMillis: Long = 0,
   currentInBaseDir: Boolean = true,
@@ -30,7 +31,6 @@ fun FilesRouteContent(
   onRename: (ProfileFileRouteItem, String) -> Unit = { _, _ -> },
   onDelete: (ProfileFileRouteItem) -> Unit = {},
 ) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val fileById = remember(files) { files.associateBy(ProfileFileRouteItem::id) }
   val effectiveCurrentTime =
     maxOf(currentTimeMillis, files.maxOfOrNull { it.lastModified } ?: currentTimeMillis)
