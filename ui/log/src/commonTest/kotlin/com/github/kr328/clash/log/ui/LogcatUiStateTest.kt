@@ -402,6 +402,54 @@ class LogcatUiStateTest {
     assertEquals(LogcatExportProgress(), state.exportProgress)
   }
 
+  @Test
+  fun autoScrollToLatestRequiresMessagesAndBottomViewport() {
+    assertTrue(logcatShouldAutoScrollToLatest(messageCount = 1, listAtBottom = true))
+    assertFalse(logcatShouldAutoScrollToLatest(messageCount = 0, listAtBottom = true))
+    assertFalse(logcatShouldAutoScrollToLatest(messageCount = 1, listAtBottom = false))
+  }
+
+  @Test
+  fun listViewportIsAtBottomWhenNoItemsAreVisible() {
+    assertTrue(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 0,
+        lastVisibleItemIndex = null,
+      )
+    )
+  }
+
+  @Test
+  fun listViewportIsAtBottomOnlyWhenLastItemFitsInsideViewport() {
+    assertTrue(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 2,
+        lastVisibleItemOffset = 80,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+    assertFalse(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 1,
+        lastVisibleItemOffset = 80,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+    assertFalse(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 2,
+        lastVisibleItemOffset = 90,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+  }
+
   private fun logMessage(time: Long): LogMessage {
     return LogMessage(LogMessage.Level.Info, "message-$time", time)
   }

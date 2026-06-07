@@ -3,7 +3,6 @@ package com.github.kr328.clash.log.ui
 import android.content.ClipData
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -76,7 +75,7 @@ internal fun LogcatScreen(
 
     snapshotFlow { uiState.messages.size }
       .collect { size ->
-        if (size > 0 && listState.isBottom) {
+        if (logcatShouldAutoScrollToLatest(size, listState.isLogcatViewportAtBottom())) {
           listState.animateScrollToItem(size - 1)
         }
       }
@@ -111,12 +110,3 @@ internal fun LogcatScreen(
     max = uiState.exportProgress.max,
   )
 }
-
-private val LazyListState.isBottom: Boolean
-  get() {
-    val layoutInfo = layoutInfo
-    val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return true
-
-    return lastVisibleItem.index == layoutInfo.totalItemsCount - 1 &&
-      lastVisibleItem.offset + lastVisibleItem.size <= layoutInfo.viewportEndOffset
-  }
