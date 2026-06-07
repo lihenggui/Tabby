@@ -90,4 +90,20 @@ class TabbyRestartReceiverActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyRestartReceiverPlatformSpecStartsServiceForStartClashAction() {
+    assertEquals(
+      TabbyRestartReceiverPlatformSpec(startClash = true),
+      tabbyRestartReceiverPlatformSpec(TabbyRestartReceiverAction.StartClash),
+    )
+  }
+
+  @Test
+  fun tabbyRestartReceiverPlatformSpecDoesNotStartServiceForIgnoreAction() {
+    assertEquals(
+      TabbyRestartReceiverPlatformSpec(startClash = false),
+      tabbyRestartReceiverPlatformSpec(TabbyRestartReceiverAction.Ignore),
+    )
+  }
 }

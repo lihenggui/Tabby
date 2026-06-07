@@ -8,15 +8,14 @@ import com.github.kr328.clash.service.StatusProvider
 
 class RestartReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
-    when (
+    val action =
       tabbyRestartReceiverAction(
         event = intent.tabbyRestartReceiverEvent(),
         shouldStartClashOnBoot = StatusProvider.shouldStartClashOnBoot,
       )
-    ) {
-      TabbyRestartReceiverAction.StartClash -> context.startClashService()
-      TabbyRestartReceiverAction.Ignore -> Unit
-    }
+    val spec = tabbyRestartReceiverPlatformSpec(action)
+
+    if (spec.startClash) context.startClashService()
   }
 }
 

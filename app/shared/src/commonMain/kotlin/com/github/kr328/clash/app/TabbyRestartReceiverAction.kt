@@ -12,6 +12,8 @@ sealed interface TabbyRestartReceiverAction {
   data object Ignore : TabbyRestartReceiverAction
 }
 
+data class TabbyRestartReceiverPlatformSpec(val startClash: Boolean)
+
 fun tabbyRestartReceiverEventFromString(
   action: String?,
   bootCompletedAction: String,
@@ -31,4 +33,12 @@ fun tabbyRestartReceiverAction(
     event == null -> TabbyRestartReceiverAction.Ignore
     shouldStartClashOnBoot -> TabbyRestartReceiverAction.StartClash
     else -> TabbyRestartReceiverAction.Ignore
+  }
+
+fun tabbyRestartReceiverPlatformSpec(
+  action: TabbyRestartReceiverAction
+): TabbyRestartReceiverPlatformSpec =
+  when (action) {
+    TabbyRestartReceiverAction.StartClash -> TabbyRestartReceiverPlatformSpec(startClash = true)
+    TabbyRestartReceiverAction.Ignore -> TabbyRestartReceiverPlatformSpec(startClash = false)
   }
