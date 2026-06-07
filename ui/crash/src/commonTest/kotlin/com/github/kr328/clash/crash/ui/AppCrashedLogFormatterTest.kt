@@ -48,4 +48,12 @@ class AppCrashedLogFormatterTest {
       appCrashLogDumpResult(exitCode = 2, log = "AndroidRuntime: crash"),
     )
   }
+
+  @Test
+  fun loadFailureMessageIncludesCause() {
+    assertEquals(
+      "Failed to load crash logs: java.lang.IllegalStateException: logcat failed",
+      appCrashLogLoadFailureMessage(IllegalStateException("logcat failed")),
+    )
+  }
 }

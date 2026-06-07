@@ -17,3 +17,7 @@ internal fun appCrashLogDumpResult(exitCode: Int, log: String): AppCrashLogDumpR
     AppCrashLogDumpResult.LogcatFailed("logcat exited with code $exitCode: $log")
   }
 }
+
+fun appCrashLogLoadFailureMessage(cause: Throwable): String {
+  return "Failed to load crash logs: $cause"
+}

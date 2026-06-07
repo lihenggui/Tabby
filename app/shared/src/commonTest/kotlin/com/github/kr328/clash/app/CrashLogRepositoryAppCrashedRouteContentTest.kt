@@ -9,12 +9,4 @@ class CrashLogRepositoryAppCrashedRouteContentTest {
   fun emptyCrashLogRepositoryReturnsEmptyLog() = runTest {
     assertEquals("", emptyTabbyCrashLogRepository().loadCrashLog())
   }
-
-  @Test
-  fun loadFailureMessageIncludesCause() {
-    assertEquals(
-      "Failed to load crash logs: java.lang.IllegalStateException: logcat failed",
-      tabbyCrashLogLoadFailureMessage(IllegalStateException("logcat failed")),
-    )
-  }
 }

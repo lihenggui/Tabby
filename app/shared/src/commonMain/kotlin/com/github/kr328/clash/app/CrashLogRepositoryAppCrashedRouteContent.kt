@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.crash.model.CrashLogRepository
 import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
+import com.github.kr328.clash.crash.ui.appCrashLogLoadFailureMessage
 
 @Composable
 internal fun CrashLogRepositoryAppCrashedRouteContent(
@@ -23,7 +24,7 @@ internal fun CrashLogRepositoryAppCrashedRouteContent(
       .onSuccess { logs = it }
       .onFailure { cause ->
         onActionError(cause)
-        logs = tabbyCrashLogLoadFailureMessage(cause)
+        logs = appCrashLogLoadFailureMessage(cause)
       }
   }
 
@@ -31,8 +32,4 @@ internal fun CrashLogRepositoryAppCrashedRouteContent(
     modifier = modifier,
     logs = logs,
   )
-}
-
-internal fun tabbyCrashLogLoadFailureMessage(cause: Throwable): String {
-  return "Failed to load crash logs: $cause"
 }
