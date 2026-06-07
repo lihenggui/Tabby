@@ -65,26 +65,26 @@ internal fun FilesScreen(
   }
 
   LaunchedEffect(eventState) {
-    when (val event = eventState) {
-      ProfileFilesEventState.Idle -> Unit
-      ProfileFilesEventState.Finish -> {
+    when (val action = profileFilesEventPlatformAction(eventState)) {
+      ProfileFilesEventPlatformAction.Ignore -> Unit
+      ProfileFilesEventPlatformAction.Finish -> {
         onFinish()
       }
-      is ProfileFilesEventState.OpenFile -> {
+      is ProfileFilesEventPlatformAction.OpenFile -> {
         openFileLauncher.launch(
-          Intent(Intent.ACTION_VIEW).setDataAndType(event.uri, "text/plain").grantPermissions()
+          Intent(Intent.ACTION_VIEW).setDataAndType(action.uri, "text/plain").grantPermissions()
         )
       }
-      is ProfileFilesEventState.RequestImport -> {
-        pendingImportTarget = event.targetConfigFile
+      is ProfileFilesEventPlatformAction.RequestImport -> {
+        pendingImportTarget = action.targetConfigFile
         importLauncher.launch("*/*")
       }
-      is ProfileFilesEventState.RequestExport -> {
-        pendingExportSource = event.sourceConfigFile
-        exportLauncher.launch(event.sourceConfigFile.name)
+      is ProfileFilesEventPlatformAction.RequestExport -> {
+        pendingExportSource = action.sourceConfigFile
+        exportLauncher.launch(action.sourceConfigFile.name)
       }
-      is ProfileFilesEventState.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = event.message)
+      is ProfileFilesEventPlatformAction.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
       }
     }
     viewModel.consumeEvent()

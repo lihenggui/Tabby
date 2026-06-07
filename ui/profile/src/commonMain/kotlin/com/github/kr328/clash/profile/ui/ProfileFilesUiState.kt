@@ -29,9 +29,42 @@ internal sealed interface ProfileFilesEventState<out ConfigFileT, out OpenFileT>
   data class ShowMessage(val message: String) : ProfileFilesEventState<Nothing, Nothing>
 }
 
+internal sealed interface ProfileFilesEventPlatformAction<out ConfigFileT, out OpenFileT> {
+  data object Ignore : ProfileFilesEventPlatformAction<Nothing, Nothing>
+
+  data object Finish : ProfileFilesEventPlatformAction<Nothing, Nothing>
+
+  data class OpenFile<out OpenFileT>(val uri: OpenFileT) :
+    ProfileFilesEventPlatformAction<Nothing, OpenFileT>
+
+  data class RequestImport<out ConfigFileT>(val targetConfigFile: ConfigFileT?) :
+    ProfileFilesEventPlatformAction<ConfigFileT, Nothing>
+
+  data class RequestExport<out ConfigFileT>(val sourceConfigFile: ConfigFileT) :
+    ProfileFilesEventPlatformAction<ConfigFileT, Nothing>
+
+  data class ShowMessage(val message: String) : ProfileFilesEventPlatformAction<Nothing, Nothing>
+}
+
 internal fun <ConfigFileT, OpenFileT> profileFilesInitialEventState():
   ProfileFilesEventState<ConfigFileT, OpenFileT> {
   return ProfileFilesEventState.Idle
+}
+
+internal fun <ConfigFileT, OpenFileT> profileFilesEventPlatformAction(
+  eventState: ProfileFilesEventState<ConfigFileT, OpenFileT>
+): ProfileFilesEventPlatformAction<ConfigFileT, OpenFileT> {
+  return when (eventState) {
+    ProfileFilesEventState.Idle -> ProfileFilesEventPlatformAction.Ignore
+    ProfileFilesEventState.Finish -> ProfileFilesEventPlatformAction.Finish
+    is ProfileFilesEventState.OpenFile -> ProfileFilesEventPlatformAction.OpenFile(eventState.uri)
+    is ProfileFilesEventState.RequestImport ->
+      ProfileFilesEventPlatformAction.RequestImport(eventState.targetConfigFile)
+    is ProfileFilesEventState.RequestExport ->
+      ProfileFilesEventPlatformAction.RequestExport(eventState.sourceConfigFile)
+    is ProfileFilesEventState.ShowMessage ->
+      ProfileFilesEventPlatformAction.ShowMessage(eventState.message)
+  }
 }
 
 internal fun isProfileConfigurationEditable(profile: Profile): Boolean {
