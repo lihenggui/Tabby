@@ -11,6 +11,7 @@ import com.github.kr328.clash.engine.desktop.DesktopMihomoProcess
 import com.github.kr328.clash.engine.desktop.DesktopProfileRepository
 import com.github.kr328.clash.engine.desktop.defaultMihomoBinaryInstallDir
 import com.github.kr328.clash.engine.desktop.defaultMihomoHomeDir
+import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
 import com.github.kr328.clash.settingsstore.asStoreProvider
 import com.russhwolf.settings.PreferencesSettings
 import java.util.prefs.Preferences

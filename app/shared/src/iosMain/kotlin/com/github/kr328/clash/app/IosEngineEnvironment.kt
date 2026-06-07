@@ -3,6 +3,7 @@ package com.github.kr328.clash.app
 import com.github.kr328.clash.engine.ios.IosEngineController
 import com.github.kr328.clash.engine.ios.IosLogRepository
 import com.github.kr328.clash.engine.ios.IosProfileRepository
+import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
 import com.github.kr328.clash.settingsstore.asStoreProvider
 import com.russhwolf.settings.NSUserDefaultsSettings
 import platform.Foundation.NSUserDefaults

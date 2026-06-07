@@ -8,8 +8,8 @@ kotlin {
     commonMain.dependencies {
       api(projects.ui.shared)
       api(projects.core.engineApi)
+      api(projects.core.settingsStore)
       implementation(libs.kotlinx.coroutines.core)
-      implementation(projects.core.settingsStore)
       implementation(projects.ui.crash)
       implementation(projects.ui.home)
       implementation(projects.ui.log)

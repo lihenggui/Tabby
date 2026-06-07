@@ -5,6 +5,7 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.LogRepository
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.log.model.LogFileRepository
+import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
 
 data class EngineEnvironment(
   val engineController: EngineController,
