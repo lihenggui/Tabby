@@ -10,7 +10,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.settings.ui.OverridePersistAction
 import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
+import com.github.kr328.clash.settings.ui.overridePersistAction
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
@@ -65,8 +67,8 @@ internal fun EngineControllerPersistedOverrideRouteContent(
         withContext(NonCancellable) {
           runCatching {
               engineController.persistOverrideSettings(
-                tabbyOverrideSettingsPersistAction(
-                  resetRequested = currentResetRequested.value,
+                overridePersistAction(
+                  skipPersist = currentResetRequested.value,
                   configuration = currentConfiguration.value,
                 )
               )
@@ -87,28 +89,9 @@ internal fun EngineControllerPersistedOverrideRouteContent(
   )
 }
 
-internal sealed interface TabbyOverrideSettingsPersistAction {
-  data object Clear : TabbyOverrideSettingsPersistAction
-
-  data class Patch(val configuration: ConfigurationOverride) : TabbyOverrideSettingsPersistAction
-}
-
-internal fun tabbyOverrideSettingsPersistAction(
-  resetRequested: Boolean,
-  configuration: ConfigurationOverride,
-): TabbyOverrideSettingsPersistAction {
-  return if (resetRequested) {
-    TabbyOverrideSettingsPersistAction.Clear
-  } else {
-    TabbyOverrideSettingsPersistAction.Patch(configuration)
-  }
-}
-
-private suspend fun EngineController.persistOverrideSettings(
-  action: TabbyOverrideSettingsPersistAction
-) {
+private suspend fun EngineController.persistOverrideSettings(action: OverridePersistAction) {
   when (action) {
-    TabbyOverrideSettingsPersistAction.Clear -> clearPersistOverride()
-    is TabbyOverrideSettingsPersistAction.Patch -> patchPersistOverride(action.configuration)
+    OverridePersistAction.Clear -> clearPersistOverride()
+    is OverridePersistAction.Patch -> patchPersistOverride(action.configuration)
   }
 }

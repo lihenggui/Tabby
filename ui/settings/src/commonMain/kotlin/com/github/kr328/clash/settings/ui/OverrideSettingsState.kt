@@ -4,7 +4,7 @@ import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.core.model.TunnelState
 
-internal sealed interface OverridePersistAction {
+sealed interface OverridePersistAction {
   data object Clear : OverridePersistAction
 
   data class Patch(val configuration: ConfigurationOverride) : OverridePersistAction
@@ -14,7 +14,7 @@ internal fun overrideSettingsInitialConfiguration(): ConfigurationOverride {
   return ConfigurationOverride()
 }
 
-internal fun overridePersistAction(
+fun overridePersistAction(
   skipPersist: Boolean,
   configuration: ConfigurationOverride,
 ): OverridePersistAction {
