@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.crash.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,11 +8,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.crash.model.CrashLogRepository
-import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
-import com.github.kr328.clash.crash.ui.appCrashLogLoadFailureMessage
 
 @Composable
-internal fun CrashLogRepositoryAppCrashedRouteContent(
+fun CrashLogRepositoryAppCrashedRouteContent(
   crashLogRepository: CrashLogRepository,
   modifier: Modifier = Modifier,
   onActionError: (Throwable) -> Unit = {},

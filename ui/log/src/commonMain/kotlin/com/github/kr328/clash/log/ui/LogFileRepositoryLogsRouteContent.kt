@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.log.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -10,12 +10,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.log.model.LogFileRepository
-import com.github.kr328.clash.log.ui.LogsRouteContent
-import com.github.kr328.clash.log.ui.logFileCreatedText
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun LogFileRepositoryLogsRouteContent(
+fun LogFileRepositoryLogsRouteContent(
   logFileRepository: LogFileRepository,
   onStartLogcat: () -> Unit,
   onOpenFile: (String) -> Unit,

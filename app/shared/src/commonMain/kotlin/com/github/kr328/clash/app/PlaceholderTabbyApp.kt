@@ -9,11 +9,13 @@ import androidx.compose.ui.platform.LocalUriHandler
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
+import com.github.kr328.clash.crash.ui.CrashLogRepositoryAppCrashedRouteContent
 import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.home.ui.HelpRouteContent
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
+import com.github.kr328.clash.log.ui.LogFileRepositoryLogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent
