@@ -1,5 +1,6 @@
 package com.github.kr328.clash.app
 
+import com.github.kr328.clash.crash.model.emptyCrashLogRepository
 import com.github.kr328.clash.engine.desktop.DesktopEngineController
 import com.github.kr328.clash.engine.desktop.DesktopLogRepository
 import com.github.kr328.clash.engine.desktop.DesktopMihomoApi
@@ -11,6 +12,7 @@ import com.github.kr328.clash.engine.desktop.DesktopMihomoProcess
 import com.github.kr328.clash.engine.desktop.DesktopProfileRepository
 import com.github.kr328.clash.engine.desktop.defaultMihomoBinaryInstallDir
 import com.github.kr328.clash.engine.desktop.defaultMihomoHomeDir
+import com.github.kr328.clash.log.model.emptyLogFileRepository
 import com.github.kr328.clash.settingsstore.TabbyAccessControlSettingsRepository
 import com.github.kr328.clash.settingsstore.TabbyAppSettingsRepository
 import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
@@ -49,8 +51,8 @@ fun desktopEngineEnvironment(): EngineEnvironment {
         configValidator = binary?.let(::DesktopMihomoCliConfigValidator),
       ),
     logRepository = DesktopLogRepository(mihomoApi),
-    logFileRepository = emptyTabbyLogFileRepository(),
-    crashLogRepository = emptyTabbyCrashLogRepository(),
+    logFileRepository = emptyLogFileRepository(),
+    crashLogRepository = emptyCrashLogRepository(),
     appSettingsRepository =
       TabbyAppSettingsRepository(
         uiStoreProvider = uiStoreProvider,

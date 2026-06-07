@@ -1,12 +1,12 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.crash.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 
-class CrashLogRepositoryAppCrashedRouteContentTest {
+class EmptyCrashLogRepositoryTest {
   @Test
   fun emptyCrashLogRepositoryReturnsEmptyLog() = runTest {
-    assertEquals("", emptyTabbyCrashLogRepository().loadCrashLog())
+    assertEquals("", emptyCrashLogRepository().loadCrashLog())
   }
 }

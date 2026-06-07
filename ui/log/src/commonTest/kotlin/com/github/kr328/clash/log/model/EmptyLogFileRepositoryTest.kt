@@ -1,13 +1,13 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.log.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 
-class LogFileRepositoryLogsRouteContentTest {
+class EmptyLogFileRepositoryTest {
   @Test
   fun emptyLogFileRepositoryHasNoFilesAndDeletesWithoutFailure() = runTest {
-    val repository = emptyTabbyLogFileRepository()
+    val repository = emptyLogFileRepository()
 
     assertEquals(emptyList(), repository.queryLogFiles())
     repository.deleteAllLogFiles()

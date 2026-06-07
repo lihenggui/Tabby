@@ -1,8 +1,10 @@
 package com.github.kr328.clash.app
 
+import com.github.kr328.clash.crash.model.emptyCrashLogRepository
 import com.github.kr328.clash.engine.ios.IosEngineController
 import com.github.kr328.clash.engine.ios.IosLogRepository
 import com.github.kr328.clash.engine.ios.IosProfileRepository
+import com.github.kr328.clash.log.model.emptyLogFileRepository
 import com.github.kr328.clash.settingsstore.TabbyAccessControlSettingsRepository
 import com.github.kr328.clash.settingsstore.TabbyAppSettingsRepository
 import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
@@ -18,8 +20,8 @@ fun iosEngineEnvironment(): EngineEnvironment {
     engineController = IosEngineController(),
     profileRepository = IosProfileRepository(),
     logRepository = IosLogRepository(),
-    logFileRepository = emptyTabbyLogFileRepository(),
-    crashLogRepository = emptyTabbyCrashLogRepository(),
+    logFileRepository = emptyLogFileRepository(),
+    crashLogRepository = emptyCrashLogRepository(),
     appSettingsRepository =
       TabbyAppSettingsRepository(
         uiStoreProvider = uiStoreProvider,
