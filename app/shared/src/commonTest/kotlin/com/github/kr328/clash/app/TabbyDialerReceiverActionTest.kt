@@ -8,4 +8,15 @@ class TabbyDialerReceiverActionTest {
   fun tabbyDialerReceiverActionOpensMainActivity() {
     assertEquals(TabbyDialerReceiverAction.OpenMainActivity, tabbyDialerReceiverAction())
   }
+
+  @Test
+  fun tabbyDialerReceiverPlatformSpecLaunchesMainActivityInNewTask() {
+    assertEquals(
+      TabbyDialerReceiverPlatformSpec(intentFlags = 0b100),
+      tabbyDialerReceiverPlatformSpec(
+        action = TabbyDialerReceiverAction.OpenMainActivity,
+        openInNewTaskFlag = 0b100,
+      ),
+    )
+  }
 }
