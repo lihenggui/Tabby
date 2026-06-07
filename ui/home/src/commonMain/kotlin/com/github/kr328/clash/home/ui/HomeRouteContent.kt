@@ -13,11 +13,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.ui.icon.BaselineSwapVerticalCircle
 import com.github.kr328.clash.ui.icon.TabbyIcons
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.home.generated.resources.Res as HomeRes
@@ -69,7 +71,7 @@ fun HomeRouteContent(
     uiState =
       uiState.withFetchedHomeState(
         clashRunning = clashRunning,
-        mode = state.mode.sharedLabel(directMode, globalMode, ruleMode),
+        mode = homeModeLabel(state.mode).sharedStringValue(directMode, globalMode, ruleMode),
         hasProviders = hasProviders,
         profileName = profileName,
       )
@@ -119,6 +121,19 @@ fun HomeRouteContent(
     refreshHomeState()
   }
 
+  LaunchedEffect(engineController, clashRunning) {
+    when (homeTrafficPollAction(clashRunning)) {
+      HomeTrafficPollAction.QueryTraffic -> {
+        while (isActive) {
+          delay(1.seconds)
+          runCatching { engineController.queryTraffic() }
+            .onSuccess { uiState = uiState.withForwardedTraffic(homeTrafficTotalText(it)) }
+        }
+      }
+      HomeTrafficPollAction.Ignore -> Unit
+    }
+  }
+
   HomeContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
@@ -146,15 +161,15 @@ fun HomeRouteContent(
   )
 }
 
-private fun TunnelState.Mode.sharedLabel(
+private fun HomeModeLabel.sharedStringValue(
   directMode: String,
   globalMode: String,
   ruleMode: String,
 ): String =
   when (this) {
-    TunnelState.Mode.Direct -> directMode
-    TunnelState.Mode.Global -> globalMode
-    TunnelState.Mode.Rule -> ruleMode
+    HomeModeLabel.Direct -> directMode
+    HomeModeLabel.Global -> globalMode
+    HomeModeLabel.Rule -> ruleMode
   }
 
 private fun SnackbarResult.toHomeRouteSnackbarActionResult(): SnackbarActionResult {

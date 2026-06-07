@@ -1,6 +1,7 @@
 package com.github.kr328.clash.home.ui
 
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.Traffic
 import com.github.kr328.clash.core.model.TunnelState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -174,6 +175,24 @@ class HomeUiStateTest {
     assertEquals(
       HomeTrafficPollAction.Ignore,
       homeTrafficPollAction(clashRunning = false),
+    )
+  }
+
+  @Test
+  fun homeTrafficTotalTextFormatsByteTotal() {
+    assertEquals("0 B", homeTrafficTotalText(Traffic.fromBytes(upload = 0, download = 0)))
+    assertEquals("460 B", homeTrafficTotalText(Traffic.fromBytes(upload = 120, download = 340)))
+  }
+
+  @Test
+  fun homeTrafficTotalTextFormatsBinaryUnits() {
+    assertEquals(
+      "2 KiB",
+      homeTrafficTotalText(Traffic.fromBytes(upload = 1536, download = 512)),
+    )
+    assertEquals(
+      "5.5 MiB",
+      homeTrafficTotalText(Traffic.fromBytes(upload = 5 * 1024 * 1024, download = 512 * 1024)),
     )
   }
 
