@@ -1,12 +1,11 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.settings.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.engine.api.EngineController
-import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
 
 @Composable
-internal fun EngineControllerMetaFeatureSettingsRouteContent(
+fun EngineControllerMetaFeatureSettingsRouteContent(
   engineController: EngineController,
   onResetCompleted: () -> Unit,
   modifier: Modifier = Modifier,

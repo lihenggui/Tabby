@@ -19,6 +19,7 @@ import com.github.kr328.clash.log.ui.LogFileRepositoryLogsRouteContent
 import com.github.kr328.clash.log.ui.LogRepositoryLogcatRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
+import com.github.kr328.clash.profile.ui.EngineControllerProvidersRouteContent
 import com.github.kr328.clash.profile.ui.FilesRouteContent
 import com.github.kr328.clash.profile.ui.ProfileRepositoryNewProfileRouteContent
 import com.github.kr328.clash.profile.ui.ProfileRepositoryProfilesListRouteContent
@@ -29,6 +30,8 @@ import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlSettingsRepositoryRouteContent
 import com.github.kr328.clash.settings.ui.AppSettingsRepositoryRouteContent
+import com.github.kr328.clash.settings.ui.EngineControllerMetaFeatureSettingsRouteContent
+import com.github.kr328.clash.settings.ui.EngineControllerOverrideSettingsRouteContent
 import com.github.kr328.clash.settings.ui.NetworkSettingsRepositoryRouteContent
 import com.github.kr328.clash.settingsstore.TabbyAppSettings
 

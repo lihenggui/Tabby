@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.profile.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -10,19 +10,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.engine.api.EngineController
-import com.github.kr328.clash.profile.ui.ProviderRouteItem
-import com.github.kr328.clash.profile.ui.ProvidersRouteContent
-import com.github.kr328.clash.profile.ui.providerRouteItemsAfterFetch
-import com.github.kr328.clash.profile.ui.providerRouteItemsAfterUpdateFinished
-import com.github.kr328.clash.profile.ui.providerRouteItemsAfterUpdateStarted
-import com.github.kr328.clash.profile.ui.providerRouteItemsPendingUpdateProviders
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun EngineControllerProvidersRouteContent(
+fun EngineControllerProvidersRouteContent(
   engineController: EngineController,
   modifier: Modifier = Modifier,
   onActionError: (Throwable) -> Unit = {},
