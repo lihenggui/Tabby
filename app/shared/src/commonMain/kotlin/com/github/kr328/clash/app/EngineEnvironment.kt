@@ -10,4 +10,5 @@ data class EngineEnvironment(
   val logRepository: LogRepository,
   val appSettingsRepository: TabbyAppSettingsRepository,
   val networkSettingsRepository: TabbyNetworkSettingsRepository,
+  val accessControlSettingsRepository: TabbyAccessControlSettingsRepository,
 )

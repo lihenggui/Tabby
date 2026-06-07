@@ -25,6 +25,11 @@ fun iosEngineEnvironment(): EngineEnvironment {
         uiStoreProvider = uiStoreProvider,
         serviceStoreProvider = serviceStoreProvider,
       ),
+    accessControlSettingsRepository =
+      TabbyAccessControlSettingsRepository(
+        uiStoreProvider = uiStoreProvider,
+        serviceStoreProvider = serviceStoreProvider,
+      ),
   )
 }
 
