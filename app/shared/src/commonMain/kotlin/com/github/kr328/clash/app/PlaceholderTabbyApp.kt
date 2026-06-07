@@ -16,6 +16,7 @@ import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
 import com.github.kr328.clash.log.ui.LogFileRepositoryLogsRouteContent
+import com.github.kr328.clash.log.ui.LogRepositoryLogcatRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent

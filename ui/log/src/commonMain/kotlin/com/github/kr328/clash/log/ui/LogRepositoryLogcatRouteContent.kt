@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.log.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,13 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.engine.api.LogRepository
-import com.github.kr328.clash.log.ui.LogcatRouteContent
-import com.github.kr328.clash.log.ui.logcatMessagesAfterAppend
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 
 @Composable
-internal fun LogRepositoryLogcatRouteContent(
+fun LogRepositoryLogcatRouteContent(
   logRepository: LogRepository,
   fileName: String?,
   onOpenLogs: () -> Unit,
