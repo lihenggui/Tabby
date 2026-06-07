@@ -12,7 +12,7 @@ fun EntryProviderScope<NavKey>.logsEntries() {
       logsContent = { onStartLogcat, onOpenFile ->
         LogsScreen(
           onStartLogcat = onStartLogcat,
-          onOpenFile = { file -> onOpenFile(file.fileName) },
+          onOpenFile = onOpenFile,
         )
       },
       logcatContent = { fileName, onOpenLogs, onInvalidFile, onClose ->
