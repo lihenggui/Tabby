@@ -1,14 +1,10 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.profile.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
-import com.github.kr328.clash.profile.ui.NewProfileRouteContent
-import com.github.kr328.clash.profile.ui.NewProfileRouteCreateAction
-import com.github.kr328.clash.profile.ui.NewProfileRouteExternalProvider
-import com.github.kr328.clash.profile.ui.newProfileRouteCreateAction
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -16,7 +12,7 @@ import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.new_profile
 
 @Composable
-internal fun ProfileRepositoryNewProfileRouteContent(
+fun ProfileRepositoryNewProfileRouteContent(
   profileRepository: ProfileRepository,
   onProperties: (Uuid) -> Unit,
   modifier: Modifier = Modifier,

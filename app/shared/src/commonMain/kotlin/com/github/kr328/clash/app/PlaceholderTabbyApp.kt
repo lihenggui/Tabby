@@ -20,6 +20,9 @@ import com.github.kr328.clash.log.ui.LogRepositoryLogcatRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent
+import com.github.kr328.clash.profile.ui.ProfileRepositoryNewProfileRouteContent
+import com.github.kr328.clash.profile.ui.ProfileRepositoryProfilesListRouteContent
+import com.github.kr328.clash.profile.ui.ProfileRepositoryPropertiesRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent

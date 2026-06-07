@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.profile.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,12 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
-import com.github.kr328.clash.profile.ui.PropertiesRouteContent
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.awaitCancellation
 
 @Composable
-internal fun ProfileRepositoryPropertiesRouteContent(
+fun ProfileRepositoryPropertiesRouteContent(
   profileRepository: ProfileRepository,
   uuid: Uuid,
   onBrowseFiles: (Uuid) -> Unit,

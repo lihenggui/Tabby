@@ -1,4 +1,4 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.profile.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -9,15 +9,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.engine.api.ProfileRepository
-import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction
-import com.github.kr328.clash.profile.ui.ProfilesListRouteContent
-import com.github.kr328.clash.profile.ui.profileUpdateAllAction
-import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun ProfileRepositoryProfilesListRouteContent(
+fun ProfileRepositoryProfilesListRouteContent(
   profileRepository: ProfileRepository,
   onCreate: () -> Unit,
   onEdit: (Uuid) -> Unit,

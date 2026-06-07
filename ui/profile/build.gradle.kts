@@ -8,6 +8,8 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
+      api(projects.core.engineApi)
+      api(projects.core.model)
       implementation(projects.core.common)
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
