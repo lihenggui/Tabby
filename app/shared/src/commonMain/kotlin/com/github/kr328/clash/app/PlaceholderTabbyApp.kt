@@ -24,7 +24,6 @@ import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlRouteContent
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
-import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
 
 @Composable
@@ -34,6 +33,7 @@ fun PlaceholderTabbyApp(
   modifier: Modifier = Modifier,
 ) {
   val appSettingsRepository = engineEnvironment.appSettingsRepository
+  val networkSettingsRepository = engineEnvironment.networkSettingsRepository
   val appDarkModeState =
     remember(appSettingsRepository) {
       mutableStateOf(
@@ -152,7 +152,10 @@ fun PlaceholderTabbyApp(
                 )
               },
               networkSettingsContent = { onStartAccessControlList ->
-                NetworkSettingsRouteContent(onStartAccessControlList = onStartAccessControlList)
+                NetworkSettingsRepositoryRouteContent(
+                  repository = networkSettingsRepository,
+                  onStartAccessControlList = onStartAccessControlList,
+                )
               },
               overrideSettingsContent = { onResetCompleted ->
                 OverrideSettingsRouteContent(onResetCompleted = onResetCompleted)

@@ -51,6 +51,11 @@ fun desktopEngineEnvironment(): EngineEnvironment {
         uiStoreProvider = uiStoreProvider,
         serviceStoreProvider = serviceStoreProvider,
       ),
+    networkSettingsRepository =
+      TabbyNetworkSettingsRepository(
+        uiStoreProvider = uiStoreProvider,
+        serviceStoreProvider = serviceStoreProvider,
+      ),
   )
 }
 
