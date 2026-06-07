@@ -19,11 +19,11 @@ import androidx.compose.ui.text.fromHtml
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.kr328.clash.common.R as CommonR
-import com.github.kr328.clash.glue.util.MIHOMO_CORE
-import com.github.kr328.clash.glue.util.MIHOMO_WIKI
-import com.github.kr328.clash.glue.util.TABBY_GITHUB
 import com.github.kr328.clash.glue.util.openLink
+import com.github.kr328.clash.home.MIHOMO_CORE
+import com.github.kr328.clash.home.MIHOMO_WIKI
 import com.github.kr328.clash.home.R
+import com.github.kr328.clash.home.TABBY_GITHUB
 import com.github.kr328.clash.home.vm.HelpViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

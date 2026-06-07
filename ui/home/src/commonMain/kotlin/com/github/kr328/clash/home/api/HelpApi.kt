@@ -1,6 +1,6 @@
 package com.github.kr328.clash.home.api
 
-import com.github.kr328.clash.glue.util.TABBY_REPO
+import com.github.kr328.clash.home.TABBY_REPO
 import com.github.kr328.clash.network.GitHubReleaseClient
 
 class HelpApi(private val releaseClient: GitHubReleaseClient = GitHubReleaseClient()) {

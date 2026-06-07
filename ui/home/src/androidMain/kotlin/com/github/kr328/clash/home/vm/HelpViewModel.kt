@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as appInfoProvider
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.bridge.Bridge
-import com.github.kr328.clash.glue.util.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.R
+import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.api.HelpApi
 import com.github.kr328.clash.home.ui.HelpContentState
 import com.github.kr328.clash.home.ui.HelpEventState

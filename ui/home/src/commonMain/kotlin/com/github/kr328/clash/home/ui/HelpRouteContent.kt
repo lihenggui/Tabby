@@ -6,6 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.AnnotatedString
+import com.github.kr328.clash.home.MIHOMO_CORE
+import com.github.kr328.clash.home.MIHOMO_WIKI
+import com.github.kr328.clash.home.TABBY_GITHUB
 import com.github.kr328.clash.ui.icon.BaselineHelpCenter
 import com.github.kr328.clash.ui.icon.TabbyIcons
 
@@ -17,9 +20,9 @@ fun HelpRouteContent(
   coreVersion: String = "Mihomo",
   tipsText: AnnotatedString = AnnotatedString(DEFAULT_HELP_TIPS_TEXT),
   appName: String = "Tabby",
-  mihomoWikiUrl: String = MIHOMO_WIKI_URL,
-  mihomoCoreUrl: String = MIHOMO_CORE_URL,
-  tabbyUrl: String = TABBY_GITHUB_URL,
+  mihomoWikiUrl: String = MIHOMO_WIKI,
+  mihomoCoreUrl: String = MIHOMO_CORE,
+  tabbyUrl: String = TABBY_GITHUB,
   onOpenLink: (String) -> Unit = {},
   onCopyVersion: (String) -> Unit = {},
   onCheckForUpdates: () -> Unit = {},
@@ -46,6 +49,3 @@ fun HelpRouteContent(
 }
 
 private const val DEFAULT_HELP_TIPS_TEXT = "Tabby is freeware and does not provide a proxy service."
-private const val MIHOMO_WIKI_URL = "https://wiki.metacubex.one/"
-private const val MIHOMO_CORE_URL = "https://github.com/MetaCubeX/mihomo"
-private const val TABBY_GITHUB_URL = "https://github.com/Goooler/Tabby"
