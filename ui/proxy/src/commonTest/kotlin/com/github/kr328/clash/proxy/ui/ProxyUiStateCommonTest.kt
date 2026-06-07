@@ -56,6 +56,37 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun createsDefaultProxyRoutePreferences() {
+    assertEquals(
+      ProxyRoutePreferences(
+        proxyLine = 0,
+        excludeNotSelectable = false,
+        proxySort = ProxySort.Default,
+        lastGroupName = "",
+      ),
+      ProxyRoutePreferences(),
+    )
+  }
+
+  @Test
+  fun createsInitialProxyUiStateFromRoutePreferences() {
+    val state =
+      proxyInitialUiState(
+        ProxyRoutePreferences(
+          proxyLine = 2,
+          excludeNotSelectable = true,
+          proxySort = ProxySort.Delay,
+          lastGroupName = "Auto",
+        )
+      )
+
+    assertEquals(2, state.proxyLine)
+    assertEquals(true, state.excludeNotSelectable)
+    assertEquals(ProxySort.Delay, state.proxySort)
+    assertEquals(emptyList(), state.groupNames)
+  }
+
+  @Test
   fun initializesProxyGroupsAndPagesFromLastGroupName() {
     val state =
       ProxyUiState()

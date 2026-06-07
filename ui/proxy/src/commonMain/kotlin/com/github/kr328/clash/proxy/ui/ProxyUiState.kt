@@ -17,8 +17,24 @@ internal data class ProxyUiState(
   val initialPage: Int = 0,
 )
 
+data class ProxyRoutePreferences(
+  val proxyLine: Int = 0,
+  val excludeNotSelectable: Boolean = false,
+  val proxySort: ProxySort = ProxySort.Default,
+  val lastGroupName: String = "",
+)
+
 internal fun proxyInitialUiState(): ProxyUiState {
   return ProxyUiState()
+}
+
+internal fun proxyInitialUiState(preferences: ProxyRoutePreferences): ProxyUiState {
+  return proxyInitialUiState()
+    .withProxyPreferences(
+      proxyLine = preferences.proxyLine,
+      excludeNotSelectable = preferences.excludeNotSelectable,
+      proxySort = preferences.proxySort,
+    )
 }
 
 internal data class ProxyGroupUiState(

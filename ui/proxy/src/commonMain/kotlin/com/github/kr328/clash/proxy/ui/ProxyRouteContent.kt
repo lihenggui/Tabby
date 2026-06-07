@@ -9,8 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.engine.api.EngineController
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
@@ -24,12 +28,22 @@ fun ProxyRouteContent(
   engineController: EngineController,
   modifier: Modifier = Modifier,
   onReLaunch: () -> Unit = {},
+  initialPreferences: ProxyRoutePreferences = ProxyRoutePreferences(),
+  profileLoadedEvents: Flow<Unit> = emptyFlow(),
+  onLastGroupChanged: (String) -> Unit = {},
+  onExcludeNotSelectableChanged: (Boolean) -> Unit = {},
+  onProxyLineChanged: (Int) -> Unit = {},
+  onProxySortChanged: (ProxySort) -> Unit = {},
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
-  var uiState by remember(engineController) { mutableStateOf(proxyInitialUiState()) }
+  var uiState by
+    remember(engineController, initialPreferences) {
+      mutableStateOf(proxyInitialUiState(initialPreferences))
+    }
   var selectedProxies by
     remember(engineController) { mutableStateOf(proxyInitialSelectedProxies()) }
+  var initialized by remember(engineController) { mutableStateOf(false) }
   val modeSwitchTips = stringResource(Res.string.mode_switch_tips)
   val fallbackFailureMessage = stringResource(SharedRes.string.unavailable)
 
@@ -78,7 +92,7 @@ fun ProxyRouteContent(
             state = uiState,
             overrideMode = mode,
             groupNames = groupNames,
-            lastGroupName = "",
+            lastGroupName = initialPreferences.lastGroupName,
           )
         }
         .onFailure { showFailureMessage(it) }
@@ -86,10 +100,30 @@ fun ProxyRouteContent(
 
     uiState = action.state
     selectedProxies = action.selectedProxies
+    initialized = true
     reloadAll()
   }
 
-  LaunchedEffect(engineController) { fetchInitialState() }
+  suspend fun handleProfileLoadedEvent() {
+    when (proxyBroadcastAction(ProxyBroadcastEventKind.ProfileLoaded, initialized)) {
+      ProxyBroadcastAction.QueryGroupNames ->
+        runCatching { engineController.queryProxyGroupNames(uiState.excludeNotSelectable) }
+          .onSuccess { newNames ->
+            when (proxyGroupNamesChangeAction(uiState.groupNames, newNames)) {
+              ProxyGroupNamesChangeAction.ReLaunch -> onReLaunch()
+              ProxyGroupNamesChangeAction.Ignore -> Unit
+            }
+          }
+          .onFailure { showFailureMessage(it) }
+      ProxyBroadcastAction.Ignore -> Unit
+    }
+  }
+
+  LaunchedEffect(engineController, initialPreferences.lastGroupName) { fetchInitialState() }
+
+  LaunchedEffect(engineController, profileLoadedEvents) {
+    profileLoadedEvents.collect { handleProfileLoadedEvent() }
+  }
 
   ProxyContent(
     modifier = modifier,
@@ -99,6 +133,11 @@ fun ProxyRouteContent(
     onPageChanged = { index ->
       val action = proxyPageChangedAction(uiState, index)
       uiState = action.state
+
+      when (val effect = action.effect) {
+        is ProxyPageChangedEffect.SaveLastGroup -> onLastGroupChanged(effect.groupName)
+        ProxyPageChangedEffect.Ignore -> Unit
+      }
     },
     onUrlTest = { index ->
       scope.launch {
@@ -118,6 +157,7 @@ fun ProxyRouteContent(
     },
     onExcludeNotSelectableChanged = { enabled ->
       scope.launch {
+        onExcludeNotSelectableChanged(enabled)
         val action = proxyExcludeNotSelectableChangeAction(uiState, enabled)
         uiState = action.state
 
@@ -129,6 +169,7 @@ fun ProxyRouteContent(
     },
     onProxyLineChanged = { line ->
       scope.launch {
+        onProxyLineChanged(line)
         val action = proxyLineChangeAction(uiState, line)
         uiState = action.state
 
@@ -140,6 +181,7 @@ fun ProxyRouteContent(
     },
     onProxySortChanged = { sort ->
       scope.launch {
+        onProxySortChanged(sort)
         val action = proxySortChangeAction(uiState, sort)
         uiState = action.state
 
