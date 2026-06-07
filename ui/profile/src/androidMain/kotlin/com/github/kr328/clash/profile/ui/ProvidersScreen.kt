@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.R as CommonR
-import com.github.kr328.clash.glue.util.elapsedIntervalString
 import com.github.kr328.clash.profile.vm.ProvidersViewModel
 import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 
@@ -40,7 +39,7 @@ internal fun ProvidersScreen(
     providers =
       uiState.toProviderListItems(
         formatTypeText = { typeText -> typeText.androidString(context) },
-        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
       ),
     onUpdateAll = viewModel::onUpdateAll,
     onUpdate = { _, provider -> viewModel.onUpdate(provider) },

@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Profile
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -16,10 +15,6 @@ import tabby.ui.profile.generated.resources.format_type_unsaved
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.external
 import tabby.ui.shared.generated.resources.file
-import tabby.ui.shared.generated.resources.format_days_ago
-import tabby.ui.shared.generated.resources.format_hours_ago
-import tabby.ui.shared.generated.resources.format_minutes_ago
-import tabby.ui.shared.generated.resources.recently
 import tabby.ui.shared.generated.resources.url
 
 @Composable
@@ -87,7 +82,7 @@ private fun List<Profile>.toProfileRouteListItems(
             null
           },
         expireText = profile.expire.takeIf { it != 0L }?.let(formatExpire),
-        updatedAtText = profileElapsedMillisString(currentTimeMillis - profile.updatedAt),
+        updatedAtText = elapsedTimeTextString(currentTimeMillis - profile.updatedAt),
         trafficProgress = if (showTraffic) profile.trafficProgress(usedTraffic) else 0,
       )
   }
@@ -108,21 +103,6 @@ private fun profileTypeTextString(typeText: ProfileTypeText): String {
     stringResource(ProfileRes.string.format_type_unsaved, text)
   } else {
     text
-  }
-}
-
-@Composable
-private fun profileElapsedMillisString(elapsedMillis: Long): String {
-  val duration = elapsedMillis.coerceAtLeast(0).milliseconds
-  val day = duration.inWholeDays
-  val hour = duration.inWholeHours
-  val minute = duration.inWholeMinutes
-
-  return when {
-    day > 0 -> stringResource(SharedRes.string.format_days_ago, day)
-    hour > 0 -> stringResource(SharedRes.string.format_hours_ago, hour)
-    minute > 0 -> stringResource(SharedRes.string.format_minutes_ago, minute)
-    else -> stringResource(SharedRes.string.recently)
   }
 }
 

@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.R as CommonR
-import com.github.kr328.clash.glue.util.elapsedIntervalString
 import com.github.kr328.clash.glue.util.toDateStr
 import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.vm.ProfilesViewModel
@@ -65,7 +64,7 @@ internal fun ProfilesScreen(
         formatTypeText = { typeText -> typeText.androidString(context) },
         formatBytes = ::profileBinaryBytesText,
         formatExpire = { expire -> expire.toDateStr() },
-        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
       ),
     allUpdating = uiState.allUpdating,
     hasUpdatableProfile = uiState.hasUpdatableProfile,

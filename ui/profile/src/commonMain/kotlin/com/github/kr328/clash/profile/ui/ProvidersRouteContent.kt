@@ -5,19 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Provider
-import kotlin.time.Duration.Companion.milliseconds
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.compatible
 import tabby.ui.shared.generated.resources.file
-import tabby.ui.shared.generated.resources.format_days_ago
-import tabby.ui.shared.generated.resources.format_hours_ago
-import tabby.ui.shared.generated.resources.format_minutes_ago
 import tabby.ui.shared.generated.resources.format_provider_type
 import tabby.ui.shared.generated.resources.http
 import tabby.ui.shared.generated.resources.inline
 import tabby.ui.shared.generated.resources.proxy
-import tabby.ui.shared.generated.resources.recently
 import tabby.ui.shared.generated.resources.rule
 
 data class ProviderRouteItem(
@@ -62,7 +57,7 @@ private fun List<ProviderRouteItem>.toProviderListItems(
           providerTypeTextString(
             providerTypeText(type = provider.type, vehicleType = provider.vehicleType)
           ),
-        updatedAtText = providerElapsedMillisString(currentTimeMillis - item.updatedAt),
+        updatedAtText = elapsedTimeTextString(currentTimeMillis - item.updatedAt),
         updating = item.updating,
       )
   }
@@ -94,20 +89,5 @@ private fun ProviderVehicleTextToken.stringResource(): String {
     ProviderVehicleTextToken.File -> stringResource(SharedRes.string.file)
     ProviderVehicleTextToken.Inline -> stringResource(SharedRes.string.inline)
     ProviderVehicleTextToken.Compatible -> stringResource(SharedRes.string.compatible)
-  }
-}
-
-@Composable
-private fun providerElapsedMillisString(elapsedMillis: Long): String {
-  val duration = elapsedMillis.coerceAtLeast(0).milliseconds
-  val day = duration.inWholeDays
-  val hour = duration.inWholeHours
-  val minute = duration.inWholeMinutes
-
-  return when {
-    day > 0 -> stringResource(SharedRes.string.format_days_ago, day)
-    hour > 0 -> stringResource(SharedRes.string.format_hours_ago, hour)
-    minute > 0 -> stringResource(SharedRes.string.format_minutes_ago, minute)
-    else -> stringResource(SharedRes.string.recently)
   }
 }

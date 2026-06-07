@@ -19,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.util.grantPermissions
 import com.github.kr328.clash.glue.model.ConfigFile
-import com.github.kr328.clash.glue.util.elapsedIntervalString
 import com.github.kr328.clash.profile.vm.FilesViewModel
 import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import kotlin.time.Duration.Companion.minutes
@@ -116,7 +115,7 @@ internal fun FilesScreen(
         lastModified = ConfigFile::lastModified,
         isDirectory = ConfigFile::isDirectory,
         formatBytes = ::profileBinaryBytesText,
-        formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
+        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
       ),
     currentInBaseDir = uiState.currentInBaseDir,
     configurationEditable = uiState.configurationEditable,

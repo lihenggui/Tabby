@@ -4,13 +4,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import kotlin.time.Duration.Companion.milliseconds
-import org.jetbrains.compose.resources.stringResource
-import tabby.ui.shared.generated.resources.Res as SharedRes
-import tabby.ui.shared.generated.resources.format_days_ago
-import tabby.ui.shared.generated.resources.format_hours_ago
-import tabby.ui.shared.generated.resources.format_minutes_ago
-import tabby.ui.shared.generated.resources.recently
 
 data class ProfileFileRouteItem(
   val id: String,
@@ -28,7 +21,7 @@ fun FilesRouteContent(
   currentInBaseDir: Boolean = true,
   configurationEditable: Boolean = false,
   formatBytes: (Long) -> String = ::profileBinaryBytesText,
-  formatElapsedMillis: @Composable (Long) -> String = { profileFileElapsedMillisString(it) },
+  formatElapsedMillis: @Composable (Long) -> String = { elapsedTimeTextString(it) },
   onBack: () -> Unit = {},
   onOpen: (ProfileFileRouteItem) -> Unit = {},
   onNew: () -> Unit = {},
@@ -96,19 +89,4 @@ private fun List<ProfileFileRouteItem>.toProfileFileRouteListItems(
   }
 
   return items
-}
-
-@Composable
-private fun profileFileElapsedMillisString(elapsedMillis: Long): String {
-  val duration = elapsedMillis.coerceAtLeast(0).milliseconds
-  val day = duration.inWholeDays
-  val hour = duration.inWholeHours
-  val minute = duration.inWholeMinutes
-
-  return when {
-    day > 0 -> stringResource(SharedRes.string.format_days_ago, day)
-    hour > 0 -> stringResource(SharedRes.string.format_hours_ago, hour)
-    minute > 0 -> stringResource(SharedRes.string.format_minutes_ago, minute)
-    else -> stringResource(SharedRes.string.recently)
-  }
 }
