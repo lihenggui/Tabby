@@ -9,7 +9,6 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(projects.core.engineApi)
-      implementation(projects.core.network)
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
       implementation(libs.semver)
@@ -18,6 +17,7 @@ kotlin {
     androidMain {
       dependencies {
         implementation(projects.core.engineAndroid)
+        implementation(projects.core.network)
         implementation(projects.glue)
 
         implementation(libs.androidx.activity.compose)

@@ -9,7 +9,7 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.bridge.Bridge
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
-import com.github.kr328.clash.home.api.HelpApi
+import com.github.kr328.clash.home.TABBY_REPO
 import com.github.kr328.clash.home.ui.HelpContentState
 import com.github.kr328.clash.home.ui.HelpEventState
 import com.github.kr328.clash.home.ui.HelpUpdateCheckRequestAction
@@ -24,6 +24,7 @@ import com.github.kr328.clash.home.ui.helpUpdateCheckRequestAction
 import com.github.kr328.clash.home.ui.withUpdateCheckFinished
 import com.github.kr328.clash.home.ui.withUpdateCheckStarted
 import com.github.kr328.clash.home.ui.withVersionInfo
+import com.github.kr328.clash.network.GitHubReleaseClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
-  private val api = HelpApi()
+  private val releaseClient = GitHubReleaseClient()
 
   val uiState: StateFlow<HelpContentState>
     field = MutableStateFlow(helpInitialContentState())
@@ -53,7 +54,7 @@ internal class HelpViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       uiState.update { it.withUpdateCheckStarted() }
       try {
-        val latestTag = api.getLatestRelease()
+        val latestTag = releaseClient.fetchLatestReleaseTag(TABBY_REPO)
         val localVersion =
           if (latestTag == null) {
             null
