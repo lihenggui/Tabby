@@ -24,10 +24,10 @@ internal fun ProvidersScreen(
   val context = LocalContext.current
 
   LaunchedEffect(eventState) {
-    when (val event = eventState) {
-      ProvidersEventState.Idle -> Unit
-      is ProvidersEventState.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = event.message)
+    when (val action = providersEventPlatformAction(eventState)) {
+      ProvidersEventPlatformAction.Ignore -> Unit
+      is ProvidersEventPlatformAction.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
       }
     }
     viewModel.consumeEvent()

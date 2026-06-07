@@ -23,8 +23,24 @@ internal sealed interface ProvidersEventState {
   data class ShowMessage(val message: String) : ProvidersEventState
 }
 
+internal sealed interface ProvidersEventPlatformAction {
+  data object Ignore : ProvidersEventPlatformAction
+
+  data class ShowMessage(val message: String) : ProvidersEventPlatformAction
+}
+
 internal fun providersInitialEventState(): ProvidersEventState {
   return ProvidersEventState.Idle
+}
+
+internal fun providersEventPlatformAction(
+  eventState: ProvidersEventState
+): ProvidersEventPlatformAction {
+  return when (eventState) {
+    ProvidersEventState.Idle -> ProvidersEventPlatformAction.Ignore
+    is ProvidersEventState.ShowMessage ->
+      ProvidersEventPlatformAction.ShowMessage(eventState.message)
+  }
 }
 
 internal fun sortProvidersForDisplay(providers: List<Provider>): List<Provider> {

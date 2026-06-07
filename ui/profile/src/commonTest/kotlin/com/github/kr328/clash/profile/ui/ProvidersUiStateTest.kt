@@ -12,6 +12,18 @@ class ProvidersUiStateTest {
   }
 
   @Test
+  fun providersEventPlatformActionMapsEventStates() {
+    assertEquals(
+      ProvidersEventPlatformAction.Ignore,
+      providersEventPlatformAction(ProvidersEventState.Idle),
+    )
+    assertEquals(
+      ProvidersEventPlatformAction.ShowMessage("provider update failed"),
+      providersEventPlatformAction(ProvidersEventState.ShowMessage("provider update failed")),
+    )
+  }
+
+  @Test
   fun fetchedProvidersMergeWithExistingItemStateAndPreserveCurrentTime() {
     val existingProvider = provider(name = "Remote", updatedAt = 100)
     val fetchedProvider = existingProvider.copy(updatedAt = 200)
