@@ -23,6 +23,26 @@ internal fun EngineControllerOverrideSettingsRouteContent(
   modifier: Modifier = Modifier,
   onActionError: (Throwable) -> Unit = {},
 ) {
+  EngineControllerPersistedOverrideRouteContent(
+    engineController = engineController,
+    onActionError = onActionError,
+  ) { configuration, onConfigurationChange, onReset ->
+    OverrideSettingsRouteContent(
+      onResetCompleted = onResetCompleted,
+      modifier = modifier,
+      initialConfiguration = configuration,
+      onConfigurationChange = onConfigurationChange,
+      onReset = onReset,
+    )
+  }
+}
+
+@Composable
+internal fun EngineControllerPersistedOverrideRouteContent(
+  engineController: EngineController,
+  onActionError: (Throwable) -> Unit = {},
+  content: @Composable (ConfigurationOverride, (ConfigurationOverride) -> Unit, () -> Unit) -> Unit,
+) {
   var configuration by remember(engineController) { mutableStateOf(ConfigurationOverride()) }
   var resetRequested by remember(engineController) { mutableStateOf(false) }
   val currentConfiguration = rememberUpdatedState(configuration)
@@ -57,15 +77,13 @@ internal fun EngineControllerOverrideSettingsRouteContent(
     }
   }
 
-  OverrideSettingsRouteContent(
-    onResetCompleted = onResetCompleted,
-    modifier = modifier,
-    initialConfiguration = configuration,
-    onConfigurationChange = { value ->
+  content(
+    configuration,
+    { value ->
       configuration = value
       resetRequested = false
     },
-    onReset = { resetRequested = true },
+    { resetRequested = true },
   )
 }
 

@@ -23,7 +23,6 @@ import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlRouteContent
-import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -163,7 +162,10 @@ fun PlaceholderTabbyApp(
                 )
               },
               metaFeatureSettingsContent = { onResetCompleted ->
-                MetaFeatureSettingsRouteContent(onResetCompleted = onResetCompleted)
+                EngineControllerMetaFeatureSettingsRouteContent(
+                  engineController = engineEnvironment.engineController,
+                  onResetCompleted = onResetCompleted,
+                )
               },
               accessControlContent = { AccessControlRouteContent() },
             )
