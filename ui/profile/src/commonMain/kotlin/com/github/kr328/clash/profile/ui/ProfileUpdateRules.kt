@@ -30,8 +30,33 @@ internal sealed interface ProfilesEventState {
   data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventState
 }
 
+internal sealed interface ProfilesEventPlatformAction {
+  data object Ignore : ProfilesEventPlatformAction
+
+  data object OpenCreate : ProfilesEventPlatformAction
+
+  data class OpenEdit(val uuid: Uuid) : ProfilesEventPlatformAction
+
+  data class ShowMessage(val message: String) : ProfilesEventPlatformAction
+
+  data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventPlatformAction
+}
+
 internal fun profilesInitialEventState(): ProfilesEventState {
   return ProfilesEventState.Idle
+}
+
+internal fun profilesEventPlatformAction(
+  eventState: ProfilesEventState
+): ProfilesEventPlatformAction {
+  return when (eventState) {
+    ProfilesEventState.Idle -> ProfilesEventPlatformAction.Ignore
+    ProfilesEventState.OpenCreate -> ProfilesEventPlatformAction.OpenCreate
+    is ProfilesEventState.OpenEdit -> ProfilesEventPlatformAction.OpenEdit(eventState.uuid)
+    is ProfilesEventState.ShowMessage -> ProfilesEventPlatformAction.ShowMessage(eventState.message)
+    is ProfilesEventState.ShowEditableMessage ->
+      ProfilesEventPlatformAction.ShowEditableMessage(eventState.message, eventState.uuid)
+  }
 }
 
 internal fun profileActivationAction(profile: Profile): ProfileActivationAction {

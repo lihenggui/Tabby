@@ -32,23 +32,23 @@ internal fun ProfilesScreen(
   val editText = stringResource(R.string.edit)
 
   LaunchedEffect(eventState) {
-    when (val event = eventState) {
-      ProfilesEventState.Idle -> Unit
-      ProfilesEventState.OpenCreate -> onOpenCreate()
-      is ProfilesEventState.OpenEdit -> onOpenEdit(event.uuid)
-      is ProfilesEventState.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = event.message)
+    when (val action = profilesEventPlatformAction(eventState)) {
+      ProfilesEventPlatformAction.Ignore -> Unit
+      ProfilesEventPlatformAction.OpenCreate -> onOpenCreate()
+      is ProfilesEventPlatformAction.OpenEdit -> onOpenEdit(action.uuid)
+      is ProfilesEventPlatformAction.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
       }
-      is ProfilesEventState.ShowEditableMessage -> {
+      is ProfilesEventPlatformAction.ShowEditableMessage -> {
         val result =
           snackbarHostState.showSnackbar(
-            message = event.message,
+            message = action.message,
             actionLabel = editText,
             duration = SnackbarDuration.Long,
           )
 
         when (profilesEditableSnackbarAction(result.toProfileSnackbarActionResult())) {
-          ProfilesEditableSnackbarAction.OpenEdit -> onOpenEdit(event.uuid)
+          ProfilesEditableSnackbarAction.OpenEdit -> onOpenEdit(action.uuid)
           ProfilesEditableSnackbarAction.Ignore -> Unit
         }
       }
