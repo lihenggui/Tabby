@@ -24,12 +24,12 @@ data class ProviderRouteItem(
 @Composable
 fun ProvidersRouteContent(
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   providers: List<ProviderRouteItem> = emptyList(),
   currentTimeMillis: Long = 0,
   onUpdateAll: () -> Unit = {},
   onUpdate: (Provider) -> Unit = {},
 ) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val effectiveCurrentTime =
     maxOf(currentTimeMillis, providers.maxOfOrNull { it.updatedAt } ?: currentTimeMillis)
 

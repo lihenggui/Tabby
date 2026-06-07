@@ -1,77 +1,55 @@
 package com.github.kr328.clash.profile.ui
 
-import android.content.Context
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.kr328.clash.common.R as CommonR
-import com.github.kr328.clash.profile.vm.ProvidersViewModel
-import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
+import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.glue.remote.Broadcasts
+import com.github.kr328.clash.glue.remote.Remote
+import kotlinx.coroutines.flow.mapNotNull
 
 @Composable
-internal fun ProvidersScreen(
-  modifier: Modifier = Modifier,
-  viewModel: ProvidersViewModel = viewModelWithLifecycle(),
-) {
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val eventState by viewModel.eventState.collectAsStateWithLifecycle()
-  val snackbarHostState = remember { SnackbarHostState() }
+internal fun ProvidersScreen(modifier: Modifier = Modifier) {
   val context = LocalContext.current
-
-  LaunchedEffect(eventState) {
-    when (val action = providersEventPlatformAction(eventState)) {
-      ProvidersEventPlatformAction.Ignore -> Unit
-      is ProvidersEventPlatformAction.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = action.message)
-      }
-    }
-    viewModel.consumeEvent()
+  val appContext = context.applicationContext
+  val engineController = remember(appContext) { AndroidEngineController(appContext) }
+  val profileLoadedEvents = remember {
+    Remote.broadcasts.event.mapNotNull { event -> event.toProfileLoadedSignal() }
   }
 
-  ProvidersContent(
+  EngineControllerProvidersRouteContent(
+    engineController = engineController,
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
-    providers =
-      uiState.toProviderListItems(
-        formatTypeText = { typeText -> typeText.androidString(context) },
-        formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
-      ),
-    onUpdateAll = viewModel::onUpdateAll,
-    onUpdate = { _, provider -> viewModel.onUpdate(provider) },
+    profileLoadedEvents = profileLoadedEvents,
+    onActionError = { cause -> Log.e("Provider action failed: ${cause.message}", cause) },
   )
 }
 
-private fun ProviderTypeText.androidString(context: Context): String {
-  return context.getString(
-    CommonR.string.format_provider_type,
-    typeToken.androidString(context),
-    vehicleToken.androidString(context),
-  )
-}
+private fun Broadcasts.Event.toProfileLoadedSignal(): Unit? {
+  val event =
+    when (this) {
+      Broadcasts.Event.ServiceRecreated ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ServiceRecreated)
+      Broadcasts.Event.Started ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Started)
+      is Broadcasts.Event.Stopped ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Stopped)
+      Broadcasts.Event.ProfileChanged ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileChanged)
+      is Broadcasts.Event.ProfileUpdateCompleted ->
+        providersBroadcastEventFromPlatformPayload(
+          ProvidersBroadcastEventKind.ProfileUpdateCompleted
+        )
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileUpdateFailed)
+      Broadcasts.Event.ProfileLoaded ->
+        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileLoaded)
+    }
 
-private fun ProviderTypeTextToken.androidString(context: Context): String {
-  return context.getString(
-    providerTypeTextPlatformToken(
-      token = this,
-      proxy = CommonR.string.proxy,
-      rule = CommonR.string.rule,
-    )
-  )
-}
-
-private fun ProviderVehicleTextToken.androidString(context: Context): String {
-  return context.getString(
-    providerVehicleTextPlatformToken(
-      token = this,
-      http = CommonR.string.http,
-      file = CommonR.string.file,
-      inline = CommonR.string.inline,
-      compatible = CommonR.string.compatible,
-    )
-  )
+  return when (providersBroadcastAction(event)) {
+    ProvidersBroadcastAction.FetchProviders -> Unit
+    ProvidersBroadcastAction.Ignore -> null
+  }
 }
