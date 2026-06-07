@@ -116,17 +116,3 @@ private fun profileExpireDateString(epochMillis: Long): String {
 private fun Int.twoDigitString(): String {
   return if (this < 10) "0$this" else toString()
 }
-
-private fun Profile.showsTrafficUsage(): Boolean {
-  return download >= MIN_DOWNLOAD_BYTES_FOR_USAGE && total > MIN_TOTAL_BYTES_FOR_USAGE
-}
-
-private fun Profile.trafficProgress(usedTraffic: Long): Int {
-  return (usedTraffic.toDouble() / total.toDouble() * TRAFFIC_PROGRESS_SCALE)
-    .toInt()
-    .coerceIn(0, TRAFFIC_PROGRESS_SCALE)
-}
-
-private const val MIN_DOWNLOAD_BYTES_FOR_USAGE = 2L
-private const val MIN_TOTAL_BYTES_FOR_USAGE = 1L
-private const val TRAFFIC_PROGRESS_SCALE = 1000
