@@ -31,6 +31,7 @@ import com.github.kr328.clash.home.ui.homeConsumedEventState
 import com.github.kr328.clash.home.ui.homeInitialEventState
 import com.github.kr328.clash.home.ui.homeInitialUiState
 import com.github.kr328.clash.home.ui.homeModeLabel
+import com.github.kr328.clash.home.ui.homeModeLabelPlatformToken
 import com.github.kr328.clash.home.ui.homeStartAction
 import com.github.kr328.clash.home.ui.homeStartEventState
 import com.github.kr328.clash.home.ui.homeStartFailureEventState
@@ -179,8 +180,11 @@ internal class HomeViewModel(app: Application) : AndroidViewModel(app), DefaultL
 }
 
 private fun HomeModeLabel.stringValue(application: Application): String =
-  when (this) {
-    HomeModeLabel.Direct -> application.getString(CommonR.string.direct_mode)
-    HomeModeLabel.Global -> application.getString(CommonR.string.global_mode)
-    HomeModeLabel.Rule -> application.getString(CommonR.string.rule_mode)
-  }
+  application.getString(
+    homeModeLabelPlatformToken(
+      label = this,
+      directMode = CommonR.string.direct_mode,
+      globalMode = CommonR.string.global_mode,
+      ruleMode = CommonR.string.rule_mode,
+    )
+  )

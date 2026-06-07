@@ -202,6 +202,19 @@ internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
   }
 }
 
+internal fun <T> homeModeLabelPlatformToken(
+  label: HomeModeLabel,
+  directMode: T,
+  globalMode: T,
+  ruleMode: T,
+): T {
+  return when (label) {
+    HomeModeLabel.Direct -> directMode
+    HomeModeLabel.Global -> globalMode
+    HomeModeLabel.Rule -> ruleMode
+  }
+}
+
 internal fun HomeUiState.withFetchedHomeState(
   clashRunning: Boolean,
   mode: String,

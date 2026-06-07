@@ -70,7 +70,13 @@ fun HomeRouteContent(
     uiState =
       uiState.withFetchedHomeState(
         clashRunning = clashRunning,
-        mode = homeModeLabel(state.mode).sharedStringValue(directMode, globalMode, ruleMode),
+        mode =
+          homeModeLabelPlatformToken(
+            label = homeModeLabel(state.mode),
+            directMode = directMode,
+            globalMode = globalMode,
+            ruleMode = ruleMode,
+          ),
         hasProviders = hasProviders,
         profileName = profileName,
       )
@@ -159,14 +165,3 @@ fun HomeRouteContent(
     onOpenHelp = onOpenHelp,
   )
 }
-
-private fun HomeModeLabel.sharedStringValue(
-  directMode: String,
-  globalMode: String,
-  ruleMode: String,
-): String =
-  when (this) {
-    HomeModeLabel.Direct -> directMode
-    HomeModeLabel.Global -> globalMode
-    HomeModeLabel.Rule -> ruleMode
-  }

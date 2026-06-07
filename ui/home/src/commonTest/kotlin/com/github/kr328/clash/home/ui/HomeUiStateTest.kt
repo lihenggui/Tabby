@@ -291,6 +291,37 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeModeLabelPlatformTokenMapsModeLabels() {
+    assertEquals(
+      "direct",
+      homeModeLabelPlatformToken(
+        label = HomeModeLabel.Direct,
+        directMode = "direct",
+        globalMode = "global",
+        ruleMode = "rule",
+      ),
+    )
+    assertEquals(
+      "global",
+      homeModeLabelPlatformToken(
+        label = HomeModeLabel.Global,
+        directMode = "direct",
+        globalMode = "global",
+        ruleMode = "rule",
+      ),
+    )
+    assertEquals(
+      "rule",
+      homeModeLabelPlatformToken(
+        label = HomeModeLabel.Rule,
+        directMode = "direct",
+        globalMode = "global",
+        ruleMode = "rule",
+      ),
+    )
+  }
+
+  @Test
   fun fetchedStateShowsModeWhenClashIsRunningAndKeepsForwardedTraffic() {
     val state =
       HomeUiState(forwarded = "10 MB")
