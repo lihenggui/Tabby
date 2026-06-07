@@ -1,0 +1,96 @@
+package com.github.kr328.clash.app
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.github.kr328.clash.core.model.ConfigurationOverride
+import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.withContext
+
+@Composable
+internal fun EngineControllerOverrideSettingsRouteContent(
+  engineController: EngineController,
+  onResetCompleted: () -> Unit,
+  modifier: Modifier = Modifier,
+  onActionError: (Throwable) -> Unit = {},
+) {
+  var configuration by remember(engineController) { mutableStateOf(ConfigurationOverride()) }
+  var resetRequested by remember(engineController) { mutableStateOf(false) }
+  val currentConfiguration = rememberUpdatedState(configuration)
+  val currentResetRequested = rememberUpdatedState(resetRequested)
+  val currentOnActionError = rememberUpdatedState(onActionError)
+
+  LaunchedEffect(engineController) {
+    var queryCompleted = false
+
+    try {
+      configuration = engineController.queryPersistOverride()
+      queryCompleted = true
+      awaitCancellation()
+    } catch (cause: Throwable) {
+      if (cause is CancellationException) throw cause
+
+      currentOnActionError.value(cause)
+    } finally {
+      if (queryCompleted) {
+        withContext(NonCancellable) {
+          runCatching {
+              engineController.persistOverrideSettings(
+                tabbyOverrideSettingsPersistAction(
+                  resetRequested = currentResetRequested.value,
+                  configuration = currentConfiguration.value,
+                )
+              )
+            }
+            .onFailure(currentOnActionError.value)
+        }
+      }
+    }
+  }
+
+  OverrideSettingsRouteContent(
+    onResetCompleted = onResetCompleted,
+    modifier = modifier,
+    initialConfiguration = configuration,
+    onConfigurationChange = { value ->
+      configuration = value
+      resetRequested = false
+    },
+    onReset = { resetRequested = true },
+  )
+}
+
+internal sealed interface TabbyOverrideSettingsPersistAction {
+  data object Clear : TabbyOverrideSettingsPersistAction
+
+  data class Patch(val configuration: ConfigurationOverride) : TabbyOverrideSettingsPersistAction
+}
+
+internal fun tabbyOverrideSettingsPersistAction(
+  resetRequested: Boolean,
+  configuration: ConfigurationOverride,
+): TabbyOverrideSettingsPersistAction {
+  return if (resetRequested) {
+    TabbyOverrideSettingsPersistAction.Clear
+  } else {
+    TabbyOverrideSettingsPersistAction.Patch(configuration)
+  }
+}
+
+private suspend fun EngineController.persistOverrideSettings(
+  action: TabbyOverrideSettingsPersistAction
+) {
+  when (action) {
+    TabbyOverrideSettingsPersistAction.Clear -> clearPersistOverride()
+    is TabbyOverrideSettingsPersistAction.Patch -> patchPersistOverride(action.configuration)
+  }
+}

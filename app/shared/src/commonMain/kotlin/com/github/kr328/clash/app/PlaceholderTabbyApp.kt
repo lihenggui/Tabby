@@ -24,7 +24,6 @@ import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlRouteContent
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
-import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -158,7 +157,10 @@ fun PlaceholderTabbyApp(
                 )
               },
               overrideSettingsContent = { onResetCompleted ->
-                OverrideSettingsRouteContent(onResetCompleted = onResetCompleted)
+                EngineControllerOverrideSettingsRouteContent(
+                  engineController = engineEnvironment.engineController,
+                  onResetCompleted = onResetCompleted,
+                )
               },
               metaFeatureSettingsContent = { onResetCompleted ->
                 MetaFeatureSettingsRouteContent(onResetCompleted = onResetCompleted)
