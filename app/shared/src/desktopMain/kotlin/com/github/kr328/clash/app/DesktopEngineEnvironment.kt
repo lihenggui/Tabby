@@ -46,6 +46,7 @@ fun desktopEngineEnvironment(): EngineEnvironment {
         configValidator = binary?.let(::DesktopMihomoCliConfigValidator),
       ),
     logRepository = DesktopLogRepository(mihomoApi),
+    logFileRepository = emptyTabbyLogFileRepository(),
     appSettingsRepository =
       TabbyAppSettingsRepository(
         uiStoreProvider = uiStoreProvider,

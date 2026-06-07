@@ -15,6 +15,7 @@ fun iosEngineEnvironment(): EngineEnvironment {
     engineController = IosEngineController(),
     profileRepository = IosProfileRepository(),
     logRepository = IosLogRepository(),
+    logFileRepository = emptyTabbyLogFileRepository(),
     appSettingsRepository =
       TabbyAppSettingsRepository(
         uiStoreProvider = uiStoreProvider,
