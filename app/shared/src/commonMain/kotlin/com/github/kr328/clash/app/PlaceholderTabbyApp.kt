@@ -14,7 +14,6 @@ import com.github.kr328.clash.home.ui.HelpRouteContent
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
-import com.github.kr328.clash.log.ui.LogcatRouteContent
 import com.github.kr328.clash.log.ui.LogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
@@ -117,7 +116,8 @@ fun PlaceholderTabbyApp(
                 )
               },
               logcatContent = { fileName, onOpenLogs, onInvalidFile, onClose ->
-                LogcatRouteContent(
+                LogRepositoryLogcatRouteContent(
+                  logRepository = engineEnvironment.logRepository,
                   fileName = fileName,
                   onOpenLogs = onOpenLogs,
                   onInvalidFile = onInvalidFile,
