@@ -63,7 +63,7 @@ fun PlaceholderTabbyApp(
                 onOpenHelp = actions.openHelp,
               )
             },
-            helpContent = { HelpRouteContent() },
+            helpContent = { HelpRouteContent(onOpenLink = uriHandler::openUri) },
           )
         },
         proxyEntries = { onReLaunch ->
