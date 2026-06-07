@@ -197,10 +197,7 @@ class MainActivity : ComponentActivity() {
           defaultName = application.getString(CommonR.string.new_profile),
         ) ?: return
       viewModelScope.launch {
-        val uuid =
-          profileRepository.create(request.type, request.name).also {
-            profileRepository.patch(it, request.name, request.source, 0)
-          }
+        val uuid = tabbyInstallProfile(profileRepository, request)
         when (val action = tabbyInstallProfileResultAction(uuid)) {
           is TabbyInstallProfileResultAction.OpenRoute ->
             backStack.handleTabbyExternalRouteAction(action.routeAction)

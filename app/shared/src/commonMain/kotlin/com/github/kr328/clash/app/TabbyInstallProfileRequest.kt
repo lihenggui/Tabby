@@ -1,6 +1,7 @@
 package com.github.kr328.clash.app
 
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.engine.api.ProfileRepository
 import kotlin.uuid.Uuid
 
 data class TabbyInstallProfileRequest(
@@ -30,6 +31,22 @@ fun tabbyInstallProfileRequest(
     name = name ?: defaultName,
     source = profileSource,
   )
+}
+
+suspend fun tabbyInstallProfile(
+  profileRepository: ProfileRepository,
+  request: TabbyInstallProfileRequest,
+): Uuid {
+  val uuid = profileRepository.create(type = request.type, name = request.name)
+
+  profileRepository.patch(
+    uuid = uuid,
+    name = request.name,
+    source = request.source,
+    interval = 0,
+  )
+
+  return uuid
 }
 
 fun tabbyInstallProfileResultAction(uuid: Uuid): TabbyInstallProfileResultAction =
