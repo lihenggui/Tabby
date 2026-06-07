@@ -3,6 +3,8 @@ package com.github.kr328.clash.log.ui
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.log.model.LogFile
 
+const val LOGCAT_MESSAGES_CAPACITY = 128
+
 internal data class LogcatUiState(
   val streaming: Boolean = true,
   val messages: List<LogMessage> = emptyList(),
@@ -128,6 +130,16 @@ internal fun logcatStartStreamingFailureEventState(): LogcatEventState {
 
 internal fun logcatConsumedEventState(): LogcatEventState {
   return LogcatEventState.Idle
+}
+
+fun logcatMessagesAfterAppend(
+  messages: List<LogMessage>,
+  message: LogMessage,
+  capacity: Int = LOGCAT_MESSAGES_CAPACITY,
+): List<LogMessage> {
+  require(capacity > 0) { "capacity must be positive" }
+
+  return (messages + message).takeLast(capacity)
 }
 
 internal fun logcatDeleteAction(currentFile: LogFile?): LogcatDeleteAction {

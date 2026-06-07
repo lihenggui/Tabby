@@ -4,6 +4,7 @@ import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.log.model.LogFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -73,6 +74,36 @@ class LogcatUiStateTest {
   @Test
   fun consumedEventStateResetsToIdle() {
     assertEquals(LogcatEventState.Idle, logcatConsumedEventState())
+  }
+
+  @Test
+  fun appendMessageKeepsMessagesWithinCapacity() {
+    val first = logMessage(1)
+    val second = logMessage(2)
+    val third = logMessage(3)
+
+    assertEquals(
+      listOf(second, third),
+      logcatMessagesAfterAppend(listOf(first, second), third, capacity = 2),
+    )
+  }
+
+  @Test
+  fun appendMessagePreservesMessagesBelowCapacity() {
+    val first = logMessage(1)
+    val second = logMessage(2)
+
+    assertEquals(
+      listOf(first, second),
+      logcatMessagesAfterAppend(listOf(first), second, capacity = 2),
+    )
+  }
+
+  @Test
+  fun appendMessageRejectsInvalidCapacity() {
+    assertFailsWith<IllegalArgumentException> {
+      logcatMessagesAfterAppend(emptyList(), logMessage(1), capacity = 0)
+    }
   }
 
   @Test

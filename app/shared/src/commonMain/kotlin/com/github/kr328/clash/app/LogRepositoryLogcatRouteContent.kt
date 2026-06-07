@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.engine.api.LogRepository
 import com.github.kr328.clash.log.ui.LogcatRouteContent
+import com.github.kr328.clash.log.ui.logcatMessagesAfterAppend
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 
@@ -36,7 +37,7 @@ internal fun LogRepositoryLogcatRouteContent(
     logRepository
       .observeLogs()
       .catch { cause -> onActionError(cause) }
-      .collect { message -> messages = tabbyLogcatMessagesAfterAppend(messages, message) }
+      .collect { message -> messages = logcatMessagesAfterAppend(messages, message) }
   }
 
   LogcatRouteContent(
