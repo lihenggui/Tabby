@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.Profile
-import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -29,7 +28,7 @@ fun ProfilesListRouteContent(
   profiles: List<Profile> = emptyList(),
   allUpdating: Boolean = false,
   currentTimeMillis: Long = 0,
-  formatBytes: (Long) -> String = ::profileBinaryBytesString,
+  formatBytes: (Long) -> String = ::profileBinaryBytesText,
   formatExpire: (Long) -> String = ::profileExpireDateString,
   onUpdateAll: () -> Unit = {},
   onCreate: () -> Unit = {},
@@ -127,40 +126,11 @@ private fun profileElapsedMillisString(elapsedMillis: Long): String {
   }
 }
 
-private fun profileBinaryBytesString(bytes: Long): String {
-  val units = arrayOf("B", "KiB", "MiB", "GiB", "TiB", "PiB")
-  var value = bytes.coerceAtLeast(0).toDouble()
-  var unitIndex = 0
-
-  while (value >= BINARY_UNIT_SIZE && unitIndex < units.lastIndex) {
-    value /= BINARY_UNIT_SIZE
-    unitIndex += 1
-  }
-
-  return if (unitIndex == 0) {
-    "${value.toLong()} ${units[unitIndex]}"
-  } else {
-    "${value.oneDecimalString()} ${units[unitIndex]}"
-  }
-}
-
 private fun profileExpireDateString(epochMillis: Long): String {
   val date =
     Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(TimeZone.currentSystemDefault()).date
 
   return "${date.year}-${date.month.number.twoDigitString()}-${date.day.twoDigitString()}"
-}
-
-private fun Double.oneDecimalString(): String {
-  val rounded = (this * 10.0).roundToLong()
-  val whole = rounded / 10L
-  val fraction = rounded % 10L
-
-  return if (fraction == 0L) {
-    whole.toString()
-  } else {
-    "$whole.$fraction"
-  }
 }
 
 private fun Int.twoDigitString(): String {
@@ -177,7 +147,6 @@ private fun Profile.trafficProgress(usedTraffic: Long): Int {
     .coerceIn(0, TRAFFIC_PROGRESS_SCALE)
 }
 
-private const val BINARY_UNIT_SIZE = 1024.0
 private const val MIN_DOWNLOAD_BYTES_FOR_USAGE = 2L
 private const val MIN_TOTAL_BYTES_FOR_USAGE = 1L
 private const val TRAFFIC_PROGRESS_SCALE = 1000

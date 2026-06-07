@@ -4,7 +4,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.milliseconds
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.shared.generated.resources.Res as SharedRes
@@ -28,7 +27,7 @@ fun FilesRouteContent(
   currentTimeMillis: Long = 0,
   currentInBaseDir: Boolean = true,
   configurationEditable: Boolean = false,
-  formatBytes: (Long) -> String = ::profileFileBinaryBytesString,
+  formatBytes: (Long) -> String = ::profileBinaryBytesText,
   formatElapsedMillis: @Composable (Long) -> String = { profileFileElapsedMillisString(it) },
   onBack: () -> Unit = {},
   onOpen: (ProfileFileRouteItem) -> Unit = {},
@@ -113,34 +112,3 @@ private fun profileFileElapsedMillisString(elapsedMillis: Long): String {
     else -> stringResource(SharedRes.string.recently)
   }
 }
-
-private fun profileFileBinaryBytesString(bytes: Long): String {
-  val units = arrayOf("B", "KiB", "MiB", "GiB", "TiB", "PiB")
-  var value = bytes.coerceAtLeast(0).toDouble()
-  var unitIndex = 0
-
-  while (value >= BINARY_UNIT_SIZE && unitIndex < units.lastIndex) {
-    value /= BINARY_UNIT_SIZE
-    unitIndex += 1
-  }
-
-  return if (unitIndex == 0) {
-    "${value.toLong()} ${units[unitIndex]}"
-  } else {
-    "${value.oneDecimalString()} ${units[unitIndex]}"
-  }
-}
-
-private fun Double.oneDecimalString(): String {
-  val rounded = (this * 10.0).roundToLong()
-  val whole = rounded / 10L
-  val fraction = rounded % 10L
-
-  return if (fraction == 0L) {
-    whole.toString()
-  } else {
-    "$whole.$fraction"
-  }
-}
-
-private const val BINARY_UNIT_SIZE = 1024.0

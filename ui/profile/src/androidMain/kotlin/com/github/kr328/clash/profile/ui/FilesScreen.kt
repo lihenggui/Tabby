@@ -25,7 +25,6 @@ import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.delay
-import me.saket.bytesize.binaryBytes
 
 @Composable
 internal fun FilesScreen(
@@ -116,7 +115,7 @@ internal fun FilesScreen(
         sizeBytes = ConfigFile::size,
         lastModified = ConfigFile::lastModified,
         isDirectory = ConfigFile::isDirectory,
-        formatBytes = { bytes -> bytes.binaryBytes.toString() },
+        formatBytes = ::profileBinaryBytesText,
         formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
       ),
     currentInBaseDir = uiState.currentInBaseDir,

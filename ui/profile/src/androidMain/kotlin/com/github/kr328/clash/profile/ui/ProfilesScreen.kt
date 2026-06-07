@@ -18,7 +18,6 @@ import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.vm.ProfilesViewModel
 import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import kotlin.uuid.Uuid
-import me.saket.bytesize.binaryBytes
 
 @Composable
 internal fun ProfilesScreen(
@@ -64,7 +63,7 @@ internal fun ProfilesScreen(
     profiles =
       uiState.toProfileListItems(
         formatTypeText = { typeText -> typeText.androidString(context) },
-        formatBytes = { bytes -> bytes.binaryBytes.toString() },
+        formatBytes = ::profileBinaryBytesText,
         formatExpire = { expire -> expire.toDateStr() },
         formatElapsedMillis = { elapsed -> elapsed.elapsedIntervalString(context) },
       ),
