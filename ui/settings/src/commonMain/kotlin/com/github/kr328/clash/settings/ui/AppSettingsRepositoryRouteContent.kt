@@ -1,15 +1,14 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.settings.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.DarkMode
-import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
 import com.github.kr328.clash.settingsstore.TabbyAppSettings
 import com.github.kr328.clash.settingsstore.TabbyAppSettingsRepository
 
 @Composable
-internal fun AppSettingsRepositoryRouteContent(
+fun AppSettingsRepositoryRouteContent(
   repository: TabbyAppSettingsRepository,
   darkMode: DarkMode,
   onDarkModeChange: (DarkMode) -> Unit,

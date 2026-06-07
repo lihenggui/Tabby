@@ -8,6 +8,7 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
+      api(projects.core.settingsStore)
       implementation(projects.ui.shared)
       implementation(libs.composePreference)
       implementation(libs.reorderable)

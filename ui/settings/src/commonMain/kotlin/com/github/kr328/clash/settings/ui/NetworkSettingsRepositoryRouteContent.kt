@@ -1,15 +1,14 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.settings.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.AccessControlMode
-import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 import com.github.kr328.clash.settingsstore.TabbyNetworkSettings
 import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
 
 @Composable
-internal fun NetworkSettingsRepositoryRouteContent(
+fun NetworkSettingsRepositoryRouteContent(
   repository: TabbyNetworkSettingsRepository,
   onStartAccessControlList: () -> Unit,
   modifier: Modifier = Modifier,
