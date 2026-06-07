@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
@@ -31,6 +32,7 @@ fun PlaceholderTabbyApp(
   val appSettingsRepository = engineEnvironment.appSettingsRepository
   val networkSettingsRepository = engineEnvironment.networkSettingsRepository
   val accessControlSettingsRepository = engineEnvironment.accessControlSettingsRepository
+  val uriHandler = LocalUriHandler.current
   val appDarkModeState =
     remember(appSettingsRepository) {
       mutableStateOf(
@@ -44,7 +46,7 @@ fun PlaceholderTabbyApp(
     }
   }
   val entryProvider =
-    remember(engineEnvironment) {
+    remember(engineEnvironment, uriHandler) {
       tabbyEntryProvider(
         backStack = backStack,
         homeEntries = { actions ->
@@ -176,7 +178,7 @@ fun PlaceholderTabbyApp(
             apkBrokenContent = {
               ApkBrokenRouteContent(
                 releasesUrl = TABBY_GITHUB_URL,
-                onOpenReleases = {},
+                onOpenReleases = { uriHandler.openUri(TABBY_GITHUB_URL) },
               )
             },
             appCrashedContent = { AppCrashedRouteContent(logs = "") },
