@@ -20,6 +20,22 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyEventPlatformActionMapsEventStates() {
+    assertEquals(
+      ProxyEventPlatformAction.Ignore,
+      proxyEventPlatformAction(ProxyEventState.Idle),
+    )
+    assertEquals(
+      ProxyEventPlatformAction.ReLaunch,
+      proxyEventPlatformAction(ProxyEventState.ReLaunch),
+    )
+    assertEquals(
+      ProxyEventPlatformAction.ShowModeSwitchTips,
+      proxyEventPlatformAction(ProxyEventState.ShowModeSwitchTips),
+    )
+  }
+
+  @Test
   fun createsInitialSelectedProxies() {
     assertEquals(emptyList(), proxyInitialSelectedProxies())
   }

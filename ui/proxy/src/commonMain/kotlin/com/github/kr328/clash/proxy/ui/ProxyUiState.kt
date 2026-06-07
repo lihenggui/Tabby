@@ -595,8 +595,24 @@ internal sealed interface ProxyEventState {
   data object ShowModeSwitchTips : ProxyEventState
 }
 
+internal sealed interface ProxyEventPlatformAction {
+  data object Ignore : ProxyEventPlatformAction
+
+  data object ReLaunch : ProxyEventPlatformAction
+
+  data object ShowModeSwitchTips : ProxyEventPlatformAction
+}
+
 internal fun proxyInitialEventState(): ProxyEventState {
   return ProxyEventState.Idle
+}
+
+internal fun proxyEventPlatformAction(eventState: ProxyEventState): ProxyEventPlatformAction {
+  return when (eventState) {
+    ProxyEventState.Idle -> ProxyEventPlatformAction.Ignore
+    ProxyEventState.ReLaunch -> ProxyEventPlatformAction.ReLaunch
+    ProxyEventState.ShowModeSwitchTips -> ProxyEventPlatformAction.ShowModeSwitchTips
+  }
 }
 
 internal fun proxyGroupNamesChangeEventState(
