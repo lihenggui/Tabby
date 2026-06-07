@@ -9,7 +9,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
-import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
 import com.github.kr328.clash.home.homeEntries
 import com.github.kr328.clash.home.ui.HelpRouteContent
 import com.github.kr328.clash.home.ui.HomeRouteContent
@@ -181,7 +180,11 @@ fun PlaceholderTabbyApp(
                 onOpenReleases = { uriHandler.openUri(TABBY_GITHUB_URL) },
               )
             },
-            appCrashedContent = { AppCrashedRouteContent(logs = "") },
+            appCrashedContent = {
+              CrashLogRepositoryAppCrashedRouteContent(
+                crashLogRepository = engineEnvironment.crashLogRepository
+              )
+            },
           )
         },
       )

@@ -47,6 +47,7 @@ fun desktopEngineEnvironment(): EngineEnvironment {
       ),
     logRepository = DesktopLogRepository(mihomoApi),
     logFileRepository = emptyTabbyLogFileRepository(),
+    crashLogRepository = emptyTabbyCrashLogRepository(),
     appSettingsRepository =
       TabbyAppSettingsRepository(
         uiStoreProvider = uiStoreProvider,
