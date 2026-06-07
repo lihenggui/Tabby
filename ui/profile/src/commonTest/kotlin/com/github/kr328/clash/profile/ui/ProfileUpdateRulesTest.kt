@@ -1,5 +1,6 @@
 package com.github.kr328.clash.profile.ui
 
+import androidx.compose.material3.SnackbarResult
 import com.github.kr328.clash.core.model.Profile
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -102,6 +103,18 @@ class ProfileUpdateRulesTest {
     assertEquals(
       ProfileSnackbarActionResult.Dismissed,
       profileSnackbarActionResultFromPlatformActionPerformed(actionPerformed = false),
+    )
+  }
+
+  @Test
+  fun snackbarResultMapsToProfileSnackbarActionResult() {
+    assertEquals(
+      ProfileSnackbarActionResult.ActionPerformed,
+      SnackbarResult.ActionPerformed.toProfileSnackbarActionResult(),
+    )
+    assertEquals(
+      ProfileSnackbarActionResult.Dismissed,
+      SnackbarResult.Dismissed.toProfileSnackbarActionResult(),
     )
   }
 

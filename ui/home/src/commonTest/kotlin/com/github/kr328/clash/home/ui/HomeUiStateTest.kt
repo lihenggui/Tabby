@@ -1,5 +1,6 @@
 package com.github.kr328.clash.home.ui
 
+import androidx.compose.material3.SnackbarResult
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.Traffic
 import com.github.kr328.clash.core.model.TunnelState
@@ -237,6 +238,18 @@ class HomeUiStateTest {
     assertEquals(
       SnackbarActionResult.Dismissed,
       snackbarActionResultFromPlatformActionPerformed(actionPerformed = false),
+    )
+  }
+
+  @Test
+  fun snackbarResultMapsToSnackbarActionResult() {
+    assertEquals(
+      SnackbarActionResult.ActionPerformed,
+      SnackbarResult.ActionPerformed.toSnackbarActionResult(),
+    )
+    assertEquals(
+      SnackbarActionResult.Dismissed,
+      SnackbarResult.Dismissed.toSnackbarActionResult(),
     )
   }
 

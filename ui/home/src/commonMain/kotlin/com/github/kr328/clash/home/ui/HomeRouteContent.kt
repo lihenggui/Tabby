@@ -2,7 +2,6 @@ package com.github.kr328.clash.home.ui
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,7 +84,7 @@ fun HomeRouteContent(
         duration = SnackbarDuration.Long,
       )
 
-    when (homeNoProfileSnackbarAction(result.toHomeRouteSnackbarActionResult())) {
+    when (homeNoProfileSnackbarAction(result.toSnackbarActionResult())) {
       HomeNoProfileSnackbarAction.OpenProfiles -> onOpenProfiles()
       HomeNoProfileSnackbarAction.Ignore -> Unit
     }
@@ -171,9 +170,3 @@ private fun HomeModeLabel.sharedStringValue(
     HomeModeLabel.Global -> globalMode
     HomeModeLabel.Rule -> ruleMode
   }
-
-private fun SnackbarResult.toHomeRouteSnackbarActionResult(): SnackbarActionResult {
-  return snackbarActionResultFromPlatformActionPerformed(
-    actionPerformed = this == SnackbarResult.ActionPerformed
-  )
-}
