@@ -18,9 +18,7 @@ import com.github.kr328.clash.settings.ui.GeoFileImportAction
 import com.github.kr328.clash.settings.ui.GeoFileImportResult
 import com.github.kr328.clash.settings.ui.GeoFileImportSourceAction
 import com.github.kr328.clash.settings.ui.GeoFileImportType
-import com.github.kr328.clash.settings.ui.MetaFeatureSettingsActions
 import com.github.kr328.clash.settings.ui.OverridePersistAction
-import com.github.kr328.clash.settings.ui.SniffProtocol
 import com.github.kr328.clash.settings.ui.geoFileImportFailedResult
 import com.github.kr328.clash.settings.ui.geoFileImportInitialResult
 import com.github.kr328.clash.settings.ui.geoFileImportResult
@@ -28,28 +26,13 @@ import com.github.kr328.clash.settings.ui.geoFileImportSourceAction
 import com.github.kr328.clash.settings.ui.geoFileImportStartedResult
 import com.github.kr328.clash.settings.ui.metaFeatureSettingsInitialConfiguration
 import com.github.kr328.clash.settings.ui.overridePersistAction
-import com.github.kr328.clash.settings.ui.updateMetaFindProcessMode
-import com.github.kr328.clash.settings.ui.updateMetaGeodataMode
-import com.github.kr328.clash.settings.ui.updateMetaSnifferEnable
-import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDnsMapping
-import com.github.kr328.clash.settings.ui.updateMetaSnifferForceDomain
-import com.github.kr328.clash.settings.ui.updateMetaSnifferOverrideDestination
-import com.github.kr328.clash.settings.ui.updateMetaSnifferParsePureIp
-import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDomain
-import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipDstAddress
-import com.github.kr328.clash.settings.ui.updateMetaSnifferSkipSrcAddress
-import com.github.kr328.clash.settings.ui.updateMetaTcpConcurrent
-import com.github.kr328.clash.settings.ui.updateMetaUnifiedDelay
-import com.github.kr328.clash.settings.ui.updateSniffProtocolOverrideDestination
-import com.github.kr328.clash.settings.ui.updateSniffProtocolPorts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 internal class MetaFeatureSettingsViewModel(app: Application) :
-  AndroidViewModel(app), MetaFeatureSettingsActions, DefaultLifecycleObserver {
+  AndroidViewModel(app), DefaultLifecycleObserver {
   private val engineController: EngineController = AndroidEngineController(app)
   private val appContext = app
   @Volatile private var skipPersist = false
@@ -79,6 +62,11 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
 
   fun resetOverride() {
     skipPersist = true
+  }
+
+  fun setConfiguration(value: ConfigurationOverride) {
+    skipPersist = false
+    configuration.value = value
   }
 
   fun importGeoFile(uri: Uri?, importType: GeoFileImportType) {
@@ -142,77 +130,4 @@ internal class MetaFeatureSettingsViewModel(app: Application) :
       val columnIndex = getColumnIndex(OpenableColumns.DISPLAY_NAME)
       return if (columnIndex != -1) getString(columnIndex) else null
     }
-
-  override fun updateUnifiedDelay(value: Boolean?) = configuration.update {
-    updateMetaUnifiedDelay(it, value)
-  }
-
-  override fun updateGeodataMode(value: Boolean?) = configuration.update {
-    updateMetaGeodataMode(it, value)
-  }
-
-  override fun updateTcpConcurrent(value: Boolean?) = configuration.update {
-    updateMetaTcpConcurrent(it, value)
-  }
-
-  override fun updateFindProcessMode(value: ConfigurationOverride.FindProcessMode?) =
-    configuration.update {
-      updateMetaFindProcessMode(it, value)
-    }
-
-  override fun updateSnifferEnable(value: Boolean?) = configuration.update {
-    updateMetaSnifferEnable(it, value)
-  }
-
-  override fun updateSniffHttpPorts(value: List<String>?) = configuration.update {
-    updateSniffProtocolPorts(it, SniffProtocol.Http, value)
-  }
-
-  override fun updateSniffHttpOverrideDestination(value: Boolean?) = configuration.update {
-    updateSniffProtocolOverrideDestination(it, SniffProtocol.Http, value)
-  }
-
-  override fun updateSniffTlsPorts(value: List<String>?) = configuration.update {
-    updateSniffProtocolPorts(it, SniffProtocol.Tls, value)
-  }
-
-  override fun updateSniffTlsOverrideDestination(value: Boolean?) = configuration.update {
-    updateSniffProtocolOverrideDestination(it, SniffProtocol.Tls, value)
-  }
-
-  override fun updateSniffQuicPorts(value: List<String>?) = configuration.update {
-    updateSniffProtocolPorts(it, SniffProtocol.Quic, value)
-  }
-
-  override fun updateSniffQuicOverrideDestination(value: Boolean?) = configuration.update {
-    updateSniffProtocolOverrideDestination(it, SniffProtocol.Quic, value)
-  }
-
-  override fun updateForceDnsMapping(value: Boolean?) = configuration.update {
-    updateMetaSnifferForceDnsMapping(it, value)
-  }
-
-  override fun updateParsePureIp(value: Boolean?) = configuration.update {
-    updateMetaSnifferParsePureIp(it, value)
-  }
-
-  override fun updateOverrideDestination(value: Boolean?) = configuration.update {
-    updateMetaSnifferOverrideDestination(it, value)
-  }
-
-  override fun updateForceDomain(value: List<String>?) = configuration.update {
-    updateMetaSnifferForceDomain(it, value)
-  }
-
-  override fun updateSkipDomain(value: List<String>?) = configuration.update {
-    updateMetaSnifferSkipDomain(it, value)
-  }
-
-  override fun updateSkipSrcAddress(value: List<String>?) = configuration.update {
-    updateMetaSnifferSkipSrcAddress(it, value)
-  }
-
-  override fun updateSkipDstAddress(value: List<String>?) = configuration.update {
-    updateMetaSnifferSkipDstAddress(it, value)
-  }
 }

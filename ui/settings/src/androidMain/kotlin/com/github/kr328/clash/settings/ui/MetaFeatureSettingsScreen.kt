@@ -30,93 +30,85 @@ internal fun MetaFeatureSettingsScreen(
   viewModel: MetaFeatureSettingsViewModel = viewModelWithLifecycle(),
   onResetCompleted: () -> Unit,
 ) {
-  MetaFeatureSettingsNavigatorContent { onOpenEditableTextList ->
-    val configuration by viewModel.configuration.collectAsStateWithLifecycle()
-    val importResult by viewModel.importResult.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val importedText = stringResource(R.string.geofile_imported)
-    val importFailedText = stringResource(R.string.geofile_import_failed)
-    var pendingImportType by remember { mutableStateOf<GeoFileImportType?>(null) }
-    var showUnsupportedFormatDialog by remember { mutableStateOf(false) }
-    var validExtensionsSummary by remember { mutableStateOf("") }
-    var showResetConfirmDialog by remember { mutableStateOf(false) }
+  val configuration by viewModel.configuration.collectAsStateWithLifecycle()
+  val importResult by viewModel.importResult.collectAsStateWithLifecycle()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val importedText = stringResource(R.string.geofile_imported)
+  val importFailedText = stringResource(R.string.geofile_import_failed)
+  var pendingImportType by remember { mutableStateOf<GeoFileImportType?>(null) }
+  var showUnsupportedFormatDialog by remember { mutableStateOf(false) }
+  var validExtensionsSummary by remember { mutableStateOf("") }
 
-    LaunchedEffect(importResult) {
-      when (val action = geoFileImportResultDisplayAction(importResult)) {
-        is GeoFileImportResultDisplayAction.ShowImported -> {
-          snackbarHostState.showSnackbar(message = importedText.format(action.displayName))
-        }
-        is GeoFileImportResultDisplayAction.ShowUnsupportedFormat -> {
-          validExtensionsSummary = action.summary
-          showUnsupportedFormatDialog = true
-        }
-        GeoFileImportResultDisplayAction.ShowFailed ->
-          snackbarHostState.showSnackbar(message = importFailedText)
-        GeoFileImportResultDisplayAction.Ignore -> Unit
+  LaunchedEffect(importResult) {
+    when (val action = geoFileImportResultDisplayAction(importResult)) {
+      is GeoFileImportResultDisplayAction.ShowImported -> {
+        snackbarHostState.showSnackbar(message = importedText.format(action.displayName))
       }
+      is GeoFileImportResultDisplayAction.ShowUnsupportedFormat -> {
+        validExtensionsSummary = action.summary
+        showUnsupportedFormatDialog = true
+      }
+      GeoFileImportResultDisplayAction.ShowFailed ->
+        snackbarHostState.showSnackbar(message = importFailedText)
+      GeoFileImportResultDisplayAction.Ignore -> Unit
     }
+  }
 
-    val importLauncher =
-      rememberLauncherForActivityResult(GetContent()) { uri ->
-        when (
-          val action =
-            geoFileImportPickerResultAction(
-              geoFileImportPickerResultFromPlatformPayload(
-                source = uri,
-                pendingImportType = pendingImportType,
-              )
+  val importLauncher =
+    rememberLauncherForActivityResult(GetContent()) { uri ->
+      when (
+        val action =
+          geoFileImportPickerResultAction(
+            geoFileImportPickerResultFromPlatformPayload(
+              source = uri,
+              pendingImportType = pendingImportType,
             )
-        ) {
-          is GeoFileImportPickerResultAction.Import -> {
-            pendingImportType = null
-            viewModel.importGeoFile(action.source, action.importType)
-          }
-          GeoFileImportPickerResultAction.Ignore -> Unit
+          )
+      ) {
+        is GeoFileImportPickerResultAction.Import -> {
+          pendingImportType = null
+          viewModel.importGeoFile(action.source, action.importType)
         }
-      }
-
-    fun requestGeoFileImport(importType: GeoFileImportType?) {
-      when (val action = geoFileImportRequestAction(importType)) {
-        is GeoFileImportRequestAction.RequestPicker -> {
-          pendingImportType = action.importType
-          importLauncher.launch("*/*")
-        }
-        GeoFileImportRequestAction.Ignore -> Unit
+        GeoFileImportPickerResultAction.Ignore -> Unit
       }
     }
 
-    MetaFeatureSettingsContent(
-      configuration = configuration,
-      actions = viewModel,
-      snackbarHostState = snackbarHostState,
-      modifier = modifier,
-      showResetConfirmDialog = showResetConfirmDialog,
-      onShowResetConfirmDialogChange = { showResetConfirmDialog = it },
-      onResetConfirmed = {
-        viewModel.resetOverride()
-        onResetCompleted()
+  fun requestGeoFileImport(importType: GeoFileImportType?) {
+    when (val action = geoFileImportRequestAction(importType)) {
+      is GeoFileImportRequestAction.RequestPicker -> {
+        pendingImportType = action.importType
+        importLauncher.launch("*/*")
+      }
+      GeoFileImportRequestAction.Ignore -> Unit
+    }
+  }
+
+  MetaFeatureSettingsRouteContent(
+    onResetCompleted = onResetCompleted,
+    modifier = modifier,
+    snackbarHostState = snackbarHostState,
+    initialConfiguration = configuration,
+    onConfigurationChange = viewModel::setConfiguration,
+    onReset = viewModel::resetOverride,
+    onImportGeoIp = { requestGeoFileImport(GeoFileImportType.GeoIp) },
+    onImportGeoSite = { requestGeoFileImport(GeoFileImportType.GeoSite) },
+    onImportCountry = { requestGeoFileImport(GeoFileImportType.Country) },
+    onImportASN = { requestGeoFileImport(GeoFileImportType.ASN) },
+  )
+
+  if (showUnsupportedFormatDialog) {
+    AlertDialog(
+      onDismissRequest = { showUnsupportedFormatDialog = false },
+      title = { Text(stringResource(R.string.geofile_unknown_db_format)) },
+      text = {
+        Text(stringResource(R.string.geofile_unknown_db_format_message, validExtensionsSummary))
       },
-      onImportGeoIp = { requestGeoFileImport(GeoFileImportType.GeoIp) },
-      onImportGeoSite = { requestGeoFileImport(GeoFileImportType.GeoSite) },
-      onImportCountry = { requestGeoFileImport(GeoFileImportType.Country) },
-      onImportASN = { requestGeoFileImport(GeoFileImportType.ASN) },
-      onOpenEditableTextList = onOpenEditableTextList,
+      confirmButton = {
+        TextButton(onClick = { showUnsupportedFormatDialog = false }) {
+          Text(text = stringResource(CommonR.string.ok))
+        }
+      },
     )
-
-    if (showUnsupportedFormatDialog) {
-      AlertDialog(
-        onDismissRequest = { showUnsupportedFormatDialog = false },
-        title = { Text(stringResource(R.string.geofile_unknown_db_format)) },
-        text = {
-          Text(stringResource(R.string.geofile_unknown_db_format_message, validExtensionsSummary))
-        },
-        confirmButton = {
-          TextButton(onClick = { showUnsupportedFormatDialog = false }) {
-            Text(text = stringResource(CommonR.string.ok))
-          }
-        },
-      )
-    }
   }
 }
 
@@ -124,17 +116,8 @@ internal fun MetaFeatureSettingsScreen(
 @PreviewTabby
 @Composable
 private fun MetaFeatureSettingsContentPreview() {
-  MetaFeatureSettingsContent(
-    configuration = ConfigurationOverride(),
-    actions = object : MetaFeatureSettingsActions {},
-    snackbarHostState = SnackbarHostState(),
-    showResetConfirmDialog = false,
-    onShowResetConfirmDialogChange = {},
-    onResetConfirmed = {},
-    onImportGeoIp = {},
-    onImportGeoSite = {},
-    onImportCountry = {},
-    onImportASN = {},
-    onOpenEditableTextList = { _, _, _ -> },
+  MetaFeatureSettingsRouteContent(
+    onResetCompleted = {},
+    initialConfiguration = ConfigurationOverride(),
   )
 }

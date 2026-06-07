@@ -13,6 +13,7 @@ import com.github.kr328.clash.core.model.ConfigurationOverride
 fun MetaFeatureSettingsRouteContent(
   onResetCompleted: () -> Unit,
   modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   initialConfiguration: ConfigurationOverride = metaFeatureSettingsInitialConfiguration(),
   onConfigurationChange: (ConfigurationOverride) -> Unit = {},
   onReset: () -> Unit = {},
@@ -24,7 +25,6 @@ fun MetaFeatureSettingsRouteContent(
   val configurationState = remember { mutableStateOf(initialConfiguration) }
   val currentOnConfigurationChange = rememberUpdatedState(onConfigurationChange)
   val currentOnReset = rememberUpdatedState(onReset)
-  val snackbarHostState = remember { SnackbarHostState() }
 
   fun updateConfiguration(transform: (ConfigurationOverride) -> ConfigurationOverride) {
     val updated = transform(configurationState.value)
