@@ -10,6 +10,22 @@ class HelpUpdateCheckActionTest {
   }
 
   @Test
+  fun helpEventPlatformActionMapsEventStates() {
+    assertEquals(
+      HelpEventPlatformAction.Ignore,
+      helpEventPlatformAction(HelpEventState.Idle),
+    )
+    assertEquals(
+      HelpEventPlatformAction.ShowMessage("already up to date"),
+      helpEventPlatformAction(HelpEventState.ShowMessage("already up to date")),
+    )
+    assertEquals(
+      HelpEventPlatformAction.ShowUpdateAvailable("https://example.com/releases"),
+      helpEventPlatformAction(HelpEventState.UpdateAvailable("https://example.com/releases")),
+    )
+  }
+
+  @Test
   fun updateCheckRequestStartsWhenNotAlreadyChecking() {
     assertEquals(
       HelpUpdateCheckRequestAction.StartCheck,

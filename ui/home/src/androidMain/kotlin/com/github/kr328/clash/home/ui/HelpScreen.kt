@@ -46,12 +46,12 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
   val messageCopied = stringResource(SharedRes.string.copied)
 
   LaunchedEffect(eventState) {
-    when (val event = eventState) {
-      HelpEventState.Idle -> Unit
-      is HelpEventState.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = event.message)
+    when (val action = helpEventPlatformAction(eventState)) {
+      HelpEventPlatformAction.Ignore -> Unit
+      is HelpEventPlatformAction.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
       }
-      is HelpEventState.UpdateAvailable -> {
+      is HelpEventPlatformAction.ShowUpdateAvailable -> {
         val result =
           snackbarHostState.showSnackbar(
             message = updateAvailableText,
@@ -59,7 +59,7 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
             duration = SnackbarDuration.Long,
           )
         when (helpUpdateAvailableSnackbarAction(result.toSnackbarActionResult())) {
-          HelpUpdateAvailableSnackbarAction.OpenReleases -> context.openLink(event.releasesUrl)
+          HelpUpdateAvailableSnackbarAction.OpenReleases -> context.openLink(action.releasesUrl)
           HelpUpdateAvailableSnackbarAction.Ignore -> Unit
         }
       }
