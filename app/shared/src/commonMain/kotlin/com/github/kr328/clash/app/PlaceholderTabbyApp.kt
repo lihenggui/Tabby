@@ -1,18 +1,10 @@
 package com.github.kr328.clash.app
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.crash.crashEntries
@@ -23,6 +15,7 @@ import com.github.kr328.clash.home.ui.HelpRouteContent
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
+import com.github.kr328.clash.log.ui.LogcatRouteContent
 import com.github.kr328.clash.log.ui.LogsRouteContent
 import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
@@ -122,11 +115,12 @@ fun PlaceholderTabbyApp(
                   showDeleteAllAction = false,
                 )
               },
-              logcatContent = { _, onOpenLogs, _, onClose ->
-                PlaceholderScreen(
-                  title = "Logcat",
-                  "Logs" to onOpenLogs,
-                  "Close" to onClose,
+              logcatContent = { fileName, onOpenLogs, onInvalidFile, onClose ->
+                LogcatRouteContent(
+                  fileName = fileName,
+                  onOpenLogs = onOpenLogs,
+                  onInvalidFile = onInvalidFile,
+                  onClose = onClose,
                 )
               },
             )
@@ -195,24 +189,4 @@ private fun defaultProfilePropertiesRouteProfile(uuid: Uuid): Profile {
     imported = false,
     pending = false,
   )
-}
-
-@Composable
-private fun PlaceholderScreen(
-  title: String,
-  vararg actions: Pair<String, () -> Unit>,
-  subtitle: String? = null,
-  modifier: Modifier = Modifier,
-) {
-  Column(
-    modifier = modifier.fillMaxSize().padding(24.dp),
-    verticalArrangement = Arrangement.spacedBy(12.dp),
-  ) {
-    Text(text = "Tabby", style = MaterialTheme.typography.titleLarge)
-    Text(text = title, style = MaterialTheme.typography.bodyLarge)
-    subtitle?.let { Text(text = it, style = MaterialTheme.typography.bodyMedium) }
-    actions.forEach { (label, onClick) ->
-      Button(onClick = onClick) { Text(text = label) }
-    }
-  }
 }
