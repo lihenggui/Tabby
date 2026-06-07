@@ -17,6 +17,42 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileEventPlatformActionMapsEventStates() {
+    val externalProvider = "external-provider-intent"
+    val appSettingsTarget = "package:com.example.provider"
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000007")
+
+    assertEquals(
+      NewProfileEventPlatformAction.Ignore,
+      newProfileEventPlatformAction(NewProfileEventState.Idle),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.LaunchQRScanner,
+      newProfileEventPlatformAction(NewProfileEventState.LaunchQRScanner),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.LaunchExternalProvider(externalProvider),
+      newProfileEventPlatformAction(NewProfileEventState.LaunchExternalProvider(externalProvider)),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.LaunchProperties(uuid),
+      newProfileEventPlatformAction(NewProfileEventState.LaunchProperties(uuid)),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.OpenAppSettings(appSettingsTarget),
+      newProfileEventPlatformAction(NewProfileEventState.OpenAppSettings(appSettingsTarget)),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.ShowMessage("create failed"),
+      newProfileEventPlatformAction(NewProfileEventState.ShowMessage("create failed")),
+    )
+    assertEquals(
+      NewProfileEventPlatformAction.Finish,
+      newProfileEventPlatformAction(NewProfileEventState.Finish),
+    )
+  }
+
+  @Test
   fun defaultProvidersAreEmpty() {
     val state = NewProfileUiState<TestProvider>()
 

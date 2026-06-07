@@ -173,9 +173,49 @@ internal sealed interface NewProfileEventState<out ExternalProviderT, out AppSet
   data object Finish : NewProfileEventState<Nothing, Nothing>
 }
 
+internal sealed interface NewProfileEventPlatformAction<
+  out ExternalProviderT,
+  out AppSettingsTargetT,
+> {
+  data object Ignore : NewProfileEventPlatformAction<Nothing, Nothing>
+
+  data object LaunchQRScanner : NewProfileEventPlatformAction<Nothing, Nothing>
+
+  data class LaunchExternalProvider<out ExternalProviderT>(
+    val externalProvider: ExternalProviderT
+  ) : NewProfileEventPlatformAction<ExternalProviderT, Nothing>
+
+  data class LaunchProperties(val uuid: Uuid) : NewProfileEventPlatformAction<Nothing, Nothing>
+
+  data class OpenAppSettings<out AppSettingsTargetT>(val target: AppSettingsTargetT) :
+    NewProfileEventPlatformAction<Nothing, AppSettingsTargetT>
+
+  data class ShowMessage(val message: String) : NewProfileEventPlatformAction<Nothing, Nothing>
+
+  data object Finish : NewProfileEventPlatformAction<Nothing, Nothing>
+}
+
 internal fun <ExternalProviderT, AppSettingsTargetT> newProfileInitialEventState():
   NewProfileEventState<ExternalProviderT, AppSettingsTargetT> {
   return NewProfileEventState.Idle
+}
+
+internal fun <ExternalProviderT, AppSettingsTargetT> newProfileEventPlatformAction(
+  eventState: NewProfileEventState<ExternalProviderT, AppSettingsTargetT>
+): NewProfileEventPlatformAction<ExternalProviderT, AppSettingsTargetT> {
+  return when (eventState) {
+    NewProfileEventState.Idle -> NewProfileEventPlatformAction.Ignore
+    NewProfileEventState.LaunchQRScanner -> NewProfileEventPlatformAction.LaunchQRScanner
+    is NewProfileEventState.LaunchExternalProvider ->
+      NewProfileEventPlatformAction.LaunchExternalProvider(eventState.externalProvider)
+    is NewProfileEventState.LaunchProperties ->
+      NewProfileEventPlatformAction.LaunchProperties(eventState.uuid)
+    is NewProfileEventState.OpenAppSettings ->
+      NewProfileEventPlatformAction.OpenAppSettings(eventState.target)
+    is NewProfileEventState.ShowMessage ->
+      NewProfileEventPlatformAction.ShowMessage(eventState.message)
+    NewProfileEventState.Finish -> NewProfileEventPlatformAction.Finish
+  }
 }
 
 internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCreateAction {
