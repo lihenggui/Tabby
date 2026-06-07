@@ -45,6 +45,38 @@ internal data class NewProfileBuiltInProviderPresentation(
   val graphicToken: NewProfileProviderGraphicToken,
 )
 
+internal fun <T> newProfileProviderTextPlatformToken(
+  token: NewProfileProviderTextToken,
+  file: T,
+  url: T,
+  qr: T,
+  importFromFile: T,
+  importFromUrl: T,
+  importFromQr: T,
+): T {
+  return when (token) {
+    NewProfileProviderTextToken.File -> file
+    NewProfileProviderTextToken.Url -> url
+    NewProfileProviderTextToken.Qr -> qr
+    NewProfileProviderTextToken.ImportFromFile -> importFromFile
+    NewProfileProviderTextToken.ImportFromUrl -> importFromUrl
+    NewProfileProviderTextToken.ImportFromQr -> importFromQr
+  }
+}
+
+internal fun <T> newProfileProviderGraphicPlatformToken(
+  token: NewProfileProviderGraphicToken,
+  file: T,
+  url: T,
+  qr: T,
+): T {
+  return when (token) {
+    NewProfileProviderGraphicToken.File -> file
+    NewProfileProviderGraphicToken.Url -> url
+    NewProfileProviderGraphicToken.Qr -> qr
+  }
+}
+
 internal fun newProfileBuiltInProviderPresentation(
   kind: NewProfileProviderKind
 ): NewProfileBuiltInProviderPresentation? {

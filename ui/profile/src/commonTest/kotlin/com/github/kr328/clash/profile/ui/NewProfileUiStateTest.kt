@@ -81,6 +81,113 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun providerTextPlatformTokenMapsTextTokens() {
+    assertEquals(
+      "file",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.File,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+    assertEquals(
+      "url",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.Url,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+    assertEquals(
+      "qr",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.Qr,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+    assertEquals(
+      "import-file",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.ImportFromFile,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+    assertEquals(
+      "import-url",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.ImportFromUrl,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+    assertEquals(
+      "import-qr",
+      newProfileProviderTextPlatformToken(
+        token = NewProfileProviderTextToken.ImportFromQr,
+        file = "file",
+        url = "url",
+        qr = "qr",
+        importFromFile = "import-file",
+        importFromUrl = "import-url",
+        importFromQr = "import-qr",
+      ),
+    )
+  }
+
+  @Test
+  fun providerGraphicPlatformTokenMapsGraphicTokens() {
+    assertEquals(
+      "file",
+      newProfileProviderGraphicPlatformToken(
+        token = NewProfileProviderGraphicToken.File,
+        file = "file",
+        url = "url",
+        qr = "qr",
+      ),
+    )
+    assertEquals(
+      "url",
+      newProfileProviderGraphicPlatformToken(
+        token = NewProfileProviderGraphicToken.Url,
+        file = "file",
+        url = "url",
+        qr = "qr",
+      ),
+    )
+    assertEquals(
+      "qr",
+      newProfileProviderGraphicPlatformToken(
+        token = NewProfileProviderGraphicToken.Qr,
+        file = "file",
+        url = "url",
+        qr = "qr",
+      ),
+    )
+  }
+
+  @Test
   fun builtInProviderPresentationIgnoresExternalProviderKind() {
     assertEquals(null, newProfileBuiltInProviderPresentation(NewProfileProviderKind.External))
   }

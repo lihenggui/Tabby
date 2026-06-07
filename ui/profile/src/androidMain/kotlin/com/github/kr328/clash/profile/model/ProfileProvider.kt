@@ -9,6 +9,8 @@ import com.github.kr328.clash.profile.ui.NewProfileProviderGraphicToken
 import com.github.kr328.clash.profile.ui.NewProfileProviderKind
 import com.github.kr328.clash.profile.ui.NewProfileProviderTextToken
 import com.github.kr328.clash.profile.ui.newProfileBuiltInProviderPresentation
+import com.github.kr328.clash.profile.ui.newProfileProviderGraphicPlatformToken
+import com.github.kr328.clash.profile.ui.newProfileProviderTextPlatformToken
 import com.github.kr328.clash.ui.icon.BaselineAttachFile
 import com.github.kr328.clash.ui.icon.BaselineCloudDownload
 import com.github.kr328.clash.ui.icon.BaselineQrCodeScanner
@@ -53,20 +55,24 @@ internal sealed class ProfileProvider {
 }
 
 private fun NewProfileProviderTextToken.androidString(context: Context): String {
-  return when (this) {
-    NewProfileProviderTextToken.File -> context.getString(CommonR.string.file)
-    NewProfileProviderTextToken.Url -> context.getString(CommonR.string.url)
-    NewProfileProviderTextToken.Qr -> context.getString(R.string.qr)
-    NewProfileProviderTextToken.ImportFromFile -> context.getString(R.string.import_from_file)
-    NewProfileProviderTextToken.ImportFromUrl -> context.getString(R.string.import_from_url)
-    NewProfileProviderTextToken.ImportFromQr -> context.getString(R.string.import_from_qr)
-  }
+  return context.getString(
+    newProfileProviderTextPlatformToken(
+      token = this,
+      file = CommonR.string.file,
+      url = CommonR.string.url,
+      qr = R.string.qr,
+      importFromFile = R.string.import_from_file,
+      importFromUrl = R.string.import_from_url,
+      importFromQr = R.string.import_from_qr,
+    )
+  )
 }
 
 private fun NewProfileProviderGraphicToken.androidIcon(): ImageVector {
-  return when (this) {
-    NewProfileProviderGraphicToken.File -> TabbyIcons.BaselineAttachFile
-    NewProfileProviderGraphicToken.Url -> TabbyIcons.BaselineCloudDownload
-    NewProfileProviderGraphicToken.Qr -> TabbyIcons.BaselineQrCodeScanner
-  }
+  return newProfileProviderGraphicPlatformToken(
+    token = this,
+    file = TabbyIcons.BaselineAttachFile,
+    url = TabbyIcons.BaselineCloudDownload,
+    qr = TabbyIcons.BaselineQrCodeScanner,
+  )
 }

@@ -137,24 +137,27 @@ private fun NewProfileRouteBuiltInProvider.toProviderKind(): NewProfileProviderK
 
 @Composable
 private fun NewProfileProviderTextToken.text(): String {
-  return when (this) {
-    NewProfileProviderTextToken.File -> stringResource(SharedRes.string.file)
-    NewProfileProviderTextToken.Url -> stringResource(SharedRes.string.url)
-    NewProfileProviderTextToken.Qr -> stringResource(ProfileRes.string.qr)
-    NewProfileProviderTextToken.ImportFromFile -> stringResource(ProfileRes.string.import_from_file)
-    NewProfileProviderTextToken.ImportFromUrl -> stringResource(ProfileRes.string.import_from_url)
-    NewProfileProviderTextToken.ImportFromQr -> stringResource(ProfileRes.string.import_from_qr)
-  }
+  return stringResource(
+    newProfileProviderTextPlatformToken(
+      token = this,
+      file = SharedRes.string.file,
+      url = SharedRes.string.url,
+      qr = ProfileRes.string.qr,
+      importFromFile = ProfileRes.string.import_from_file,
+      importFromUrl = ProfileRes.string.import_from_url,
+      importFromQr = ProfileRes.string.import_from_qr,
+    )
+  )
 }
 
 @Composable
 private fun NewProfileProviderGraphicToken.iconPainter(): Painter {
-  val icon =
-    when (this) {
-      NewProfileProviderGraphicToken.File -> TabbyIcons.BaselineAttachFile
-      NewProfileProviderGraphicToken.Url -> TabbyIcons.BaselineCloudDownload
-      NewProfileProviderGraphicToken.Qr -> TabbyIcons.BaselineQrCodeScanner
-    }
-
-  return rememberVectorPainter(icon)
+  return rememberVectorPainter(
+    newProfileProviderGraphicPlatformToken(
+      token = this,
+      file = TabbyIcons.BaselineAttachFile,
+      url = TabbyIcons.BaselineCloudDownload,
+      qr = TabbyIcons.BaselineQrCodeScanner,
+    )
+  )
 }
