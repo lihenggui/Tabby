@@ -81,8 +81,31 @@ internal sealed interface HomeEventState<out VpnPermissionT> {
   data class ShowMessage(val message: String) : HomeEventState<Nothing>
 }
 
+internal sealed interface HomeEventPlatformAction<out VpnPermissionT> {
+  data object Ignore : HomeEventPlatformAction<Nothing>
+
+  data class RequestVpnPermission<out VpnPermissionT>(val permissionRequest: VpnPermissionT) :
+    HomeEventPlatformAction<VpnPermissionT>
+
+  data object ShowNoProfileMessage : HomeEventPlatformAction<Nothing>
+
+  data class ShowMessage(val message: String) : HomeEventPlatformAction<Nothing>
+}
+
 internal fun homeInitialEventState(): HomeEventState<Nothing> {
   return HomeEventState.Idle
+}
+
+internal fun <VpnPermissionT> homeEventPlatformAction(
+  eventState: HomeEventState<VpnPermissionT>
+): HomeEventPlatformAction<VpnPermissionT> {
+  return when (eventState) {
+    HomeEventState.Idle -> HomeEventPlatformAction.Ignore
+    is HomeEventState.RequestVpnPermission ->
+      HomeEventPlatformAction.RequestVpnPermission(eventState.permissionRequest)
+    HomeEventState.ShowNoProfileMessage -> HomeEventPlatformAction.ShowNoProfileMessage
+    is HomeEventState.ShowMessage -> HomeEventPlatformAction.ShowMessage(eventState.message)
+  }
 }
 
 internal fun homeStartAction(activeProfile: Profile?): HomeStartAction {
