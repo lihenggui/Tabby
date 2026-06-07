@@ -19,6 +19,7 @@ import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
 import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
 import com.github.kr328.clash.home.homeEntries
+import com.github.kr328.clash.home.ui.HelpRouteContent
 import com.github.kr328.clash.home.ui.HomeRouteContent
 import com.github.kr328.clash.log.LogRouteContent
 import com.github.kr328.clash.log.logsEntries
@@ -68,7 +69,7 @@ fun PlaceholderTabbyApp(
                 onOpenHelp = actions.openHelp,
               )
             },
-            helpContent = { PlaceholderScreen("Help") },
+            helpContent = { HelpRouteContent() },
           )
         },
         proxyEntries = { onReLaunch ->
