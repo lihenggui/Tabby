@@ -1,18 +1,22 @@
 package com.github.kr328.clash.crash.ui
 
+import android.app.Application
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.kr328.clash.crash.vm.AppCrashedViewModel
+import androidx.compose.ui.platform.LocalContext
+import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.crash.model.AndroidCrashLogRepository
 
 @Composable
-internal fun AppCrashedScreen(
-  modifier: Modifier = Modifier,
-  viewModel: AppCrashedViewModel = viewModel(),
-) {
-  val logs by viewModel.logs.collectAsStateWithLifecycle()
+internal fun AppCrashedScreen(modifier: Modifier = Modifier) {
+  val context = LocalContext.current
+  val application = context.applicationContext as Application
+  val crashLogRepository = remember(application) { AndroidCrashLogRepository(application) }
 
-  AppCrashedRouteContent(modifier = modifier, logs = logs)
+  CrashLogRepositoryAppCrashedRouteContent(
+    crashLogRepository = crashLogRepository,
+    modifier = modifier,
+    onActionError = { cause -> Log.e("Failed to load crash logs", cause) },
+  )
 }
