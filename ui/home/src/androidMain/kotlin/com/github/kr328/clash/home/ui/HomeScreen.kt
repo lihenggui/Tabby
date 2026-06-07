@@ -73,16 +73,13 @@ internal fun HomeScreen(
     viewModel.consumeEvent()
   }
 
-  HomeContent(
+  HomeStateRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     appName = androidStringResource(CommonR.string.tabby),
     logoPainter = painterResource(CommonR.drawable.ic_tabby_foreground),
     clashRunning = clashRunning,
-    forwarded = uiState.forwarded,
-    mode = uiState.mode,
-    profileName = uiState.profileName,
-    hasProviders = uiState.hasProviders,
+    state = uiState,
     onToggleStatus = viewModel::toggleStatus,
     onOpenProxy = onOpenProxy,
     onOpenProfiles = onOpenProfiles,

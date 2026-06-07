@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
@@ -139,16 +140,13 @@ fun HomeRouteContent(
     }
   }
 
-  HomeContent(
+  HomeStateRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
     appName = appName,
     logoPainter = logoPainter,
     clashRunning = clashRunning,
-    forwarded = uiState.forwarded,
-    mode = uiState.mode,
-    profileName = uiState.profileName,
-    hasProviders = uiState.hasProviders,
+    state = uiState,
     onToggleStatus = {
       scope.launch {
         when (homeToggleAction(clashRunning)) {
@@ -157,6 +155,42 @@ fun HomeRouteContent(
         }
       }
     },
+    onOpenProxy = onOpenProxy,
+    onOpenProfiles = onOpenProfiles,
+    onOpenProviders = onOpenProviders,
+    onOpenLogs = onOpenLogs,
+    onOpenSettings = onOpenSettings,
+    onOpenHelp = onOpenHelp,
+  )
+}
+
+@Composable
+internal fun HomeStateRouteContent(
+  clashRunning: Boolean,
+  state: HomeUiState,
+  onToggleStatus: () -> Unit,
+  onOpenProxy: () -> Unit,
+  onOpenProfiles: () -> Unit,
+  onOpenProviders: () -> Unit,
+  onOpenLogs: () -> Unit,
+  onOpenSettings: () -> Unit,
+  onOpenHelp: () -> Unit,
+  modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+  appName: String = "Tabby",
+  logoPainter: Painter = rememberVectorPainter(TabbyIcons.BaselineSwapVerticalCircle),
+) {
+  HomeContent(
+    modifier = modifier,
+    snackbarHostState = snackbarHostState,
+    appName = appName,
+    logoPainter = logoPainter,
+    clashRunning = clashRunning,
+    forwarded = state.forwarded,
+    mode = state.mode,
+    profileName = state.profileName,
+    hasProviders = state.hasProviders,
+    onToggleStatus = onToggleStatus,
     onOpenProxy = onOpenProxy,
     onOpenProfiles = onOpenProfiles,
     onOpenProviders = onOpenProviders,
