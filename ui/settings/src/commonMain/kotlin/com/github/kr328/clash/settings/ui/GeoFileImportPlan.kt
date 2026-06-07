@@ -20,6 +20,12 @@ internal sealed interface GeoFileImportSourceAction {
   data object Fail : GeoFileImportSourceAction
 }
 
+internal sealed interface GeoFileImportRequestAction {
+  data class RequestPicker(val importType: GeoFileImportType) : GeoFileImportRequestAction
+
+  data object Ignore : GeoFileImportRequestAction
+}
+
 internal sealed interface GeoFileImportResult {
   data object Idle : GeoFileImportResult
 
@@ -66,6 +72,13 @@ internal sealed interface GeoFileImportResultDisplayAction {
 
 internal fun geoFileImportInitialResult(): GeoFileImportResult {
   return GeoFileImportResult.Idle
+}
+
+internal fun geoFileImportRequestAction(
+  importType: GeoFileImportType?
+): GeoFileImportRequestAction {
+  return importType?.let { GeoFileImportRequestAction.RequestPicker(it) }
+    ?: GeoFileImportRequestAction.Ignore
 }
 
 internal fun <T> geoFileImportPickerResultAction(

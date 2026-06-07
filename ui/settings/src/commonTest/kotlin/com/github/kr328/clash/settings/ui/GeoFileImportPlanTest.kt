@@ -10,6 +10,19 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun importRequestActionRequestsPickerForSelectedImportType() {
+    assertEquals(
+      GeoFileImportRequestAction.RequestPicker(GeoFileImportType.GeoSite),
+      geoFileImportRequestAction(GeoFileImportType.GeoSite),
+    )
+  }
+
+  @Test
+  fun importRequestActionIgnoresMissingImportType() {
+    assertEquals(GeoFileImportRequestAction.Ignore, geoFileImportRequestAction(null))
+  }
+
+  @Test
   fun pickerPlatformPayloadKeepsSourceWhenImportTypeIsPending() {
     val source = TestSource("geoip.mmdb")
 

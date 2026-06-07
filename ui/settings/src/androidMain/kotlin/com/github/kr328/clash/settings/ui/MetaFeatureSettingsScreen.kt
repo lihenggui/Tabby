@@ -75,6 +75,16 @@ internal fun MetaFeatureSettingsScreen(
         }
       }
 
+    fun requestGeoFileImport(importType: GeoFileImportType?) {
+      when (val action = geoFileImportRequestAction(importType)) {
+        is GeoFileImportRequestAction.RequestPicker -> {
+          pendingImportType = action.importType
+          importLauncher.launch("*/*")
+        }
+        GeoFileImportRequestAction.Ignore -> Unit
+      }
+    }
+
     MetaFeatureSettingsContent(
       configuration = configuration,
       actions = viewModel,
@@ -86,22 +96,10 @@ internal fun MetaFeatureSettingsScreen(
         viewModel.resetOverride()
         onResetCompleted()
       },
-      onImportGeoIp = {
-        pendingImportType = GeoFileImportType.GeoIp
-        importLauncher.launch("*/*")
-      },
-      onImportGeoSite = {
-        pendingImportType = GeoFileImportType.GeoSite
-        importLauncher.launch("*/*")
-      },
-      onImportCountry = {
-        pendingImportType = GeoFileImportType.Country
-        importLauncher.launch("*/*")
-      },
-      onImportASN = {
-        pendingImportType = GeoFileImportType.ASN
-        importLauncher.launch("*/*")
-      },
+      onImportGeoIp = { requestGeoFileImport(GeoFileImportType.GeoIp) },
+      onImportGeoSite = { requestGeoFileImport(GeoFileImportType.GeoSite) },
+      onImportCountry = { requestGeoFileImport(GeoFileImportType.Country) },
+      onImportASN = { requestGeoFileImport(GeoFileImportType.ASN) },
       onOpenEditableTextList = onOpenEditableTextList,
     )
 
