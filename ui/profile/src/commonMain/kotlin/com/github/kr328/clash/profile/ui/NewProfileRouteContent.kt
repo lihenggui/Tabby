@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.ui.icon.BaselineAttachFile
 import com.github.kr328.clash.ui.icon.BaselineCloudDownload
 import com.github.kr328.clash.ui.icon.BaselineQrCodeScanner
@@ -24,6 +25,12 @@ enum class NewProfileRouteBuiltInProvider {
   File,
   Url,
   QR,
+}
+
+sealed interface NewProfileRouteCreateAction {
+  data class CreateProfile(val type: Profile.Type) : NewProfileRouteCreateAction
+
+  data object LaunchQrScanner : NewProfileRouteCreateAction
 }
 
 data class NewProfileRouteExternalProvider(
@@ -66,6 +73,18 @@ fun NewProfileRouteContent(
       }
     },
   )
+}
+
+fun newProfileRouteCreateAction(
+  provider: NewProfileRouteBuiltInProvider
+): NewProfileRouteCreateAction {
+  return when (provider) {
+    NewProfileRouteBuiltInProvider.File ->
+      NewProfileRouteCreateAction.CreateProfile(Profile.Type.File)
+    NewProfileRouteBuiltInProvider.Url ->
+      NewProfileRouteCreateAction.CreateProfile(Profile.Type.Url)
+    NewProfileRouteBuiltInProvider.QR -> NewProfileRouteCreateAction.LaunchQrScanner
+  }
 }
 
 private sealed interface NewProfileRouteProvider {
