@@ -7,6 +7,17 @@ internal data class AccessControlUiState<T>(
   val settings: AccessControlSettingsState,
 )
 
+internal data class AccessControlClipboardImportPayload(
+  val hasPrimaryClipItem: Boolean,
+  val clipboardText: String?,
+)
+
+internal sealed interface AccessControlClipboardImportAction {
+  data class Import(val clipboardText: String?) : AccessControlClipboardImportAction
+
+  data object Ignore : AccessControlClipboardImportAction
+}
+
 internal fun <T> accessControlInitialUiState(
   selected: Set<String> = emptySet(),
   sort: AccessControlSort,
@@ -24,6 +35,26 @@ internal fun <T> accessControlInitialUiState(
         showSystemApps = showSystemApps,
       ),
   )
+}
+
+internal fun accessControlClipboardImportPayloadFromPlatformPayload(
+  hasPrimaryClipItem: Boolean,
+  clipboardText: String?,
+): AccessControlClipboardImportPayload {
+  return AccessControlClipboardImportPayload(
+    hasPrimaryClipItem = hasPrimaryClipItem,
+    clipboardText = if (hasPrimaryClipItem) clipboardText else null,
+  )
+}
+
+internal fun accessControlClipboardImportAction(
+  payload: AccessControlClipboardImportPayload
+): AccessControlClipboardImportAction {
+  return if (payload.hasPrimaryClipItem) {
+    AccessControlClipboardImportAction.Import(payload.clipboardText)
+  } else {
+    AccessControlClipboardImportAction.Ignore
+  }
 }
 
 internal fun <T> AccessControlUiState<T>.withAccessControlApps(

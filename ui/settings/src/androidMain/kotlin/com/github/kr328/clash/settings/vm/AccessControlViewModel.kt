@@ -25,7 +25,10 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.settings.ui.AccessControlActions
+import com.github.kr328.clash.settings.ui.AccessControlClipboardImportAction
 import com.github.kr328.clash.settings.ui.AccessControlUiState
+import com.github.kr328.clash.settings.ui.accessControlClipboardImportAction
+import com.github.kr328.clash.settings.ui.accessControlClipboardImportPayloadFromPlatformPayload
 import com.github.kr328.clash.settings.ui.accessControlExportClipboardText
 import com.github.kr328.clash.settings.ui.accessControlImportClipboardState
 import com.github.kr328.clash.settings.ui.accessControlInitialUiState
@@ -146,16 +149,29 @@ internal class AccessControlViewModel(app: Application) :
   override fun importFromClipboard() {
     val clipboard = appContext.getSystemService<ClipboardManager>()
     val data = clipboard?.primaryClip
+    val hasPrimaryClipItem = data != null && data.itemCount > 0
+    val clipboardText = if (hasPrimaryClipItem) data.getItemAt(0).text?.toString() else null
 
-    if (data != null && data.itemCount > 0) {
-      val state = uiState.value
-      val selected =
-        accessControlImportClipboardState(
-          state = state,
-          clipboardText = data.getItemAt(0).text?.toString(),
-          packageName = AppInfo::packageName,
+    when (
+      val action =
+        accessControlClipboardImportAction(
+          accessControlClipboardImportPayloadFromPlatformPayload(
+            hasPrimaryClipItem = hasPrimaryClipItem,
+            clipboardText = clipboardText,
+          )
         )
-      uiState.update { selected }
+    ) {
+      is AccessControlClipboardImportAction.Import -> {
+        val state = uiState.value
+        val selected =
+          accessControlImportClipboardState(
+            state = state,
+            clipboardText = action.clipboardText,
+            packageName = AppInfo::packageName,
+          )
+        uiState.update { selected }
+      }
+      AccessControlClipboardImportAction.Ignore -> Unit
     }
   }
 

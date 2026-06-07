@@ -72,6 +72,52 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun clipboardImportPayloadKeepsTextOnlyWhenPrimaryClipItemExists() {
+    assertEquals(
+      AccessControlClipboardImportPayload(
+        hasPrimaryClipItem = true,
+        clipboardText = "com.example.alpha",
+      ),
+      accessControlClipboardImportPayloadFromPlatformPayload(
+        hasPrimaryClipItem = true,
+        clipboardText = "com.example.alpha",
+      ),
+    )
+    assertEquals(
+      AccessControlClipboardImportPayload(
+        hasPrimaryClipItem = false,
+        clipboardText = null,
+      ),
+      accessControlClipboardImportPayloadFromPlatformPayload(
+        hasPrimaryClipItem = false,
+        clipboardText = "ignored",
+      ),
+    )
+  }
+
+  @Test
+  fun clipboardImportActionImportsOnlyWhenPrimaryClipItemExists() {
+    assertEquals(
+      AccessControlClipboardImportAction.Import("com.example.alpha"),
+      accessControlClipboardImportAction(
+        AccessControlClipboardImportPayload(
+          hasPrimaryClipItem = true,
+          clipboardText = "com.example.alpha",
+        )
+      ),
+    )
+    assertEquals(
+      AccessControlClipboardImportAction.Ignore,
+      accessControlClipboardImportAction(
+        AccessControlClipboardImportPayload(
+          hasPrimaryClipItem = false,
+          clipboardText = null,
+        )
+      ),
+    )
+  }
+
+  @Test
   fun mapsSystemAppFromPlatformFlags() {
     val systemAppFlag = 0b0100
 
