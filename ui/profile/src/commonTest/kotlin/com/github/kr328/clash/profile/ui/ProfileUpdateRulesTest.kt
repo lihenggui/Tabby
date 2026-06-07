@@ -118,6 +118,18 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
+  fun updateAllActionCanBeSelectedFromPublicUpdatingFlag() {
+    assertEquals(
+      ProfileUpdateAllAction.QueryProfiles,
+      profileUpdateAllAction(allUpdating = false),
+    )
+    assertEquals(
+      ProfileUpdateAllAction.Ignore,
+      profileUpdateAllAction(allUpdating = true),
+    )
+  }
+
+  @Test
   fun marksImportedNonFileProfilesAsUpdatable() {
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.Url, imported = true)))
     assertTrue(isProfileUpdatable(profile(type = Profile.Type.External, imported = true)))

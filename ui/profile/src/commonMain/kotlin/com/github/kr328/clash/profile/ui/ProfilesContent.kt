@@ -94,7 +94,7 @@ internal fun ProfilesContent(
       sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
       onDismissRequest = { menuItem = null },
     ) {
-      if (profile.imported && profile.type != Profile.Type.File) {
+      if (isProfileUpdatable(profile)) {
         ProfilesMenuAction(
           icon = TabbyIcons.BaselineUpdate,
           text = stringResource(ProfileRes.string.update),

@@ -8,9 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
+import com.github.kr328.clash.profile.ui.ProfileUpdateAllAction
 import com.github.kr328.clash.profile.ui.ProfilesListRouteContent
+import com.github.kr328.clash.profile.ui.profileUpdateAllAction
+import com.github.kr328.clash.profile.ui.profileUpdateAllTargets
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.launch
 
@@ -35,17 +37,20 @@ internal fun ProfileRepositoryProfilesListRouteContent(
     profiles = profiles,
     allUpdating = allUpdating,
     onUpdateAll = {
-      if (!allUpdating) {
-        launchProfileAction {
-          allUpdating = true
-          try {
-            profileRepository.queryProfiles().profileUpdateAllTargets().forEach { uuid ->
-              profileRepository.update(uuid)
+      when (profileUpdateAllAction(allUpdating)) {
+        ProfileUpdateAllAction.QueryProfiles -> {
+          launchProfileAction {
+            allUpdating = true
+            try {
+              profileUpdateAllTargets(profileRepository.queryProfiles()).forEach { uuid ->
+                profileRepository.update(uuid)
+              }
+            } finally {
+              allUpdating = false
             }
-          } finally {
-            allUpdating = false
           }
         }
+        ProfileUpdateAllAction.Ignore -> Unit
       }
     },
     onCreate = onCreate,
@@ -67,9 +72,4 @@ internal fun ProfileRepositoryProfilesListRouteContent(
     },
     onDelete = { profile -> launchProfileAction { profileRepository.delete(profile.uuid) } },
   )
-}
-
-private fun List<Profile>.profileUpdateAllTargets(): List<Uuid> {
-  return filter { profile -> profile.imported && profile.type != Profile.Type.File }
-    .map(Profile::uuid)
 }

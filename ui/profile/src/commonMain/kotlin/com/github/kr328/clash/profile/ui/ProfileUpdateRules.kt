@@ -8,7 +8,7 @@ internal enum class ProfileActivationAction {
   RequireSave,
 }
 
-internal enum class ProfileUpdateAllAction {
+enum class ProfileUpdateAllAction {
   QueryProfiles,
   Ignore,
 }
@@ -84,8 +84,11 @@ internal fun profilesEditableSnackbarAction(
 }
 
 internal fun profileUpdateAllAction(state: ProfilesUiState): ProfileUpdateAllAction {
-  return if (state.allUpdating) ProfileUpdateAllAction.Ignore
-  else ProfileUpdateAllAction.QueryProfiles
+  return profileUpdateAllAction(allUpdating = state.allUpdating)
+}
+
+fun profileUpdateAllAction(allUpdating: Boolean): ProfileUpdateAllAction {
+  return if (allUpdating) ProfileUpdateAllAction.Ignore else ProfileUpdateAllAction.QueryProfiles
 }
 
 internal fun isProfileUpdatable(profile: Profile): Boolean {
@@ -100,7 +103,7 @@ internal fun filterUpdatableProfiles(profiles: List<Profile>): List<Profile> {
   return profiles.filter(::isProfileUpdatable)
 }
 
-internal fun profileUpdateAllTargets(profiles: List<Profile>): List<Uuid> {
+fun profileUpdateAllTargets(profiles: List<Profile>): List<Uuid> {
   return filterUpdatableProfiles(profiles).map(Profile::uuid)
 }
 
