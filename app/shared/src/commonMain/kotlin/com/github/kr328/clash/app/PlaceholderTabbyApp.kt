@@ -19,7 +19,6 @@ import com.github.kr328.clash.profile.ProfilesRouteContent
 import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent
 import com.github.kr328.clash.profile.ui.NewProfileRouteContent
-import com.github.kr328.clash.profile.ui.ProvidersRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
@@ -98,7 +97,11 @@ fun PlaceholderTabbyApp(
                 },
               )
             },
-            providersContent = { ProvidersRouteContent() },
+            providersContent = {
+              EngineControllerProvidersRouteContent(
+                engineController = engineEnvironment.engineController
+              )
+            },
           )
         },
         logsEntries = {
