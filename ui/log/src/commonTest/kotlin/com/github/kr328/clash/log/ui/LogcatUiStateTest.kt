@@ -20,6 +20,34 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatEventPlatformActionMapsEventStates() {
+    assertEquals(
+      LogcatEventPlatformAction.Ignore,
+      logcatEventPlatformAction(LogcatEventState.Idle),
+    )
+    assertEquals(
+      LogcatEventPlatformAction.Close,
+      logcatEventPlatformAction(LogcatEventState.Close),
+    )
+    assertEquals(
+      LogcatEventPlatformAction.InvalidFile,
+      logcatEventPlatformAction(LogcatEventState.InvalidFile),
+    )
+    assertEquals(
+      LogcatEventPlatformAction.OpenLogs,
+      logcatEventPlatformAction(LogcatEventState.OpenLogs),
+    )
+    assertEquals(
+      LogcatEventPlatformAction.RequestExport("clash-1234.log"),
+      logcatEventPlatformAction(LogcatEventState.RequestExport("clash-1234.log")),
+    )
+    assertEquals(
+      LogcatEventPlatformAction.ShowMessage("exported"),
+      logcatEventPlatformAction(LogcatEventState.ShowMessage("exported")),
+    )
+  }
+
+  @Test
   fun logcatInitialActionStartsStreamingWhenNoFileNameIsProvided() {
     assertEquals(
       LogcatInitialAction.StartStreaming,

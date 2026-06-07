@@ -50,8 +50,34 @@ internal sealed interface LogcatEventState {
   data class ShowMessage(val message: String) : LogcatEventState
 }
 
+internal sealed interface LogcatEventPlatformAction {
+  data object Ignore : LogcatEventPlatformAction
+
+  data object Close : LogcatEventPlatformAction
+
+  data object InvalidFile : LogcatEventPlatformAction
+
+  data object OpenLogs : LogcatEventPlatformAction
+
+  data class RequestExport(val fileName: String) : LogcatEventPlatformAction
+
+  data class ShowMessage(val message: String) : LogcatEventPlatformAction
+}
+
 internal fun logcatInitialEventState(): LogcatEventState {
   return LogcatEventState.Idle
+}
+
+internal fun logcatEventPlatformAction(eventState: LogcatEventState): LogcatEventPlatformAction {
+  return when (eventState) {
+    LogcatEventState.Idle -> LogcatEventPlatformAction.Ignore
+    LogcatEventState.Close -> LogcatEventPlatformAction.Close
+    LogcatEventState.InvalidFile -> LogcatEventPlatformAction.InvalidFile
+    LogcatEventState.OpenLogs -> LogcatEventPlatformAction.OpenLogs
+    is LogcatEventState.RequestExport ->
+      LogcatEventPlatformAction.RequestExport(eventState.fileName)
+    is LogcatEventState.ShowMessage -> LogcatEventPlatformAction.ShowMessage(eventState.message)
+  }
 }
 
 internal sealed interface LogcatDeleteAction {
