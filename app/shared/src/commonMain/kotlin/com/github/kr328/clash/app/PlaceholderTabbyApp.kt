@@ -23,7 +23,6 @@ import com.github.kr328.clash.proxy.ui.ProxyRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlRouteContent
-import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
 import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
@@ -34,9 +33,19 @@ fun PlaceholderTabbyApp(
   darkMode: DarkMode = DarkMode.Auto,
   modifier: Modifier = Modifier,
 ) {
-  val appDarkModeState = remember { mutableStateOf(darkMode) }
+  val appSettingsRepository = engineEnvironment.appSettingsRepository
+  val appDarkModeState =
+    remember(appSettingsRepository) {
+      mutableStateOf(
+        appSettingsRepository.query(defaults = TabbyAppSettings(darkMode = darkMode)).darkMode
+      )
+    }
   val backStack = remember { tabbyInitialBackStack() }
-  LaunchedEffect(darkMode) { appDarkModeState.value = darkMode }
+  LaunchedEffect(appSettingsRepository, darkMode) {
+    if (!appSettingsRepository.hasDarkMode) {
+      appDarkModeState.value = darkMode
+    }
+  }
   val entryProvider =
     remember(engineEnvironment) {
       tabbyEntryProvider(
@@ -136,7 +145,8 @@ fun PlaceholderTabbyApp(
           settingsEntries {
             SettingsRouteContent(
               appSettingsContent = {
-                AppSettingsRouteContent(
+                AppSettingsRepositoryRouteContent(
+                  repository = appSettingsRepository,
                   darkMode = appDarkModeState.value,
                   onDarkModeChange = { appDarkModeState.value = it },
                 )

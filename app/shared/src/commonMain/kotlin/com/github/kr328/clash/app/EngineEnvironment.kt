@@ -8,4 +8,5 @@ data class EngineEnvironment(
   val engineController: EngineController,
   val profileRepository: ProfileRepository,
   val logRepository: LogRepository,
+  val appSettingsRepository: TabbyAppSettingsRepository,
 )

@@ -9,6 +9,7 @@ kotlin {
       api(projects.ui.shared)
       api(projects.core.engineApi)
       implementation(libs.kotlinx.coroutines.core)
+      implementation(projects.core.settingsStore)
       implementation(projects.ui.crash)
       implementation(projects.ui.home)
       implementation(projects.ui.log)
@@ -16,6 +17,8 @@ kotlin {
       implementation(projects.ui.proxy)
       implementation(projects.ui.settings)
     }
+
+    commonTest.dependencies { implementation(libs.multiplatform.settings.test) }
 
     desktopMain.dependencies { implementation(projects.core.engineDesktop) }
 
