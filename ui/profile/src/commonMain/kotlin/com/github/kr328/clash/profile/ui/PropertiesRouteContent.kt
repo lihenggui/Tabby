@@ -69,12 +69,10 @@ fun PropertiesRouteContent(
     }
   }
 
-  PropertiesContent(
+  PropertiesStateRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    profile = checkNotNull(uiState.profile),
-    processing = uiState.processing,
-    progressState = uiState.progress,
+    state = uiState,
     showExitWithoutSavingDialog = showExitWithoutSavingDialog,
     tipsProperties = tipsProperties,
     onBack = onBack,
@@ -112,6 +110,43 @@ fun PropertiesRouteContent(
     onUrlChanged = { url -> updateProfile(uiState.withProfileSource(url)) },
     onIntervalChanged = { interval -> updateProfile(uiState.withProfileInterval(interval)) },
   )
+}
+
+@Composable
+internal fun PropertiesStateRouteContent(
+  modifier: Modifier = Modifier,
+  snackbarHostState: SnackbarHostState,
+  state: PropertiesUiState,
+  showExitWithoutSavingDialog: Boolean,
+  tipsProperties: AnnotatedString,
+  onBack: () -> Unit,
+  onDismissExitWithoutSavingDialog: () -> Unit,
+  onBrowseFiles: () -> Unit,
+  onCommit: () -> Unit,
+  onRequestClose: () -> Unit,
+  onNameChanged: (String) -> Unit,
+  onUrlChanged: (String) -> Unit,
+  onIntervalChanged: (Long) -> Unit,
+) {
+  state.profile?.let { profile ->
+    PropertiesContent(
+      modifier = modifier,
+      snackbarHostState = snackbarHostState,
+      profile = profile,
+      processing = state.processing,
+      progressState = state.progress,
+      showExitWithoutSavingDialog = showExitWithoutSavingDialog,
+      tipsProperties = tipsProperties,
+      onBack = onBack,
+      onDismissExitWithoutSavingDialog = onDismissExitWithoutSavingDialog,
+      onBrowseFiles = onBrowseFiles,
+      onCommit = onCommit,
+      onRequestClose = onRequestClose,
+      onNameChanged = onNameChanged,
+      onUrlChanged = onUrlChanged,
+      onIntervalChanged = onIntervalChanged,
+    )
+  }
 }
 
 private fun defaultPropertiesRouteProfile(): Profile {

@@ -78,12 +78,10 @@ internal fun PropertiesScreen(
 
     BackHandler(onBack = onBack)
 
-    PropertiesContent(
+    PropertiesStateRouteContent(
       modifier = modifier,
       snackbarHostState = snackbarHostState,
-      profile = profile,
-      processing = uiState.processing,
-      progressState = uiState.progress,
+      state = uiState,
       showExitWithoutSavingDialog = showExitWithoutSavingDialog,
       tipsProperties = AnnotatedString.fromHtml(stringResource(R.string.tips_properties)),
       onBack = onBack,
@@ -102,26 +100,27 @@ internal fun PropertiesScreen(
 @PreviewTabby
 @Composable
 private fun PropertiesContentPreview() {
-  PropertiesContent(
+  PropertiesStateRouteContent(
     snackbarHostState = SnackbarHostState(),
-    profile =
-      Profile(
-        uuid = Uuid.fromLongs(0, 0),
-        name = "Meta Profile",
-        type = Profile.Type.Url,
-        source = "https://example.com/config.yaml",
-        active = false,
-        interval = 60.minutes.inWholeMilliseconds,
-        upload = 0,
-        download = 0,
-        total = 0,
-        expire = 0,
-        updatedAt = 0,
-        imported = false,
-        pending = false,
-      ),
-    processing = false,
-    progressState = PropertiesProgressState(),
+    state =
+      propertiesInitialUiState()
+        .withLoadedProfile(
+          Profile(
+            uuid = Uuid.fromLongs(0, 0),
+            name = "Meta Profile",
+            type = Profile.Type.Url,
+            source = "https://example.com/config.yaml",
+            active = false,
+            interval = 60.minutes.inWholeMilliseconds,
+            upload = 0,
+            download = 0,
+            total = 0,
+            expire = 0,
+            updatedAt = 0,
+            imported = false,
+            pending = false,
+          )
+        ),
     showExitWithoutSavingDialog = false,
     tipsProperties = AnnotatedString("Accept Only Tabby Config"),
     onBack = {},
