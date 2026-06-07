@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.DarkMode
+import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.crash.crashEntries
 import com.github.kr328.clash.crash.ui.ApkBrokenRouteContent
 import com.github.kr328.clash.crash.ui.AppCrashedRouteContent
@@ -27,6 +28,7 @@ import com.github.kr328.clash.profile.profilesEntries
 import com.github.kr328.clash.profile.ui.FilesRouteContent
 import com.github.kr328.clash.profile.ui.NewProfileRouteContent
 import com.github.kr328.clash.profile.ui.ProfilesListRouteContent
+import com.github.kr328.clash.profile.ui.PropertiesRouteContent
 import com.github.kr328.clash.profile.ui.ProvidersRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
 import com.github.kr328.clash.proxy.ui.ProxyRouteContent
@@ -37,6 +39,7 @@ import com.github.kr328.clash.settings.ui.AppSettingsRouteContent
 import com.github.kr328.clash.settings.ui.MetaFeatureSettingsRouteContent
 import com.github.kr328.clash.settings.ui.NetworkSettingsRouteContent
 import com.github.kr328.clash.settings.ui.OverrideSettingsRouteContent
+import kotlin.uuid.Uuid
 
 @Composable
 fun PlaceholderTabbyApp(
@@ -90,10 +93,10 @@ fun PlaceholderTabbyApp(
                   NewProfileRouteContent(onCreateBuiltIn = { onFinish() })
                 },
                 propertiesContent = { uuid, onBrowseFiles, onFinish ->
-                  PlaceholderScreen(
-                    title = "Profile properties",
-                    "Files" to { onBrowseFiles(uuid) },
-                    "Done" to { onFinish(true) },
+                  PropertiesRouteContent(
+                    profile = defaultProfilePropertiesRouteProfile(uuid),
+                    onBrowseFiles = { onBrowseFiles(it.uuid) },
+                    onFinish = onFinish,
                   )
                 },
                 filesContent = { _, onFinish ->
@@ -174,6 +177,24 @@ fun PlaceholderTabbyApp(
 }
 
 private const val TABBY_GITHUB_URL = "https://github.com/Goooler/Tabby"
+
+private fun defaultProfilePropertiesRouteProfile(uuid: Uuid): Profile {
+  return Profile(
+    uuid = uuid,
+    name = "Meta Profile",
+    type = Profile.Type.Url,
+    source = "https://example.com/config.yaml",
+    active = false,
+    interval = 0,
+    upload = 0,
+    download = 0,
+    total = 0,
+    expire = 0,
+    updatedAt = 0,
+    imported = false,
+    pending = false,
+  )
+}
 
 @Composable
 private fun PlaceholderScreen(
