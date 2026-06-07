@@ -8,10 +8,18 @@ internal fun elapsedTimeTextString(context: Context, elapsedMillis: Long): Strin
 }
 
 private fun ElapsedTimeText.androidString(context: Context): String {
-  return when (token) {
-    ElapsedTimeTextToken.DaysAgo -> context.getString(CommonR.string.format_days_ago, value)
-    ElapsedTimeTextToken.HoursAgo -> context.getString(CommonR.string.format_hours_ago, value)
-    ElapsedTimeTextToken.MinutesAgo -> context.getString(CommonR.string.format_minutes_ago, value)
-    ElapsedTimeTextToken.Recently -> context.getString(CommonR.string.recently)
+  val resource =
+    elapsedTimeTextPlatformToken(
+      token = token,
+      recently = CommonR.string.recently,
+      minutesAgo = CommonR.string.format_minutes_ago,
+      hoursAgo = CommonR.string.format_hours_ago,
+      daysAgo = CommonR.string.format_days_ago,
+    )
+
+  return if (elapsedTimeTextUsesValue(token)) {
+    context.getString(resource, value)
+  } else {
+    context.getString(resource)
   }
 }

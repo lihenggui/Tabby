@@ -16,6 +16,30 @@ internal enum class ElapsedTimeTextToken {
   DaysAgo,
 }
 
+internal fun <T> elapsedTimeTextPlatformToken(
+  token: ElapsedTimeTextToken,
+  recently: T,
+  minutesAgo: T,
+  hoursAgo: T,
+  daysAgo: T,
+): T {
+  return when (token) {
+    ElapsedTimeTextToken.Recently -> recently
+    ElapsedTimeTextToken.MinutesAgo -> minutesAgo
+    ElapsedTimeTextToken.HoursAgo -> hoursAgo
+    ElapsedTimeTextToken.DaysAgo -> daysAgo
+  }
+}
+
+internal fun elapsedTimeTextUsesValue(token: ElapsedTimeTextToken): Boolean {
+  return when (token) {
+    ElapsedTimeTextToken.Recently -> false
+    ElapsedTimeTextToken.MinutesAgo,
+    ElapsedTimeTextToken.HoursAgo,
+    ElapsedTimeTextToken.DaysAgo -> true
+  }
+}
+
 internal data class ElapsedTimeText(
   val token: ElapsedTimeTextToken,
   val value: Long = 0,
@@ -42,10 +66,18 @@ internal fun elapsedTimeTextString(elapsedMillis: Long): String {
 
 @Composable
 private fun ElapsedTimeText.stringResource(): String {
-  return when (token) {
-    ElapsedTimeTextToken.DaysAgo -> stringResource(SharedRes.string.format_days_ago, value)
-    ElapsedTimeTextToken.HoursAgo -> stringResource(SharedRes.string.format_hours_ago, value)
-    ElapsedTimeTextToken.MinutesAgo -> stringResource(SharedRes.string.format_minutes_ago, value)
-    ElapsedTimeTextToken.Recently -> stringResource(SharedRes.string.recently)
+  val resource =
+    elapsedTimeTextPlatformToken(
+      token = token,
+      recently = SharedRes.string.recently,
+      minutesAgo = SharedRes.string.format_minutes_ago,
+      hoursAgo = SharedRes.string.format_hours_ago,
+      daysAgo = SharedRes.string.format_days_ago,
+    )
+
+  return if (elapsedTimeTextUsesValue(token)) {
+    stringResource(resource, value)
+  } else {
+    stringResource(resource)
   }
 }
