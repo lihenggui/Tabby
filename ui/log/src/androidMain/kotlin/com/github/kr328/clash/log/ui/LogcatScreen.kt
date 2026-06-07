@@ -3,14 +3,12 @@ package com.github.kr328.clash.log.ui
 import android.content.ClipData
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
@@ -18,7 +16,6 @@ import androidx.compose.ui.platform.toClipEntry
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.glue.util.format
 import com.github.kr328.clash.log.vm.LogcatViewModel
-import com.github.kr328.clash.ui.component.ModelProgressBarDialog
 import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import java.util.Date
 import kotlinx.coroutines.launch
@@ -40,7 +37,6 @@ internal fun LogcatScreen(
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val evenState by viewModel.eventState.collectAsStateWithLifecycle()
-  val listState = rememberLazyListState()
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val messageCopied = stringResource(LogRes.string.copied)
@@ -70,22 +66,9 @@ internal fun LogcatScreen(
     viewModel.consumeEvent()
   }
 
-  LaunchedEffect(listState, uiState.streaming) {
-    if (!uiState.streaming) return@LaunchedEffect
-
-    snapshotFlow { uiState.messages.size }
-      .collect { size ->
-        if (logcatShouldAutoScrollToLatest(size, listState.isLogcatViewportAtBottom())) {
-          listState.animateScrollToItem(size - 1)
-        }
-      }
-  }
-
-  LogcatContent(
+  LogcatStateRouteContent(
     modifier = modifier,
-    streaming = uiState.streaming,
-    messages = uiState.messages,
-    listState = listState,
+    state = uiState,
     snackbarHostState = snackbarHostState,
     formatMessageTime = { time ->
       Date(time).format(context, includeDate = false, includeTime = true)
@@ -100,13 +83,5 @@ internal fun LogcatScreen(
         snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
       }
     },
-  )
-
-  ModelProgressBarDialog(
-    visible = uiState.exportProgress.visible,
-    isIndeterminate = uiState.exportProgress.isIndeterminate,
-    text = uiState.exportProgress.text,
-    progress = uiState.exportProgress.progress,
-    max = uiState.exportProgress.max,
   )
 }

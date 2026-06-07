@@ -34,7 +34,6 @@ fun LogcatRouteContent(
   onRequestExport: (String) -> Unit = {},
   onCopyMessage: (LogMessage) -> Unit = {},
 ) {
-  val listState = rememberLazyListState()
   val snackbarHostState = remember { SnackbarHostState() }
   val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
   val currentOnInvalidFile = rememberUpdatedState(onInvalidFile)
@@ -48,22 +47,21 @@ fun LogcatRouteContent(
     }
   }
 
-  LaunchedEffect(listState, streaming) {
-    if (!streaming) return@LaunchedEffect
-
-    snapshotFlow { messages.size }
-      .collect { size ->
-        if (logcatShouldAutoScrollToLatest(size, listState.isLogcatViewportAtBottom())) {
-          listState.animateScrollToItem(size - 1)
-        }
-      }
-  }
-
-  LogcatContent(
+  LogcatStateRouteContent(
     modifier = modifier,
-    streaming = streaming,
-    messages = messages,
-    listState = listState,
+    state =
+      LogcatUiState(
+        streaming = streaming,
+        messages = messages,
+        exportProgress =
+          LogcatExportProgress(
+            visible = exportProgressVisible,
+            isIndeterminate = exportProgressIndeterminate,
+            text = exportProgressText,
+            progress = exportProgress,
+            max = exportProgressMax,
+          ),
+      ),
     snackbarHostState = snackbarHostState,
     formatMessageTime = formatMessageTime,
     onClose = {
@@ -97,12 +95,51 @@ fun LogcatRouteContent(
     },
     onCopyMessage = onCopyMessage,
   )
+}
+
+@Composable
+internal fun LogcatStateRouteContent(
+  modifier: Modifier = Modifier,
+  state: LogcatUiState,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+  formatMessageTime: (Long) -> String = { "" },
+  onClose: () -> Unit,
+  onDelete: () -> Unit,
+  onExport: () -> Unit,
+  onCopyMessage: (LogMessage) -> Unit,
+) {
+  val listState = rememberLazyListState()
+  val messageCount = rememberUpdatedState(state.messages.size)
+
+  LaunchedEffect(listState, state.streaming) {
+    if (!state.streaming) return@LaunchedEffect
+
+    snapshotFlow { messageCount.value }
+      .collect { size ->
+        if (logcatShouldAutoScrollToLatest(size, listState.isLogcatViewportAtBottom())) {
+          listState.animateScrollToItem(size - 1)
+        }
+      }
+  }
+
+  LogcatContent(
+    modifier = modifier,
+    streaming = state.streaming,
+    messages = state.messages,
+    listState = listState,
+    snackbarHostState = snackbarHostState,
+    formatMessageTime = formatMessageTime,
+    onClose = onClose,
+    onDelete = onDelete,
+    onExport = onExport,
+    onCopyMessage = onCopyMessage,
+  )
 
   ModelProgressBarDialog(
-    visible = exportProgressVisible,
-    isIndeterminate = exportProgressIndeterminate,
-    text = exportProgressText,
-    progress = exportProgress,
-    max = exportProgressMax,
+    visible = state.exportProgress.visible,
+    isIndeterminate = state.exportProgress.isIndeterminate,
+    text = state.exportProgress.text,
+    progress = state.exportProgress.progress,
+    max = state.exportProgress.max,
   )
 }
