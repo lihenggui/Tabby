@@ -29,6 +29,11 @@ internal enum class HomeBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal data class HomeBroadcastEvent(
+  val kind: HomeBroadcastEventKind,
+  val stoppedMessage: String? = null,
+)
+
 internal data class HomeBroadcastAction(
   val shouldFetch: Boolean,
   val stoppedMessage: String? = null,
@@ -96,11 +101,11 @@ internal fun homeBroadcastEventState(action: HomeBroadcastAction): HomeEventStat
   return action.stoppedMessage?.let { HomeEventState.ShowMessage(it) }
 }
 
-internal fun homeBroadcastActionFromPlatformPayload(
+internal fun homeBroadcastEventFromPlatformPayload(
   kind: HomeBroadcastEventKind,
   stoppedMessage: String? = null,
-): HomeBroadcastAction {
-  return homeBroadcastAction(
+): HomeBroadcastEvent {
+  return HomeBroadcastEvent(
     kind = kind,
     stoppedMessage =
       when (kind) {
@@ -112,6 +117,13 @@ internal fun homeBroadcastActionFromPlatformPayload(
         HomeBroadcastEventKind.ProfileUpdateFailed,
         HomeBroadcastEventKind.ProfileLoaded -> null
       },
+  )
+}
+
+internal fun homeBroadcastAction(event: HomeBroadcastEvent): HomeBroadcastAction {
+  return homeBroadcastAction(
+    kind = event.kind,
+    stoppedMessage = event.stoppedMessage,
   )
 }
 

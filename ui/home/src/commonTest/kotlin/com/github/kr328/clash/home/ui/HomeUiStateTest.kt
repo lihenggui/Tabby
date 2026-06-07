@@ -120,25 +120,45 @@ class HomeUiStateTest {
   @Test
   fun homeBroadcastPlatformPayloadKeepsStoppedMessageOnlyForStoppedEvents() {
     assertEquals(
-      HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system"),
-      homeBroadcastActionFromPlatformPayload(
+      HomeBroadcastEvent(
+        kind = HomeBroadcastEventKind.Stopped,
+        stoppedMessage = "Stopped by system",
+      ),
+      homeBroadcastEventFromPlatformPayload(
         HomeBroadcastEventKind.Stopped,
         stoppedMessage = "Stopped by system",
       ),
     )
     assertEquals(
-      HomeBroadcastAction(shouldFetch = true),
-      homeBroadcastActionFromPlatformPayload(
+      HomeBroadcastEvent(kind = HomeBroadcastEventKind.Started),
+      homeBroadcastEventFromPlatformPayload(
         HomeBroadcastEventKind.Started,
         stoppedMessage = "ignored",
       ),
     )
     assertEquals(
-      HomeBroadcastAction(shouldFetch = false),
-      homeBroadcastActionFromPlatformPayload(
+      HomeBroadcastEvent(kind = HomeBroadcastEventKind.ProfileUpdateFailed),
+      homeBroadcastEventFromPlatformPayload(
         HomeBroadcastEventKind.ProfileUpdateFailed,
         stoppedMessage = "ignored",
       ),
+    )
+  }
+
+  @Test
+  fun homeBroadcastActionAcceptsPlatformPayloadEvent() {
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system"),
+      homeBroadcastAction(
+        HomeBroadcastEvent(
+          kind = HomeBroadcastEventKind.Stopped,
+          stoppedMessage = "Stopped by system",
+        )
+      ),
+    )
+    assertEquals(
+      HomeBroadcastAction(shouldFetch = false),
+      homeBroadcastAction(HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateCompleted)),
     )
   }
 
