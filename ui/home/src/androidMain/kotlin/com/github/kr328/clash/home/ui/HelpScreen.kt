@@ -67,16 +67,18 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
     viewModel.consumeEvent()
   }
 
-  HelpContent(
+  HelpRouteContent(
     modifier = modifier,
-    uiState = uiState,
+    snackbarHostState = snackbarHostState,
+    checkingForUpdates = uiState.checkingForUpdates,
+    appVersion = uiState.appVersion,
+    coreVersion = uiState.coreVersion,
     tipsText = AnnotatedString.fromHtml(androidStringResource(R.string.tips_help)),
     appName = androidStringResource(CommonR.string.tabby),
     appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
     mihomoWikiUrl = MIHOMO_WIKI,
     mihomoCoreUrl = MIHOMO_CORE,
     tabbyUrl = TABBY_GITHUB,
-    snackbarHostState = snackbarHostState,
     onOpenLink = { url -> context.openLink(url) },
     onCopyVersion = { version ->
       scope.launch {
