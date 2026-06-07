@@ -12,6 +12,10 @@ import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.profile.ui.ProviderRouteItem
 import com.github.kr328.clash.profile.ui.ProvidersRouteContent
+import com.github.kr328.clash.profile.ui.providerRouteItemsAfterFetch
+import com.github.kr328.clash.profile.ui.providerRouteItemsAfterUpdateFinished
+import com.github.kr328.clash.profile.ui.providerRouteItemsAfterUpdateStarted
+import com.github.kr328.clash.profile.ui.providerRouteItemsPendingUpdateProviders
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.delay
@@ -30,20 +34,20 @@ internal fun EngineControllerProvidersRouteContent(
   suspend fun fetchProviders() {
     val fetchedProviders = engineController.queryProviders()
 
-    providers = tabbyProviderRouteItemsAfterFetch(providers, fetchedProviders)
+    providers = providerRouteItemsAfterFetch(providers, fetchedProviders)
   }
 
   fun launchProviderUpdate(provider: Provider) {
-    providers = tabbyProviderRouteItemsAfterUpdateStarted(providers, provider)
+    providers = providerRouteItemsAfterUpdateStarted(providers, provider)
 
     scope.launch {
       runCatching {
           engineController.updateProvider(provider.type, provider.name)
-          providers = tabbyProviderRouteItemsAfterUpdateFinished(providers, provider)
+          providers = providerRouteItemsAfterUpdateFinished(providers, provider)
           fetchProviders()
         }
         .onFailure { cause ->
-          providers = tabbyProviderRouteItemsAfterUpdateFinished(providers, provider)
+          providers = providerRouteItemsAfterUpdateFinished(providers, provider)
           onActionError(cause)
         }
     }
@@ -62,7 +66,7 @@ internal fun EngineControllerProvidersRouteContent(
     providers = providers,
     currentTimeMillis = currentTimeMillis,
     onUpdateAll = {
-      tabbyProviderRouteItemsPendingUpdateProviders(providers).forEach { provider ->
+      providerRouteItemsPendingUpdateProviders(providers).forEach { provider ->
         launchProviderUpdate(provider)
       }
     },

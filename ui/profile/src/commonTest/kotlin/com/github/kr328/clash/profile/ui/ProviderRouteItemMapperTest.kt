@@ -1,11 +1,10 @@
-package com.github.kr328.clash.app
+package com.github.kr328.clash.profile.ui
 
 import com.github.kr328.clash.core.model.Provider
-import com.github.kr328.clash.profile.ui.ProviderRouteItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TabbyProviderRouteItemsTest {
+class ProviderRouteItemMapperTest {
   @Test
   fun fetchedProvidersAreSortedAndMappedToRouteItems() {
     val ruleProvider = provider(name = "Rule", type = Provider.Type.Rule)
@@ -14,7 +13,7 @@ class TabbyProviderRouteItemsTest {
 
     assertEquals(
       listOf(proxyA, proxyB, ruleProvider),
-      tabbyProviderRouteItemsAfterFetch(
+      providerRouteItemsAfterFetch(
           existingItems = emptyList(),
           fetchedProviders = listOf(ruleProvider, proxyB, proxyA),
         )
@@ -28,7 +27,7 @@ class TabbyProviderRouteItemsTest {
     val fetchedProvider = existingProvider.copy(updatedAt = 200)
 
     val items =
-      tabbyProviderRouteItemsAfterFetch(
+      providerRouteItemsAfterFetch(
         existingItems =
           listOf(ProviderRouteItem(provider = existingProvider, updating = true, updatedAt = 150)),
         fetchedProviders = listOf(fetchedProvider),
@@ -46,7 +45,7 @@ class TabbyProviderRouteItemsTest {
     val olderFetchedProvider = existingProvider.copy(updatedAt = 100)
 
     val items =
-      tabbyProviderRouteItemsAfterFetch(
+      providerRouteItemsAfterFetch(
         existingItems =
           listOf(ProviderRouteItem(provider = existingProvider, updating = false, updatedAt = 300)),
         fetchedProviders = listOf(olderFetchedProvider),
@@ -64,7 +63,7 @@ class TabbyProviderRouteItemsTest {
     val rule = provider(name = "Shared", type = Provider.Type.Rule)
 
     val started =
-      tabbyProviderRouteItemsAfterUpdateStarted(
+      providerRouteItemsAfterUpdateStarted(
         items = listOf(ProviderRouteItem(proxy), ProviderRouteItem(rule)),
         provider = proxy.copy(updatedAt = 999),
       )
@@ -72,7 +71,7 @@ class TabbyProviderRouteItemsTest {
     assertEquals(true, started[0].updating)
     assertEquals(false, started[1].updating)
 
-    val finished = tabbyProviderRouteItemsAfterUpdateFinished(started, proxy.copy(updatedAt = 999))
+    val finished = providerRouteItemsAfterUpdateFinished(started, proxy.copy(updatedAt = 999))
 
     assertEquals(false, finished[0].updating)
     assertEquals(false, finished[1].updating)
@@ -86,7 +85,7 @@ class TabbyProviderRouteItemsTest {
 
     assertEquals(
       listOf(remote),
-      tabbyProviderRouteItemsPendingUpdateProviders(
+      providerRouteItemsPendingUpdateProviders(
         listOf(
           ProviderRouteItem(provider = remote, updating = false),
           ProviderRouteItem(provider = inline, updating = false),
