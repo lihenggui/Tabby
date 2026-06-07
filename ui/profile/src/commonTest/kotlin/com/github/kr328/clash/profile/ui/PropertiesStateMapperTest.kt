@@ -16,6 +16,28 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesEventPlatformActionMapsEventStates() {
+    val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+
+    assertEquals(
+      PropertiesEventPlatformAction.Ignore,
+      propertiesEventPlatformAction(PropertiesEventState.Idle),
+    )
+    assertEquals(
+      PropertiesEventPlatformAction.BrowseFiles(uuid),
+      propertiesEventPlatformAction(PropertiesEventState.BrowseFiles(uuid)),
+    )
+    assertEquals(
+      PropertiesEventPlatformAction.Finish(success = true),
+      propertiesEventPlatformAction(PropertiesEventState.Finish(success = true)),
+    )
+    assertEquals(
+      PropertiesEventPlatformAction.ShowMessage("commit failed"),
+      propertiesEventPlatformAction(PropertiesEventState.ShowMessage("commit failed")),
+    )
+  }
+
+  @Test
   fun detectsEditableProfilePropertyChanges() {
     val original = profile(name = "Original", source = "https://example.com/a.yaml", interval = 0)
 

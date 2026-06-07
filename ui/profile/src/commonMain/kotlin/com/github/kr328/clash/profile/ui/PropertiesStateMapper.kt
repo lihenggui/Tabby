@@ -67,8 +67,31 @@ internal sealed interface PropertiesEventState {
   data class ShowMessage(val message: String) : PropertiesEventState
 }
 
+internal sealed interface PropertiesEventPlatformAction {
+  data object Ignore : PropertiesEventPlatformAction
+
+  data class BrowseFiles(val uuid: Uuid) : PropertiesEventPlatformAction
+
+  data class Finish(val success: Boolean) : PropertiesEventPlatformAction
+
+  data class ShowMessage(val message: String) : PropertiesEventPlatformAction
+}
+
 internal fun propertiesInitialEventState(): PropertiesEventState {
   return PropertiesEventState.Idle
+}
+
+internal fun propertiesEventPlatformAction(
+  eventState: PropertiesEventState
+): PropertiesEventPlatformAction {
+  return when (eventState) {
+    PropertiesEventState.Idle -> PropertiesEventPlatformAction.Ignore
+    is PropertiesEventState.BrowseFiles ->
+      PropertiesEventPlatformAction.BrowseFiles(eventState.uuid)
+    is PropertiesEventState.Finish -> PropertiesEventPlatformAction.Finish(eventState.success)
+    is PropertiesEventState.ShowMessage ->
+      PropertiesEventPlatformAction.ShowMessage(eventState.message)
+  }
 }
 
 internal fun hasProfilePropertiesChanges(profile: Profile, original: Profile?): Boolean {

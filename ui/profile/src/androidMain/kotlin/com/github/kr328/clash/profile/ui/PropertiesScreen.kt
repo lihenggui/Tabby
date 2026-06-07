@@ -43,16 +43,16 @@ internal fun PropertiesScreen(
   LaunchedEffect(uuid) { viewModel.init(uuid = uuid) }
 
   LaunchedEffect(eventState) {
-    when (val event = eventState) {
-      PropertiesEventState.Idle -> Unit
-      is PropertiesEventState.BrowseFiles -> {
-        onBrowseFiles(event.uuid)
+    when (val action = propertiesEventPlatformAction(eventState)) {
+      PropertiesEventPlatformAction.Ignore -> Unit
+      is PropertiesEventPlatformAction.BrowseFiles -> {
+        onBrowseFiles(action.uuid)
       }
-      is PropertiesEventState.Finish -> {
-        onFinish(event.success)
+      is PropertiesEventPlatformAction.Finish -> {
+        onFinish(action.success)
       }
-      is PropertiesEventState.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = event.message)
+      is PropertiesEventPlatformAction.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
       }
     }
     viewModel.consumeEvent()
