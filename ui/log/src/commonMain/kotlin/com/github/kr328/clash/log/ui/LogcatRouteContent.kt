@@ -19,7 +19,7 @@ import tabby.ui.log.generated.resources.invalid_log_file
 fun LogcatRouteContent(
   fileName: String?,
   modifier: Modifier = Modifier,
-  streaming: Boolean = fileName == null,
+  streaming: Boolean = logcatInitialStreaming(fileName),
   messages: List<LogMessage> = emptyList(),
   exportProgressVisible: Boolean = false,
   exportProgressIndeterminate: Boolean = true,
@@ -38,10 +38,11 @@ fun LogcatRouteContent(
   val snackbarHostState = remember { SnackbarHostState() }
   val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
   val currentOnInvalidFile = rememberUpdatedState(onInvalidFile)
-  val currentFile = remember(fileName) { fileName?.let(LogFile::parse) }
+  val initialAction = remember(fileName) { logcatInitialAction(fileName) }
+  val currentFile = remember(initialAction) { logcatFileFromInitialAction(initialAction) }
 
   LaunchedEffect(fileName, invalidFileTip) {
-    if (logcatInitialAction(fileName) == LogcatInitialAction.InvalidFile) {
+    if (logcatInitialEventState(initialAction) == LogcatEventState.InvalidFile) {
       snackbarHostState.showSnackbar(message = invalidFileTip)
       currentOnInvalidFile.value()
     }

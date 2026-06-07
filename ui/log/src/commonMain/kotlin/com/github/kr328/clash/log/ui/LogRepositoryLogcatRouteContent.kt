@@ -22,7 +22,8 @@ fun LogRepositoryLogcatRouteContent(
   modifier: Modifier = Modifier,
   onActionError: (Throwable) -> Unit = {},
 ) {
-  val streaming = fileName == null
+  val initialAction = remember(fileName) { logcatInitialAction(fileName) }
+  val streaming = logcatStreamingFromInitialAction(initialAction)
   var messages by remember(logRepository, fileName) { mutableStateOf(emptyList<LogMessage>()) }
 
   LaunchedEffect(logRepository, streaming) {

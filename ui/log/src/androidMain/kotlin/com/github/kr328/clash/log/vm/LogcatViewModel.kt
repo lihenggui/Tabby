@@ -47,8 +47,8 @@ import com.github.kr328.clash.log.ui.logcatStartStreamingFailureEventState
 import com.github.kr328.clash.log.ui.withExportFinished
 import com.github.kr328.clash.log.ui.withExportProgress
 import com.github.kr328.clash.log.ui.withExportStarted
+import com.github.kr328.clash.log.ui.withInitialAction
 import com.github.kr328.clash.log.ui.withMessages
-import com.github.kr328.clash.log.ui.withStreaming
 import com.github.kr328.clash.log.util.LogcatExportWriter
 import com.github.kr328.clash.log.util.LogcatReader
 import java.io.BufferedWriter
@@ -89,12 +89,12 @@ internal class LogcatViewModel(app: Application) : AndroidViewModel(app), Defaul
 
     when (val action = logcatInitialAction(fileName)) {
       LogcatInitialAction.StartStreaming -> {
-        uiState.update { it.withStreaming(true) }
+        uiState.update { it.withInitialAction(action) }
         startStreaming()
       }
       is LogcatInitialAction.LoadFile -> {
         currentFile = action.file
-        uiState.update { it.withStreaming(false) }
+        uiState.update { it.withInitialAction(action) }
         loadLocalFile(action.file)
       }
       LogcatInitialAction.InvalidFile -> {

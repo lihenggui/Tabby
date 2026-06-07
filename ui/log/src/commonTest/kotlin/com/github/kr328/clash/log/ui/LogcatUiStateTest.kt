@@ -72,6 +72,56 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatInitialActionDeterminesStreamingState() {
+    assertEquals(
+      true,
+      logcatStreamingFromInitialAction(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      false,
+      logcatStreamingFromInitialAction(
+        LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234))
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStreamingFromInitialAction(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
+  fun logcatInitialStreamingParsesFileNameThroughInitialAction() {
+    assertEquals(true, logcatInitialStreaming(null))
+    assertEquals(false, logcatInitialStreaming("clash-1234.log"))
+    assertEquals(false, logcatInitialStreaming("clash.log"))
+  }
+
+  @Test
+  fun logcatInitialActionExposesOnlyValidCurrentFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      null,
+      logcatFileFromInitialAction(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      file,
+      logcatFileFromInitialAction(LogcatInitialAction.LoadFile(file)),
+    )
+    assertEquals(
+      null,
+      logcatFileFromInitialAction(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
+  fun logcatInitialFileParsesOnlyValidLogFileNames() {
+    assertEquals(null, logcatInitialFile(null))
+    assertEquals(LogFile("clash-1234.log", 1234), logcatInitialFile("clash-1234.log"))
+    assertEquals(null, logcatInitialFile("clash.log"))
+  }
+
+  @Test
   fun logcatInitialEventStateOnlyRejectsInvalidFiles() {
     assertEquals(
       null,
@@ -345,6 +395,24 @@ class LogcatUiStateTest {
     assertFalse(state.streaming)
     assertEquals(listOf(message), state.messages)
     assertTrue(state.exportProgress.visible)
+  }
+
+  @Test
+  fun initialActionUpdatesStreamingAndPreservesMessagesAndExportProgress() {
+    val message = logMessage(1)
+    val progress = LogcatExportProgress(visible = true)
+    val state = LogcatUiState(messages = listOf(message), exportProgress = progress)
+    val file = LogFile("clash-1234.log", 1234)
+
+    val streaming = state.withInitialAction(LogcatInitialAction.StartStreaming)
+    val localFile = state.withInitialAction(LogcatInitialAction.LoadFile(file))
+    val invalidFile = state.withInitialAction(LogcatInitialAction.InvalidFile)
+
+    assertTrue(streaming.streaming)
+    assertFalse(localFile.streaming)
+    assertFalse(invalidFile.streaming)
+    assertEquals(listOf(message), localFile.messages)
+    assertEquals(progress, localFile.exportProgress)
   }
 
   @Test

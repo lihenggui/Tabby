@@ -126,6 +126,30 @@ internal fun logcatInitialAction(fileName: String?): LogcatInitialAction {
   }
 }
 
+internal fun logcatStreamingFromInitialAction(action: LogcatInitialAction): Boolean {
+  return when (action) {
+    LogcatInitialAction.StartStreaming -> true
+    is LogcatInitialAction.LoadFile,
+    LogcatInitialAction.InvalidFile -> false
+  }
+}
+
+internal fun logcatInitialStreaming(fileName: String?): Boolean {
+  return logcatStreamingFromInitialAction(logcatInitialAction(fileName))
+}
+
+internal fun logcatFileFromInitialAction(action: LogcatInitialAction): LogFile? {
+  return when (action) {
+    is LogcatInitialAction.LoadFile -> action.file
+    LogcatInitialAction.StartStreaming,
+    LogcatInitialAction.InvalidFile -> null
+  }
+}
+
+internal fun logcatInitialFile(fileName: String?): LogFile? {
+  return logcatFileFromInitialAction(logcatInitialAction(fileName))
+}
+
 internal fun logcatCloseAction(state: LogcatUiState): LogcatCloseAction {
   return if (state.streaming) LogcatCloseAction.StopStreamingAndOpenLogs
   else LogcatCloseAction.CloseViewer
@@ -243,6 +267,10 @@ internal fun logcatSnapshotAction(
 
 internal fun LogcatUiState.withStreaming(streaming: Boolean): LogcatUiState {
   return copy(streaming = streaming)
+}
+
+internal fun LogcatUiState.withInitialAction(action: LogcatInitialAction): LogcatUiState {
+  return withStreaming(logcatStreamingFromInitialAction(action))
 }
 
 internal fun LogcatUiState.withMessages(messages: List<LogMessage>): LogcatUiState {
