@@ -1,38 +1,56 @@
 package com.github.kr328.clash.settings.ui
 
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.kr328.clash.core.model.AccessControlMode
-import com.github.kr328.clash.settings.vm.NetworkSettingsViewModel
+import com.github.kr328.clash.glue.remote.Remote
+import com.github.kr328.clash.glue.store.UiStore
+import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 
 @Composable
 internal fun NetworkSettingsScreen(
   modifier: Modifier = Modifier,
-  viewModel: NetworkSettingsViewModel = viewModel(),
   onStartAccessControlList: () -> Unit,
 ) {
-  val clashRunning by viewModel.clashRunning.collectAsStateWithLifecycle()
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  val appContext = context.applicationContext
+  val uiStore = remember(appContext) { UiStore(appContext) }
+  val serviceStore = remember(appContext) { ServiceStore(appContext) }
+  val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
 
-  NetworkSettingsContent(
-    clashRunning = clashRunning,
-    uiState = uiState,
-    onEnableVpnChange = viewModel::updateEnableVpn,
-    onBypassPrivateNetworkChange = viewModel::updateBypassPrivateNetwork,
-    onDnsHijackingChange = viewModel::updateDnsHijacking,
-    onAllowBypassChange = viewModel::updateAllowBypass,
-    onAllowIpv6Change = viewModel::updateAllowIpv6,
-    onSystemProxyChange = viewModel::updateSystemProxy,
-    onTunStackModeChange = viewModel::updateTunStackMode,
-    onAccessControlModeChange = viewModel::updateAccessControlMode,
-    onAccessControlPackagesClick = onStartAccessControlList,
+  NetworkSettingsRouteContent(
+    onStartAccessControlList = onStartAccessControlList,
     modifier = modifier,
+    clashRunning = clashRunning,
+    initialHasSystemProxyOption =
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        sdkVersion = Build.VERSION.SDK_INT,
+        systemProxySdkVersion = Build.VERSION_CODES.Q,
+      ),
+    initialEnableVpn = uiStore.enableVpn,
+    initialBypassPrivateNetwork = serviceStore.bypassPrivateNetwork,
+    initialDnsHijacking = serviceStore.dnsHijacking,
+    initialAllowBypass = serviceStore.allowBypass,
+    initialAllowIpv6 = serviceStore.allowIpv6,
+    initialSystemProxy = serviceStore.systemProxy,
+    initialTunStackMode = serviceStore.tunStackMode,
+    initialAccessControlMode = serviceStore.accessControlMode,
+    onEnableVpnChange = { value -> uiStore.enableVpn = value },
+    onBypassPrivateNetworkChange = { value -> serviceStore.bypassPrivateNetwork = value },
+    onDnsHijackingChange = { value -> serviceStore.dnsHijacking = value },
+    onAllowBypassChange = { value -> serviceStore.allowBypass = value },
+    onAllowIpv6Change = { value -> serviceStore.allowIpv6 = value },
+    onSystemProxyChange = { value -> serviceStore.systemProxy = value },
+    onTunStackModeChange = { value -> serviceStore.tunStackMode = value },
+    onAccessControlModeChange = { value -> serviceStore.accessControlMode = value },
   )
 }
 
