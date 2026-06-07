@@ -41,6 +41,38 @@ class ProfileFileImportActionTest {
   }
 
   @Test
+  fun resolvedPlatformPayloadKeepsSourceMetadataOnlyWhenSourceExists() {
+    assertEquals(
+      ProfileFileImportResolvedResult(
+        source = "content://source/provider.yaml",
+        sourceFileName = "provider.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root/providers",
+      ),
+      profileFileImportResolvedResultFromPlatformPayload(
+        source = "content://source/provider.yaml",
+        sourceFileName = "provider.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root/providers",
+      ),
+    )
+    assertEquals(
+      ProfileFileImportResolvedResult(
+        source = null,
+        sourceFileName = null,
+        targetDocumentId = "root/config.yaml",
+        parentDocumentId = "root",
+      ),
+      profileFileImportResolvedResultFromPlatformPayload<String>(
+        source = null,
+        sourceFileName = "ignored.yaml",
+        targetDocumentId = "root/config.yaml",
+        parentDocumentId = "root",
+      ),
+    )
+  }
+
+  @Test
   fun ignoresMissingImportSource() {
     assertEquals(
       ProfileFileImportAction.Ignore,
@@ -56,6 +88,30 @@ class ProfileFileImportActionTest {
       profileFileImportAction(
         ProfileFileImportResult(
           sourceSelected = false,
+          sourceFileName = "ignored.yaml",
+          targetDocumentId = null,
+          parentDocumentId = "root",
+        )
+      ),
+    )
+  }
+
+  @Test
+  fun resolvedImportIgnoresMissingSource() {
+    assertEquals(
+      ProfileFileImportResolvedAction.Ignore,
+      profileFileImportResolvedAction<String>(
+        source = null,
+        sourceFileName = "ignored.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root",
+      ),
+    )
+    assertEquals(
+      ProfileFileImportResolvedAction.Ignore,
+      profileFileImportResolvedAction(
+        ProfileFileImportResolvedResult(
+          source = null,
           sourceFileName = "ignored.yaml",
           targetDocumentId = null,
           parentDocumentId = "root",
@@ -119,6 +175,38 @@ class ProfileFileImportActionTest {
   }
 
   @Test
+  fun resolvedImportPairsSelectedSourceWithImportAction() {
+    assertEquals(
+      ProfileFileImportResolvedAction.ImportNewFile(
+        source = "content://source/provider.yaml",
+        parentDocumentId = "root/providers",
+        fileName = "provider.yaml",
+      ),
+      profileFileImportResolvedAction(
+        source = "content://source/provider.yaml",
+        sourceFileName = "provider.yaml",
+        targetDocumentId = null,
+        parentDocumentId = "root/providers",
+      ),
+    )
+    assertEquals(
+      ProfileFileImportResolvedAction.ImportNewFile(
+        source = "content://source/unknown",
+        parentDocumentId = "root",
+        fileName = "File",
+      ),
+      profileFileImportResolvedAction(
+        ProfileFileImportResolvedResult(
+          source = "content://source/unknown",
+          sourceFileName = null,
+          targetDocumentId = null,
+          parentDocumentId = "root",
+        )
+      ),
+    )
+  }
+
+  @Test
   fun replacesTargetFiles() {
     assertEquals(
       ProfileFileImportAction.ReplaceFile("root/config.yaml"),
@@ -138,6 +226,22 @@ class ProfileFileImportActionTest {
           targetDocumentId = "root/config.yaml",
           parentDocumentId = "root",
         )
+      ),
+    )
+  }
+
+  @Test
+  fun resolvedImportPairsSelectedSourceWithReplaceAction() {
+    assertEquals(
+      ProfileFileImportResolvedAction.ReplaceFile(
+        source = "content://source/config.yaml",
+        targetDocumentId = "root/config.yaml",
+      ),
+      profileFileImportResolvedAction(
+        source = "content://source/config.yaml",
+        sourceFileName = "ignored.yaml",
+        targetDocumentId = "root/config.yaml",
+        parentDocumentId = "root",
       ),
     )
   }

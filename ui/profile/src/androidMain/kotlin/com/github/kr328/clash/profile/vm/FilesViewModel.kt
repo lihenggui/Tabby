@@ -12,8 +12,8 @@ import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
 import com.github.kr328.clash.glue.util.fileName
-import com.github.kr328.clash.profile.ui.ProfileFileExportAction
-import com.github.kr328.clash.profile.ui.ProfileFileImportAction
+import com.github.kr328.clash.profile.ui.ProfileFileExportResolvedAction
+import com.github.kr328.clash.profile.ui.ProfileFileImportResolvedAction
 import com.github.kr328.clash.profile.ui.ProfileFileOpenAction
 import com.github.kr328.clash.profile.ui.ProfileFilesBackAction
 import com.github.kr328.clash.profile.ui.ProfileFilesEventState
@@ -22,12 +22,12 @@ import com.github.kr328.clash.profile.ui.ProfileFilesInitAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLoadedAction
 import com.github.kr328.clash.profile.ui.ProfileFilesLocation
 import com.github.kr328.clash.profile.ui.ProfileFilesUiState
-import com.github.kr328.clash.profile.ui.profileFileExportAction
 import com.github.kr328.clash.profile.ui.profileFileExportRequestEventState
-import com.github.kr328.clash.profile.ui.profileFileExportResultFromPlatformPayload
-import com.github.kr328.clash.profile.ui.profileFileImportAction
+import com.github.kr328.clash.profile.ui.profileFileExportResolvedAction
+import com.github.kr328.clash.profile.ui.profileFileExportResolvedResultFromPlatformPayload
 import com.github.kr328.clash.profile.ui.profileFileImportRequestEventState
-import com.github.kr328.clash.profile.ui.profileFileImportResultFromPlatformPayload
+import com.github.kr328.clash.profile.ui.profileFileImportResolvedAction
+import com.github.kr328.clash.profile.ui.profileFileImportResolvedResultFromPlatformPayload
 import com.github.kr328.clash.profile.ui.profileFileOpenAction
 import com.github.kr328.clash.profile.ui.profileFileOpenEventState
 import com.github.kr328.clash.profile.ui.profileFilesBackAction
@@ -143,28 +143,26 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onImportResult(uri: Uri?, targetConfigFile: ConfigFile?) {
-    val sourceUri = uri
     val action =
-      profileFileImportAction(
-        profileFileImportResultFromPlatformPayload(
-          sourceSelected = sourceUri != null,
-          sourceFileName = sourceUri?.fileName,
+      profileFileImportResolvedAction(
+        profileFileImportResolvedResultFromPlatformPayload(
+          source = uri,
+          sourceFileName = uri?.fileName,
           targetDocumentId = targetConfigFile?.id,
           parentDocumentId = location.currentDocumentId,
         )
       )
 
-    if (action == ProfileFileImportAction.Ignore) return
-    val selectedUri = checkNotNull(sourceUri)
+    if (action == ProfileFileImportResolvedAction.Ignore) return
 
     viewModelScope.launch {
       try {
         when (action) {
-          is ProfileFileImportAction.ImportNewFile ->
-            client.importDocument(action.parentDocumentId, selectedUri, action.fileName)
-          is ProfileFileImportAction.ReplaceFile ->
-            client.copyDocument(action.targetDocumentId, selectedUri)
-          ProfileFileImportAction.Ignore -> Unit
+          is ProfileFileImportResolvedAction.ImportNewFile ->
+            client.importDocument(action.parentDocumentId, action.source, action.fileName)
+          is ProfileFileImportResolvedAction.ReplaceFile ->
+            client.copyDocument(action.targetDocumentId, action.source)
+          ProfileFileImportResolvedAction.Ignore -> Unit
         }
       } catch (e: Exception) {
         Log.e("Import file failed: ${e.message}", e)
@@ -179,24 +177,22 @@ internal class FilesViewModel(app: Application) : AndroidViewModel(app), Default
   }
 
   fun onExportResult(uri: Uri?, sourceConfigFile: ConfigFile?) {
-    val outputUri = uri
     val action =
-      profileFileExportAction(
-        profileFileExportResultFromPlatformPayload(
-          outputSelected = outputUri != null,
+      profileFileExportResolvedAction(
+        profileFileExportResolvedResultFromPlatformPayload(
+          output = uri,
           sourceDocumentId = sourceConfigFile?.id,
         )
       )
 
-    if (action == ProfileFileExportAction.Ignore) return
-    val selectedOutputUri = checkNotNull(outputUri)
+    if (action == ProfileFileExportResolvedAction.Ignore) return
 
     viewModelScope.launch {
       try {
         when (action) {
-          is ProfileFileExportAction.ExportFile ->
-            client.copyDocument(selectedOutputUri, action.sourceDocumentId)
-          ProfileFileExportAction.Ignore -> Unit
+          is ProfileFileExportResolvedAction.ExportFile ->
+            client.copyDocument(action.output, action.sourceDocumentId)
+          ProfileFileExportResolvedAction.Ignore -> Unit
         }
       } catch (e: Exception) {
         Log.e("Export file failed: ${e.message}", e)
