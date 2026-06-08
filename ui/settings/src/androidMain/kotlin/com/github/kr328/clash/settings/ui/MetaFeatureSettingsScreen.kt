@@ -149,8 +149,8 @@ private suspend fun Context.importGeoFile(
         val displayName = if (sourceReadable) it.displayName else null
         when (
           val sourceAction =
-            geoFileImportSourceAction(
-              sourceSelected = true,
+            geoFileImportSourceActionFromPlatformSource(
+              source = sourceUri,
               sourceReadable = sourceReadable,
               displayName = displayName,
               importType = importType,

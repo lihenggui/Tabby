@@ -323,6 +323,47 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun sourceActionFromPlatformSourceFailsWhenSourceIsMissing() {
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceActionFromPlatformSource(
+        source = null,
+        sourceReadable = true,
+        displayName = "geoip.mmdb",
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun sourceActionFromPlatformSourceFailsWhenSourceCannotBeRead() {
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceActionFromPlatformSource(
+        source = TestSource("geoip.mmdb"),
+        sourceReadable = false,
+        displayName = "geoip.mmdb",
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+  }
+
+  @Test
+  fun sourceActionFromPlatformSourceCreatesImportActionForReadableSource() {
+    assertEquals(
+      GeoFileImportSourceAction.Import(
+        GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+      ),
+      geoFileImportSourceActionFromPlatformSource(
+        source = TestSource("GeoSite.DAT"),
+        sourceReadable = true,
+        displayName = "GeoSite.DAT",
+        importType = GeoFileImportType.GeoSite,
+      ),
+    )
+  }
+
+  @Test
   fun importStartedAndFailedResultsMapToCommonStates() {
     assertEquals(GeoFileImportResult.InProgress, geoFileImportStartedResult())
     assertEquals(GeoFileImportResult.Failed, geoFileImportFailedResult())
