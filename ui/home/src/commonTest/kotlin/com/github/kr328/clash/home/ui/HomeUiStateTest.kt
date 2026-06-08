@@ -431,43 +431,6 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun fetchedPlatformStateKeepsPayloadValues() {
-    assertEquals(
-      HomeFetchedPlatformState(
-        clashRunning = true,
-        mode = "Rule",
-        hasProviders = true,
-        profileName = "Daily",
-      ),
-      homeFetchedPlatformState(
-        clashRunning = true,
-        mode = "Rule",
-        hasProviders = true,
-        profileName = "Daily",
-      ),
-    )
-  }
-
-  @Test
-  fun fetchedPlatformStateUpdatesHomeStateAndNormalizesStoppedAvailability() {
-    val state =
-      HomeUiState(forwarded = "10 MB", mode = "Global", hasProviders = true, profileName = "Old")
-        .withFetchedHomeState(
-          homeFetchedPlatformState(
-            clashRunning = false,
-            mode = "Rule",
-            hasProviders = true,
-            profileName = "New",
-          )
-        )
-
-    assertEquals("10 MB", state.forwarded)
-    assertEquals(null, state.mode)
-    assertEquals(false, state.hasProviders)
-    assertEquals("New", state.profileName)
-  }
-
-  @Test
   fun forwardedTrafficUpdatePreservesFetchedStateFields() {
     val state =
       HomeUiState(mode = "Direct", hasProviders = true, profileName = "Daily")

@@ -87,12 +87,10 @@ internal fun HomeScreen(
 
     uiState =
       uiState.withFetchedHomeState(
-        homeFetchedPlatformState(
-          clashRunning = clashRunningSnapshot,
-          mode = mode,
-          hasProviders = providers.isNotEmpty(),
-          profileName = profileName,
-        )
+        clashRunning = clashRunningSnapshot,
+        mode = mode,
+        hasProviders = providers.isNotEmpty(),
+        profileName = profileName,
       )
   }
 
