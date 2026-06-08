@@ -1,6 +1,8 @@
 package com.github.kr328.clash.profile.ui
 
 import android.app.Activity.RESULT_OK
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -11,43 +13,66 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
+import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.profile.model.ProfileProvider
-import com.github.kr328.clash.profile.vm.NewProfileViewModel
 import com.github.kr328.clash.ui.theme.tabbyDimens
 import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanQRCode
 import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 internal fun NewProfileScreen(
   modifier: Modifier = Modifier,
-  viewModel: NewProfileViewModel = viewModel(),
   onProperties: (Uuid) -> Unit,
-  onFinish: () -> Unit,
 ) {
   val context = LocalContext.current
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val eventState by viewModel.eventState.collectAsStateWithLifecycle()
+  val profileRepository = remember { AndroidProfileRepository() }
   val snackbarHostState = remember { SnackbarHostState() }
-  val externalProviders = uiState.providers
+  val scope = rememberCoroutineScope()
+  val createRequests = remember { MutableSharedFlow<NewProfileCreateRequest>() }
+  var externalProviders by remember { mutableStateOf(emptyList<ProfileProvider.External>()) }
   val externalProvidersByKey =
     remember(externalProviders) { externalProviders.associateBy { it.key } }
+  val missingPermissionMessage = androidStringResource(R.string.import_from_qr_no_permission)
+  val scanErrorMessage = androidStringResource(R.string.import_from_qr_exception)
+
+  fun launchCreateRequest(request: NewProfileCreateRequest) {
+    scope.launch { createRequests.emit(request) }
+  }
+
+  fun showQrMessage(message: String) {
+    scope.launch { snackbarHostState.showSnackbar(message) }
+  }
 
   val qrLauncher =
     rememberLauncherForActivityResult(ScanQRCode()) { result ->
-      viewModel.onQRResult(result.toProfileQrScanResult())
+      when (val action = profileQrAction(result.toProfileQrScanResult())) {
+        is ProfileQrAction.CreateUrlProfile ->
+          newProfileCreateRequestFromQrAction(action)?.let(::launchCreateRequest)
+        ProfileQrAction.Ignore -> Unit
+        ProfileQrAction.ShowMissingPermission -> showQrMessage(missingPermissionMessage)
+        ProfileQrAction.ShowScanError -> showQrMessage(scanErrorMessage)
+      }
     }
 
   val externalProviderLauncher =
@@ -65,41 +90,25 @@ internal fun NewProfileScreen(
             name = result.data?.getStringExtra(Intents.EXTRA_NAME),
           )
         )
-      when (action) {
-        is NewProfileExternalProviderResultAction.CreateProfile ->
-          viewModel.onExternalProviderResult(checkNotNull(uri), action.name)
-        NewProfileExternalProviderResultAction.Ignore -> Unit
-      }
+      newProfileCreateRequestFromExternalProviderResultAction(
+          action = action,
+          source = uri?.toString().orEmpty(),
+        )
+        ?.let(::launchCreateRequest)
     }
 
-  LaunchedEffect(eventState) {
-    when (val action = newProfileEventPlatformAction(eventState)) {
-      NewProfileEventPlatformAction.Ignore -> Unit
-      NewProfileEventPlatformAction.LaunchQRScanner -> qrLauncher.launch(null)
-      is NewProfileEventPlatformAction.LaunchExternalProvider ->
-        externalProviderLauncher.launch(action.externalProvider)
-      is NewProfileEventPlatformAction.LaunchProperties -> onProperties(action.uuid)
-      is NewProfileEventPlatformAction.OpenAppSettings ->
-        context.startActivity(
-          Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(action.target)
-        )
-      is NewProfileEventPlatformAction.ShowMessage ->
-        snackbarHostState.showSnackbar(message = action.message)
-      NewProfileEventPlatformAction.Finish -> onFinish()
-    }
-    viewModel.consumeEvent()
+  LaunchedEffect(context) {
+    externalProviders = loadExternalProfileProviders(context)
   }
 
-  NewProfileRouteContent(
+  ProfileRepositoryNewProfileRouteContent(
+    profileRepository = profileRepository,
+    onProperties = onProperties,
     modifier = modifier,
     snackbarHostState = snackbarHostState,
+    createRequests = createRequests,
     externalProviders = externalProviders.map { it.toNewProfileRouteExternalProvider() },
-    onCreateBuiltIn = { provider ->
-      when (val action = newProfileRouteCreateAction(provider)) {
-        is NewProfileRouteCreateAction.CreateProfile -> viewModel.onCreateBuiltIn(action.type)
-        NewProfileRouteCreateAction.LaunchQrScanner -> qrLauncher.launch(null)
-      }
-    },
+    onLaunchQrScanner = { qrLauncher.launch(null) },
     onCreateExternal = { provider ->
       externalProvidersByKey[provider.key]?.let { externalProvider ->
         externalProviderLauncher.launch(externalProvider.intent)
@@ -108,7 +117,27 @@ internal fun NewProfileScreen(
     onDetailExternal = { provider ->
       externalProvidersByKey[provider.key]?.openAppSettings(context::startActivity)
     },
+    onActionError = { cause -> Log.e("Create profile failed: ${cause.message}", cause) },
   )
+}
+
+private suspend fun loadExternalProfileProviders(context: Context): List<ProfileProvider.External> {
+  val appContext = context.applicationContext
+  val packageManager = appContext.packageManager
+
+  return withContext(Dispatchers.IO) {
+    packageManager.queryIntentActivities(Intent(Intents.ACTION_PROVIDE_URL), 0).map {
+      val activity = it.activityInfo
+      val name = activity.applicationInfo.loadLabel(packageManager)
+      val summary = activity.loadLabel(packageManager)
+      val icon = activity.loadIcon(packageManager)
+      val intent =
+        Intent(Intents.ACTION_PROVIDE_URL)
+          .setComponent(ComponentName(activity.packageName, activity.name))
+
+      ProfileProvider.External(name.toString(), summary.toString(), icon, intent)
+    }
+  }
 }
 
 @Composable

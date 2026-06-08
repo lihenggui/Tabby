@@ -16,8 +16,8 @@ fun EntryProviderScope<NavKey>.profilesEntries() {
         profilesContent = { onOpenCreate, onOpenEdit ->
           ProfilesScreen(onOpenCreate = onOpenCreate, onOpenEdit = onOpenEdit)
         },
-        newProfileContent = { onProperties, onFinish ->
-          NewProfileScreen(onProperties = onProperties, onFinish = onFinish)
+        newProfileContent = { onProperties, _ ->
+          NewProfileScreen(onProperties = onProperties)
         },
         propertiesContent = { uuid, onBrowseFiles, onFinish ->
           PropertiesScreen(uuid = uuid, onBrowseFiles = onBrowseFiles, onFinish = onFinish)

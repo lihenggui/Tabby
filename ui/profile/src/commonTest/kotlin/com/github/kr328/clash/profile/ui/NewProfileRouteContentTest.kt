@@ -28,4 +28,82 @@ class NewProfileRouteContentTest {
       newProfileRouteCreateAction(NewProfileRouteBuiltInProvider.QR),
     )
   }
+
+  @Test
+  fun createProfileNameUsesProvidedNameBeforeDefaultName() {
+    assertEquals(
+      "External profile",
+      newProfileCreateProfileName(
+        NewProfileCreateRequest(
+          type = Profile.Type.External,
+          name = "External profile",
+          source = "content://provider/profile.yaml",
+        ),
+        defaultName = "New profile",
+      ),
+    )
+  }
+
+  @Test
+  fun createProfileNameFallsBackToDefaultName() {
+    assertEquals(
+      "New profile",
+      newProfileCreateProfileName(
+        NewProfileCreateRequest(
+          type = Profile.Type.Url,
+          source = "https://example.com/profile.yaml",
+        ),
+        defaultName = "New profile",
+      ),
+    )
+  }
+
+  @Test
+  fun qrCreateActionBuildsUrlProfileCreateRequest() {
+    assertEquals(
+      NewProfileCreateRequest(
+        type = Profile.Type.Url,
+        source = "https://example.com/profile.yaml",
+      ),
+      newProfileCreateRequestFromQrAction(
+        ProfileQrAction.CreateUrlProfile("https://example.com/profile.yaml")
+      ),
+    )
+  }
+
+  @Test
+  fun qrMessageActionsDoNotBuildCreateRequests() {
+    assertEquals(null, newProfileCreateRequestFromQrAction(ProfileQrAction.Ignore))
+    assertEquals(
+      null,
+      newProfileCreateRequestFromQrAction(ProfileQrAction.ShowMissingPermission),
+    )
+    assertEquals(null, newProfileCreateRequestFromQrAction(ProfileQrAction.ShowScanError))
+  }
+
+  @Test
+  fun externalProviderCreateActionBuildsExternalProfileCreateRequest() {
+    assertEquals(
+      NewProfileCreateRequest(
+        type = Profile.Type.External,
+        name = "External profile",
+        source = "content://provider/profile.yaml",
+      ),
+      newProfileCreateRequestFromExternalProviderResultAction(
+        NewProfileExternalProviderResultAction.CreateProfile("External profile"),
+        source = "content://provider/profile.yaml",
+      ),
+    )
+  }
+
+  @Test
+  fun externalProviderIgnoredResultDoesNotBuildCreateRequest() {
+    assertEquals(
+      null,
+      newProfileCreateRequestFromExternalProviderResultAction(
+        NewProfileExternalProviderResultAction.Ignore,
+        source = "content://provider/profile.yaml",
+      ),
+    )
+  }
 }
