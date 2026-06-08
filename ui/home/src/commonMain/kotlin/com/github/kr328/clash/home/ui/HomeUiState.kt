@@ -71,6 +71,12 @@ internal enum class HomeTrafficPollAction {
   Ignore,
 }
 
+internal enum class HomePlatformStartStopEvent {
+  Start,
+  Stop,
+  Other,
+}
+
 internal enum class HomeNoProfileSnackbarAction {
   OpenProfiles,
   Ignore,
@@ -259,13 +265,12 @@ internal fun homeActiveFetchAction(active: Boolean): HomeActiveFetchAction {
 
 internal fun homeStartedStateFromPlatformLifecycleEvent(
   currentStarted: Boolean,
-  startEvent: Boolean,
-  stopEvent: Boolean,
+  event: HomePlatformStartStopEvent,
 ): Boolean {
-  return when {
-    startEvent -> true
-    stopEvent -> false
-    else -> currentStarted
+  return when (event) {
+    HomePlatformStartStopEvent.Start -> true
+    HomePlatformStartStopEvent.Stop -> false
+    HomePlatformStartStopEvent.Other -> currentStarted
   }
 }
 

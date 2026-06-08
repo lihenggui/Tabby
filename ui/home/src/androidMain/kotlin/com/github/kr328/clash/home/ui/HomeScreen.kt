@@ -139,8 +139,7 @@ internal fun HomeScreen(
       started =
         homeStartedStateFromPlatformLifecycleEvent(
           currentStarted = started,
-          startEvent = event == Lifecycle.Event.ON_START,
-          stopEvent = event == Lifecycle.Event.ON_STOP,
+          event = event.toHomePlatformStartStopEvent(),
         )
     }
 
@@ -251,6 +250,13 @@ private fun Broadcasts.Event.toHomeBroadcastEvent() =
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateFailed)
     Broadcasts.Event.ProfileLoaded ->
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileLoaded)
+  }
+
+private fun Lifecycle.Event.toHomePlatformStartStopEvent(): HomePlatformStartStopEvent =
+  when (this) {
+    Lifecycle.Event.ON_START -> HomePlatformStartStopEvent.Start
+    Lifecycle.Event.ON_STOP -> HomePlatformStartStopEvent.Stop
+    else -> HomePlatformStartStopEvent.Other
   }
 
 private fun HomeModeLabel.stringValue(context: Context): String =

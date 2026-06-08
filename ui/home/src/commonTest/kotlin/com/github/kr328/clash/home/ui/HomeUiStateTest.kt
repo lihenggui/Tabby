@@ -272,32 +272,28 @@ class HomeUiStateTest {
       true,
       homeStartedStateFromPlatformLifecycleEvent(
         currentStarted = false,
-        startEvent = true,
-        stopEvent = false,
+        event = HomePlatformStartStopEvent.Start,
       ),
     )
     assertEquals(
       false,
       homeStartedStateFromPlatformLifecycleEvent(
         currentStarted = true,
-        startEvent = false,
-        stopEvent = true,
+        event = HomePlatformStartStopEvent.Stop,
       ),
     )
     assertEquals(
       true,
       homeStartedStateFromPlatformLifecycleEvent(
         currentStarted = true,
-        startEvent = false,
-        stopEvent = false,
+        event = HomePlatformStartStopEvent.Other,
       ),
     )
     assertEquals(
       false,
       homeStartedStateFromPlatformLifecycleEvent(
         currentStarted = false,
-        startEvent = false,
-        stopEvent = false,
+        event = HomePlatformStartStopEvent.Other,
       ),
     )
   }
