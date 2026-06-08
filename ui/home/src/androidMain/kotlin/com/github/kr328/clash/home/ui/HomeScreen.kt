@@ -136,11 +136,12 @@ internal fun HomeScreen(
   DisposableEffect(lifecycleOwner) {
     started = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
     val observer = LifecycleEventObserver { _, event ->
-      when (event) {
-        Lifecycle.Event.ON_START -> started = true
-        Lifecycle.Event.ON_STOP -> started = false
-        else -> Unit
-      }
+      started =
+        homeStartedStateFromPlatformLifecycleEvent(
+          currentStarted = started,
+          startEvent = event == Lifecycle.Event.ON_START,
+          stopEvent = event == Lifecycle.Event.ON_STOP,
+        )
     }
 
     lifecycleOwner.lifecycle.addObserver(observer)

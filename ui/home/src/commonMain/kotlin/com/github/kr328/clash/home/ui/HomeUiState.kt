@@ -257,6 +257,18 @@ internal fun homeActiveFetchAction(active: Boolean): HomeActiveFetchAction {
   return if (active) HomeActiveFetchAction.RequestFetch else HomeActiveFetchAction.Ignore
 }
 
+internal fun homeStartedStateFromPlatformLifecycleEvent(
+  currentStarted: Boolean,
+  startEvent: Boolean,
+  stopEvent: Boolean,
+): Boolean {
+  return when {
+    startEvent -> true
+    stopEvent -> false
+    else -> currentStarted
+  }
+}
+
 internal fun homeTrafficPollAction(clashRunning: Boolean): HomeTrafficPollAction {
   return if (clashRunning) HomeTrafficPollAction.QueryTraffic else HomeTrafficPollAction.Ignore
 }

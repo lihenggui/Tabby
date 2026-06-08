@@ -267,6 +267,42 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun startedStateFromPlatformLifecycleEventStartsStopsAndKeepsExistingState() {
+    assertEquals(
+      true,
+      homeStartedStateFromPlatformLifecycleEvent(
+        currentStarted = false,
+        startEvent = true,
+        stopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      homeStartedStateFromPlatformLifecycleEvent(
+        currentStarted = true,
+        startEvent = false,
+        stopEvent = true,
+      ),
+    )
+    assertEquals(
+      true,
+      homeStartedStateFromPlatformLifecycleEvent(
+        currentStarted = true,
+        startEvent = false,
+        stopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      homeStartedStateFromPlatformLifecycleEvent(
+        currentStarted = false,
+        startEvent = false,
+        stopEvent = false,
+      ),
+    )
+  }
+
+  @Test
   fun homeTrafficPollActionQueriesOnlyWhenClashIsRunning() {
     assertEquals(
       HomeTrafficPollAction.QueryTraffic,
