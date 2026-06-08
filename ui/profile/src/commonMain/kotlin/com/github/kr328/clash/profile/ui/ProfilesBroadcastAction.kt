@@ -2,7 +2,7 @@ package com.github.kr328.clash.profile.ui
 
 import kotlin.uuid.Uuid
 
-internal enum class ProfilesBroadcastEventKind {
+enum class ProfilesBroadcastEventKind {
   ServiceRecreated,
   Started,
   Stopped,
@@ -12,7 +12,7 @@ internal enum class ProfilesBroadcastEventKind {
   ProfileLoaded,
 }
 
-internal data class ProfilesBroadcastEvent(
+data class ProfilesBroadcastEvent(
   val kind: ProfilesBroadcastEventKind,
   val uuid: Uuid? = null,
   val reason: String? = null,

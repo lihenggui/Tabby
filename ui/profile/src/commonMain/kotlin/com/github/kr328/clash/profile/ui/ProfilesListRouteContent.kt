@@ -112,7 +112,7 @@ private fun profileTypeTextString(typeText: ProfileTypeText): String {
   }
 }
 
-private fun profileExpireDateString(epochMillis: Long): String {
+internal fun profileExpireDateString(epochMillis: Long): String {
   val date =
     Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(TimeZone.currentSystemDefault()).date
 

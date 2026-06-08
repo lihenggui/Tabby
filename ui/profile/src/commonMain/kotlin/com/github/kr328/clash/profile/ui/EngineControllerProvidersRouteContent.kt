@@ -104,7 +104,7 @@ fun EngineControllerProvidersRouteContent(
   )
 }
 
-private fun tabbyCurrentTimeMillis(): Long {
+internal fun tabbyCurrentTimeMillis(): Long {
   return Clock.System.now().toEpochMilliseconds()
 }
 
