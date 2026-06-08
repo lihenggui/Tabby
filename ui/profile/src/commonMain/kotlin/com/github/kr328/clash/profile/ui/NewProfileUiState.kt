@@ -242,24 +242,6 @@ internal fun newProfileDetailAction(packageName: String?): NewProfileDetailActio
   else NewProfileDetailAction.OpenAppSettings(packageName)
 }
 
-internal fun newProfileExternalProviderPresentationFromPlatformPayload(
-  componentKey: String?,
-  packageName: String?,
-  name: String,
-  summary: String,
-): NewProfileExternalProviderPresentation {
-  return NewProfileExternalProviderPresentation(
-    key = componentKey ?: packageName ?: name,
-    name = name,
-    summary = summary,
-    hasDetail = newProfileExternalProviderHasDetail(packageName),
-  )
-}
-
-private fun newProfileExternalProviderHasDetail(packageName: String?): Boolean {
-  return newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
-}
-
 internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   result: NewProfileExternalProviderResult<SourceT>
 ): NewProfileExternalProviderResultAction<SourceT> {

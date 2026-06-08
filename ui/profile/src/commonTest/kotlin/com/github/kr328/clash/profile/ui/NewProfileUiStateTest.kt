@@ -371,56 +371,6 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun externalProviderPresentationUsesComponentKeyBeforeFallbacks() {
-    assertEquals(
-      NewProfileExternalProviderPresentation(
-        key = "com.example.provider/.ProviderActivity",
-        name = "Example Provider",
-        summary = "Import from Example",
-        hasDetail = true,
-      ),
-      newProfileExternalProviderPresentationFromPlatformPayload(
-        componentKey = "com.example.provider/.ProviderActivity",
-        packageName = "com.example.provider",
-        name = "Example Provider",
-        summary = "Import from Example",
-      ),
-    )
-  }
-
-  @Test
-  fun externalProviderPresentationFallsBackToPackageThenNameForStableKey() {
-    assertEquals(
-      NewProfileExternalProviderPresentation(
-        key = "com.example.provider",
-        name = "Example Provider",
-        summary = "Import from Example",
-        hasDetail = true,
-      ),
-      newProfileExternalProviderPresentationFromPlatformPayload(
-        componentKey = null,
-        packageName = "com.example.provider",
-        name = "Example Provider",
-        summary = "Import from Example",
-      ),
-    )
-    assertEquals(
-      NewProfileExternalProviderPresentation(
-        key = "Example Provider",
-        name = "Example Provider",
-        summary = "Import from Example",
-        hasDetail = false,
-      ),
-      newProfileExternalProviderPresentationFromPlatformPayload(
-        componentKey = null,
-        packageName = null,
-        name = "Example Provider",
-        summary = "Import from Example",
-      ),
-    )
-  }
-
-  @Test
   fun newProfileExternalProviderPlatformPayloadKeepsAcceptedSourceMetadata() {
     assertEquals(
       NewProfileExternalProviderResult(

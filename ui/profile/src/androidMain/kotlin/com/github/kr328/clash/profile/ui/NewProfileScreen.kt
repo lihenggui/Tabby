@@ -157,11 +157,11 @@ private suspend fun loadExternalProfileProviders(
 private fun AndroidExternalProfileProvider.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
   val presentation =
-    newProfileExternalProviderPresentationFromPlatformPayload(
-      componentKey = componentKey,
-      packageName = packageName,
+    NewProfileExternalProviderPresentation(
+      key = key,
       name = name,
       summary = summary,
+      hasDetail = hasDetail,
     )
 
   return NewProfileRouteExternalProvider(
@@ -202,14 +202,10 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
 }
 
 private val AndroidExternalProfileProvider.key: String
-  get() =
-    newProfileExternalProviderPresentationFromPlatformPayload(
-        componentKey = componentKey,
-        packageName = packageName,
-        name = name,
-        summary = summary,
-      )
-      .key
+  get() = componentKey ?: packageName ?: name
+
+private val AndroidExternalProfileProvider.hasDetail: Boolean
+  get() = newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
 
 private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
   when (val action = newProfileDetailAction(packageName)) {
