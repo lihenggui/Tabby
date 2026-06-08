@@ -29,6 +29,16 @@ internal enum class HomeBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal enum class HomePlatformBroadcastEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 internal data class HomeBroadcastEvent(
   val kind: HomeBroadcastEventKind,
   val stoppedMessage: String? = null,
@@ -125,13 +135,26 @@ internal fun homeBroadcastEventState(action: HomeBroadcastAction): HomeEventStat
 }
 
 internal fun homeBroadcastEventFromPlatformPayload(
-  kind: HomeBroadcastEventKind,
+  kind: HomePlatformBroadcastEventKind,
   stoppedMessage: String? = null,
 ): HomeBroadcastEvent {
+  val eventKind =
+    when (kind) {
+      HomePlatformBroadcastEventKind.ServiceRecreated -> HomeBroadcastEventKind.ServiceRecreated
+      HomePlatformBroadcastEventKind.Started -> HomeBroadcastEventKind.Started
+      HomePlatformBroadcastEventKind.Stopped -> HomeBroadcastEventKind.Stopped
+      HomePlatformBroadcastEventKind.ProfileChanged -> HomeBroadcastEventKind.ProfileChanged
+      HomePlatformBroadcastEventKind.ProfileUpdateCompleted ->
+        HomeBroadcastEventKind.ProfileUpdateCompleted
+      HomePlatformBroadcastEventKind.ProfileUpdateFailed ->
+        HomeBroadcastEventKind.ProfileUpdateFailed
+      HomePlatformBroadcastEventKind.ProfileLoaded -> HomeBroadcastEventKind.ProfileLoaded
+    }
+
   return HomeBroadcastEvent(
-    kind = kind,
+    kind = eventKind,
     stoppedMessage =
-      when (kind) {
+      when (eventKind) {
         HomeBroadcastEventKind.Stopped -> stoppedMessage
         HomeBroadcastEventKind.ServiceRecreated,
         HomeBroadcastEventKind.Started,
