@@ -1,0 +1,44 @@
+package com.github.kr328.clash.profile.ui
+
+data class ProfileFilesDocument(
+  val id: String,
+  val name: String,
+  val sizeBytes: Long,
+  val lastModified: Long,
+  val isDirectory: Boolean,
+)
+
+interface ProfileFilesDocumentClient<in SourceT : Any, in OutputT : Any> {
+  suspend fun list(parentDocumentId: String): List<ProfileFilesDocument>
+
+  suspend fun renameDocument(documentId: String, name: String)
+
+  suspend fun deleteDocument(documentId: String)
+
+  suspend fun importDocument(parentDocumentId: String, source: SourceT, name: String)
+
+  suspend fun replaceDocument(documentId: String, source: SourceT)
+
+  suspend fun exportDocument(output: OutputT, documentId: String)
+}
+
+data class ProfileFilesImportResult<out SourceT : Any>(
+  val source: SourceT?,
+  val sourceFileName: String?,
+  val targetDocumentId: String?,
+)
+
+data class ProfileFilesExportResult<out OutputT : Any>(
+  val output: OutputT?,
+  val sourceDocumentId: String?,
+)
+
+internal fun ProfileFilesDocument.toProfileFileRouteItem(): ProfileFileRouteItem {
+  return ProfileFileRouteItem(
+    id = id,
+    name = name,
+    sizeBytes = sizeBytes,
+    lastModified = lastModified,
+    isDirectory = isDirectory,
+  )
+}

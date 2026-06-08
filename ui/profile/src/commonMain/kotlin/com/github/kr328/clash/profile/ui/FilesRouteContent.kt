@@ -4,6 +4,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 
 data class ProfileFileRouteItem(
   val id: String,
@@ -31,6 +34,7 @@ fun FilesRouteContent(
   onRename: (ProfileFileRouteItem, String) -> Unit = { _, _ -> },
   onDelete: (ProfileFileRouteItem) -> Unit = {},
 ) {
+  val navigationEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
   val fileById = remember(files) { files.associateBy(ProfileFileRouteItem::id) }
   val effectiveCurrentTime =
     maxOf(currentTimeMillis, files.maxOfOrNull { it.lastModified } ?: currentTimeMillis)
@@ -41,6 +45,12 @@ fun FilesRouteContent(
       ProfileFileListItemSelection.Ignore -> Unit
     }
   }
+
+  NavigationBackHandler(
+    state = navigationEventState,
+    isBackEnabled = true,
+    onBackCompleted = onBack,
+  )
 
   FilesContent(
     modifier = modifier,

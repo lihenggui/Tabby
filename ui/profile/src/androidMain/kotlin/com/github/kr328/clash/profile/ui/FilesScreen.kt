@@ -1,127 +1,153 @@
 package com.github.kr328.clash.profile.ui
 
 import android.content.Intent
-import androidx.activity.compose.BackHandler
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.grantPermissions
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.glue.model.ConfigFile
-import com.github.kr328.clash.profile.vm.FilesViewModel
-import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
-import kotlin.time.Duration.Companion.minutes
+import com.github.kr328.clash.glue.remote.FilesClient
+import com.github.kr328.clash.glue.util.fileName
 import kotlin.uuid.Uuid
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 @Composable
 internal fun FilesScreen(
   uuid: Uuid,
   modifier: Modifier = Modifier,
-  viewModel: FilesViewModel = viewModelWithLifecycle(),
   onFinish: () -> Unit,
 ) {
   val context = LocalContext.current
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val eventState by viewModel.eventState.collectAsStateWithLifecycle()
+  val profileRepository = remember { AndroidProfileRepository() }
+  val filesClient = remember(context) { FilesClient(context) }
+  val documentClient = remember(filesClient) { AndroidProfileFilesDocumentClient(filesClient) }
   val snackbarHostState = remember { SnackbarHostState() }
+  val lifecycleOwner = LocalLifecycleOwner.current
+  val refreshEvents = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
+  val importResults = remember {
+    MutableSharedFlow<ProfileFilesImportResult<Uri>>(extraBufferCapacity = 1)
+  }
+  val exportResults = remember {
+    MutableSharedFlow<ProfileFilesExportResult<Uri>>(extraBufferCapacity = 1)
+  }
 
-  var pendingImportTarget by remember { mutableStateOf<ConfigFile?>(null) }
-  var pendingExportSource by remember { mutableStateOf<ConfigFile?>(null) }
-  var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+  var pendingImportTarget by remember { mutableStateOf<ProfileFilesDocument?>(null) }
+  var pendingExportSource by remember { mutableStateOf<ProfileFilesDocument?>(null) }
 
   val openFileLauncher = rememberLauncherForActivityResult(StartActivityForResult()) {}
 
   val importLauncher =
     rememberLauncherForActivityResult(GetContent()) { uri ->
-      viewModel.onImportResult(uri, pendingImportTarget)
+      importResults.tryEmit(
+        ProfileFilesImportResult(
+          source = uri,
+          sourceFileName = uri?.fileName,
+          targetDocumentId = pendingImportTarget?.id,
+        )
+      )
       pendingImportTarget = null
     }
 
   val exportLauncher =
     rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
-      viewModel.onExportResult(uri, pendingExportSource)
+      exportResults.tryEmit(
+        ProfileFilesExportResult(
+          output = uri,
+          sourceDocumentId = pendingExportSource?.id,
+        )
+      )
       pendingExportSource = null
     }
 
-  LaunchedEffect(uuid) { viewModel.init(uuid = uuid) }
-
-  LaunchedEffect(Unit) {
-    while (true) {
-      delay(1.minutes)
-      currentTime = System.currentTimeMillis()
-    }
-  }
-
-  LaunchedEffect(eventState) {
-    when (val action = profileFilesEventPlatformAction(eventState)) {
-      ProfileFilesEventPlatformAction.Ignore -> Unit
-      ProfileFilesEventPlatformAction.Finish -> {
-        onFinish()
-      }
-      is ProfileFilesEventPlatformAction.OpenFile -> {
-        openFileLauncher.launch(
-          Intent(Intent.ACTION_VIEW).setDataAndType(action.uri, "text/plain").grantPermissions()
-        )
-      }
-      is ProfileFilesEventPlatformAction.RequestImport -> {
-        pendingImportTarget = action.targetConfigFile
-        importLauncher.launch("*/*")
-      }
-      is ProfileFilesEventPlatformAction.RequestExport -> {
-        pendingExportSource = action.sourceConfigFile
-        exportLauncher.launch(action.sourceConfigFile.name)
-      }
-      is ProfileFilesEventPlatformAction.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = action.message)
+  DisposableEffect(lifecycleOwner, refreshEvents) {
+    val observer = LifecycleEventObserver { _, event ->
+      if (event == Lifecycle.Event.ON_START) {
+        refreshEvents.tryEmit(Unit)
       }
     }
-    viewModel.consumeEvent()
+    lifecycleOwner.lifecycle.addObserver(observer)
+    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
-  val configFiles = uiState.configFiles
-  val configFileById = remember(configFiles) { configFiles.associateBy(ConfigFile::id) }
-
-  fun handleSelectedRouteItem(item: ProfileFileRouteItem, action: (ConfigFile) -> Unit) {
-    configFileById[item.id]?.let(action)
-  }
-
-  BackHandler(onBack = viewModel::onBack)
-
-  FilesRouteContent(
+  ProfileRepositoryFilesRouteContent(
+    profileRepository = profileRepository,
+    documentClient = documentClient,
+    uuid = uuid,
+    onFinish = onFinish,
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    files =
-      configFiles.map { file ->
-        ProfileFileRouteItem(
-          id = file.id,
-          name = file.name,
-          sizeBytes = file.size,
-          lastModified = file.lastModified,
-          isDirectory = file.isDirectory,
-        )
-      },
-    currentTimeMillis = currentTime,
-    currentInBaseDir = uiState.currentInBaseDir,
-    configurationEditable = uiState.configurationEditable,
+    importResults = importResults,
+    exportResults = exportResults,
+    refreshEvents = refreshEvents,
     formatElapsedMillis = { elapsed -> elapsedTimeTextString(context, elapsed) },
-    onBack = viewModel::onBack,
-    onOpen = { item -> handleSelectedRouteItem(item, viewModel::onOpen) },
-    onNew = { viewModel.onRequestImport(null) },
-    onImport = { item -> handleSelectedRouteItem(item, viewModel::onRequestImport) },
-    onExport = { item -> handleSelectedRouteItem(item, viewModel::onRequestExport) },
-    onRename = { item, name -> handleSelectedRouteItem(item) { viewModel.onRename(it, name) } },
-    onDelete = { item -> handleSelectedRouteItem(item, viewModel::onDelete) },
+    onOpenFile = { documentId ->
+      openFileLauncher.launch(
+        Intent(Intent.ACTION_VIEW)
+          .setDataAndType(filesClient.buildDocumentUri(documentId), "text/plain")
+          .grantPermissions()
+      )
+    },
+    onRequestImport = { target ->
+      pendingImportTarget = target
+      importLauncher.launch("*/*")
+    },
+    onRequestExport = { source ->
+      pendingExportSource = source
+      exportLauncher.launch(source.name)
+    },
+    onActionError = { cause -> Log.e("Profile files action failed: ${cause.message}", cause) },
+  )
+}
+
+private class AndroidProfileFilesDocumentClient(private val client: FilesClient) :
+  ProfileFilesDocumentClient<Uri, Uri> {
+  override suspend fun list(parentDocumentId: String): List<ProfileFilesDocument> {
+    return client.list(parentDocumentId).map(ConfigFile::toProfileFilesDocument)
+  }
+
+  override suspend fun renameDocument(documentId: String, name: String) {
+    client.renameDocument(documentId, name)
+  }
+
+  override suspend fun deleteDocument(documentId: String) {
+    client.deleteDocument(documentId)
+  }
+
+  override suspend fun importDocument(parentDocumentId: String, source: Uri, name: String) {
+    client.importDocument(parentDocumentId, source, name)
+  }
+
+  override suspend fun replaceDocument(documentId: String, source: Uri) {
+    client.copyDocument(documentId, source)
+  }
+
+  override suspend fun exportDocument(output: Uri, documentId: String) {
+    client.copyDocument(output, documentId)
+  }
+}
+
+private fun ConfigFile.toProfileFilesDocument(): ProfileFilesDocument {
+  return ProfileFilesDocument(
+    id = id,
+    name = name,
+    sizeBytes = size,
+    lastModified = lastModified,
+    isDirectory = isDirectory,
   )
 }
