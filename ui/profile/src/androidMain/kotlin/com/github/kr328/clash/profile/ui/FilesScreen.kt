@@ -55,10 +55,10 @@ internal fun FilesScreen(
   val importLauncher =
     rememberLauncherForActivityResult(GetContent()) { uri ->
       importResults.tryEmit(
-        ProfileFilesImportResult(
+        profileFilesImportResultFromPlatformPayload(
           source = uri,
           sourceFileName = uri?.fileName,
-          targetDocumentId = pendingImportTarget?.id,
+          pendingTargetDocument = pendingImportTarget,
         )
       )
       pendingImportTarget = null
@@ -67,9 +67,9 @@ internal fun FilesScreen(
   val exportLauncher =
     rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
       exportResults.tryEmit(
-        ProfileFilesExportResult(
+        profileFilesExportResultFromPlatformPayload(
           output = uri,
-          sourceDocumentId = pendingExportSource?.id,
+          pendingSourceDocument = pendingExportSource,
         )
       )
       pendingExportSource = null
