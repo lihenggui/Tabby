@@ -231,23 +231,19 @@ internal fun HomeScreen(
 
 private fun Broadcasts.Event.toHomeBroadcastEvent() =
   when (this) {
-    Broadcasts.Event.ServiceRecreated ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ServiceRecreated)
-    Broadcasts.Event.Started ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.Started)
+    Broadcasts.Event.ServiceRecreated -> HomeBroadcastEvent(HomeBroadcastEventKind.ServiceRecreated)
+    Broadcasts.Event.Started -> HomeBroadcastEvent(HomeBroadcastEventKind.Started)
     is Broadcasts.Event.Stopped ->
-      homeBroadcastEventFromPlatformPayload(
-        HomePlatformBroadcastEventKind.Stopped,
+      HomeBroadcastEvent(
+        kind = HomeBroadcastEventKind.Stopped,
         stoppedMessage = cause,
       )
-    Broadcasts.Event.ProfileChanged ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileChanged)
+    Broadcasts.Event.ProfileChanged -> HomeBroadcastEvent(HomeBroadcastEventKind.ProfileChanged)
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateCompleted)
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateCompleted)
     is Broadcasts.Event.ProfileUpdateFailed ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateFailed)
-    Broadcasts.Event.ProfileLoaded ->
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileLoaded)
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed)
+    Broadcasts.Event.ProfileLoaded -> HomeBroadcastEvent(HomeBroadcastEventKind.ProfileLoaded)
   }
 
 private fun HomeModeLabel.stringValue(context: Context): String =

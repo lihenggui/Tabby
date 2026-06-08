@@ -36,16 +36,6 @@ internal enum class HomeBroadcastEventKind {
   ProfileLoaded,
 }
 
-internal enum class HomePlatformBroadcastEventKind {
-  ServiceRecreated,
-  Started,
-  Stopped,
-  ProfileChanged,
-  ProfileUpdateCompleted,
-  ProfileUpdateFailed,
-  ProfileLoaded,
-}
-
 internal data class HomeBroadcastEvent(
   val kind: HomeBroadcastEventKind,
   val stoppedMessage: String? = null,
@@ -153,38 +143,6 @@ internal fun homeStartEventState(action: HomeStartAction): HomeEventState<Nothin
 
 internal fun homeBroadcastEventState(action: HomeBroadcastAction): HomeEventState<Nothing>? {
   return action.stoppedMessage?.let { HomeEventState.ShowMessage(it) }
-}
-
-internal fun homeBroadcastEventFromPlatformPayload(
-  kind: HomePlatformBroadcastEventKind,
-  stoppedMessage: String? = null,
-): HomeBroadcastEvent {
-  val eventKind =
-    when (kind) {
-      HomePlatformBroadcastEventKind.ServiceRecreated -> HomeBroadcastEventKind.ServiceRecreated
-      HomePlatformBroadcastEventKind.Started -> HomeBroadcastEventKind.Started
-      HomePlatformBroadcastEventKind.Stopped -> HomeBroadcastEventKind.Stopped
-      HomePlatformBroadcastEventKind.ProfileChanged -> HomeBroadcastEventKind.ProfileChanged
-      HomePlatformBroadcastEventKind.ProfileUpdateCompleted ->
-        HomeBroadcastEventKind.ProfileUpdateCompleted
-      HomePlatformBroadcastEventKind.ProfileUpdateFailed ->
-        HomeBroadcastEventKind.ProfileUpdateFailed
-      HomePlatformBroadcastEventKind.ProfileLoaded -> HomeBroadcastEventKind.ProfileLoaded
-    }
-
-  return HomeBroadcastEvent(
-    kind = eventKind,
-    stoppedMessage =
-      when (eventKind) {
-        HomeBroadcastEventKind.Stopped -> stoppedMessage
-        HomeBroadcastEventKind.ServiceRecreated,
-        HomeBroadcastEventKind.Started,
-        HomeBroadcastEventKind.ProfileChanged,
-        HomeBroadcastEventKind.ProfileUpdateCompleted,
-        HomeBroadcastEventKind.ProfileUpdateFailed,
-        HomeBroadcastEventKind.ProfileLoaded -> null
-      },
-  )
 }
 
 internal fun homeBroadcastAction(event: HomeBroadcastEvent): HomeBroadcastAction {

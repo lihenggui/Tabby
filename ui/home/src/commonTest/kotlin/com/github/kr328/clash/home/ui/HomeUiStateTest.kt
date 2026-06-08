@@ -152,68 +152,6 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeBroadcastPlatformPayloadKeepsStoppedMessageOnlyForStoppedEvents() {
-    assertEquals(
-      HomeBroadcastEvent(
-        kind = HomeBroadcastEventKind.Stopped,
-        stoppedMessage = "Stopped by system",
-      ),
-      homeBroadcastEventFromPlatformPayload(
-        HomePlatformBroadcastEventKind.Stopped,
-        stoppedMessage = "Stopped by system",
-      ),
-    )
-    assertEquals(
-      HomeBroadcastEvent(kind = HomeBroadcastEventKind.Started),
-      homeBroadcastEventFromPlatformPayload(
-        HomePlatformBroadcastEventKind.Started,
-        stoppedMessage = "ignored",
-      ),
-    )
-    assertEquals(
-      HomeBroadcastEvent(kind = HomeBroadcastEventKind.ProfileUpdateFailed),
-      homeBroadcastEventFromPlatformPayload(
-        HomePlatformBroadcastEventKind.ProfileUpdateFailed,
-        stoppedMessage = "ignored",
-      ),
-    )
-  }
-
-  @Test
-  fun homeBroadcastPlatformPayloadMapsAllPlatformKindsToRouteEventKinds() {
-    assertEquals(
-      HomeBroadcastEventKind.ServiceRecreated,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ServiceRecreated).kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.Started,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.Started).kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.Stopped,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.Stopped).kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.ProfileChanged,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileChanged).kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.ProfileUpdateCompleted,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateCompleted)
-        .kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.ProfileUpdateFailed,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateFailed)
-        .kind,
-    )
-    assertEquals(
-      HomeBroadcastEventKind.ProfileLoaded,
-      homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileLoaded).kind,
-    )
-  }
-
-  @Test
   fun homeBroadcastActionAcceptsPlatformPayloadEvent() {
     assertEquals(
       HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system"),
