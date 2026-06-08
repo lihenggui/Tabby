@@ -143,11 +143,20 @@ private suspend fun loadExternalProfileProviders(context: Context): List<Profile
 @Composable
 private fun ProfileProvider.External.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
+  val presentation =
+    newProfileExternalProviderPresentationFromPlatformPayload(
+      componentKey = intent.component?.flattenToString(),
+      packageName = intent.component?.packageName,
+      name = name,
+      summary = summary,
+    )
+
   return NewProfileRouteExternalProvider(
-    key = key,
-    name = name,
-    summary = summary,
+    key = presentation.key,
+    name = presentation.name,
+    summary = presentation.summary,
     iconPainter = rememberProfileProviderPainter(icon),
+    hasDetail = presentation.hasDetail,
   )
 }
 
@@ -183,7 +192,14 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
 }
 
 private val ProfileProvider.External.key: String
-  get() = intent.component?.flattenToString() ?: name
+  get() =
+    newProfileExternalProviderPresentationFromPlatformPayload(
+        componentKey = intent.component?.flattenToString(),
+        packageName = intent.component?.packageName,
+        name = name,
+        summary = summary,
+      )
+      .key
 
 private fun ProfileProvider.External.openAppSettings(startActivity: (Intent) -> Unit) {
   when (val action = newProfileDetailAction(intent.component?.packageName)) {

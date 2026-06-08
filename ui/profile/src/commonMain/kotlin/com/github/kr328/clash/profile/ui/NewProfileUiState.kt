@@ -45,6 +45,13 @@ internal data class NewProfileBuiltInProviderPresentation(
   val graphicToken: NewProfileProviderGraphicToken,
 )
 
+internal data class NewProfileExternalProviderPresentation(
+  val key: String,
+  val name: String,
+  val summary: String,
+  val hasDetail: Boolean,
+)
+
 internal fun <T> newProfileProviderTextPlatformToken(
   token: NewProfileProviderTextToken,
   file: T,
@@ -230,6 +237,24 @@ internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCre
 internal fun newProfileDetailAction(packageName: String?): NewProfileDetailAction {
   return if (packageName == null) NewProfileDetailAction.Ignore
   else NewProfileDetailAction.OpenAppSettings(packageName)
+}
+
+internal fun newProfileExternalProviderPresentationFromPlatformPayload(
+  componentKey: String?,
+  packageName: String?,
+  name: String,
+  summary: String,
+): NewProfileExternalProviderPresentation {
+  return NewProfileExternalProviderPresentation(
+    key = componentKey ?: packageName ?: name,
+    name = name,
+    summary = summary,
+    hasDetail = newProfileExternalProviderHasDetail(packageName),
+  )
+}
+
+private fun newProfileExternalProviderHasDetail(packageName: String?): Boolean {
+  return newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
 }
 
 internal fun newProfileExternalProviderResultAction(
