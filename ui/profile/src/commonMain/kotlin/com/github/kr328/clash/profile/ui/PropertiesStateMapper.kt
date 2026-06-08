@@ -186,6 +186,10 @@ internal fun propertiesAutoSaveAction(
   }
 }
 
+internal fun propertiesAutoSaveRequestedFromPlatformLifecycleEvent(stopEvent: Boolean): Boolean {
+  return stopEvent
+}
+
 internal fun propertiesAutoSaveUiState(
   profile: Profile?,
   savedProfile: Profile?,

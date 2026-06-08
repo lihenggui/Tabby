@@ -287,6 +287,18 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesAutoSaveRequestedFromPlatformLifecycleEventOnlyRequestsAutoSaveOnStop() {
+    assertEquals(
+      true,
+      propertiesAutoSaveRequestedFromPlatformLifecycleEvent(stopEvent = true),
+    )
+    assertEquals(
+      false,
+      propertiesAutoSaveRequestedFromPlatformLifecycleEvent(stopEvent = false),
+    )
+  }
+
+  @Test
   fun propertiesAutoSaveUiStateTracksProfileAgainstSavedProfile() {
     val saved = profile(name = "Saved")
     val changed = saved.copy(name = "Changed")

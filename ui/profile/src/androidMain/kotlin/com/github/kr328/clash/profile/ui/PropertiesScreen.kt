@@ -36,7 +36,11 @@ internal fun PropertiesScreen(
 
   DisposableEffect(lifecycleOwner, autoSaveEvents) {
     val observer = LifecycleEventObserver { _, event ->
-      if (event == Lifecycle.Event.ON_STOP) {
+      if (
+        propertiesAutoSaveRequestedFromPlatformLifecycleEvent(
+          stopEvent = event == Lifecycle.Event.ON_STOP
+        )
+      ) {
         autoSaveEvents.tryEmit(Unit)
       }
     }
