@@ -131,8 +131,7 @@ internal fun LogcatScreen(
       started =
         logcatStartedStateFromPlatformLifecycleEvent(
           currentStarted = started,
-          startEvent = event == Lifecycle.Event.ON_START,
-          stopEvent = event == Lifecycle.Event.ON_STOP,
+          event = event.toLogcatPlatformStartStopEvent(),
         )
     }
 
@@ -261,6 +260,13 @@ internal fun LogcatScreen(
     },
   )
 }
+
+private fun Lifecycle.Event.toLogcatPlatformStartStopEvent(): LogcatPlatformStartStopEvent =
+  when (this) {
+    Lifecycle.Event.ON_START -> LogcatPlatformStartStopEvent.Start
+    Lifecycle.Event.ON_STOP -> LogcatPlatformStartStopEvent.Stop
+    else -> LogcatPlatformStartStopEvent.Other
+  }
 
 private suspend fun Context.bindAndroidLogcat(
   onDisconnected: (ServiceConnection) -> Unit

@@ -406,32 +406,28 @@ class LogcatUiStateTest {
       true,
       logcatStartedStateFromPlatformLifecycleEvent(
         currentStarted = false,
-        startEvent = true,
-        stopEvent = false,
+        event = LogcatPlatformStartStopEvent.Start,
       ),
     )
     assertEquals(
       false,
       logcatStartedStateFromPlatformLifecycleEvent(
         currentStarted = true,
-        startEvent = false,
-        stopEvent = true,
+        event = LogcatPlatformStartStopEvent.Stop,
       ),
     )
     assertEquals(
       true,
       logcatStartedStateFromPlatformLifecycleEvent(
         currentStarted = true,
-        startEvent = false,
-        stopEvent = false,
+        event = LogcatPlatformStartStopEvent.Other,
       ),
     )
     assertEquals(
       false,
       logcatStartedStateFromPlatformLifecycleEvent(
         currentStarted = false,
-        startEvent = false,
-        stopEvent = false,
+        event = LogcatPlatformStartStopEvent.Other,
       ),
     )
   }

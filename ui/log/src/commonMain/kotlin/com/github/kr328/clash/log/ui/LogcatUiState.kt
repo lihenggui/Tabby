@@ -100,6 +100,12 @@ internal sealed interface LogcatExportAction {
 
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
+internal enum class LogcatPlatformStartStopEvent {
+  Start,
+  Stop,
+  Other,
+}
+
 internal data class LogcatServiceBinding<out ServiceT, out ConnectionT>(
   val service: ServiceT,
   val connection: ConnectionT,
@@ -290,13 +296,12 @@ internal fun logcatPollAction(
 
 internal fun logcatStartedStateFromPlatformLifecycleEvent(
   currentStarted: Boolean,
-  startEvent: Boolean,
-  stopEvent: Boolean,
+  event: LogcatPlatformStartStopEvent,
 ): Boolean {
-  return when {
-    startEvent -> true
-    stopEvent -> false
-    else -> currentStarted
+  return when (event) {
+    LogcatPlatformStartStopEvent.Start -> true
+    LogcatPlatformStartStopEvent.Stop -> false
+    LogcatPlatformStartStopEvent.Other -> currentStarted
   }
 }
 
