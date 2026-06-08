@@ -255,6 +255,18 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeActiveFetchActionRequestsFetchOnlyWhenActive() {
+    assertEquals(
+      HomeActiveFetchAction.RequestFetch,
+      homeActiveFetchAction(active = true),
+    )
+    assertEquals(
+      HomeActiveFetchAction.Ignore,
+      homeActiveFetchAction(active = false),
+    )
+  }
+
+  @Test
   fun homeTrafficPollActionQueriesOnlyWhenClashIsRunning() {
     assertEquals(
       HomeTrafficPollAction.QueryTraffic,
@@ -263,6 +275,22 @@ class HomeUiStateTest {
     assertEquals(
       HomeTrafficPollAction.Ignore,
       homeTrafficPollAction(clashRunning = false),
+    )
+  }
+
+  @Test
+  fun homeTrafficPollActionRequiresActiveScreenAndRunningClash() {
+    assertEquals(
+      HomeTrafficPollAction.QueryTraffic,
+      homeTrafficPollAction(started = true, clashRunning = true),
+    )
+    assertEquals(
+      HomeTrafficPollAction.Ignore,
+      homeTrafficPollAction(started = false, clashRunning = true),
+    )
+    assertEquals(
+      HomeTrafficPollAction.Ignore,
+      homeTrafficPollAction(started = true, clashRunning = false),
     )
   }
 

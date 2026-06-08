@@ -61,6 +61,11 @@ internal enum class HomeToggleAction {
   StopClash,
 }
 
+internal enum class HomeActiveFetchAction {
+  RequestFetch,
+  Ignore,
+}
+
 internal enum class HomeTrafficPollAction {
   QueryTraffic,
   Ignore,
@@ -248,8 +253,19 @@ internal fun homeToggleAction(clashRunning: Boolean): HomeToggleAction {
   return if (clashRunning) HomeToggleAction.StopClash else HomeToggleAction.StartClash
 }
 
+internal fun homeActiveFetchAction(active: Boolean): HomeActiveFetchAction {
+  return if (active) HomeActiveFetchAction.RequestFetch else HomeActiveFetchAction.Ignore
+}
+
 internal fun homeTrafficPollAction(clashRunning: Boolean): HomeTrafficPollAction {
   return if (clashRunning) HomeTrafficPollAction.QueryTraffic else HomeTrafficPollAction.Ignore
+}
+
+internal fun homeTrafficPollAction(
+  started: Boolean,
+  clashRunning: Boolean,
+): HomeTrafficPollAction {
+  return if (started) homeTrafficPollAction(clashRunning) else HomeTrafficPollAction.Ignore
 }
 
 internal fun homeNoProfileSnackbarAction(

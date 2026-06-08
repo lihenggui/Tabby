@@ -142,25 +142,29 @@ internal fun HomeScreen(
   }
 
   LaunchedEffect(started) {
-    if (!started) return@LaunchedEffect
+    when (homeActiveFetchAction(active = started)) {
+      HomeActiveFetchAction.RequestFetch -> {
+        fetchRequest = currentFetchRequest.value + 1
+        Remote.broadcasts.event.collect { event ->
+          val action = homeBroadcastAction(event.toHomeBroadcastEvent())
 
-    fetchRequest = currentFetchRequest.value + 1
-    Remote.broadcasts.event.collect { event ->
-      val action = homeBroadcastAction(event.toHomeBroadcastEvent())
-
-      homeBroadcastEventState(action)?.let { eventState = it }
-      if (action.shouldFetch) fetchRequest = currentFetchRequest.value + 1
+          homeBroadcastEventState(action)?.let { eventState = it }
+          if (action.shouldFetch) fetchRequest = currentFetchRequest.value + 1
+        }
+      }
+      HomeActiveFetchAction.Ignore -> Unit
     }
   }
 
   LaunchedEffect(started, fetchRequest, clashRunning, engineController, profileRepository) {
-    if (started) fetchHomeState(clashRunning)
+    when (homeActiveFetchAction(active = started)) {
+      HomeActiveFetchAction.RequestFetch -> fetchHomeState(clashRunning)
+      HomeActiveFetchAction.Ignore -> Unit
+    }
   }
 
   LaunchedEffect(started, clashRunning, engineController) {
-    if (!started) return@LaunchedEffect
-
-    when (homeTrafficPollAction(clashRunning)) {
+    when (homeTrafficPollAction(started = started, clashRunning = clashRunning)) {
       HomeTrafficPollAction.QueryTraffic -> {
         while (isActive) {
           delay(1.seconds)
