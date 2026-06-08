@@ -139,38 +139,21 @@ private suspend fun Context.importGeoFile(
 ): GeoFileImportResult =
   withContext(Dispatchers.IO) {
     try {
-      val sourceUri = uri ?: return@withContext geoFileImportFailedResult()
-      val cursor =
-        contentResolver.query(sourceUri, null, null, null, null, null)
-          ?: return@withContext geoFileImportFailedResult()
-
-      cursor.use {
-        val sourceReadable = it.moveToFirst()
-        val displayName = if (sourceReadable) it.displayName else null
-        when (
-          val sourceAction =
-            geoFileImportSourceActionFromPlatformSource(
-              source = sourceUri,
-              sourceReadable = sourceReadable,
-              displayName = displayName,
-              importType = importType,
-            )
-        ) {
-          GeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
-          is GeoFileImportSourceAction.Import -> {
-            when (val action = sourceAction.action) {
-              is GeoFileImportAction.UnsupportedFormat -> geoFileImportResult(action)
-              is GeoFileImportAction.Copy -> {
-                val outputFile = clashDir.resolve(action.outputFileName)
-                outputFile.parentFile?.mkdirs()
-                val inputStream =
-                  contentResolver.openInputStream(sourceUri)
-                    ?: return@use geoFileImportResult(action, copySucceeded = false)
-                inputStream.use { ins ->
-                  outputFile.outputStream().use { outs -> ins.copyTo(outs) }
-                }
-                geoFileImportResult(action, copySucceeded = true)
+      when (val sourceAction = readGeoFileImportSourceAction(uri, importType)) {
+        GeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
+        is GeoFileImportSourceAction.Import -> {
+          when (val action = sourceAction.action) {
+            is GeoFileImportAction.UnsupportedFormat -> geoFileImportResult(action)
+            is GeoFileImportAction.Copy -> {
+              val outputFile = clashDir.resolve(action.outputFileName)
+              outputFile.parentFile?.mkdirs()
+              val inputStream =
+                contentResolver.openInputStream(sourceAction.source)
+                  ?: return@withContext geoFileImportResult(action, copySucceeded = false)
+              inputStream.use { ins ->
+                outputFile.outputStream().use { outs -> ins.copyTo(outs) }
               }
+              geoFileImportResult(action, copySucceeded = true)
             }
           }
         }
@@ -180,6 +163,40 @@ private suspend fun Context.importGeoFile(
       geoFileImportFailedResult()
     }
   }
+
+private fun Context.readGeoFileImportSourceAction(
+  uri: Uri?,
+  importType: GeoFileImportType,
+): GeoFileImportSourceAction<Uri> {
+  val sourceUri =
+    uri
+      ?: return geoFileImportSourceActionFromPlatformSource<Uri>(
+        source = null,
+        sourceReadable = false,
+        displayName = null,
+        importType = importType,
+      )
+
+  val cursor =
+    contentResolver.query(sourceUri, null, null, null, null, null)
+      ?: return geoFileImportSourceActionFromPlatformSource(
+        source = sourceUri,
+        sourceReadable = false,
+        displayName = null,
+        importType = importType,
+      )
+
+  cursor.use {
+    val sourceReadable = it.moveToFirst()
+    val displayName = if (sourceReadable) it.displayName else null
+    return geoFileImportSourceActionFromPlatformSource(
+      source = sourceUri,
+      sourceReadable = sourceReadable,
+      displayName = displayName,
+      importType = importType,
+    )
+  }
+}
 
 private val Cursor.displayName: String?
   get() {

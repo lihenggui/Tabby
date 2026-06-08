@@ -270,8 +270,8 @@ class GeoFileImportPlanTest {
   fun sourceActionFailsWhenSourceIsMissing() {
     assertEquals(
       GeoFileImportSourceAction.Fail,
-      geoFileImportSourceAction(
-        sourceSelected = false,
+      geoFileImportSourceAction<TestSource>(
+        source = null,
         sourceReadable = true,
         displayName = "geoip.mmdb",
         importType = GeoFileImportType.GeoIp,
@@ -284,7 +284,7 @@ class GeoFileImportPlanTest {
     assertEquals(
       GeoFileImportSourceAction.Fail,
       geoFileImportSourceAction(
-        sourceSelected = true,
+        source = TestSource("geoip.mmdb"),
         sourceReadable = false,
         displayName = "geoip.mmdb",
         importType = GeoFileImportType.GeoIp,
@@ -293,13 +293,17 @@ class GeoFileImportPlanTest {
   }
 
   @Test
-  fun sourceActionCreatesImportActionForReadableSource() {
+  fun sourceActionCreatesImportActionForReadableSourceAndKeepsSource() {
+    val source = TestSource("GeoSite.DAT")
+
     assertEquals(
       GeoFileImportSourceAction.Import(
-        GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+        source = source,
+        action =
+          GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat"),
       ),
       geoFileImportSourceAction(
-        sourceSelected = true,
+        source = source,
         sourceReadable = true,
         displayName = "GeoSite.DAT",
         importType = GeoFileImportType.GeoSite,
@@ -309,12 +313,15 @@ class GeoFileImportPlanTest {
 
   @Test
   fun sourceActionUsesEmptyDisplayNameWhenMetadataIsMissing() {
+    val source = TestSource("unknown")
+
     assertEquals(
       GeoFileImportSourceAction.Import(
-        GeoFileImportAction.UnsupportedFormat(".metadb/.db/.dat/.mmdb")
+        source = source,
+        action = GeoFileImportAction.UnsupportedFormat(".metadb/.db/.dat/.mmdb"),
       ),
       geoFileImportSourceAction(
-        sourceSelected = true,
+        source = source,
         sourceReadable = true,
         displayName = null,
         importType = GeoFileImportType.GeoIp,
@@ -326,7 +333,7 @@ class GeoFileImportPlanTest {
   fun sourceActionFromPlatformSourceFailsWhenSourceIsMissing() {
     assertEquals(
       GeoFileImportSourceAction.Fail,
-      geoFileImportSourceActionFromPlatformSource(
+      geoFileImportSourceActionFromPlatformSource<TestSource>(
         source = null,
         sourceReadable = true,
         displayName = "geoip.mmdb",
@@ -349,13 +356,17 @@ class GeoFileImportPlanTest {
   }
 
   @Test
-  fun sourceActionFromPlatformSourceCreatesImportActionForReadableSource() {
+  fun sourceActionFromPlatformSourceCreatesImportActionForReadableSourceAndKeepsSource() {
+    val source = TestSource("GeoSite.DAT")
+
     assertEquals(
       GeoFileImportSourceAction.Import(
-        GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+        source = source,
+        action =
+          GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat"),
       ),
       geoFileImportSourceActionFromPlatformSource(
-        source = TestSource("GeoSite.DAT"),
+        source = source,
         sourceReadable = true,
         displayName = "GeoSite.DAT",
         importType = GeoFileImportType.GeoSite,
