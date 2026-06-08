@@ -12,53 +12,11 @@ enum class ProfilesBroadcastEventKind {
   ProfileLoaded,
 }
 
-internal enum class ProfilesPlatformBroadcastEventKind {
-  ServiceRecreated,
-  Started,
-  Stopped,
-  ProfileChanged,
-  ProfileUpdateCompleted,
-  ProfileUpdateFailed,
-  ProfileLoaded,
-}
-
 data class ProfilesBroadcastEvent(
   val kind: ProfilesBroadcastEventKind,
   val uuid: Uuid? = null,
   val reason: String? = null,
 )
-
-internal fun profilesBroadcastEventFromPlatformPayload(
-  kind: ProfilesPlatformBroadcastEventKind,
-  uuid: Uuid? = null,
-  reason: String? = null,
-): ProfilesBroadcastEvent {
-  val eventKind =
-    when (kind) {
-      ProfilesPlatformBroadcastEventKind.ServiceRecreated ->
-        ProfilesBroadcastEventKind.ServiceRecreated
-      ProfilesPlatformBroadcastEventKind.Started -> ProfilesBroadcastEventKind.Started
-      ProfilesPlatformBroadcastEventKind.Stopped -> ProfilesBroadcastEventKind.Stopped
-      ProfilesPlatformBroadcastEventKind.ProfileChanged -> ProfilesBroadcastEventKind.ProfileChanged
-      ProfilesPlatformBroadcastEventKind.ProfileUpdateCompleted ->
-        ProfilesBroadcastEventKind.ProfileUpdateCompleted
-      ProfilesPlatformBroadcastEventKind.ProfileUpdateFailed ->
-        ProfilesBroadcastEventKind.ProfileUpdateFailed
-      ProfilesPlatformBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEventKind.ProfileLoaded
-    }
-
-  return when (eventKind) {
-    ProfilesBroadcastEventKind.ProfileUpdateCompleted ->
-      ProfilesBroadcastEvent(kind = eventKind, uuid = uuid)
-    ProfilesBroadcastEventKind.ProfileUpdateFailed ->
-      ProfilesBroadcastEvent(kind = eventKind, uuid = uuid, reason = reason)
-    ProfilesBroadcastEventKind.ServiceRecreated,
-    ProfilesBroadcastEventKind.Started,
-    ProfilesBroadcastEventKind.Stopped,
-    ProfilesBroadcastEventKind.ProfileChanged,
-    ProfilesBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEvent(eventKind)
-  }
-}
 
 internal sealed interface ProfilesBroadcastAction {
   data object FetchProfiles : ProfilesBroadcastAction

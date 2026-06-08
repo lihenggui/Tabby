@@ -69,62 +69,6 @@ class ProfilesBroadcastActionTest {
   }
 
   @Test
-  fun platformPayloadBoundaryDropsFieldsForNonUpdateEvents() {
-    assertEquals(
-      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded),
-      profilesBroadcastEventFromPlatformPayload(
-        kind = ProfilesPlatformBroadcastEventKind.ProfileLoaded,
-        uuid = uuid,
-        reason = "ignored",
-      ),
-    )
-    assertEquals(
-      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileUpdateCompleted, uuid = uuid),
-      profilesBroadcastEventFromPlatformPayload(
-        kind = ProfilesPlatformBroadcastEventKind.ProfileUpdateCompleted,
-        uuid = uuid,
-        reason = "ignored",
-      ),
-    )
-    assertEquals(
-      ProfilesBroadcastEvent(
-        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
-        uuid = uuid,
-        reason = "network",
-      ),
-      profilesBroadcastEventFromPlatformPayload(
-        kind = ProfilesPlatformBroadcastEventKind.ProfileUpdateFailed,
-        uuid = uuid,
-        reason = "network",
-      ),
-    )
-  }
-
-  @Test
-  fun platformPayloadMapsAllPlatformKindsToRouteEventKinds() {
-    listOf(
-        ProfilesPlatformBroadcastEventKind.ServiceRecreated to
-          ProfilesBroadcastEventKind.ServiceRecreated,
-        ProfilesPlatformBroadcastEventKind.Started to ProfilesBroadcastEventKind.Started,
-        ProfilesPlatformBroadcastEventKind.Stopped to ProfilesBroadcastEventKind.Stopped,
-        ProfilesPlatformBroadcastEventKind.ProfileChanged to
-          ProfilesBroadcastEventKind.ProfileChanged,
-        ProfilesPlatformBroadcastEventKind.ProfileUpdateCompleted to
-          ProfilesBroadcastEventKind.ProfileUpdateCompleted,
-        ProfilesPlatformBroadcastEventKind.ProfileUpdateFailed to
-          ProfilesBroadcastEventKind.ProfileUpdateFailed,
-        ProfilesPlatformBroadcastEventKind.ProfileLoaded to
-          ProfilesBroadcastEventKind.ProfileLoaded,
-      )
-      .forEach { (platformKind, routeKind) ->
-        assertEquals(
-          routeKind,
-          profilesBroadcastEventFromPlatformPayload(platformKind).kind,
-        )
-      }
-  }
-
-  @Test
   fun profileUpdateEventsAreIgnoredWhenUuidIsMissing() {
     assertEquals(
       ProfilesBroadcastAction.Ignore,
