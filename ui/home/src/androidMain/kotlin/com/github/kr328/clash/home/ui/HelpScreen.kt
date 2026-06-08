@@ -56,9 +56,9 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
   val messageCopied = stringResource(SharedRes.string.copied)
 
   LaunchedEffect(appContext) {
-    val (appVersion, coreVersion) = withContext(Dispatchers.IO) { appContext.loadVersionInfo() }
+    val versionInfo = withContext(Dispatchers.IO) { appContext.loadVersionInfo() }
 
-    uiState = uiState.withVersionInfo(appVersion = appVersion, coreVersion = coreVersion)
+    uiState = uiState.withVersionInfo(versionInfo)
   }
 
   LaunchedEffect(eventState) {
@@ -140,11 +140,12 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
   )
 }
 
-private fun Context.loadVersionInfo(): Pair<String, String> {
-  return formatAppVersionInfo(
+private fun Context.loadVersionInfo(): HelpVersionInfo {
+  return helpVersionInfoFromPlatformPayload(
     versionName = loadPackageVersionName(),
     buildCommit = appInfoProvider.buildCommit,
-  ) to Bridge.nativeCoreVersion()
+    coreVersion = Bridge.nativeCoreVersion(),
+  )
 }
 
 private fun Context.loadPackageVersionName(): String? {

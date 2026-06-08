@@ -35,6 +35,25 @@ class HelpContentStateTest {
   }
 
   @Test
+  fun platformVersionPayloadMapsToVersionInfo() {
+    val versionInfo =
+      helpVersionInfoFromPlatformPayload(
+        versionName = "2.0.0",
+        buildCommit = "abc123",
+        coreVersion = "Meta 2.0",
+      )
+    val state = HelpContentState(checkingForUpdates = true).withVersionInfo(versionInfo)
+
+    assertEquals(
+      HelpVersionInfo(appVersion = "2.0.0 - abc123", coreVersion = "Meta 2.0"),
+      versionInfo,
+    )
+    assertEquals(true, state.checkingForUpdates)
+    assertEquals("2.0.0 - abc123", state.appVersion)
+    assertEquals("Meta 2.0", state.coreVersion)
+  }
+
+  @Test
   fun appVersionInfoIncludesBuildCommit() {
     assertEquals(
       "1.2.3 - abc123",
