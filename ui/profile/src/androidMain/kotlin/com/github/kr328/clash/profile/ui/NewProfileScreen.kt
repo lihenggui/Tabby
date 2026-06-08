@@ -190,16 +190,14 @@ private fun rememberProfileProviderPainter(iconDrawable: Drawable?): Painter? {
 private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
   return when (this) {
     is QRSuccess ->
-      profileQrScanResultFromPlatformPayload(
+      ProfileQrScanResult(
         kind = ProfileQrResultKind.Success,
         rawValue = content.rawValue,
         rawBytes = content.rawBytes,
       )
-    QRUserCanceled ->
-      profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.UserCanceled)
-    QRMissingPermission ->
-      profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.MissingPermission)
-    is QRError -> profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.Error)
+    QRUserCanceled -> ProfileQrScanResult(kind = ProfileQrResultKind.UserCanceled)
+    QRMissingPermission -> ProfileQrScanResult(kind = ProfileQrResultKind.MissingPermission)
+    is QRError -> ProfileQrScanResult(kind = ProfileQrResultKind.Error)
   }
 }
 
