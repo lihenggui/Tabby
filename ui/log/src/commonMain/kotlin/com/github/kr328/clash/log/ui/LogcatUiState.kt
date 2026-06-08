@@ -288,6 +288,18 @@ internal fun logcatPollAction(
   }
 }
 
+internal fun logcatStartedStateFromPlatformLifecycleEvent(
+  currentStarted: Boolean,
+  startEvent: Boolean,
+  stopEvent: Boolean,
+): Boolean {
+  return when {
+    startEvent -> true
+    stopEvent -> false
+    else -> currentStarted
+  }
+}
+
 internal fun logcatSnapshotAction(
   state: LogcatUiState,
   initialSnapshot: Boolean,

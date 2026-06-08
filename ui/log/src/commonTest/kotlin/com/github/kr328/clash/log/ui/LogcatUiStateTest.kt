@@ -401,6 +401,42 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun startedStateFromPlatformLifecycleEventStartsStopsAndKeepsExistingState() {
+    assertEquals(
+      true,
+      logcatStartedStateFromPlatformLifecycleEvent(
+        currentStarted = false,
+        startEvent = true,
+        stopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStartedStateFromPlatformLifecycleEvent(
+        currentStarted = true,
+        startEvent = false,
+        stopEvent = true,
+      ),
+    )
+    assertEquals(
+      true,
+      logcatStartedStateFromPlatformLifecycleEvent(
+        currentStarted = true,
+        startEvent = false,
+        stopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStartedStateFromPlatformLifecycleEvent(
+        currentStarted = false,
+        startEvent = false,
+        stopEvent = false,
+      ),
+    )
+  }
+
+  @Test
   fun logcatSnapshotActionPreservesStateAndInitialFlagWhenSnapshotIsMissing() {
     val message = logMessage(1)
     val state = LogcatUiState(messages = listOf(message))
