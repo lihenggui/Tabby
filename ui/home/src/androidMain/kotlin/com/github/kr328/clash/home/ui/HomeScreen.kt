@@ -121,9 +121,7 @@ internal fun HomeScreen(
   val vpnLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
       when (
-        homeVpnPermissionResultActionFromPlatformResult(
-          result = result.resultCode.toHomeVpnPermissionPlatformResult()
-        )
+        homeVpnPermissionResultActionFromGranted(granted = result.resultCode == Activity.RESULT_OK)
       ) {
         HomeVpnPermissionResultAction.StartEngine -> scope.launch { startEngine() }
         HomeVpnPermissionResultAction.Ignore -> Unit
@@ -250,13 +248,6 @@ private fun Broadcasts.Event.toHomeBroadcastEvent() =
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateFailed)
     Broadcasts.Event.ProfileLoaded ->
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileLoaded)
-  }
-
-private fun Int.toHomeVpnPermissionPlatformResult(): HomeVpnPermissionPlatformResult =
-  if (this == Activity.RESULT_OK) {
-    HomeVpnPermissionPlatformResult.Granted
-  } else {
-    HomeVpnPermissionPlatformResult.Denied
   }
 
 private fun HomeModeLabel.stringValue(context: Context): String =

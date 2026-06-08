@@ -385,14 +385,14 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeVpnPermissionResultFromPlatformResultMapsPlatformResult() {
+  fun homeVpnPermissionResultMapsGrantedBoolean() {
     assertEquals(
       HomeVpnPermissionResult.Granted,
-      homeVpnPermissionResultFromPlatformResult(HomeVpnPermissionPlatformResult.Granted),
+      homeVpnPermissionResult(granted = true),
     )
     assertEquals(
       HomeVpnPermissionResult.Denied,
-      homeVpnPermissionResultFromPlatformResult(HomeVpnPermissionPlatformResult.Denied),
+      homeVpnPermissionResult(granted = false),
     )
   }
 
@@ -409,14 +409,14 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeVpnPermissionResultActionFromPlatformResultStartsEngineOnlyForGrantedResult() {
+  fun homeVpnPermissionResultActionFromGrantedStartsEngineOnlyForGrantedPermission() {
     assertEquals(
       HomeVpnPermissionResultAction.StartEngine,
-      homeVpnPermissionResultActionFromPlatformResult(HomeVpnPermissionPlatformResult.Granted),
+      homeVpnPermissionResultActionFromGranted(granted = true),
     )
     assertEquals(
       HomeVpnPermissionResultAction.Ignore,
-      homeVpnPermissionResultActionFromPlatformResult(HomeVpnPermissionPlatformResult.Denied),
+      homeVpnPermissionResultActionFromGranted(granted = false),
     )
   }
 

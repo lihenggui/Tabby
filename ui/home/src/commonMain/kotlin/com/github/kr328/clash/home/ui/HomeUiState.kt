@@ -81,11 +81,6 @@ internal enum class HomeVpnPermissionResult {
   Denied,
 }
 
-internal enum class HomeVpnPermissionPlatformResult {
-  Granted,
-  Denied,
-}
-
 internal enum class HomeVpnPermissionResultAction {
   StartEngine,
   Ignore,
@@ -294,13 +289,8 @@ internal fun homeNoProfileSnackbarAction(
   }
 }
 
-internal fun homeVpnPermissionResultFromPlatformResult(
-  result: HomeVpnPermissionPlatformResult
-): HomeVpnPermissionResult {
-  return when (result) {
-    HomeVpnPermissionPlatformResult.Granted -> HomeVpnPermissionResult.Granted
-    HomeVpnPermissionPlatformResult.Denied -> HomeVpnPermissionResult.Denied
-  }
+internal fun homeVpnPermissionResult(granted: Boolean): HomeVpnPermissionResult {
+  return if (granted) HomeVpnPermissionResult.Granted else HomeVpnPermissionResult.Denied
 }
 
 internal fun homeVpnPermissionResultAction(
@@ -312,10 +302,10 @@ internal fun homeVpnPermissionResultAction(
   }
 }
 
-internal fun homeVpnPermissionResultActionFromPlatformResult(
-  result: HomeVpnPermissionPlatformResult
+internal fun homeVpnPermissionResultActionFromGranted(
+  granted: Boolean
 ): HomeVpnPermissionResultAction {
-  return homeVpnPermissionResultAction(homeVpnPermissionResultFromPlatformResult(result))
+  return homeVpnPermissionResultAction(homeVpnPermissionResult(granted))
 }
 
 internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
