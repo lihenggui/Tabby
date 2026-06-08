@@ -6,11 +6,6 @@ internal sealed interface ProfileFilesFetchAction {
   data object Ignore : ProfileFilesFetchAction
 }
 
-internal enum class ProfileFilesPlatformStartEvent {
-  Start,
-  Other,
-}
-
 internal fun profileFilesFetchAction(location: ProfileFilesLocation): ProfileFilesFetchAction {
   return if (location.initialized) {
     ProfileFilesFetchAction.Fetch(
@@ -22,11 +17,6 @@ internal fun profileFilesFetchAction(location: ProfileFilesLocation): ProfileFil
   }
 }
 
-internal fun profileFilesRefreshRequestedFromPlatformStartEvent(
-  event: ProfileFilesPlatformStartEvent
-): Boolean {
-  return when (event) {
-    ProfileFilesPlatformStartEvent.Start -> true
-    ProfileFilesPlatformStartEvent.Other -> false
-  }
+internal fun profileFilesRefreshRequestedFromStartEvent(isStartEvent: Boolean): Boolean {
+  return isStartEvent
 }

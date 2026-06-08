@@ -30,18 +30,8 @@ class ProfileFilesFetchActionTest {
   }
 
   @Test
-  fun refreshRequestedFromPlatformStartEventOnlyRequestsRefreshOnStart() {
-    assertEquals(
-      true,
-      profileFilesRefreshRequestedFromPlatformStartEvent(
-        event = ProfileFilesPlatformStartEvent.Start
-      ),
-    )
-    assertEquals(
-      false,
-      profileFilesRefreshRequestedFromPlatformStartEvent(
-        event = ProfileFilesPlatformStartEvent.Other
-      ),
-    )
+  fun refreshRequestedFromStartEventOnlyRequestsRefreshOnStart() {
+    assertEquals(true, profileFilesRefreshRequestedFromStartEvent(isStartEvent = true))
+    assertEquals(false, profileFilesRefreshRequestedFromStartEvent(isStartEvent = false))
   }
 }
