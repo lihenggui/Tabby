@@ -109,6 +109,15 @@ internal sealed interface HomeEventPlatformAction<out VpnPermissionT> {
   data class ShowMessage(val message: String) : HomeEventPlatformAction<Nothing>
 }
 
+internal sealed interface HomeEngineStartResult<out VpnPermissionT> {
+  data object Started : HomeEngineStartResult<Nothing>
+
+  data class VpnPermissionRequired<out VpnPermissionT>(val permissionRequest: VpnPermissionT) :
+    HomeEngineStartResult<VpnPermissionT>
+
+  data class Failed(val message: String) : HomeEngineStartResult<Nothing>
+}
+
 internal fun homeInitialEventState(): HomeEventState<Nothing> {
   return HomeEventState.Idle
 }
@@ -188,6 +197,31 @@ internal fun <VpnPermissionT> homeVpnPermissionEventState(
 
 internal fun homeStartFailureEventState(message: String): HomeEventState<Nothing> {
   return HomeEventState.ShowMessage(message)
+}
+
+internal fun homeEngineStartedResult(): HomeEngineStartResult<Nothing> {
+  return HomeEngineStartResult.Started
+}
+
+internal fun <VpnPermissionT> homeEngineVpnPermissionResult(
+  permissionRequest: VpnPermissionT
+): HomeEngineStartResult<VpnPermissionT> {
+  return HomeEngineStartResult.VpnPermissionRequired(permissionRequest)
+}
+
+internal fun homeEngineStartFailedResult(message: String): HomeEngineStartResult<Nothing> {
+  return HomeEngineStartResult.Failed(message)
+}
+
+internal fun <VpnPermissionT> homeEngineStartEventState(
+  result: HomeEngineStartResult<VpnPermissionT>
+): HomeEventState<VpnPermissionT>? {
+  return when (result) {
+    HomeEngineStartResult.Started -> null
+    is HomeEngineStartResult.VpnPermissionRequired ->
+      HomeEventState.RequestVpnPermission(result.permissionRequest)
+    is HomeEngineStartResult.Failed -> HomeEventState.ShowMessage(result.message)
+  }
 }
 
 internal fun homeConsumedEventState(): HomeEventState<Nothing> {

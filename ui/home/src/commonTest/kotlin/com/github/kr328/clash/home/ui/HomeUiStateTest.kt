@@ -101,6 +101,19 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeEngineStartResultsMapToEvents() {
+    assertEquals(null, homeEngineStartEventState(homeEngineStartedResult()))
+    assertEquals(
+      HomeEventState.RequestVpnPermission("vpn-permission-token"),
+      homeEngineStartEventState(homeEngineVpnPermissionResult("vpn-permission-token")),
+    )
+    assertEquals(
+      HomeEventState.ShowMessage("Unable to start VPN"),
+      homeEngineStartEventState(homeEngineStartFailedResult("Unable to start VPN")),
+    )
+  }
+
+  @Test
   fun consumedEventStateResetsToIdle() {
     val event: HomeEventState<String> = homeConsumedEventState()
 

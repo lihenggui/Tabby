@@ -96,15 +96,18 @@ internal fun HomeScreen(
   }
 
   suspend fun startEngine() {
-    try {
-      engineController.start()
-    } catch (e: VpnPermissionRequiredException) {
-      eventState = homeVpnPermissionEventState(e.prepareIntent)
-    } catch (e: Exception) {
-      Log.e("Start clash service failed: ${e.message}", e)
-      eventState =
-        homeStartFailureEventState(appContext.getString(CommonR.string.unable_to_start_vpn))
-    }
+    val result =
+      try {
+        engineController.start()
+        homeEngineStartedResult()
+      } catch (e: VpnPermissionRequiredException) {
+        homeEngineVpnPermissionResult(e.prepareIntent)
+      } catch (e: Exception) {
+        Log.e("Start clash service failed: ${e.message}", e)
+        homeEngineStartFailedResult(appContext.getString(CommonR.string.unable_to_start_vpn))
+      }
+
+    homeEngineStartEventState(result)?.let { eventState = it }
   }
 
   suspend fun startClash() {
