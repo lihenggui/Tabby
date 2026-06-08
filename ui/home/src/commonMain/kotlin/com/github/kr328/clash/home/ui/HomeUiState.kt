@@ -10,6 +10,13 @@ internal data class HomeUiState(
   val hasProviders: Boolean = false,
 )
 
+internal data class HomeFetchedPlatformState(
+  val clashRunning: Boolean,
+  val mode: String,
+  val hasProviders: Boolean,
+  val profileName: String?,
+)
+
 internal fun homeInitialUiState(): HomeUiState {
   return HomeUiState()
 }
@@ -261,6 +268,31 @@ internal fun <T> homeModeLabelPlatformToken(
   }
 }
 
+internal fun homeFetchedPlatformState(
+  clashRunning: Boolean,
+  mode: String,
+  hasProviders: Boolean,
+  profileName: String?,
+): HomeFetchedPlatformState {
+  return HomeFetchedPlatformState(
+    clashRunning = clashRunning,
+    mode = mode,
+    hasProviders = hasProviders,
+    profileName = profileName,
+  )
+}
+
+internal fun HomeUiState.withFetchedHomeState(
+  platformState: HomeFetchedPlatformState
+): HomeUiState {
+  return withFetchedHomeState(
+    clashRunning = platformState.clashRunning,
+    mode = platformState.mode,
+    hasProviders = platformState.hasProviders,
+    profileName = platformState.profileName,
+  )
+}
+
 internal fun HomeUiState.withFetchedHomeState(
   clashRunning: Boolean,
   mode: String,
@@ -269,7 +301,7 @@ internal fun HomeUiState.withFetchedHomeState(
 ): HomeUiState {
   return copy(
     mode = if (clashRunning) mode else null,
-    hasProviders = hasProviders,
+    hasProviders = clashRunning && hasProviders,
     profileName = profileName,
   )
 }
