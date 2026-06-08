@@ -44,14 +44,16 @@ internal fun ProxyScreen(
 
 private fun Broadcasts.Event.toProxyBroadcastEventKind(): ProxyBroadcastEventKind =
   proxyBroadcastEventKindFromPlatformPayload(
-    profileLoaded =
+    kind =
       when (this) {
-        Broadcasts.Event.ProfileLoaded -> true
-        Broadcasts.Event.ServiceRecreated,
-        Broadcasts.Event.Started,
-        Broadcasts.Event.ProfileChanged,
-        is Broadcasts.Event.Stopped,
-        is Broadcasts.Event.ProfileUpdateCompleted,
-        is Broadcasts.Event.ProfileUpdateFailed -> false
+        Broadcasts.Event.ServiceRecreated -> ProxyPlatformBroadcastEventKind.ServiceRecreated
+        Broadcasts.Event.Started -> ProxyPlatformBroadcastEventKind.Started
+        is Broadcasts.Event.Stopped -> ProxyPlatformBroadcastEventKind.Stopped
+        Broadcasts.Event.ProfileChanged -> ProxyPlatformBroadcastEventKind.ProfileChanged
+        is Broadcasts.Event.ProfileUpdateCompleted ->
+          ProxyPlatformBroadcastEventKind.ProfileUpdateCompleted
+        is Broadcasts.Event.ProfileUpdateFailed ->
+          ProxyPlatformBroadcastEventKind.ProfileUpdateFailed
+        Broadcasts.Event.ProfileLoaded -> ProxyPlatformBroadcastEventKind.ProfileLoaded
       }
   )
