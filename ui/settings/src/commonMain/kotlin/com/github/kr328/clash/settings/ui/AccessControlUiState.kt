@@ -23,6 +23,11 @@ internal sealed interface AccessControlClipboardImportAction {
   data object Ignore : AccessControlClipboardImportAction
 }
 
+internal enum class AccessControlClipboardPlatformItemAction {
+  ReadFirstItem,
+  Ignore,
+}
+
 internal fun <T> accessControlInitialUiState(
   selected: Set<String> = emptySet(),
   sort: AccessControlSort,
@@ -42,6 +47,16 @@ internal fun <T> accessControlInitialUiState(
   )
 }
 
+internal fun accessControlClipboardPlatformItemAction(
+  primaryClipItemCount: Int?
+): AccessControlClipboardPlatformItemAction {
+  return if (primaryClipItemCount != null && primaryClipItemCount > 0) {
+    AccessControlClipboardPlatformItemAction.ReadFirstItem
+  } else {
+    AccessControlClipboardPlatformItemAction.Ignore
+  }
+}
+
 internal fun accessControlClipboardImportPayloadFromPlatformPayload(
   hasPrimaryClipItem: Boolean,
   clipboardText: String?,
@@ -49,6 +64,16 @@ internal fun accessControlClipboardImportPayloadFromPlatformPayload(
   return AccessControlClipboardImportPayload(
     hasPrimaryClipItem = hasPrimaryClipItem,
     clipboardText = if (hasPrimaryClipItem) clipboardText else null,
+  )
+}
+
+internal fun accessControlClipboardImportPayloadFromPlatformItemAction(
+  action: AccessControlClipboardPlatformItemAction,
+  clipboardText: String?,
+): AccessControlClipboardImportPayload {
+  return accessControlClipboardImportPayloadFromPlatformPayload(
+    hasPrimaryClipItem = action == AccessControlClipboardPlatformItemAction.ReadFirstItem,
+    clipboardText = clipboardText,
   )
 }
 

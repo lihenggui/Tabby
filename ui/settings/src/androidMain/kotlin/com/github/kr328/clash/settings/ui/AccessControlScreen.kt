@@ -230,11 +230,15 @@ private suspend fun Context.persistAccessControlSelection(
 private fun Context.accessControlClipboardImportPayload(): AccessControlClipboardImportPayload {
   val clipboard = getSystemService<ClipboardManager>()
   val data = clipboard?.primaryClip
-  val hasPrimaryClipItem = data != null && data.itemCount > 0
-  val clipboardText = if (hasPrimaryClipItem) data.getItemAt(0).text?.toString() else null
+  val itemAction = accessControlClipboardPlatformItemAction(data?.itemCount)
+  val clipboardText =
+    when (itemAction) {
+      AccessControlClipboardPlatformItemAction.ReadFirstItem -> data?.getItemAt(0)?.text?.toString()
+      AccessControlClipboardPlatformItemAction.Ignore -> null
+    }
 
-  return accessControlClipboardImportPayloadFromPlatformPayload(
-    hasPrimaryClipItem = hasPrimaryClipItem,
+  return accessControlClipboardImportPayloadFromPlatformItemAction(
+    action = itemAction,
     clipboardText = clipboardText,
   )
 }

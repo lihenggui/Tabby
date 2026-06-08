@@ -140,6 +140,46 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun clipboardPlatformItemActionReadsFirstItemOnlyWhenItemCountIsPositive() {
+    assertEquals(
+      AccessControlClipboardPlatformItemAction.Ignore,
+      accessControlClipboardPlatformItemAction(null),
+    )
+    assertEquals(
+      AccessControlClipboardPlatformItemAction.Ignore,
+      accessControlClipboardPlatformItemAction(0),
+    )
+    assertEquals(
+      AccessControlClipboardPlatformItemAction.ReadFirstItem,
+      accessControlClipboardPlatformItemAction(1),
+    )
+  }
+
+  @Test
+  fun clipboardImportPayloadMapsPlatformItemAction() {
+    assertEquals(
+      AccessControlClipboardImportPayload(
+        hasPrimaryClipItem = true,
+        clipboardText = "com.example.alpha",
+      ),
+      accessControlClipboardImportPayloadFromPlatformItemAction(
+        action = AccessControlClipboardPlatformItemAction.ReadFirstItem,
+        clipboardText = "com.example.alpha",
+      ),
+    )
+    assertEquals(
+      AccessControlClipboardImportPayload(
+        hasPrimaryClipItem = false,
+        clipboardText = null,
+      ),
+      accessControlClipboardImportPayloadFromPlatformItemAction(
+        action = AccessControlClipboardPlatformItemAction.Ignore,
+        clipboardText = "ignored",
+      ),
+    )
+  }
+
+  @Test
   fun clipboardImportActionImportsOnlyWhenPrimaryClipItemExists() {
     assertEquals(
       AccessControlClipboardImportAction.Import("com.example.alpha"),
