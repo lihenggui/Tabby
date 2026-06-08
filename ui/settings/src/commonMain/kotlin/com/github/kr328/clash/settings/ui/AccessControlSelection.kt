@@ -9,10 +9,31 @@ internal data class AccessControlSettingsState(
   val showSystemApps: Boolean,
 )
 
+internal data class AccessControlReloadRequest(
+  val selected: Set<String>,
+  val sort: AccessControlSort,
+  val reverse: Boolean,
+  val showSystemApps: Boolean,
+)
+
 internal data class AccessControlPersistPlan(
   val shouldPersistSelection: Boolean,
   val shouldRestartService: Boolean,
 )
+
+internal fun accessControlReloadRequest(
+  selected: Set<String>,
+  sort: AccessControlSort,
+  reverse: Boolean,
+  showSystemApps: Boolean,
+): AccessControlReloadRequest {
+  return AccessControlReloadRequest(
+    selected = selected,
+    sort = sort,
+    reverse = reverse,
+    showSystemApps = showSystemApps,
+  )
+}
 
 internal fun planAccessControlPersist(
   selected: Set<String>,

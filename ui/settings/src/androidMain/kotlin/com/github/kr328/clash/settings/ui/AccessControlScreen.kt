@@ -68,7 +68,7 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
     val persistedSelected = withContext(Dispatchers.IO) { serviceStore.accessControlPackages }
     selected = persistedSelected
     reloadRequest =
-      AccessControlReloadRequest(
+      accessControlReloadRequest(
         selected = persistedSelected,
         sort = sort,
         reverse = reverse,
@@ -105,7 +105,7 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
     showSystemAppsSnapshot: Boolean = showSystemApps,
   ) {
     reloadRequest =
-      AccessControlReloadRequest(
+      accessControlReloadRequest(
         selected = selectedSnapshot,
         sort = sortSnapshot,
         reverse = reverseSnapshot,
@@ -141,13 +141,6 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
     appIcon = { app -> icons[app.packageName]?.let { icon -> AccessControlAppIcon(icon) } },
   )
 }
-
-private data class AccessControlReloadRequest(
-  val selected: Set<String>,
-  val sort: AccessControlSort,
-  val reverse: Boolean,
-  val showSystemApps: Boolean,
-)
 
 @Composable
 private fun AccessControlAppIcon(icon: Drawable) {
