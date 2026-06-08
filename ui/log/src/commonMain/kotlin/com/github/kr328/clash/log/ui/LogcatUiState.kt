@@ -105,6 +105,11 @@ internal data class LogcatServiceBinding<out ServiceT, out ConnectionT>(
   val connection: ConnectionT,
 )
 
+internal data class LogcatCopyMessagePayload(
+  val label: String,
+  val text: String,
+)
+
 internal fun logcatExportResultFromPlatformPayload(
   destinationSelected: Boolean
 ): LogcatExportResult {
@@ -118,6 +123,17 @@ internal fun <ServiceT, ConnectionT> logcatServiceBindingFromPlatformPayload(
   return LogcatServiceBinding(
     service = service,
     connection = connection,
+  )
+}
+
+internal fun logcatCopyMessagePayload(message: LogMessage): LogcatCopyMessagePayload {
+  return logcatCopyMessagePayload(message.message)
+}
+
+internal fun logcatCopyMessagePayload(messageText: String): LogcatCopyMessagePayload {
+  return LogcatCopyMessagePayload(
+    label = "log_message",
+    text = messageText,
   )
 }
 

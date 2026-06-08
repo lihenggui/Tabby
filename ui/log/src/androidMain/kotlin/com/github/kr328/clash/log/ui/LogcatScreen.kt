@@ -256,7 +256,8 @@ internal fun LogcatScreen(
     },
     onCopyMessage = { message ->
       scope.launch {
-        val clipEntry = ClipData.newPlainText("log_message", message.message).toClipEntry()
+        val payload = logcatCopyMessagePayload(message)
+        val clipEntry = ClipData.newPlainText(payload.label, payload.text).toClipEntry()
         clipboard.setClipEntry(clipEntry)
         snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
       }

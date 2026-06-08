@@ -284,6 +284,22 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatCopyMessagePayloadUsesStableLabel() {
+    assertEquals(
+      LogcatCopyMessagePayload(label = "log_message", text = "proxy selected"),
+      logcatCopyMessagePayload("proxy selected"),
+    )
+  }
+
+  @Test
+  fun logcatCopyMessagePayloadUsesLogMessageText() {
+    assertEquals(
+      LogcatCopyMessagePayload(label = "log_message", text = "message-1"),
+      logcatCopyMessagePayload(logMessage(1)),
+    )
+  }
+
+  @Test
   fun logcatExportActionExportsCurrentFileOnlyWhenDestinationExists() {
     val file = LogFile("clash-1234.log", 1234)
 
