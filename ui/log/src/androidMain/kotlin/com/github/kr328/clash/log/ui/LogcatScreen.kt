@@ -53,7 +53,10 @@ import tabby.ui.log.generated.resources.Res as LogRes
 import tabby.ui.log.generated.resources.copied
 import tabby.ui.log.generated.resources.invalid_log_file
 
-private typealias AndroidLogcatBinding = LogcatServiceBinding<LogcatService, ServiceConnection>
+private data class AndroidLogcatBinding(
+  val service: LogcatService,
+  val connection: ServiceConnection,
+)
 
 @Composable
 internal fun LogcatScreen(
@@ -291,7 +294,7 @@ private suspend fun Context.bindAndroidLogcat(
 
         if (continuation.isActive) {
           continuation.resume(
-            logcatServiceBindingFromPlatformPayload(
+            AndroidLogcatBinding(
               service = binder.queryLocalInterface("") as LogcatService,
               connection = this,
             )

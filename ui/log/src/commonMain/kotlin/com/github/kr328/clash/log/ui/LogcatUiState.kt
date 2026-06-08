@@ -106,11 +106,6 @@ internal enum class LogcatPlatformStartStopEvent {
   Other,
 }
 
-internal data class LogcatServiceBinding<out ServiceT, out ConnectionT>(
-  val service: ServiceT,
-  val connection: ConnectionT,
-)
-
 internal data class LogcatCopyMessagePayload(
   val label: String,
   val text: String,
@@ -129,16 +124,6 @@ internal fun logcatExportActionFromPlatformDestination(
   return logcatExportAction(
     currentFile = currentFile,
     result = logcatExportResultFromPlatformPayload(destinationSelected = destination != null),
-  )
-}
-
-internal fun <ServiceT, ConnectionT> logcatServiceBindingFromPlatformPayload(
-  service: ServiceT,
-  connection: ConnectionT,
-): LogcatServiceBinding<ServiceT, ConnectionT> {
-  return LogcatServiceBinding(
-    service = service,
-    connection = connection,
   )
 }
 

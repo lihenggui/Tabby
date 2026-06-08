@@ -273,17 +273,6 @@ class LogcatUiStateTest {
   }
 
   @Test
-  fun logcatServiceBindingPlatformPayloadKeepsOpaquePlatformValues() {
-    assertEquals(
-      LogcatServiceBinding(service = "service", connection = 42),
-      logcatServiceBindingFromPlatformPayload(
-        service = "service",
-        connection = 42,
-      ),
-    )
-  }
-
-  @Test
   fun logcatCopyMessagePayloadUsesStableLabel() {
     assertEquals(
       LogcatCopyMessagePayload(label = "log_message", text = "proxy selected"),
