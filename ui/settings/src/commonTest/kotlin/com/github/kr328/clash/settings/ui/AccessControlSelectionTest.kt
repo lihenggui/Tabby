@@ -6,6 +6,24 @@ import kotlin.test.assertEquals
 
 class AccessControlSelectionTest {
   @Test
+  fun mapsPlatformPayloadToAccessControlPackage() {
+    assertEquals(
+      AccessControlPackage(
+        packageName = "com.example.alpha",
+        label = "Alpha",
+        installTime = 10,
+        updateDate = 20,
+      ),
+      accessControlPackageFromPlatformPayload(
+        packageName = "com.example.alpha",
+        label = "Alpha",
+        installTime = 10,
+        updateDate = 20,
+      ),
+    )
+  }
+
+  @Test
   fun togglesPackageSelection() {
     assertEquals(
       setOf("com.example.alpha", "com.example.beta"),

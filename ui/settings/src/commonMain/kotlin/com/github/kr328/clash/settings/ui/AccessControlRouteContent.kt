@@ -16,6 +16,20 @@ data class AccessControlPackage(
   val updateDate: Long = 0,
 )
 
+internal fun accessControlPackageFromPlatformPayload(
+  packageName: String,
+  label: String,
+  installTime: Long,
+  updateDate: Long,
+): AccessControlPackage {
+  return AccessControlPackage(
+    packageName = packageName,
+    label = label,
+    installTime = installTime,
+    updateDate = updateDate,
+  )
+}
+
 @Composable
 fun AccessControlRouteContent(
   modifier: Modifier = Modifier,

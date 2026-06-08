@@ -163,7 +163,7 @@ private fun AccessControlAppIcon(icon: Drawable) {
 }
 
 private fun AppInfo.toAccessControlPackage(): AccessControlPackage {
-  return AccessControlPackage(
+  return accessControlPackageFromPlatformPayload(
     packageName = packageName,
     label = label,
     installTime = installTime,
