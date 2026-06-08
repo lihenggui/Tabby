@@ -87,13 +87,10 @@ internal fun NewProfileScreen(
       val uri = result.data?.data
       val action =
         newProfileExternalProviderResultAction(
-          newProfileExternalProviderResultFromPlatformPayload(
-            resultAccepted =
-              newProfileExternalProviderResultAcceptedFromPlatformResultCode(
-                resultCode = result.resultCode,
-                acceptedResultCode = RESULT_OK,
-              ),
-            sourceSelected = uri != null,
+          newProfileExternalProviderResultFromPlatformResult(
+            resultCode = result.resultCode,
+            acceptedResultCode = RESULT_OK,
+            source = uri,
             name = result.data?.getStringExtra(Intents.EXTRA_NAME),
           )
         )

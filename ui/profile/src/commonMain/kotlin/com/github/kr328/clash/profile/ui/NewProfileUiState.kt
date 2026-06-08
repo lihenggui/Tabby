@@ -164,6 +164,23 @@ internal fun newProfileExternalProviderResultFromPlatformPayload(
   )
 }
 
+internal fun newProfileExternalProviderResultFromPlatformResult(
+  resultCode: Int,
+  acceptedResultCode: Int,
+  source: Any?,
+  name: String?,
+): NewProfileExternalProviderResult {
+  return newProfileExternalProviderResultFromPlatformPayload(
+    resultAccepted =
+      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
+        resultCode = resultCode,
+        acceptedResultCode = acceptedResultCode,
+      ),
+    sourceSelected = source != null,
+    name = name,
+  )
+}
+
 internal sealed interface NewProfileProviderSelectionAction<out T> {
   data class SelectProvider<T>(val provider: T) : NewProfileProviderSelectionAction<T>
 
