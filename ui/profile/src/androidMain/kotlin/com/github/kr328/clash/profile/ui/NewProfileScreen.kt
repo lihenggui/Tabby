@@ -84,18 +84,13 @@ internal fun NewProfileScreen(
 
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      val uri = result.data?.data
-      val platformResult =
-        newProfileExternalProviderResultFromPlatformResult(
+      val request =
+        newProfileCreateRequestFromExternalProviderPlatformResult(
           resultCode = result.resultCode,
           acceptedResultCode = RESULT_OK,
-          source = uri,
+          source = result.data?.data,
           name = result.data?.getStringExtra(Intents.EXTRA_NAME),
-        )
-      val request =
-        newProfileCreateRequestFromExternalProviderResult(
-          result = platformResult,
-          source = uri?.toString().orEmpty(),
+          sourceText = Uri::toString,
         )
 
       request?.let(::launchCreateRequest)

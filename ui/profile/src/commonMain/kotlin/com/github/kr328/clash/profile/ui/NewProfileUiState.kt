@@ -140,43 +140,46 @@ internal sealed interface NewProfileDetailAction {
   data object Ignore : NewProfileDetailAction
 }
 
-internal sealed interface NewProfileExternalProviderResultAction {
-  data class CreateProfile(val name: String?) : NewProfileExternalProviderResultAction
+internal sealed interface NewProfileExternalProviderResultAction<out SourceT : Any> {
+  data class CreateProfile<SourceT : Any>(val source: SourceT, val name: String?) :
+    NewProfileExternalProviderResultAction<SourceT>
 
-  data object Ignore : NewProfileExternalProviderResultAction
+  data object Ignore : NewProfileExternalProviderResultAction<Nothing>
 }
 
-internal data class NewProfileExternalProviderResult(
+internal data class NewProfileExternalProviderResult<out SourceT : Any>(
   val resultAccepted: Boolean,
-  val sourceSelected: Boolean,
+  val source: SourceT?,
   val name: String?,
 )
 
-internal fun newProfileExternalProviderResultFromPlatformPayload(
+internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload(
   resultAccepted: Boolean,
-  sourceSelected: Boolean,
+  source: SourceT?,
   name: String?,
-): NewProfileExternalProviderResult {
+): NewProfileExternalProviderResult<SourceT> {
+  val selectedSource = if (resultAccepted) source else null
+
   return NewProfileExternalProviderResult(
     resultAccepted = resultAccepted,
-    sourceSelected = sourceSelected,
-    name = if (resultAccepted && sourceSelected) name else null,
+    source = selectedSource,
+    name = if (selectedSource != null) name else null,
   )
 }
 
-internal fun newProfileExternalProviderResultFromPlatformResult(
+internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformResult(
   resultCode: Int,
   acceptedResultCode: Int,
-  source: Any?,
+  source: SourceT?,
   name: String?,
-): NewProfileExternalProviderResult {
+): NewProfileExternalProviderResult<SourceT> {
   return newProfileExternalProviderResultFromPlatformPayload(
     resultAccepted =
       newProfileExternalProviderResultAcceptedFromPlatformResultCode(
         resultCode = resultCode,
         acceptedResultCode = acceptedResultCode,
       ),
-    sourceSelected = source != null,
+    source = source,
     name = name,
   )
 }
@@ -312,23 +315,23 @@ private fun newProfileExternalProviderHasDetail(packageName: String?): Boolean {
   return newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
 }
 
-internal fun newProfileExternalProviderResultAction(
-  result: NewProfileExternalProviderResult
-): NewProfileExternalProviderResultAction {
+internal fun <SourceT : Any> newProfileExternalProviderResultAction(
+  result: NewProfileExternalProviderResult<SourceT>
+): NewProfileExternalProviderResultAction<SourceT> {
   return newProfileExternalProviderResultAction(
     resultAccepted = result.resultAccepted,
-    sourceSelected = result.sourceSelected,
+    source = result.source,
     name = result.name,
   )
 }
 
-internal fun newProfileExternalProviderResultAction(
+internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   resultAccepted: Boolean,
-  sourceSelected: Boolean,
+  source: SourceT?,
   name: String?,
-): NewProfileExternalProviderResultAction {
-  return if (resultAccepted && sourceSelected) {
-    NewProfileExternalProviderResultAction.CreateProfile(name)
+): NewProfileExternalProviderResultAction<SourceT> {
+  return if (resultAccepted && source != null) {
+    NewProfileExternalProviderResultAction.CreateProfile(source = source, name = name)
   } else {
     NewProfileExternalProviderResultAction.Ignore
   }

@@ -141,23 +141,46 @@ internal fun newProfileQrScanAction(
   }
 }
 
-internal fun newProfileCreateRequestFromExternalProviderResultAction(
-  action: NewProfileExternalProviderResultAction,
-  source: String,
+internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderResultAction(
+  action: NewProfileExternalProviderResultAction<SourceT>,
+  sourceText: (SourceT) -> String,
 ): NewProfileCreateRequest? {
   return when (action) {
     is NewProfileExternalProviderResultAction.CreateProfile ->
-      NewProfileCreateRequest(type = Profile.Type.External, name = action.name, source = source)
+      NewProfileCreateRequest(
+        type = Profile.Type.External,
+        name = action.name,
+        source = sourceText(action.source),
+      )
     NewProfileExternalProviderResultAction.Ignore -> null
   }
 }
 
-internal fun newProfileCreateRequestFromExternalProviderResult(
-  result: NewProfileExternalProviderResult,
-  source: String,
+internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderResult(
+  result: NewProfileExternalProviderResult<SourceT>,
+  sourceText: (SourceT) -> String,
 ): NewProfileCreateRequest? {
   return newProfileCreateRequestFromExternalProviderResultAction(
     action = newProfileExternalProviderResultAction(result),
-    source = source,
+    sourceText = sourceText,
+  )
+}
+
+internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderPlatformResult(
+  resultCode: Int,
+  acceptedResultCode: Int,
+  source: SourceT?,
+  name: String?,
+  sourceText: (SourceT) -> String,
+): NewProfileCreateRequest? {
+  return newProfileCreateRequestFromExternalProviderResult(
+    result =
+      newProfileExternalProviderResultFromPlatformResult(
+        resultCode = resultCode,
+        acceptedResultCode = acceptedResultCode,
+        source = source,
+        name = name,
+      ),
+    sourceText = sourceText,
   )
 }

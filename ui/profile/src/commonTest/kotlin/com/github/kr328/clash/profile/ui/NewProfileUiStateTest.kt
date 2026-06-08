@@ -470,12 +470,12 @@ class NewProfileUiStateTest {
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = true,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "External config",
       ),
       newProfileExternalProviderResultFromPlatformPayload(
         resultAccepted = true,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "External config",
       ),
     )
@@ -486,24 +486,24 @@ class NewProfileUiStateTest {
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = false,
-        sourceSelected = true,
+        source = null,
         name = null,
       ),
-      newProfileExternalProviderResultFromPlatformPayload(
+      newProfileExternalProviderResultFromPlatformPayload<String>(
         resultAccepted = false,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "Ignored",
       ),
     )
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = true,
-        sourceSelected = false,
+        source = null,
         name = null,
       ),
-      newProfileExternalProviderResultFromPlatformPayload(
+      newProfileExternalProviderResultFromPlatformPayload<String>(
         resultAccepted = true,
-        sourceSelected = false,
+        source = null,
         name = "Ignored",
       ),
     )
@@ -514,7 +514,7 @@ class NewProfileUiStateTest {
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = true,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "External config",
       ),
       newProfileExternalProviderResultFromPlatformResult(
@@ -531,7 +531,7 @@ class NewProfileUiStateTest {
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = false,
-        sourceSelected = true,
+        source = null,
         name = null,
       ),
       newProfileExternalProviderResultFromPlatformResult(
@@ -544,10 +544,10 @@ class NewProfileUiStateTest {
     assertEquals(
       NewProfileExternalProviderResult(
         resultAccepted = true,
-        sourceSelected = false,
+        source = null,
         name = null,
       ),
-      newProfileExternalProviderResultFromPlatformResult(
+      newProfileExternalProviderResultFromPlatformResult<String>(
         resultCode = 10,
         acceptedResultCode = 10,
         source = null,
@@ -559,19 +559,25 @@ class NewProfileUiStateTest {
   @Test
   fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
     assertEquals(
-      NewProfileExternalProviderResultAction.CreateProfile("External config"),
+      NewProfileExternalProviderResultAction.CreateProfile(
+        source = "content://provider/profile.yaml",
+        name = "External config",
+      ),
       newProfileExternalProviderResultAction(
         resultAccepted = true,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "External config",
       ),
     )
     assertEquals(
-      NewProfileExternalProviderResultAction.CreateProfile("External config"),
+      NewProfileExternalProviderResultAction.CreateProfile(
+        source = "content://provider/profile.yaml",
+        name = "External config",
+      ),
       newProfileExternalProviderResultAction(
         NewProfileExternalProviderResult(
           resultAccepted = true,
-          sourceSelected = true,
+          source = "content://provider/profile.yaml",
           name = "External config",
         )
       ),
@@ -584,7 +590,7 @@ class NewProfileUiStateTest {
       NewProfileExternalProviderResultAction.Ignore,
       newProfileExternalProviderResultAction(
         resultAccepted = false,
-        sourceSelected = true,
+        source = "content://provider/profile.yaml",
         name = "Ignored",
       ),
     )
@@ -593,7 +599,7 @@ class NewProfileUiStateTest {
       newProfileExternalProviderResultAction(
         NewProfileExternalProviderResult(
           resultAccepted = false,
-          sourceSelected = true,
+          source = "content://provider/profile.yaml",
           name = "Ignored",
         )
       ),
@@ -604,18 +610,18 @@ class NewProfileUiStateTest {
   fun newProfileExternalProviderResultActionIgnoresMissingSource() {
     assertEquals(
       NewProfileExternalProviderResultAction.Ignore,
-      newProfileExternalProviderResultAction(
+      newProfileExternalProviderResultAction<String>(
         resultAccepted = true,
-        sourceSelected = false,
+        source = null,
         name = "Ignored",
       ),
     )
     assertEquals(
       NewProfileExternalProviderResultAction.Ignore,
       newProfileExternalProviderResultAction(
-        NewProfileExternalProviderResult(
+        NewProfileExternalProviderResult<String>(
           resultAccepted = true,
-          sourceSelected = false,
+          source = null,
           name = "Ignored",
         )
       ),

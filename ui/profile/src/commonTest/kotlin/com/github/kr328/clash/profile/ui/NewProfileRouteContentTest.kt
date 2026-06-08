@@ -139,8 +139,11 @@ class NewProfileRouteContentTest {
         source = "content://provider/profile.yaml",
       ),
       newProfileCreateRequestFromExternalProviderResultAction(
-        NewProfileExternalProviderResultAction.CreateProfile("External profile"),
-        source = "content://provider/profile.yaml",
+        NewProfileExternalProviderResultAction.CreateProfile(
+          source = "content://provider/profile.yaml",
+          name = "External profile",
+        ),
+        sourceText = { it },
       ),
     )
   }
@@ -149,9 +152,9 @@ class NewProfileRouteContentTest {
   fun externalProviderIgnoredResultDoesNotBuildCreateRequest() {
     assertEquals(
       null,
-      newProfileCreateRequestFromExternalProviderResultAction(
+      newProfileCreateRequestFromExternalProviderResultAction<String>(
         NewProfileExternalProviderResultAction.Ignore,
-        source = "content://provider/profile.yaml",
+        sourceText = { it },
       ),
     )
   }
@@ -167,10 +170,10 @@ class NewProfileRouteContentTest {
       newProfileCreateRequestFromExternalProviderResult(
         NewProfileExternalProviderResult(
           resultAccepted = true,
-          sourceSelected = true,
+          source = "content://provider/profile.yaml",
           name = "External profile",
         ),
-        source = "content://provider/profile.yaml",
+        sourceText = { it },
       ),
     )
   }
@@ -182,21 +185,63 @@ class NewProfileRouteContentTest {
       newProfileCreateRequestFromExternalProviderResult(
         NewProfileExternalProviderResult(
           resultAccepted = false,
-          sourceSelected = true,
+          source = "content://provider/profile.yaml",
           name = null,
         ),
-        source = "content://provider/profile.yaml",
+        sourceText = { it },
       ),
     )
     assertEquals(
       null,
       newProfileCreateRequestFromExternalProviderResult(
-        NewProfileExternalProviderResult(
+        NewProfileExternalProviderResult<String>(
           resultAccepted = true,
-          sourceSelected = false,
+          source = null,
           name = null,
         ),
-        source = "",
+        sourceText = { it },
+      ),
+    )
+  }
+
+  @Test
+  fun externalProviderPlatformResultBuildsExternalProfileCreateRequest() {
+    assertEquals(
+      NewProfileCreateRequest(
+        type = Profile.Type.External,
+        name = "External profile",
+        source = "content://provider/profile.yaml",
+      ),
+      newProfileCreateRequestFromExternalProviderPlatformResult(
+        resultCode = 10,
+        acceptedResultCode = 10,
+        source = "content://provider/profile.yaml",
+        name = "External profile",
+        sourceText = { it },
+      ),
+    )
+  }
+
+  @Test
+  fun externalProviderPlatformResultIgnoresRejectedOrMissingSourcePayloads() {
+    assertEquals(
+      null,
+      newProfileCreateRequestFromExternalProviderPlatformResult(
+        resultCode = 20,
+        acceptedResultCode = 10,
+        source = "content://provider/profile.yaml",
+        name = "Ignored",
+        sourceText = { it },
+      ),
+    )
+    assertEquals(
+      null,
+      newProfileCreateRequestFromExternalProviderPlatformResult<String>(
+        resultCode = 10,
+        acceptedResultCode = 10,
+        source = null,
+        name = "Ignored",
+        sourceText = { it },
       ),
     )
   }
