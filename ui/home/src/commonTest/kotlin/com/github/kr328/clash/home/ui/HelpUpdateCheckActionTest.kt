@@ -42,6 +42,22 @@ class HelpUpdateCheckActionTest {
   }
 
   @Test
+  fun localVersionLoadIgnoresWhenLatestTagIsMissing() {
+    assertEquals(
+      HelpLocalVersionLoadAction.Ignore,
+      helpLocalVersionLoadAction(latestTag = null),
+    )
+  }
+
+  @Test
+  fun localVersionLoadStartsWhenLatestTagExists() {
+    assertEquals(
+      HelpLocalVersionLoadAction.Load,
+      helpLocalVersionLoadAction(latestTag = "1.2.0"),
+    )
+  }
+
+  @Test
   fun updateCheckActionShowsFailureWhenLatestTagIsMissing() {
     assertEquals(
       HelpUpdateCheckAction.ShowUpdateCheckFailedMessage,

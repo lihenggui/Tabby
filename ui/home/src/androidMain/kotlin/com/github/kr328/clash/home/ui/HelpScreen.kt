@@ -115,10 +115,10 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
         try {
           val latestTag = releaseClient.fetchLatestReleaseTag(TABBY_REPO)
           val localVersion =
-            if (latestTag == null) {
-              null
-            } else {
-              withContext(Dispatchers.IO) { appContext.loadPackageVersionName() }
+            when (helpLocalVersionLoadAction(latestTag)) {
+              HelpLocalVersionLoadAction.Load ->
+                withContext(Dispatchers.IO) { appContext.loadPackageVersionName() }
+              HelpLocalVersionLoadAction.Ignore -> null
             }
           val action = helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
 

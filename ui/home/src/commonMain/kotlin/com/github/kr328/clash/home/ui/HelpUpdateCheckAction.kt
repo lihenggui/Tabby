@@ -16,6 +16,11 @@ internal sealed interface HelpUpdateCheckRequestAction {
   data object Ignore : HelpUpdateCheckRequestAction
 }
 
+internal enum class HelpLocalVersionLoadAction {
+  Load,
+  Ignore,
+}
+
 internal enum class HelpUpdateAvailableSnackbarAction {
   OpenReleases,
   Ignore,
@@ -55,6 +60,14 @@ internal fun helpUpdateCheckRequestAction(state: HelpContentState): HelpUpdateCh
     HelpUpdateCheckRequestAction.Ignore
   } else {
     HelpUpdateCheckRequestAction.StartCheck
+  }
+}
+
+internal fun helpLocalVersionLoadAction(latestTag: String?): HelpLocalVersionLoadAction {
+  return if (latestTag == null) {
+    HelpLocalVersionLoadAction.Ignore
+  } else {
+    HelpLocalVersionLoadAction.Load
   }
 }
 
