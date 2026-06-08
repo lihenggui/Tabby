@@ -55,12 +55,7 @@ class TileService : android.service.quicksettings.TileService() {
     val tile = qsTile ?: return
     val presentation = tabbyTilePresentation(tileState)
 
-    tile.state =
-      tabbyTilePresentationPlatformState(
-        presentation = presentation,
-        activeState = Tile.STATE_ACTIVE,
-        inactiveState = Tile.STATE_INACTIVE,
-      )
+    tile.state = presentation.toPlatformTileState()
 
     tile.label =
       tabbyTilePresentationLabel(
@@ -101,9 +96,14 @@ private fun Intent.tabbyTileBroadcastAction(): TabbyTileBroadcastAction? =
     profileLoadedAction = Intents.ACTION_PROFILE_LOADED,
   )
 
-private fun Tile.tabbyTileClickState(): TabbyTileClickState =
-  tabbyTileClickStateFromPlatformState(
-    state = state,
-    activeState = Tile.STATE_ACTIVE,
-    inactiveState = Tile.STATE_INACTIVE,
-  )
+private fun Tile.tabbyTileClickState(): TabbyTileClickState {
+  return when (state) {
+    Tile.STATE_ACTIVE -> TabbyTileClickState.Active
+    Tile.STATE_INACTIVE -> TabbyTileClickState.Inactive
+    else -> TabbyTileClickState.Other
+  }
+}
+
+private fun TabbyTilePresentation.toPlatformTileState(): Int {
+  return if (active) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+}

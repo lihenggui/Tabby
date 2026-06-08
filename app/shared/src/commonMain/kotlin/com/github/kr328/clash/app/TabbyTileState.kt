@@ -69,17 +69,6 @@ fun tabbyTileBroadcastActionFromString(
     else -> null
   }
 
-fun tabbyTileClickStateFromPlatformState(
-  state: Int,
-  activeState: Int,
-  inactiveState: Int,
-): TabbyTileClickState =
-  when (state) {
-    activeState -> TabbyTileClickState.Active
-    inactiveState -> TabbyTileClickState.Inactive
-    else -> TabbyTileClickState.Other
-  }
-
 fun tabbyTileInitialState(currentProfile: String?): TabbyTileState =
   TabbyTileState(
     clashRunning = currentProfile != null,
@@ -118,14 +107,6 @@ fun tabbyTilePresentation(state: TabbyTileState): TabbyTilePresentation =
     active = state.clashRunning,
     profileName = state.currentProfile.ifEmpty { null },
   )
-
-fun tabbyTilePresentationPlatformState(
-  presentation: TabbyTilePresentation,
-  activeState: Int,
-  inactiveState: Int,
-): Int {
-  return if (presentation.active) activeState else inactiveState
-}
 
 fun tabbyTilePresentationLabel(
   presentation: TabbyTilePresentation,
