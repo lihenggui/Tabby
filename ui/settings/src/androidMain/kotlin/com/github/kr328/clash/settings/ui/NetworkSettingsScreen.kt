@@ -30,11 +30,7 @@ internal fun NetworkSettingsScreen(
     onStartAccessControlList = onStartAccessControlList,
     modifier = modifier,
     clashRunning = clashRunning,
-    initialHasSystemProxyOption =
-      networkSettingsHasSystemProxyOptionFromPlatformSdk(
-        sdkVersion = Build.VERSION.SDK_INT,
-        systemProxySdkVersion = Build.VERSION_CODES.Q,
-      ),
+    initialHasSystemProxyOption = networkSettingsHasSystemProxyOption(),
     initialEnableVpn = uiStore.enableVpn,
     initialBypassPrivateNetwork = serviceStore.bypassPrivateNetwork,
     initialDnsHijacking = serviceStore.dnsHijacking,
@@ -53,6 +49,9 @@ internal fun NetworkSettingsScreen(
     onAccessControlModeChange = { value -> serviceStore.accessControlMode = value },
   )
 }
+
+private fun networkSettingsHasSystemProxyOption(): Boolean =
+  Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
 @PreviewWrapper(TabbyThemeWrapper::class)
 @PreviewTabby
