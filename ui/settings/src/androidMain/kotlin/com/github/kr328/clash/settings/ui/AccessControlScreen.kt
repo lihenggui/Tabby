@@ -240,8 +240,9 @@ private fun Context.accessControlClipboardImportPayload(): AccessControlClipboar
 }
 
 private fun Context.exportAccessControlClipboardText(text: String) {
+  val payload = accessControlExportPayload(text)
   val clipboard = getSystemService<ClipboardManager>()
-  val data = ClipData.newPlainText("packages", text)
+  val data = ClipData.newPlainText(payload.label, payload.text)
   clipboard?.setPrimaryClip(data)
 }
 

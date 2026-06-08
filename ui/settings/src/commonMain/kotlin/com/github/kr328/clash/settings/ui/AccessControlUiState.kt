@@ -12,6 +12,11 @@ data class AccessControlClipboardImportPayload(
   val clipboardText: String?,
 )
 
+internal data class AccessControlExportPayload(
+  val label: String,
+  val text: String,
+)
+
 internal sealed interface AccessControlClipboardImportAction {
   data class Import(val clipboardText: String?) : AccessControlClipboardImportAction
 
@@ -135,6 +140,19 @@ internal fun <T> accessControlImportClipboardState(
 
 internal fun <T> accessControlExportClipboardText(state: AccessControlUiState<T>): String {
   return exportAccessControlPackages(state.settings.selected)
+}
+
+internal fun <T> accessControlExportPayload(
+  state: AccessControlUiState<T>
+): AccessControlExportPayload {
+  return accessControlExportPayload(exportAccessControlPackages(state.settings.selected))
+}
+
+internal fun accessControlExportPayload(text: String): AccessControlExportPayload {
+  return AccessControlExportPayload(
+    label = "packages",
+    text = text,
+  )
 }
 
 internal fun <T> AccessControlUiState<T>.withAccessControlSort(

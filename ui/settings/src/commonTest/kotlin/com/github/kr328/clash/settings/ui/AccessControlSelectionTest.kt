@@ -90,6 +90,32 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun accessControlExportPayloadUsesStableLabel() {
+    assertEquals(
+      AccessControlExportPayload(label = "packages", text = "com.example.alpha"),
+      accessControlExportPayload("com.example.alpha"),
+    )
+  }
+
+  @Test
+  fun accessControlExportPayloadUsesSelectedPackagesText() {
+    val state =
+      AccessControlUiState(
+        apps = emptyList<TestAccessControlApp>(),
+        settings =
+          accessControlSettingsState(selected = setOf("com.example.beta", "com.example.alpha")),
+      )
+
+    assertEquals(
+      AccessControlExportPayload(
+        label = "packages",
+        text = "com.example.alpha\ncom.example.beta",
+      ),
+      accessControlExportPayload(state),
+    )
+  }
+
+  @Test
   fun clipboardImportPayloadKeepsTextOnlyWhenPrimaryClipItemExists() {
     assertEquals(
       AccessControlClipboardImportPayload(
