@@ -14,11 +14,10 @@ internal sealed interface GeoFileImportAction {
   data class UnsupportedFormat(val summary: String) : GeoFileImportAction
 }
 
-internal sealed interface GeoFileImportSourceAction<out SourceT : Any> {
-  data class Import<SourceT : Any>(val source: SourceT, val action: GeoFileImportAction) :
-    GeoFileImportSourceAction<SourceT>
+internal sealed interface GeoFileImportSourceAction {
+  data class Import(val action: GeoFileImportAction) : GeoFileImportSourceAction
 
-  data object Fail : GeoFileImportSourceAction<Nothing>
+  data object Fail : GeoFileImportSourceAction
 }
 
 internal sealed interface GeoFileImportRequestAction {
@@ -39,26 +38,10 @@ internal sealed interface GeoFileImportResult {
   data object Failed : GeoFileImportResult
 }
 
-internal data class GeoFileImportPickerResult<T>(
-  val source: T?,
-  val pendingImportType: GeoFileImportType?,
-)
+internal sealed interface GeoFileImportPickerResultAction {
+  data class Import(val importType: GeoFileImportType) : GeoFileImportPickerResultAction
 
-internal fun <T> geoFileImportPickerResultFromPlatformPayload(
-  source: T?,
-  pendingImportType: GeoFileImportType?,
-): GeoFileImportPickerResult<T> {
-  return GeoFileImportPickerResult(
-    source = if (pendingImportType != null) source else null,
-    pendingImportType = pendingImportType,
-  )
-}
-
-internal sealed interface GeoFileImportPickerResultAction<out T> {
-  data class Import<T>(val source: T?, val importType: GeoFileImportType) :
-    GeoFileImportPickerResultAction<T>
-
-  data object Ignore : GeoFileImportPickerResultAction<Nothing>
+  data object Ignore : GeoFileImportPickerResultAction
 }
 
 internal sealed interface GeoFileImportResultDisplayAction {
@@ -91,11 +74,11 @@ internal fun geoFileImportRequestAction(
     ?: GeoFileImportRequestAction.Ignore
 }
 
-internal fun <T> geoFileImportPickerResultAction(
-  result: GeoFileImportPickerResult<T>
-): GeoFileImportPickerResultAction<T> {
-  val importType = result.pendingImportType ?: return GeoFileImportPickerResultAction.Ignore
-  return GeoFileImportPickerResultAction.Import(source = result.source, importType = importType)
+internal fun geoFileImportPickerResultAction(
+  pendingImportType: GeoFileImportType?
+): GeoFileImportPickerResultAction {
+  val importType = pendingImportType ?: return GeoFileImportPickerResultAction.Ignore
+  return GeoFileImportPickerResultAction.Import(importType = importType)
 }
 
 internal fun geoFileImportResultDisplayAction(
@@ -169,32 +152,17 @@ internal fun geoFileImportAction(
   }
 }
 
-internal fun <SourceT : Any> geoFileImportSourceAction(
-  source: SourceT?,
+internal fun geoFileImportSourceAction(
+  sourceAvailable: Boolean,
   sourceReadable: Boolean,
   displayName: String?,
   importType: GeoFileImportType,
-): GeoFileImportSourceAction<SourceT> {
-  val selectedSource = source ?: return GeoFileImportSourceAction.Fail
+): GeoFileImportSourceAction {
+  if (!sourceAvailable) return GeoFileImportSourceAction.Fail
   if (!sourceReadable) return GeoFileImportSourceAction.Fail
 
   return GeoFileImportSourceAction.Import(
-    source = selectedSource,
-    action = geoFileImportAction(displayName = displayName.orEmpty(), importType = importType),
-  )
-}
-
-internal fun <SourceT : Any> geoFileImportSourceActionFromPlatformSource(
-  source: SourceT?,
-  sourceReadable: Boolean,
-  displayName: String?,
-  importType: GeoFileImportType,
-): GeoFileImportSourceAction<SourceT> {
-  return geoFileImportSourceAction(
-    source = source,
-    sourceReadable = sourceReadable,
-    displayName = displayName,
-    importType = importType,
+    action = geoFileImportAction(displayName = displayName.orEmpty(), importType = importType)
   )
 }
 

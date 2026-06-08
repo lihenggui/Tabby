@@ -65,20 +65,12 @@ internal fun MetaFeatureSettingsScreen(
 
   val importLauncher =
     rememberLauncherForActivityResult(GetContent()) { uri ->
-      when (
-        val action =
-          geoFileImportPickerResultAction(
-            geoFileImportPickerResultFromPlatformPayload(
-              source = uri,
-              pendingImportType = pendingImportType,
-            )
-          )
-      ) {
+      when (val action = geoFileImportPickerResultAction(pendingImportType)) {
         is GeoFileImportPickerResultAction.Import -> {
           pendingImportType = null
           importScope.launch {
             importResult = geoFileImportStartedResult()
-            importResult = appContext.importGeoFile(action.source, action.importType)
+            importResult = appContext.importGeoFile(uri, action.importType)
           }
         }
         GeoFileImportPickerResultAction.Ignore -> Unit
@@ -139,9 +131,9 @@ private suspend fun Context.importGeoFile(
 ): GeoFileImportResult =
   withContext(Dispatchers.IO) {
     try {
-      when (val sourceAction = readGeoFileImportSourceAction(uri, importType)) {
-        GeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
-        is GeoFileImportSourceAction.Import -> {
+      when (val sourceAction = readAndroidGeoFileImportSourceAction(uri, importType)) {
+        AndroidGeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
+        is AndroidGeoFileImportSourceAction.Import -> {
           when (val action = sourceAction.action) {
             is GeoFileImportAction.UnsupportedFormat -> geoFileImportResult(action)
             is GeoFileImportAction.Copy -> {
@@ -164,37 +156,39 @@ private suspend fun Context.importGeoFile(
     }
   }
 
-private fun Context.readGeoFileImportSourceAction(
+private sealed interface AndroidGeoFileImportSourceAction {
+  data class Import(val source: Uri, val action: GeoFileImportAction) :
+    AndroidGeoFileImportSourceAction
+
+  data object Fail : AndroidGeoFileImportSourceAction
+}
+
+private fun Context.readAndroidGeoFileImportSourceAction(
   uri: Uri?,
   importType: GeoFileImportType,
-): GeoFileImportSourceAction<Uri> {
-  val sourceUri =
-    uri
-      ?: return geoFileImportSourceActionFromPlatformSource<Uri>(
-        source = null,
-        sourceReadable = false,
-        displayName = null,
-        importType = importType,
-      )
+): AndroidGeoFileImportSourceAction {
+  val sourceUri = uri ?: return AndroidGeoFileImportSourceAction.Fail
 
   val cursor =
     contentResolver.query(sourceUri, null, null, null, null, null)
-      ?: return geoFileImportSourceActionFromPlatformSource(
-        source = sourceUri,
-        sourceReadable = false,
-        displayName = null,
-        importType = importType,
-      )
+      ?: return AndroidGeoFileImportSourceAction.Fail
 
   cursor.use {
     val sourceReadable = it.moveToFirst()
     val displayName = if (sourceReadable) it.displayName else null
-    return geoFileImportSourceActionFromPlatformSource(
-      source = sourceUri,
-      sourceReadable = sourceReadable,
-      displayName = displayName,
-      importType = importType,
-    )
+    return when (
+      val action =
+        geoFileImportSourceAction(
+          sourceAvailable = true,
+          sourceReadable = sourceReadable,
+          displayName = displayName,
+          importType = importType,
+        )
+    ) {
+      GeoFileImportSourceAction.Fail -> AndroidGeoFileImportSourceAction.Fail
+      is GeoFileImportSourceAction.Import ->
+        AndroidGeoFileImportSourceAction.Import(source = sourceUri, action = action.action)
+    }
   }
 }
 
