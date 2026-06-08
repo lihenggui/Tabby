@@ -44,6 +44,11 @@ internal data class HelpVersionInfo(
   val coreVersion: String,
 )
 
+internal data class HelpCopyVersionPayload(
+  val label: String,
+  val text: String,
+)
+
 internal fun helpInitialContentState(): HelpContentState {
   return HelpContentState()
 }
@@ -75,6 +80,13 @@ internal fun helpVersionInfoFromPlatformPayload(
   return HelpVersionInfo(
     appVersion = formatAppVersionInfo(versionName = versionName, buildCommit = buildCommit),
     coreVersion = coreVersion,
+  )
+}
+
+internal fun helpCopyVersionPayload(version: String): HelpCopyVersionPayload {
+  return HelpCopyVersionPayload(
+    label = "version",
+    text = version,
   )
 }
 

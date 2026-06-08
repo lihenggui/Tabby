@@ -98,7 +98,8 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
     onOpenLink = { url -> context.openLink(url) },
     onCopyVersion = { version ->
       scope.launch {
-        val clipEntry = ClipData.newPlainText("version", version).toClipEntry()
+        val payload = helpCopyVersionPayload(version)
+        val clipEntry = ClipData.newPlainText(payload.label, payload.text).toClipEntry()
         clipboard.setClipEntry(clipEntry)
         snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
       }

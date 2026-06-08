@@ -54,6 +54,14 @@ class HelpContentStateTest {
   }
 
   @Test
+  fun copyVersionPayloadKeepsLabelAndText() {
+    assertEquals(
+      HelpCopyVersionPayload(label = "version", text = "2.0.0 - abc123"),
+      helpCopyVersionPayload("2.0.0 - abc123"),
+    )
+  }
+
+  @Test
   fun appVersionInfoIncludesBuildCommit() {
     assertEquals(
       "1.2.3 - abc123",
