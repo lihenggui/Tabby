@@ -143,7 +143,7 @@ private class AndroidProfileFilesDocumentClient(private val client: FilesClient)
 }
 
 private fun ConfigFile.toProfileFilesDocument(): ProfileFilesDocument {
-  return ProfileFilesDocument(
+  return profileFilesDocumentFromPlatformPayload(
     id = id,
     name = name,
     sizeBytes = size,
