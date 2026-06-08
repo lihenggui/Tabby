@@ -587,32 +587,6 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
-  fun proxyBroadcastPlatformPayloadMapsProfileLoadedKindToEventKind() {
-    assertEquals(
-      ProxyBroadcastEventKind.ProfileLoaded,
-      proxyBroadcastEventKindFromPlatformPayload(ProxyPlatformBroadcastEventKind.ProfileLoaded),
-    )
-  }
-
-  @Test
-  fun proxyBroadcastPlatformPayloadMapsNonProfileLoadedKindsToOtherEventKind() {
-    listOf(
-        ProxyPlatformBroadcastEventKind.ServiceRecreated,
-        ProxyPlatformBroadcastEventKind.Started,
-        ProxyPlatformBroadcastEventKind.Stopped,
-        ProxyPlatformBroadcastEventKind.ProfileChanged,
-        ProxyPlatformBroadcastEventKind.ProfileUpdateCompleted,
-        ProxyPlatformBroadcastEventKind.ProfileUpdateFailed,
-      )
-      .forEach { kind ->
-        assertEquals(
-          ProxyBroadcastEventKind.Other,
-          proxyBroadcastEventKindFromPlatformPayload(kind),
-        )
-      }
-  }
-
-  @Test
   fun proxyBroadcastActionQueriesGroupNamesForProfileLoadedAfterInitialization() {
     assertEquals(
       ProxyBroadcastAction.QueryGroupNames,

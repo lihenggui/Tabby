@@ -139,30 +139,6 @@ enum class ProxyBroadcastEventKind {
   Other,
 }
 
-enum class ProxyPlatformBroadcastEventKind {
-  ServiceRecreated,
-  Started,
-  Stopped,
-  ProfileChanged,
-  ProfileUpdateCompleted,
-  ProfileUpdateFailed,
-  ProfileLoaded,
-}
-
-internal fun proxyBroadcastEventKindFromPlatformPayload(
-  kind: ProxyPlatformBroadcastEventKind
-): ProxyBroadcastEventKind {
-  return when (kind) {
-    ProxyPlatformBroadcastEventKind.ProfileLoaded -> ProxyBroadcastEventKind.ProfileLoaded
-    ProxyPlatformBroadcastEventKind.ServiceRecreated,
-    ProxyPlatformBroadcastEventKind.Started,
-    ProxyPlatformBroadcastEventKind.Stopped,
-    ProxyPlatformBroadcastEventKind.ProfileChanged,
-    ProxyPlatformBroadcastEventKind.ProfileUpdateCompleted,
-    ProxyPlatformBroadcastEventKind.ProfileUpdateFailed -> ProxyBroadcastEventKind.Other
-  }
-}
-
 internal sealed interface ProxyBroadcastAction {
   data object QueryGroupNames : ProxyBroadcastAction
 
