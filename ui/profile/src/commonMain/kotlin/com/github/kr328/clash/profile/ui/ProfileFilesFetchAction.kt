@@ -16,3 +16,7 @@ internal fun profileFilesFetchAction(location: ProfileFilesLocation): ProfileFil
     ProfileFilesFetchAction.Ignore
   }
 }
+
+internal fun profileFilesRefreshRequestedFromPlatformLifecycleEvent(startEvent: Boolean): Boolean {
+  return startEvent
+}

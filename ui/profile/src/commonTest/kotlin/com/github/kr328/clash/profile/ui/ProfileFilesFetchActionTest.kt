@@ -28,4 +28,16 @@ class ProfileFilesFetchActionTest {
       profileFilesFetchAction(location),
     )
   }
+
+  @Test
+  fun refreshRequestedFromPlatformLifecycleEventOnlyRequestsRefreshOnStart() {
+    assertEquals(
+      true,
+      profileFilesRefreshRequestedFromPlatformLifecycleEvent(startEvent = true),
+    )
+    assertEquals(
+      false,
+      profileFilesRefreshRequestedFromPlatformLifecycleEvent(startEvent = false),
+    )
+  }
 }

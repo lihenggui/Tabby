@@ -77,7 +77,11 @@ internal fun FilesScreen(
 
   DisposableEffect(lifecycleOwner, refreshEvents) {
     val observer = LifecycleEventObserver { _, event ->
-      if (event == Lifecycle.Event.ON_START) {
+      if (
+        profileFilesRefreshRequestedFromPlatformLifecycleEvent(
+          startEvent = event == Lifecycle.Event.ON_START
+        )
+      ) {
         refreshEvents.tryEmit(Unit)
       }
     }
