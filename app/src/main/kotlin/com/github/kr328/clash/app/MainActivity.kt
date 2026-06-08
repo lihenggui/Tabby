@@ -3,8 +3,6 @@ package com.github.kr328.clash.app
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.app.ActivityManager
-import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color.TRANSPARENT
@@ -17,8 +15,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
-import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -28,11 +26,8 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.application
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.constants.Intents
@@ -46,14 +41,14 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
+import com.github.kr328.clash.ui.nav.rememberNavBackStackBuilder
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
   private val uiStore by unsafeLazy { UiStore(this) }
-  private val viewModel: ViewModel by
-    viewModels(factoryProducer = { ViewModel.Factory(this@MainActivity) })
-  private inline val backStack
-    get() = viewModel.backStack
+  private val profileRepository: ProfileRepository by unsafeLazy { AndroidProfileRepository() }
+  private val pendingExternalAppIntents = mutableListOf<Intent>()
+  private var handleExternalAppIntent: ((Intent) -> Unit)? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -62,12 +57,26 @@ class MainActivity : ComponentActivity() {
       finish()
       return
     }
-    intent.handleAction(backStack)
+    if (savedInstanceState == null) enqueueExternalAppIntent(intent)
 
     setContent {
+      val backStack = rememberNavBackStackBuilder { addAll(tabbyInitialBackStack()) }
       val uiValueState by uiStore.valueState.collectAsStateWithLifecycle()
       val darkMode = uiValueState.darkMode
       val entryProvider = remember(backStack) { androidEntryProvider(backStack) }
+
+      DisposableEffect(backStack) {
+        val handler: (Intent) -> Unit = { intent -> intent.handleAction(backStack) }
+        handleExternalAppIntent = handler
+        pendingExternalAppIntents.forEach(handler)
+        pendingExternalAppIntents.clear()
+
+        onDispose {
+          if (handleExternalAppIntent === handler) {
+            handleExternalAppIntent = null
+          }
+        }
+      }
 
       LaunchedEffect(darkMode) { edgeToEdge(darkMode) }
 
@@ -87,16 +96,21 @@ class MainActivity : ComponentActivity() {
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     if (intent.handleExternalQuickAction()) return
-    intent.handleAction(backStack)
+    enqueueExternalAppIntent(intent)
   }
 
   private fun Intent.handleAction(backStack: MutableList<NavKey>) {
     when (val plan = tabbyExternalAppActionPlan(tabbyExternalAppAction())) {
-      TabbyExternalAppActionPlan.InstallProfile -> data?.let(viewModel::handleInstallConfigUri)
+      TabbyExternalAppActionPlan.InstallProfile ->
+        data?.let { handleInstallConfigUri(it, backStack) }
       is TabbyExternalAppActionPlan.OpenRoute ->
         backStack.handleTabbyExternalRouteAction(plan.routeAction)
       TabbyExternalAppActionPlan.Ignore -> Unit
     }
+  }
+
+  private fun enqueueExternalAppIntent(intent: Intent) {
+    handleExternalAppIntent?.invoke(intent) ?: pendingExternalAppIntents.add(intent)
   }
 
   private fun Intent.handleExternalQuickAction(): Boolean {
@@ -184,31 +198,20 @@ class MainActivity : ComponentActivity() {
     ShortcutManagerCompat.setDynamicShortcuts(this, shortcuts)
   }
 
-  private class ViewModel(application: Application) : AndroidViewModel(application) {
-    val backStack = tabbyInitialBackStack()
-    private val profileRepository: ProfileRepository = AndroidProfileRepository()
-
-    fun handleInstallConfigUri(uri: Uri) {
-      val request =
-        tabbyInstallProfileRequest(
-          source = uri.getQueryParameter("url"),
-          type = uri.getQueryParameter("type"),
-          name = uri.getQueryParameter("name"),
-          defaultName = application.getString(CommonR.string.new_profile),
-        ) ?: return
-      viewModelScope.launch {
-        val uuid = tabbyInstallProfile(profileRepository, request)
-        when (val action = tabbyInstallProfileResultAction(uuid)) {
-          is TabbyInstallProfileResultAction.OpenRoute ->
-            backStack.handleTabbyExternalRouteAction(action.routeAction)
-        }
+  private fun handleInstallConfigUri(uri: Uri, backStack: MutableList<NavKey>) {
+    val request =
+      tabbyInstallProfileRequest(
+        source = uri.getQueryParameter("url"),
+        type = uri.getQueryParameter("type"),
+        name = uri.getQueryParameter("name"),
+        defaultName = getString(CommonR.string.new_profile),
+      ) ?: return
+    lifecycleScope.launch {
+      val uuid = tabbyInstallProfile(profileRepository, request)
+      when (val action = tabbyInstallProfileResultAction(uuid)) {
+        is TabbyInstallProfileResultAction.OpenRoute ->
+          backStack.handleTabbyExternalRouteAction(action.routeAction)
       }
-    }
-
-    class Factory(private val context: Context) : ViewModelProvider.Factory {
-      @Suppress("UNCHECKED_CAST")
-      override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-        ViewModel(application = context.applicationContext as Application) as T
     }
   }
 }
