@@ -160,11 +160,9 @@ class MainActivity : ComponentActivity() {
 
   private fun requestNotificationPermission() {
     when (
-      tabbyNotificationPermissionActionFromPlatformState(
-        sdkVersion = Build.VERSION.SDK_INT,
-        runtimePermissionSdkVersion = Build.VERSION_CODES.TIRAMISU,
-        permissionResult = ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS),
-        grantedResult = PackageManager.PERMISSION_GRANTED,
+      tabbyNotificationPermissionAction(
+        runtimePermissionRequired = notificationRuntimePermissionRequired(),
+        permissionGranted = notificationPermissionGranted(),
       )
     ) {
       TabbyNotificationPermissionAction.RequestNotificationPermission ->
@@ -172,6 +170,12 @@ class MainActivity : ComponentActivity() {
       TabbyNotificationPermissionAction.Ignore -> Unit
     }
   }
+
+  private fun notificationRuntimePermissionRequired(): Boolean =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+  private fun notificationPermissionGranted(): Boolean =
+    ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
   private fun setExcludeFromRecents() {
     val action = tabbyRecentsTaskAction(hideFromRecents = uiStore.hideFromRecents)
