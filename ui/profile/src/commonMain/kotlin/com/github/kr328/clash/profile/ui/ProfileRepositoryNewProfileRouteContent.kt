@@ -151,3 +151,13 @@ internal fun newProfileCreateRequestFromExternalProviderResultAction(
     NewProfileExternalProviderResultAction.Ignore -> null
   }
 }
+
+internal fun newProfileCreateRequestFromExternalProviderResult(
+  result: NewProfileExternalProviderResult,
+  source: String,
+): NewProfileCreateRequest? {
+  return newProfileCreateRequestFromExternalProviderResultAction(
+    action = newProfileExternalProviderResultAction(result),
+    source = source,
+  )
+}

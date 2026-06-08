@@ -85,20 +85,20 @@ internal fun NewProfileScreen(
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
       val uri = result.data?.data
-      val action =
-        newProfileExternalProviderResultAction(
-          newProfileExternalProviderResultFromPlatformResult(
-            resultCode = result.resultCode,
-            acceptedResultCode = RESULT_OK,
-            source = uri,
-            name = result.data?.getStringExtra(Intents.EXTRA_NAME),
-          )
+      val platformResult =
+        newProfileExternalProviderResultFromPlatformResult(
+          resultCode = result.resultCode,
+          acceptedResultCode = RESULT_OK,
+          source = uri,
+          name = result.data?.getStringExtra(Intents.EXTRA_NAME),
         )
-      newProfileCreateRequestFromExternalProviderResultAction(
-          action = action,
+      val request =
+        newProfileCreateRequestFromExternalProviderResult(
+          result = platformResult,
           source = uri?.toString().orEmpty(),
         )
-        ?.let(::launchCreateRequest)
+
+      request?.let(::launchCreateRequest)
     }
 
   LaunchedEffect(context) {
