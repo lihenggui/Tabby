@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.compat.getInstalledPackagesCompat
 import com.github.kr328.clash.core.model.AccessControlSort
-import com.github.kr328.clash.glue.model.AppInfo
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
@@ -57,11 +56,12 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
   var sort by remember { mutableStateOf(uiStore.accessControlSort) }
   var reverse by remember { mutableStateOf(uiStore.accessControlReverse) }
   var showSystemApps by remember { mutableStateOf(uiStore.accessControlSystemApp) }
-  var androidApps by remember { mutableStateOf(emptyList<AppInfo>()) }
+  var androidApps by remember { mutableStateOf(emptyList<AndroidAccessControlApp>()) }
   var reloadRequest by remember { mutableStateOf<AccessControlReloadRequest?>(null) }
   val currentSelected = rememberUpdatedState(selected)
   val currentClashRunning = rememberUpdatedState(clashRunning)
-  val apps = remember(androidApps) { androidApps.map(AppInfo::toAccessControlPackage) }
+  val apps =
+    remember(androidApps) { androidApps.map(AndroidAccessControlApp::toAccessControlPackage) }
   val icons = remember(androidApps) { androidApps.associate { it.packageName to it.icon } }
 
   LaunchedEffect(appContext, serviceStore) {
@@ -159,7 +159,15 @@ private fun AccessControlAppIcon(icon: Drawable) {
   )
 }
 
-private fun AppInfo.toAccessControlPackage(): AccessControlPackage {
+private data class AndroidAccessControlApp(
+  val packageName: String,
+  val label: String,
+  val icon: Drawable,
+  val installTime: Long,
+  val updateDate: Long,
+)
+
+private fun AndroidAccessControlApp.toAccessControlPackage(): AccessControlPackage {
   return accessControlPackageFromPlatformPayload(
     packageName = packageName,
     label = label,
@@ -170,7 +178,7 @@ private fun AppInfo.toAccessControlPackage(): AccessControlPackage {
 
 private suspend fun Context.loadAndroidAccessControlApps(
   request: AccessControlReloadRequest
-): List<AppInfo> =
+): List<AndroidAccessControlApp> =
   withContext(Dispatchers.IO) {
     val pm = packageManager
     loadAccessControlApps(
@@ -189,11 +197,11 @@ private suspend fun Context.loadAndroidAccessControlApps(
         it.applicationInfo?.uid?.let { uid -> uid < Process.FIRST_APPLICATION_UID } == true
       },
       isSystemApp = { it.isSystemApp },
-      toApp = { it.toAppInfo(pm) },
-      appPackageName = AppInfo::packageName,
-      appLabel = AppInfo::label,
-      appInstallTime = AppInfo::installTime,
-      appUpdateTime = AppInfo::updateDate,
+      toApp = { it.toAccessControlApp(pm) },
+      appPackageName = AndroidAccessControlApp::packageName,
+      appLabel = AndroidAccessControlApp::label,
+      appInstallTime = AndroidAccessControlApp::installTime,
+      appUpdateTime = AndroidAccessControlApp::updateDate,
     )
   }
 
@@ -267,9 +275,9 @@ private fun Lifecycle.Event.toAccessControlPlatformStopEvent(): AccessControlPla
     else -> AccessControlPlatformStopEvent.Other
   }
 
-private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {
+private fun PackageInfo.toAccessControlApp(pm: PackageManager): AndroidAccessControlApp {
   val applicationInfo = checkNotNull(applicationInfo)
-  return AppInfo(
+  return AndroidAccessControlApp(
     packageName = packageName,
     icon = applicationInfo.loadIcon(pm).foreground,
     label = applicationInfo.loadLabel(pm).toString(),
