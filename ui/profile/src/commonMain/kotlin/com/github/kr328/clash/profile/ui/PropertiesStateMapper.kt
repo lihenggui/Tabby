@@ -186,6 +186,22 @@ internal fun propertiesAutoSaveAction(
   }
 }
 
+internal fun propertiesAutoSaveUiState(
+  profile: Profile?,
+  savedProfile: Profile?,
+): PropertiesUiState {
+  return PropertiesUiState(
+    profile = profile,
+    originalProfile = savedProfile,
+    hasUnsavedChanges =
+      if (profile != null) {
+        hasProfilePropertiesChanges(profile, savedProfile)
+      } else {
+        false
+      },
+  )
+}
+
 internal fun propertiesBackAction(
   processing: Boolean,
   showExitWithoutSavingDialog: Boolean,

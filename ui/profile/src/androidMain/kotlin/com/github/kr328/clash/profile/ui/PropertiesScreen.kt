@@ -1,99 +1,62 @@
 package com.github.kr328.clash.profile.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.profile.R
-import com.github.kr328.clash.profile.ui.PropertiesBackAction.HideExitWithoutSavingDialog
-import com.github.kr328.clash.profile.ui.PropertiesBackAction.Ignore
-import com.github.kr328.clash.profile.ui.PropertiesBackAction.RequestClose
-import com.github.kr328.clash.profile.ui.PropertiesBackAction.ShowExitWithoutSavingDialog
-import com.github.kr328.clash.profile.vm.PropertiesViewModel
-import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 @Composable
 internal fun PropertiesScreen(
   uuid: Uuid,
   modifier: Modifier = Modifier,
-  viewModel: PropertiesViewModel = viewModelWithLifecycle(),
   onBrowseFiles: (Uuid) -> Unit,
   onFinish: (Boolean) -> Unit,
 ) {
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val eventState by viewModel.eventState.collectAsStateWithLifecycle()
+  val profileRepository = remember { AndroidProfileRepository() }
   val snackbarHostState = remember { SnackbarHostState() }
+  val autoSaveEvents = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
+  val lifecycleOwner = LocalLifecycleOwner.current
 
-  LaunchedEffect(uuid) { viewModel.init(uuid = uuid) }
-
-  LaunchedEffect(eventState) {
-    when (val action = propertiesEventPlatformAction(eventState)) {
-      PropertiesEventPlatformAction.Ignore -> Unit
-      is PropertiesEventPlatformAction.BrowseFiles -> {
-        onBrowseFiles(action.uuid)
-      }
-      is PropertiesEventPlatformAction.Finish -> {
-        onFinish(action.success)
-      }
-      is PropertiesEventPlatformAction.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = action.message)
-      }
-    }
-    viewModel.consumeEvent()
-  }
-
-  val profile = uiState.profile
-  if (profile != null) {
-    var showExitWithoutSavingDialog by rememberSaveable { mutableStateOf(false) }
-    val onBack = {
-      when (
-        propertiesBackAction(
-          processing = uiState.processing,
-          showExitWithoutSavingDialog = showExitWithoutSavingDialog,
-          hasUnsavedChanges = uiState.hasUnsavedChanges,
-        )
-      ) {
-        Ignore -> Unit
-        HideExitWithoutSavingDialog -> showExitWithoutSavingDialog = false
-        ShowExitWithoutSavingDialog -> showExitWithoutSavingDialog = true
-        RequestClose -> viewModel.onRequestClose()
+  DisposableEffect(lifecycleOwner, autoSaveEvents) {
+    val observer = LifecycleEventObserver { _, event ->
+      if (event == Lifecycle.Event.ON_STOP) {
+        autoSaveEvents.tryEmit(Unit)
       }
     }
 
-    BackHandler(onBack = onBack)
+    lifecycleOwner.lifecycle.addObserver(observer)
 
-    PropertiesStateRouteContent(
-      modifier = modifier,
-      snackbarHostState = snackbarHostState,
-      state = uiState,
-      showExitWithoutSavingDialog = showExitWithoutSavingDialog,
-      tipsProperties = AnnotatedString.fromHtml(stringResource(R.string.tips_properties)),
-      onBack = onBack,
-      onDismissExitWithoutSavingDialog = { showExitWithoutSavingDialog = false },
-      onBrowseFiles = viewModel::onBrowseFiles,
-      onCommit = viewModel::onCommit,
-      onRequestClose = viewModel::onRequestClose,
-      onNameChanged = viewModel::onNameChanged,
-      onUrlChanged = viewModel::onUrlChanged,
-      onIntervalChanged = viewModel::onIntervalChanged,
-    )
+    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
+
+  ProfileRepositoryPropertiesRouteContent(
+    profileRepository = profileRepository,
+    uuid = uuid,
+    onBrowseFiles = onBrowseFiles,
+    onFinish = onFinish,
+    modifier = modifier,
+    snackbarHostState = snackbarHostState,
+    tipsProperties = AnnotatedString.fromHtml(androidStringResource(R.string.tips_properties)),
+    autoSaveEvents = autoSaveEvents,
+    onActionError = { cause -> Log.e("Profile properties action failed: ${cause.message}", cause) },
+  )
 }
 
 @PreviewWrapper(TabbyThemeWrapper::class)

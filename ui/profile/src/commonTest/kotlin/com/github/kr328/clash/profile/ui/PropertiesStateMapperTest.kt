@@ -287,6 +287,37 @@ class PropertiesStateMapperTest {
   }
 
   @Test
+  fun propertiesAutoSaveUiStateTracksProfileAgainstSavedProfile() {
+    val saved = profile(name = "Saved")
+    val changed = saved.copy(name = "Changed")
+
+    assertEquals(
+      PropertiesUiState(
+        profile = changed,
+        originalProfile = saved,
+        hasUnsavedChanges = true,
+      ),
+      propertiesAutoSaveUiState(changed, saved),
+    )
+    assertEquals(
+      PropertiesUiState(
+        profile = saved,
+        originalProfile = saved,
+        hasUnsavedChanges = false,
+      ),
+      propertiesAutoSaveUiState(saved, saved),
+    )
+    assertEquals(
+      PropertiesUiState(
+        profile = null,
+        originalProfile = saved,
+        hasUnsavedChanges = false,
+      ),
+      propertiesAutoSaveUiState(null, saved),
+    )
+  }
+
+  @Test
   fun propertiesBackActionIgnoresWhileProcessing() {
     assertEquals(
       PropertiesBackAction.Ignore,

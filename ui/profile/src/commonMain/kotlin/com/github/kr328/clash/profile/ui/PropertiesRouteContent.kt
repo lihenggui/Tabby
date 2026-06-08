@@ -10,15 +10,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.profile.generated.resources.Res as ProfileRes
 import tabby.ui.profile.generated.resources.empty_name
+import tabby.ui.profile.generated.resources.format_fetching_configuration
+import tabby.ui.profile.generated.resources.format_fetching_provider
 import tabby.ui.profile.generated.resources.initializing
 import tabby.ui.profile.generated.resources.invalid_url
+import tabby.ui.profile.generated.resources.verifying
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.unavailable
 
@@ -26,18 +34,19 @@ import tabby.ui.shared.generated.resources.unavailable
 fun PropertiesRouteContent(
   modifier: Modifier = Modifier,
   profile: Profile = defaultPropertiesRouteProfile(),
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   tipsProperties: AnnotatedString = AnnotatedString("Accept Only Tabby Config"),
   onBrowseFiles: (Profile) -> Unit = {},
-  onCommit: suspend (Profile) -> Unit = {},
+  onCommit: suspend (Profile, suspend (FetchStatus) -> Unit) -> Unit = { _, _ -> },
   onProfileChange: (Profile) -> Unit = {},
   onFinish: (success: Boolean) -> Unit = {},
 ) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
   val emptyNameMessage = stringResource(ProfileRes.string.empty_name)
   val initializingMessage = stringResource(ProfileRes.string.initializing)
   val invalidUrlMessage = stringResource(ProfileRes.string.invalid_url)
   val unavailableMessage = stringResource(SharedRes.string.unavailable)
+  val navigationEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
   var uiState by
     remember(profile) { mutableStateOf(propertiesInitialUiState().withLoadedProfile(profile)) }
   var showExitWithoutSavingDialog by
@@ -52,6 +61,10 @@ fun PropertiesRouteContent(
 
   fun requestClose() {
     onFinish(false)
+  }
+
+  suspend fun updateFetchStatus(status: FetchStatus) {
+    uiState = uiState.withLocalizedFetchStatusProgress(status)
   }
 
   val onBack = {
@@ -69,6 +82,12 @@ fun PropertiesRouteContent(
     }
   }
 
+  NavigationBackHandler(
+    state = navigationEventState,
+    isBackEnabled = true,
+    onBackCompleted = onBack,
+  )
+
   PropertiesStateRouteContent(
     modifier = modifier,
     snackbarHostState = snackbarHostState,
@@ -84,7 +103,7 @@ fun PropertiesRouteContent(
           coroutineScope.launch {
             uiState = uiState.withProcessingStarted(initializingMessage)
             try {
-              onCommit(action.profile)
+              onCommit(action.profile, ::updateFetchStatus)
               uiState = uiState.withSavedProfile(action.profile)
               onFinish(true)
             } catch (e: CancellationException) {
@@ -110,6 +129,40 @@ fun PropertiesRouteContent(
     onUrlChanged = { url -> updateProfile(uiState.withProfileSource(url)) },
     onIntervalChanged = { interval -> updateProfile(uiState.withProfileInterval(interval)) },
   )
+}
+
+private suspend fun PropertiesUiState.withLocalizedFetchStatusProgress(
+  status: FetchStatus
+): PropertiesUiState {
+  val nextProgress =
+    when (status.action) {
+      FetchStatus.Action.FetchConfiguration ->
+        progress.withFetchConfigurationProgress(
+          text =
+            getString(
+              ProfileRes.string.format_fetching_configuration,
+              status.args.getOrNull(0).orEmpty(),
+            )
+        )
+      FetchStatus.Action.FetchProviders ->
+        progress.withFetchProvidersProgress(
+          text =
+            getString(
+              ProfileRes.string.format_fetching_provider,
+              status.args.getOrNull(0).orEmpty(),
+            ),
+          max = status.max,
+          progress = status.progress,
+        )
+      FetchStatus.Action.Verifying ->
+        progress.withVerifyingProgress(
+          text = getString(ProfileRes.string.verifying),
+          max = status.max,
+          progress = status.progress,
+        )
+    }
+
+  return withProgress(nextProgress)
 }
 
 @Composable
