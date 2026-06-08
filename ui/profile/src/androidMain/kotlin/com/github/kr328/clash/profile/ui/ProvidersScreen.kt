@@ -8,48 +8,35 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 
 @Composable
 internal fun ProvidersScreen(modifier: Modifier = Modifier) {
   val context = LocalContext.current
   val appContext = context.applicationContext
   val engineController = remember(appContext) { AndroidEngineController(appContext) }
-  val profileLoadedEvents = remember {
-    Remote.broadcasts.event.mapNotNull { event -> event.toProfileLoadedSignal() }
+  val broadcastEvents = remember {
+    Remote.broadcasts.event.map { event -> event.toProvidersEvent() }
   }
 
   EngineControllerProvidersRouteContent(
     engineController = engineController,
     modifier = modifier,
-    profileLoadedEvents = profileLoadedEvents,
+    broadcastEvents = broadcastEvents,
     onActionError = { cause -> Log.e("Provider action failed: ${cause.message}", cause) },
   )
 }
 
-private fun Broadcasts.Event.toProfileLoadedSignal(): Unit? {
-  val event =
+private fun Broadcasts.Event.toProvidersEvent(): ProvidersBroadcastEvent =
+  providersBroadcastEventFromPlatformPayload(
     when (this) {
-      Broadcasts.Event.ServiceRecreated ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ServiceRecreated)
-      Broadcasts.Event.Started ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Started)
-      is Broadcasts.Event.Stopped ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.Stopped)
-      Broadcasts.Event.ProfileChanged ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileChanged)
+      Broadcasts.Event.ServiceRecreated -> ProvidersBroadcastEventKind.ServiceRecreated
+      Broadcasts.Event.Started -> ProvidersBroadcastEventKind.Started
+      is Broadcasts.Event.Stopped -> ProvidersBroadcastEventKind.Stopped
+      Broadcasts.Event.ProfileChanged -> ProvidersBroadcastEventKind.ProfileChanged
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        providersBroadcastEventFromPlatformPayload(
-          ProvidersBroadcastEventKind.ProfileUpdateCompleted
-        )
-      is Broadcasts.Event.ProfileUpdateFailed ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileUpdateFailed)
-      Broadcasts.Event.ProfileLoaded ->
-        providersBroadcastEventFromPlatformPayload(ProvidersBroadcastEventKind.ProfileLoaded)
+        ProvidersBroadcastEventKind.ProfileUpdateCompleted
+      is Broadcasts.Event.ProfileUpdateFailed -> ProvidersBroadcastEventKind.ProfileUpdateFailed
+      Broadcasts.Event.ProfileLoaded -> ProvidersBroadcastEventKind.ProfileLoaded
     }
-
-  return when (providersBroadcastAction(event)) {
-    ProvidersBroadcastAction.FetchProviders -> Unit
-    ProvidersBroadcastAction.Ignore -> null
-  }
-}
+  )

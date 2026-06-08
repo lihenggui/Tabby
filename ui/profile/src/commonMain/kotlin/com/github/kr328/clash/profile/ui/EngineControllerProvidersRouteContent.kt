@@ -26,7 +26,7 @@ import tabby.ui.profile.generated.resources.format_update_provider_failure
 fun EngineControllerProvidersRouteContent(
   engineController: EngineController,
   modifier: Modifier = Modifier,
-  profileLoadedEvents: Flow<Unit> = emptyFlow(),
+  broadcastEvents: Flow<ProvidersBroadcastEvent> = emptyFlow(),
   onActionError: (Throwable) -> Unit = {},
 ) {
   val scope = rememberCoroutineScope()
@@ -74,8 +74,14 @@ fun EngineControllerProvidersRouteContent(
     }
   }
   LaunchedEffect(engineController) { runCatching { fetchProviders() }.onFailure(onActionError) }
-  LaunchedEffect(engineController, profileLoadedEvents) {
-    profileLoadedEvents.collect { runCatching { fetchProviders() }.onFailure(onActionError) }
+  LaunchedEffect(engineController, broadcastEvents) {
+    broadcastEvents.collect { event ->
+      when (providersBroadcastAction(event)) {
+        ProvidersBroadcastAction.FetchProviders ->
+          runCatching { fetchProviders() }.onFailure(onActionError)
+        ProvidersBroadcastAction.Ignore -> Unit
+      }
+    }
   }
   LaunchedEffect(engineController) {
     while (true) {

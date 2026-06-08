@@ -1,6 +1,6 @@
 package com.github.kr328.clash.profile.ui
 
-internal enum class ProvidersBroadcastEventKind {
+enum class ProvidersBroadcastEventKind {
   ServiceRecreated,
   Started,
   Stopped,
@@ -10,7 +10,7 @@ internal enum class ProvidersBroadcastEventKind {
   ProfileLoaded,
 }
 
-internal data class ProvidersBroadcastEvent(val kind: ProvidersBroadcastEventKind)
+data class ProvidersBroadcastEvent(val kind: ProvidersBroadcastEventKind)
 
 internal fun providersBroadcastEventFromPlatformPayload(
   kind: ProvidersBroadcastEventKind
