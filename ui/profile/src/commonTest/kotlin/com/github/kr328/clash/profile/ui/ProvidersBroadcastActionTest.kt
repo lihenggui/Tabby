@@ -18,12 +18,26 @@ class ProvidersBroadcastActionTest {
 
   @Test
   fun platformPayloadBoundaryCreatesProviderBroadcastEvent() {
-    ProvidersBroadcastEventKind.entries.forEach { kind ->
-      assertEquals(
-        ProvidersBroadcastEvent(kind),
-        providersBroadcastEventFromPlatformPayload(kind),
+    listOf(
+        ProvidersPlatformBroadcastEventKind.ServiceRecreated to
+          ProvidersBroadcastEventKind.ServiceRecreated,
+        ProvidersPlatformBroadcastEventKind.Started to ProvidersBroadcastEventKind.Started,
+        ProvidersPlatformBroadcastEventKind.Stopped to ProvidersBroadcastEventKind.Stopped,
+        ProvidersPlatformBroadcastEventKind.ProfileChanged to
+          ProvidersBroadcastEventKind.ProfileChanged,
+        ProvidersPlatformBroadcastEventKind.ProfileUpdateCompleted to
+          ProvidersBroadcastEventKind.ProfileUpdateCompleted,
+        ProvidersPlatformBroadcastEventKind.ProfileUpdateFailed to
+          ProvidersBroadcastEventKind.ProfileUpdateFailed,
+        ProvidersPlatformBroadcastEventKind.ProfileLoaded to
+          ProvidersBroadcastEventKind.ProfileLoaded,
       )
-    }
+      .forEach { (platformKind, routeKind) ->
+        assertEquals(
+          ProvidersBroadcastEvent(routeKind),
+          providersBroadcastEventFromPlatformPayload(platformKind),
+        )
+      }
   }
 
   @Test

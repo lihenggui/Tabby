@@ -30,13 +30,14 @@ internal fun ProvidersScreen(modifier: Modifier = Modifier) {
 private fun Broadcasts.Event.toProvidersEvent(): ProvidersBroadcastEvent =
   providersBroadcastEventFromPlatformPayload(
     when (this) {
-      Broadcasts.Event.ServiceRecreated -> ProvidersBroadcastEventKind.ServiceRecreated
-      Broadcasts.Event.Started -> ProvidersBroadcastEventKind.Started
-      is Broadcasts.Event.Stopped -> ProvidersBroadcastEventKind.Stopped
-      Broadcasts.Event.ProfileChanged -> ProvidersBroadcastEventKind.ProfileChanged
+      Broadcasts.Event.ServiceRecreated -> ProvidersPlatformBroadcastEventKind.ServiceRecreated
+      Broadcasts.Event.Started -> ProvidersPlatformBroadcastEventKind.Started
+      is Broadcasts.Event.Stopped -> ProvidersPlatformBroadcastEventKind.Stopped
+      Broadcasts.Event.ProfileChanged -> ProvidersPlatformBroadcastEventKind.ProfileChanged
       is Broadcasts.Event.ProfileUpdateCompleted ->
-        ProvidersBroadcastEventKind.ProfileUpdateCompleted
-      is Broadcasts.Event.ProfileUpdateFailed -> ProvidersBroadcastEventKind.ProfileUpdateFailed
-      Broadcasts.Event.ProfileLoaded -> ProvidersBroadcastEventKind.ProfileLoaded
+        ProvidersPlatformBroadcastEventKind.ProfileUpdateCompleted
+      is Broadcasts.Event.ProfileUpdateFailed ->
+        ProvidersPlatformBroadcastEventKind.ProfileUpdateFailed
+      Broadcasts.Event.ProfileLoaded -> ProvidersPlatformBroadcastEventKind.ProfileLoaded
     }
   )
