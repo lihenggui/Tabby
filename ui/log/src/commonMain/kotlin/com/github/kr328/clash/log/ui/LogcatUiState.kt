@@ -100,12 +100,6 @@ internal sealed interface LogcatExportAction {
 
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
-internal enum class LogcatPlatformStartStopEvent {
-  Start,
-  Stop,
-  Other,
-}
-
 internal data class LogcatCopyMessagePayload(
   val label: String,
   val text: String,
@@ -277,14 +271,15 @@ internal fun logcatPollAction(
   }
 }
 
-internal fun logcatStartedStateFromPlatformLifecycleEvent(
+internal fun logcatStartedStateFromStartStopEvent(
   currentStarted: Boolean,
-  event: LogcatPlatformStartStopEvent,
+  isStartEvent: Boolean,
+  isStopEvent: Boolean,
 ): Boolean {
-  return when (event) {
-    LogcatPlatformStartStopEvent.Start -> true
-    LogcatPlatformStartStopEvent.Stop -> false
-    LogcatPlatformStartStopEvent.Other -> currentStarted
+  return when {
+    isStartEvent -> true
+    isStopEvent -> false
+    else -> currentStarted
   }
 }
 

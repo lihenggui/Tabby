@@ -132,9 +132,10 @@ internal fun LogcatScreen(
     started = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
     val observer = LifecycleEventObserver { _, event ->
       started =
-        logcatStartedStateFromPlatformLifecycleEvent(
+        logcatStartedStateFromStartStopEvent(
           currentStarted = started,
-          event = event.toLogcatPlatformStartStopEvent(),
+          isStartEvent = event == Lifecycle.Event.ON_START,
+          isStopEvent = event == Lifecycle.Event.ON_STOP,
         )
     }
 
@@ -267,13 +268,6 @@ internal fun LogcatScreen(
     },
   )
 }
-
-private fun Lifecycle.Event.toLogcatPlatformStartStopEvent(): LogcatPlatformStartStopEvent =
-  when (this) {
-    Lifecycle.Event.ON_START -> LogcatPlatformStartStopEvent.Start
-    Lifecycle.Event.ON_STOP -> LogcatPlatformStartStopEvent.Stop
-    else -> LogcatPlatformStartStopEvent.Other
-  }
 
 private suspend fun Context.bindAndroidLogcat(
   onDisconnected: (ServiceConnection) -> Unit

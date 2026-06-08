@@ -390,33 +390,37 @@ class LogcatUiStateTest {
   }
 
   @Test
-  fun startedStateFromPlatformLifecycleEventStartsStopsAndKeepsExistingState() {
+  fun logcatStartedStateFromStartStopEventStartsStopsAndKeepsExistingState() {
     assertEquals(
       true,
-      logcatStartedStateFromPlatformLifecycleEvent(
+      logcatStartedStateFromStartStopEvent(
         currentStarted = false,
-        event = LogcatPlatformStartStopEvent.Start,
+        isStartEvent = true,
+        isStopEvent = false,
       ),
     )
     assertEquals(
       false,
-      logcatStartedStateFromPlatformLifecycleEvent(
+      logcatStartedStateFromStartStopEvent(
         currentStarted = true,
-        event = LogcatPlatformStartStopEvent.Stop,
+        isStartEvent = false,
+        isStopEvent = true,
       ),
     )
     assertEquals(
       true,
-      logcatStartedStateFromPlatformLifecycleEvent(
+      logcatStartedStateFromStartStopEvent(
         currentStarted = true,
-        event = LogcatPlatformStartStopEvent.Other,
+        isStartEvent = false,
+        isStopEvent = false,
       ),
     )
     assertEquals(
       false,
-      logcatStartedStateFromPlatformLifecycleEvent(
+      logcatStartedStateFromStartStopEvent(
         currentStarted = false,
-        event = LogcatPlatformStartStopEvent.Other,
+        isStartEvent = false,
+        isStopEvent = false,
       ),
     )
   }
