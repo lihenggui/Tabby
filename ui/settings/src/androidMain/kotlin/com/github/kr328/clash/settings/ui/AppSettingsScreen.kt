@@ -53,21 +53,13 @@ internal fun AppSettingsScreen(modifier: Modifier = Modifier) {
 private var Context.autoRestartValue: Boolean
   get() {
     val status =
-      packageManager.getComponentEnabledSetting(appInfoProvider.restartReceiverClass.componentName)
-    return appSettingsAutoRestartEnabledFromPlatformComponentState(
-      state = status,
-      enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-      disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-    )
+      packageManager
+        .getComponentEnabledSetting(appInfoProvider.restartReceiverClass.componentName)
+        .toAppComponentEnabledState()
+    return isAppSettingsAutoRestartEnabled(status)
   }
   set(value) {
-    val status =
-      appSettingsAutoRestartPlatformComponentState(
-        autoRestart = value,
-        enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-        disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-        defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
-      )
+    val status = appSettingsAutoRestartComponentState(value).toPlatformComponentState()
 
     packageManager.setComponentEnabledSetting(
       appInfoProvider.restartReceiverClass.componentName,
@@ -77,18 +69,28 @@ private var Context.autoRestartValue: Boolean
   }
 
 private fun Context.hideAppIcon(hide: Boolean) {
-  val newState =
-    appSettingsHideAppIconPlatformComponentState(
-      hideAppIcon = hide,
-      enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-      disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-      defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
-    )
+  val newState = appSettingsHideAppIconComponentState(hide).toPlatformComponentState()
   packageManager.setComponentEnabledSetting(
     mainActivityAlias,
     newState,
     PackageManager.DONT_KILL_APP,
   )
+}
+
+private fun Int.toAppComponentEnabledState(): AppComponentEnabledState {
+  return when (this) {
+    PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> AppComponentEnabledState.Enabled
+    PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> AppComponentEnabledState.Disabled
+    else -> AppComponentEnabledState.Unspecified
+  }
+}
+
+private fun AppComponentEnabledState.toPlatformComponentState(): Int {
+  return when (this) {
+    AppComponentEnabledState.Enabled -> PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    AppComponentEnabledState.Disabled -> PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+    AppComponentEnabledState.Unspecified -> PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+  }
 }
 
 @PreviewWrapper(TabbyThemeWrapper::class)
