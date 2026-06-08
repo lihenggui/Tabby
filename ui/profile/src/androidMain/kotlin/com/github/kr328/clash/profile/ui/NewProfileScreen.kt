@@ -68,12 +68,17 @@ internal fun NewProfileScreen(
 
   val qrLauncher =
     rememberLauncherForActivityResult(ScanQRCode()) { result ->
-      when (val action = profileQrAction(result.toProfileQrScanResult())) {
-        is ProfileQrAction.CreateUrlProfile ->
-          newProfileCreateRequestFromQrAction(action)?.let(::launchCreateRequest)
-        ProfileQrAction.Ignore -> Unit
-        ProfileQrAction.ShowMissingPermission -> showQrMessage(missingPermissionMessage)
-        ProfileQrAction.ShowScanError -> showQrMessage(scanErrorMessage)
+      when (
+        val action =
+          newProfileQrScanAction(
+            result = result.toProfileQrScanResult(),
+            missingPermissionMessage = missingPermissionMessage,
+            scanErrorMessage = scanErrorMessage,
+          )
+      ) {
+        is NewProfileQrScanAction.CreateProfile -> launchCreateRequest(action.request)
+        is NewProfileQrScanAction.ShowMessage -> showQrMessage(action.message)
+        NewProfileQrScanAction.Ignore -> Unit
       }
     }
 

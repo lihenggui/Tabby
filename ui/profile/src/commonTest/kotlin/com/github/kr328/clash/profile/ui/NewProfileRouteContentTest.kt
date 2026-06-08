@@ -82,6 +82,55 @@ class NewProfileRouteContentTest {
   }
 
   @Test
+  fun qrScanActionCreatesUrlProfileCreateRequest() {
+    assertEquals(
+      NewProfileQrScanAction.CreateProfile(
+        NewProfileCreateRequest(
+          type = Profile.Type.Url,
+          source = "https://example.com/profile.yaml",
+        )
+      ),
+      newProfileQrScanAction(
+        action = ProfileQrAction.CreateUrlProfile("https://example.com/profile.yaml"),
+        missingPermissionMessage = "Camera permission denied",
+        scanErrorMessage = "QR scan failed",
+      ),
+    )
+  }
+
+  @Test
+  fun qrScanActionShowsMessagesForPermissionAndScanErrors() {
+    assertEquals(
+      NewProfileQrScanAction.ShowMessage("Camera permission denied"),
+      newProfileQrScanAction(
+        action = ProfileQrAction.ShowMissingPermission,
+        missingPermissionMessage = "Camera permission denied",
+        scanErrorMessage = "QR scan failed",
+      ),
+    )
+    assertEquals(
+      NewProfileQrScanAction.ShowMessage("QR scan failed"),
+      newProfileQrScanAction(
+        action = ProfileQrAction.ShowScanError,
+        missingPermissionMessage = "Camera permission denied",
+        scanErrorMessage = "QR scan failed",
+      ),
+    )
+  }
+
+  @Test
+  fun qrScanActionIgnoresNoopActions() {
+    assertEquals(
+      NewProfileQrScanAction.Ignore,
+      newProfileQrScanAction(
+        action = ProfileQrAction.Ignore,
+        missingPermissionMessage = "Camera permission denied",
+        scanErrorMessage = "QR scan failed",
+      ),
+    )
+  }
+
+  @Test
   fun externalProviderCreateActionBuildsExternalProfileCreateRequest() {
     assertEquals(
       NewProfileCreateRequest(

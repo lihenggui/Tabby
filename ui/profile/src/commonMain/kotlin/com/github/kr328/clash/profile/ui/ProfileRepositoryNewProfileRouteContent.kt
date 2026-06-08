@@ -23,6 +23,14 @@ data class NewProfileCreateRequest(
   val source: String = "",
 )
 
+internal sealed interface NewProfileQrScanAction {
+  data class CreateProfile(val request: NewProfileCreateRequest) : NewProfileQrScanAction
+
+  data class ShowMessage(val message: String) : NewProfileQrScanAction
+
+  data object Ignore : NewProfileQrScanAction
+}
+
 @Composable
 fun ProfileRepositoryNewProfileRouteContent(
   profileRepository: ProfileRepository,
@@ -98,6 +106,38 @@ internal fun newProfileCreateRequestFromQrAction(
     ProfileQrAction.Ignore,
     ProfileQrAction.ShowMissingPermission,
     ProfileQrAction.ShowScanError -> null
+  }
+}
+
+internal fun newProfileQrScanAction(
+  result: ProfileQrScanResult,
+  missingPermissionMessage: String,
+  scanErrorMessage: String,
+): NewProfileQrScanAction {
+  return newProfileQrScanAction(
+    action = profileQrAction(result),
+    missingPermissionMessage = missingPermissionMessage,
+    scanErrorMessage = scanErrorMessage,
+  )
+}
+
+internal fun newProfileQrScanAction(
+  action: ProfileQrAction,
+  missingPermissionMessage: String,
+  scanErrorMessage: String,
+): NewProfileQrScanAction {
+  return when (action) {
+    is ProfileQrAction.CreateUrlProfile ->
+      NewProfileQrScanAction.CreateProfile(
+        NewProfileCreateRequest(
+          type = Profile.Type.Url,
+          source = action.source,
+        )
+      )
+    ProfileQrAction.Ignore -> NewProfileQrScanAction.Ignore
+    ProfileQrAction.ShowMissingPermission ->
+      NewProfileQrScanAction.ShowMessage(missingPermissionMessage)
+    ProfileQrAction.ShowScanError -> NewProfileQrScanAction.ShowMessage(scanErrorMessage)
   }
 }
 
