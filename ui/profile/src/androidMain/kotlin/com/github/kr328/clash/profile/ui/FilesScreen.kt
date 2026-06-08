@@ -21,8 +21,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.grantPermissions
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
-import com.github.kr328.clash.glue.model.ConfigFile
 import com.github.kr328.clash.glue.remote.FilesClient
+import com.github.kr328.clash.glue.remote.FilesClientDocument
 import com.github.kr328.clash.glue.util.fileName
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -122,7 +122,7 @@ internal fun FilesScreen(
 private class AndroidProfileFilesDocumentClient(private val client: FilesClient) :
   ProfileFilesDocumentClient<Uri, Uri> {
   override suspend fun list(parentDocumentId: String): List<ProfileFilesDocument> {
-    return client.list(parentDocumentId).map(ConfigFile::toProfileFilesDocument)
+    return client.list(parentDocumentId).map(FilesClientDocument::toProfileFilesDocument)
   }
 
   override suspend fun renameDocument(documentId: String, name: String) {
@@ -146,7 +146,7 @@ private class AndroidProfileFilesDocumentClient(private val client: FilesClient)
   }
 }
 
-private fun ConfigFile.toProfileFilesDocument(): ProfileFilesDocument {
+private fun FilesClientDocument.toProfileFilesDocument(): ProfileFilesDocument {
   return profileFilesDocumentFromPlatformPayload(
     id = id,
     name = name,
