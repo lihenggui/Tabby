@@ -78,8 +78,8 @@ internal fun FilesScreen(
   DisposableEffect(lifecycleOwner, refreshEvents) {
     val observer = LifecycleEventObserver { _, event ->
       if (
-        profileFilesRefreshRequestedFromPlatformLifecycleEvent(
-          startEvent = event == Lifecycle.Event.ON_START
+        profileFilesRefreshRequestedFromPlatformStartEvent(
+          event = event.toProfileFilesPlatformStartEvent()
         )
       ) {
         refreshEvents.tryEmit(Unit)
@@ -155,3 +155,9 @@ private fun ConfigFile.toProfileFilesDocument(): ProfileFilesDocument {
     isDirectory = isDirectory,
   )
 }
+
+private fun Lifecycle.Event.toProfileFilesPlatformStartEvent(): ProfileFilesPlatformStartEvent =
+  when (this) {
+    Lifecycle.Event.ON_START -> ProfileFilesPlatformStartEvent.Start
+    else -> ProfileFilesPlatformStartEvent.Other
+  }
