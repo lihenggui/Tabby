@@ -165,20 +165,3 @@ internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderResult(
     sourceText = sourceText,
   )
 }
-
-internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderPayload(
-  resultAccepted: Boolean,
-  source: SourceT?,
-  name: String?,
-  sourceText: (SourceT) -> String,
-): NewProfileCreateRequest? {
-  return newProfileCreateRequestFromExternalProviderResult(
-    result =
-      newProfileExternalProviderResultFromPlatformPayload(
-        resultAccepted = resultAccepted,
-        source = source,
-        name = name,
-      ),
-    sourceText = sourceText,
-  )
-}

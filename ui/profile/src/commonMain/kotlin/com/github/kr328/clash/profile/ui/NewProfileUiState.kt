@@ -144,20 +144,6 @@ internal data class NewProfileExternalProviderResult<out SourceT : Any>(
   val name: String?,
 )
 
-internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload(
-  resultAccepted: Boolean,
-  source: SourceT?,
-  name: String?,
-): NewProfileExternalProviderResult<SourceT> {
-  val selectedSource = if (resultAccepted) source else null
-
-  return NewProfileExternalProviderResult(
-    resultAccepted = resultAccepted,
-    source = selectedSource,
-    name = if (selectedSource != null) name else null,
-  )
-}
-
 internal sealed interface NewProfileProviderSelectionAction<out T> {
   data class SelectProvider<T>(val provider: T) : NewProfileProviderSelectionAction<T>
 

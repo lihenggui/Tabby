@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -91,10 +92,8 @@ internal fun NewProfileScreen(
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
       val request =
-        newProfileCreateRequestFromExternalProviderPayload(
-          resultAccepted = result.resultCode == RESULT_OK,
-          source = result.data?.data,
-          name = result.data?.getStringExtra(Intents.EXTRA_NAME),
+        newProfileCreateRequestFromExternalProviderResult(
+          result = result.toNewProfileExternalProviderResult(),
           sourceText = Uri::toString,
         )
 
@@ -206,6 +205,18 @@ private val AndroidExternalProfileProvider.key: String
 
 private val AndroidExternalProfileProvider.hasDetail: Boolean
   get() = newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
+
+private fun ActivityResult.toNewProfileExternalProviderResult():
+  NewProfileExternalProviderResult<Uri> {
+  val resultAccepted = resultCode == RESULT_OK
+  val source = if (resultAccepted) data?.data else null
+
+  return NewProfileExternalProviderResult(
+    resultAccepted = resultAccepted,
+    source = source,
+    name = if (source != null) data?.getStringExtra(Intents.EXTRA_NAME) else null,
+  )
+}
 
 private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
   when (val action = newProfileDetailAction(packageName)) {

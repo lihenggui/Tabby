@@ -203,43 +203,4 @@ class NewProfileRouteContentTest {
       ),
     )
   }
-
-  @Test
-  fun externalProviderPayloadBuildsExternalProfileCreateRequest() {
-    assertEquals(
-      NewProfileCreateRequest(
-        type = Profile.Type.External,
-        name = "External profile",
-        source = "content://provider/profile.yaml",
-      ),
-      newProfileCreateRequestFromExternalProviderPayload(
-        resultAccepted = true,
-        source = "content://provider/profile.yaml",
-        name = "External profile",
-        sourceText = { it },
-      ),
-    )
-  }
-
-  @Test
-  fun externalProviderPayloadIgnoresRejectedOrMissingSourcePayloads() {
-    assertEquals(
-      null,
-      newProfileCreateRequestFromExternalProviderPayload(
-        resultAccepted = false,
-        source = "content://provider/profile.yaml",
-        name = "Ignored",
-        sourceText = { it },
-      ),
-    )
-    assertEquals(
-      null,
-      newProfileCreateRequestFromExternalProviderPayload<String>(
-        resultAccepted = true,
-        source = null,
-        name = "Ignored",
-        sourceText = { it },
-      ),
-    )
-  }
 }
