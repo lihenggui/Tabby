@@ -136,9 +136,10 @@ internal fun HomeScreen(
     started = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
     val observer = LifecycleEventObserver { _, event ->
       started =
-        homeStartedStateFromPlatformLifecycleEvent(
+        homeStartedStateFromStartStopEvent(
           currentStarted = started,
-          event = event.toHomePlatformStartStopEvent(),
+          isStartEvent = event == Lifecycle.Event.ON_START,
+          isStopEvent = event == Lifecycle.Event.ON_STOP,
         )
     }
 
@@ -249,13 +250,6 @@ private fun Broadcasts.Event.toHomeBroadcastEvent() =
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileUpdateFailed)
     Broadcasts.Event.ProfileLoaded ->
       homeBroadcastEventFromPlatformPayload(HomePlatformBroadcastEventKind.ProfileLoaded)
-  }
-
-private fun Lifecycle.Event.toHomePlatformStartStopEvent(): HomePlatformStartStopEvent =
-  when (this) {
-    Lifecycle.Event.ON_START -> HomePlatformStartStopEvent.Start
-    Lifecycle.Event.ON_STOP -> HomePlatformStartStopEvent.Stop
-    else -> HomePlatformStartStopEvent.Other
   }
 
 private fun Int.toHomeVpnPermissionPlatformResult(): HomeVpnPermissionPlatformResult =

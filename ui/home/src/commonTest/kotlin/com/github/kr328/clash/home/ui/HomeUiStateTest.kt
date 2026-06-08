@@ -267,33 +267,37 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun startedStateFromPlatformLifecycleEventStartsStopsAndKeepsExistingState() {
+  fun homeStartedStateFromStartStopEventStartsStopsAndKeepsExistingState() {
     assertEquals(
       true,
-      homeStartedStateFromPlatformLifecycleEvent(
+      homeStartedStateFromStartStopEvent(
         currentStarted = false,
-        event = HomePlatformStartStopEvent.Start,
+        isStartEvent = true,
+        isStopEvent = false,
       ),
     )
     assertEquals(
       false,
-      homeStartedStateFromPlatformLifecycleEvent(
+      homeStartedStateFromStartStopEvent(
         currentStarted = true,
-        event = HomePlatformStartStopEvent.Stop,
+        isStartEvent = false,
+        isStopEvent = true,
       ),
     )
     assertEquals(
       true,
-      homeStartedStateFromPlatformLifecycleEvent(
+      homeStartedStateFromStartStopEvent(
         currentStarted = true,
-        event = HomePlatformStartStopEvent.Other,
+        isStartEvent = false,
+        isStopEvent = false,
       ),
     )
     assertEquals(
       false,
-      homeStartedStateFromPlatformLifecycleEvent(
+      homeStartedStateFromStartStopEvent(
         currentStarted = false,
-        event = HomePlatformStartStopEvent.Other,
+        isStartEvent = false,
+        isStopEvent = false,
       ),
     )
   }
