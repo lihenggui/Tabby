@@ -202,6 +202,18 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun accessControlPersistRequestedFromPlatformLifecycleEventOnlyRequestsPersistOnStop() {
+    assertEquals(
+      true,
+      accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent = true),
+    )
+    assertEquals(
+      false,
+      accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent = false),
+    )
+  }
+
+  @Test
   fun mapsSystemAppFromPlatformFlags() {
     val systemAppFlag = 0b0100
 

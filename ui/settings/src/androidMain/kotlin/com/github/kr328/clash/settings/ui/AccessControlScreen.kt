@@ -83,7 +83,11 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
 
   DisposableEffect(lifecycleOwner, appContext, serviceStore) {
     val observer = LifecycleEventObserver { _, event ->
-      if (event == Lifecycle.Event.ON_STOP) {
+      if (
+        accessControlPersistRequestedFromPlatformLifecycleEvent(
+          stopEvent = event == Lifecycle.Event.ON_STOP
+        )
+      ) {
         Global.launch {
           appContext.persistAccessControlSelection(
             serviceStore = serviceStore,

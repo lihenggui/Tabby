@@ -87,6 +87,10 @@ internal fun accessControlClipboardImportAction(
   }
 }
 
+internal fun accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent: Boolean): Boolean {
+  return stopEvent
+}
+
 internal fun <T> AccessControlUiState<T>.withAccessControlApps(
   apps: List<T>
 ): AccessControlUiState<T> {
