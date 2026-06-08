@@ -57,11 +57,6 @@ internal sealed interface PropertiesAutoSaveAction {
   data object Ignore : PropertiesAutoSaveAction
 }
 
-internal enum class PropertiesPlatformStopEvent {
-  Stop,
-  Other,
-}
-
 internal sealed interface PropertiesEventState {
   data object Idle : PropertiesEventState
 
@@ -191,13 +186,8 @@ internal fun propertiesAutoSaveAction(
   }
 }
 
-internal fun propertiesAutoSaveRequestedFromPlatformStopEvent(
-  event: PropertiesPlatformStopEvent
-): Boolean {
-  return when (event) {
-    PropertiesPlatformStopEvent.Stop -> true
-    PropertiesPlatformStopEvent.Other -> false
-  }
+internal fun propertiesAutoSaveRequestedFromStopEvent(isStopEvent: Boolean): Boolean {
+  return isStopEvent
 }
 
 internal fun propertiesAutoSaveUiState(

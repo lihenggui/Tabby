@@ -287,15 +287,9 @@ class PropertiesStateMapperTest {
   }
 
   @Test
-  fun propertiesAutoSaveRequestedFromPlatformStopEventOnlyRequestsAutoSaveOnStop() {
-    assertEquals(
-      true,
-      propertiesAutoSaveRequestedFromPlatformStopEvent(event = PropertiesPlatformStopEvent.Stop),
-    )
-    assertEquals(
-      false,
-      propertiesAutoSaveRequestedFromPlatformStopEvent(event = PropertiesPlatformStopEvent.Other),
-    )
+  fun propertiesAutoSaveRequestedFromStopEventOnlyRequestsAutoSaveOnStop() {
+    assertEquals(true, propertiesAutoSaveRequestedFromStopEvent(isStopEvent = true))
+    assertEquals(false, propertiesAutoSaveRequestedFromStopEvent(isStopEvent = false))
   }
 
   @Test

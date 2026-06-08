@@ -37,9 +37,7 @@ internal fun PropertiesScreen(
   DisposableEffect(lifecycleOwner, autoSaveEvents) {
     val observer = LifecycleEventObserver { _, event ->
       if (
-        propertiesAutoSaveRequestedFromPlatformStopEvent(
-          event = event.toPropertiesPlatformStopEvent()
-        )
+        propertiesAutoSaveRequestedFromStopEvent(isStopEvent = event == Lifecycle.Event.ON_STOP)
       ) {
         autoSaveEvents.tryEmit(Unit)
       }
@@ -62,12 +60,6 @@ internal fun PropertiesScreen(
     onActionError = { cause -> Log.e("Profile properties action failed: ${cause.message}", cause) },
   )
 }
-
-private fun Lifecycle.Event.toPropertiesPlatformStopEvent(): PropertiesPlatformStopEvent =
-  when (this) {
-    Lifecycle.Event.ON_STOP -> PropertiesPlatformStopEvent.Stop
-    else -> PropertiesPlatformStopEvent.Other
-  }
 
 @PreviewWrapper(TabbyThemeWrapper::class)
 @PreviewTabby
