@@ -2,8 +2,8 @@ package com.github.kr328.clash.crash.model
 
 import android.app.Application
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.crash.ui.AppCrashLogDumpResult
-import com.github.kr328.clash.crash.ui.appCrashLogDumpResult
+import com.github.kr328.clash.crash.ui.AppCrashLogLoadAction
+import com.github.kr328.clash.crash.ui.appCrashLogLoadAction
 import com.github.kr328.clash.crash.ui.formatAppCrashLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,9 +21,9 @@ internal class AndroidCrashLogRepository(private val application: Application) :
       val result = formatAppCrashLog(process.inputStream.bufferedReader().readLines())
       val exitCode = process.waitFor()
 
-      when (val dumpResult = appCrashLogDumpResult(exitCode, result)) {
-        is AppCrashLogDumpResult.UseLog -> dumpResult.log
-        is AppCrashLogDumpResult.LogcatFailed -> error(dumpResult.message)
+      when (val action = appCrashLogLoadAction(exitCode, result)) {
+        is AppCrashLogLoadAction.UseLog -> action.log
+        is AppCrashLogLoadAction.Fail -> error(action.message)
       }
     }
 }

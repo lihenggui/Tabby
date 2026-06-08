@@ -50,6 +50,34 @@ class AppCrashedLogFormatterTest {
   }
 
   @Test
+  fun loadActionUsesLogForSuccessfulLogcatExit() {
+    assertEquals(
+      AppCrashLogLoadAction.UseLog("AndroidRuntime: crash"),
+      appCrashLogLoadAction(exitCode = 0, log = "AndroidRuntime: crash"),
+    )
+  }
+
+  @Test
+  fun loadActionReportsFailedLogcatExit() {
+    assertEquals(
+      AppCrashLogLoadAction.Fail("logcat exited with code 2: AndroidRuntime: crash"),
+      appCrashLogLoadAction(exitCode = 2, log = "AndroidRuntime: crash"),
+    )
+  }
+
+  @Test
+  fun loadActionMapsExistingDumpResult() {
+    assertEquals(
+      AppCrashLogLoadAction.UseLog("Tabby: marker"),
+      appCrashLogLoadAction(AppCrashLogDumpResult.UseLog("Tabby: marker")),
+    )
+    assertEquals(
+      AppCrashLogLoadAction.Fail("logcat exited with code 1:"),
+      appCrashLogLoadAction(AppCrashLogDumpResult.LogcatFailed("logcat exited with code 1:")),
+    )
+  }
+
+  @Test
   fun loadFailureMessageIncludesCause() {
     assertEquals(
       "Failed to load crash logs: java.lang.IllegalStateException: logcat failed",
