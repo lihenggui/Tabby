@@ -116,6 +116,16 @@ internal fun logcatExportResultFromPlatformPayload(
   return LogcatExportResult(destinationSelected = destinationSelected)
 }
 
+internal fun logcatExportActionFromPlatformDestination(
+  currentFile: LogFile?,
+  destination: Any?,
+): LogcatExportAction {
+  return logcatExportAction(
+    currentFile = currentFile,
+    result = logcatExportResultFromPlatformPayload(destinationSelected = destination != null),
+  )
+}
+
 internal fun <ServiceT, ConnectionT> logcatServiceBindingFromPlatformPayload(
   service: ServiceT,
   connection: ConnectionT,

@@ -327,6 +327,33 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatExportPlatformDestinationExportsCurrentFileOnlyWhenDestinationExists() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportAction.ExportFile(file),
+      logcatExportActionFromPlatformDestination(
+        currentFile = file,
+        destination = "content://logs/export.txt",
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportActionFromPlatformDestination(
+        currentFile = file,
+        destination = null,
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportActionFromPlatformDestination(
+        currentFile = null,
+        destination = "content://logs/export.txt",
+      ),
+    )
+  }
+
+  @Test
   fun logcatExportResultEventStateShowsSuccessOrFallbackErrorMessage() {
     assertEquals(
       LogcatEventState.ShowMessage("exported"),

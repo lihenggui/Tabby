@@ -169,11 +169,7 @@ internal fun LogcatScreen(
 
   val exportLauncher =
     rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
-      val action =
-        logcatExportAction(
-          currentFile,
-          logcatExportResultFromPlatformPayload(destinationSelected = uri != null),
-        )
+      val action = logcatExportActionFromPlatformDestination(currentFile, uri)
 
       if (action is LogcatExportAction.ExportFile) {
         val destination = checkNotNull(uri)
