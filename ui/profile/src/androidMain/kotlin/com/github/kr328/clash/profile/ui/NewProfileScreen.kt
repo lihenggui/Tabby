@@ -29,7 +29,6 @@ import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
 import com.github.kr328.clash.profile.R
-import com.github.kr328.clash.profile.model.ProfileProvider
 import com.github.kr328.clash.ui.theme.tabbyDimens
 import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanQRCode
@@ -39,6 +38,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private typealias AndroidExternalProfileProvider =
+  NewProfileExternalProviderPlatformPayload<Drawable, Intent>
 
 @Composable
 internal fun NewProfileScreen(
@@ -50,7 +52,7 @@ internal fun NewProfileScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val createRequests = remember { MutableSharedFlow<NewProfileCreateRequest>() }
-  var externalProviders by remember { mutableStateOf(emptyList<ProfileProvider.External>()) }
+  var externalProviders by remember { mutableStateOf(emptyList<AndroidExternalProfileProvider>()) }
   val externalProvidersByKey =
     remember(externalProviders) { externalProviders.associateBy { it.key } }
   val missingPermissionMessage = androidStringResource(R.string.import_from_qr_no_permission)
@@ -111,7 +113,7 @@ internal fun NewProfileScreen(
     onLaunchQrScanner = { qrLauncher.launch(null) },
     onCreateExternal = { provider ->
       externalProvidersByKey[provider.key]?.let { externalProvider ->
-        externalProviderLauncher.launch(externalProvider.intent)
+        externalProviderLauncher.launch(externalProvider.launchTarget)
       }
     },
     onDetailExternal = { provider ->
@@ -121,7 +123,9 @@ internal fun NewProfileScreen(
   )
 }
 
-private suspend fun loadExternalProfileProviders(context: Context): List<ProfileProvider.External> {
+private suspend fun loadExternalProfileProviders(
+  context: Context
+): List<AndroidExternalProfileProvider> {
   val appContext = context.applicationContext
   val packageManager = appContext.packageManager
 
@@ -135,21 +139,22 @@ private suspend fun loadExternalProfileProviders(context: Context): List<Profile
         Intent(Intents.ACTION_PROVIDE_URL)
           .setComponent(ComponentName(activity.packageName, activity.name))
 
-      ProfileProvider.External(name.toString(), summary.toString(), icon, intent)
+      newProfileExternalProviderFromPlatformPayload(
+        componentKey = intent.component?.flattenToString(),
+        packageName = intent.component?.packageName,
+        name = name.toString(),
+        summary = summary.toString(),
+        icon = icon,
+        launchTarget = intent,
+      )
     }
   }
 }
 
 @Composable
-private fun ProfileProvider.External.toNewProfileRouteExternalProvider():
+private fun AndroidExternalProfileProvider.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
-  val presentation =
-    newProfileExternalProviderPresentationFromPlatformPayload(
-      componentKey = intent.component?.flattenToString(),
-      packageName = intent.component?.packageName,
-      name = name,
-      summary = summary,
-    )
+  val presentation = newProfileExternalProviderPresentationFromPlatformPayload(this)
 
   return NewProfileRouteExternalProvider(
     key = presentation.key,
@@ -161,12 +166,11 @@ private fun ProfileProvider.External.toNewProfileRouteExternalProvider():
 }
 
 @Composable
-private fun rememberProfileProviderPainter(icon: Any?): Painter? {
+private fun rememberProfileProviderPainter(iconDrawable: Drawable?): Painter? {
   val density = LocalDensity.current
   val headerSize = tabbyDimens.itemHeaderComponentSize
   val iconSizePx = with(density) { headerSize.toPx().roundToInt() }
 
-  val iconDrawable = icon as? Drawable
   return remember(iconDrawable, iconSizePx) {
     iconDrawable
       ?.toBitmap(width = iconSizePx, height = iconSizePx)
@@ -191,18 +195,13 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
   }
 }
 
-private val ProfileProvider.External.key: String
-  get() =
-    newProfileExternalProviderPresentationFromPlatformPayload(
-        componentKey = intent.component?.flattenToString(),
-        packageName = intent.component?.packageName,
-        name = name,
-        summary = summary,
-      )
-      .key
+private val NewProfileExternalProviderPlatformPayload<*, *>.key: String
+  get() = newProfileExternalProviderPresentationFromPlatformPayload(this).key
 
-private fun ProfileProvider.External.openAppSettings(startActivity: (Intent) -> Unit) {
-  when (val action = newProfileDetailAction(intent.component?.packageName)) {
+private fun NewProfileExternalProviderPlatformPayload<*, *>.openAppSettings(
+  startActivity: (Intent) -> Unit
+) {
+  when (val action = newProfileDetailAction(packageName)) {
     is NewProfileDetailAction.OpenAppSettings ->
       startActivity(
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)

@@ -421,6 +421,51 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun externalProviderPlatformPayloadKeepsOpaquePlatformValues() {
+    assertEquals(
+      NewProfileExternalProviderPlatformPayload(
+        componentKey = "com.example.provider/.ProviderActivity",
+        packageName = "com.example.provider",
+        name = "Example Provider",
+        summary = "Import from Example",
+        icon = "provider-icon",
+        launchTarget = "provider-intent",
+      ),
+      newProfileExternalProviderFromPlatformPayload(
+        componentKey = "com.example.provider/.ProviderActivity",
+        packageName = "com.example.provider",
+        name = "Example Provider",
+        summary = "Import from Example",
+        icon = "provider-icon",
+        launchTarget = "provider-intent",
+      ),
+    )
+  }
+
+  @Test
+  fun externalProviderPlatformPayloadMapsToPresentation() {
+    val provider =
+      newProfileExternalProviderFromPlatformPayload(
+        componentKey = "com.example.provider/.ProviderActivity",
+        packageName = "com.example.provider",
+        name = "Example Provider",
+        summary = "Import from Example",
+        icon = "provider-icon",
+        launchTarget = "provider-intent",
+      )
+
+    assertEquals(
+      NewProfileExternalProviderPresentation(
+        key = "com.example.provider/.ProviderActivity",
+        name = "Example Provider",
+        summary = "Import from Example",
+        hasDetail = true,
+      ),
+      newProfileExternalProviderPresentationFromPlatformPayload(provider),
+    )
+  }
+
+  @Test
   fun newProfileExternalProviderPlatformPayloadKeepsAcceptedSourceMetadata() {
     assertEquals(
       NewProfileExternalProviderResult(
