@@ -381,20 +381,14 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeVpnPermissionResultFromPlatformResultCodeMapsGrantedCodeOnly() {
+  fun homeVpnPermissionResultFromPlatformResultMapsPlatformResult() {
     assertEquals(
       HomeVpnPermissionResult.Granted,
-      homeVpnPermissionResultFromPlatformResultCode(
-        resultCode = 10,
-        grantedResultCode = 10,
-      ),
+      homeVpnPermissionResultFromPlatformResult(HomeVpnPermissionPlatformResult.Granted),
     )
     assertEquals(
       HomeVpnPermissionResult.Denied,
-      homeVpnPermissionResultFromPlatformResultCode(
-        resultCode = 20,
-        grantedResultCode = 10,
-      ),
+      homeVpnPermissionResultFromPlatformResult(HomeVpnPermissionPlatformResult.Denied),
     )
   }
 
@@ -411,20 +405,14 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeVpnPermissionResultActionFromPlatformResultCodeStartsEngineOnlyForGrantedCode() {
+  fun homeVpnPermissionResultActionFromPlatformResultStartsEngineOnlyForGrantedResult() {
     assertEquals(
       HomeVpnPermissionResultAction.StartEngine,
-      homeVpnPermissionResultActionFromPlatformResultCode(
-        resultCode = 10,
-        grantedResultCode = 10,
-      ),
+      homeVpnPermissionResultActionFromPlatformResult(HomeVpnPermissionPlatformResult.Granted),
     )
     assertEquals(
       HomeVpnPermissionResultAction.Ignore,
-      homeVpnPermissionResultActionFromPlatformResultCode(
-        resultCode = 20,
-        grantedResultCode = 10,
-      ),
+      homeVpnPermissionResultActionFromPlatformResult(HomeVpnPermissionPlatformResult.Denied),
     )
   }
 
