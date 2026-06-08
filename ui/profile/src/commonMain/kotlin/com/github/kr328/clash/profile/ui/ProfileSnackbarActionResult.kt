@@ -8,17 +8,8 @@ internal enum class ProfileSnackbarActionResult {
 }
 
 internal fun SnackbarResult.toProfileSnackbarActionResult(): ProfileSnackbarActionResult {
-  return profileSnackbarActionResultFromPlatformActionPerformed(
-    actionPerformed = this == SnackbarResult.ActionPerformed
-  )
-}
-
-internal fun profileSnackbarActionResultFromPlatformActionPerformed(
-  actionPerformed: Boolean
-): ProfileSnackbarActionResult {
-  return if (actionPerformed) {
-    ProfileSnackbarActionResult.ActionPerformed
-  } else {
-    ProfileSnackbarActionResult.Dismissed
+  return when (this) {
+    SnackbarResult.ActionPerformed -> ProfileSnackbarActionResult.ActionPerformed
+    SnackbarResult.Dismissed -> ProfileSnackbarActionResult.Dismissed
   }
 }

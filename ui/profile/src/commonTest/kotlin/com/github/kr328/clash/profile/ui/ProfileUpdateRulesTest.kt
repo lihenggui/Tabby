@@ -123,18 +123,6 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
-  fun profileSnackbarActionResultFromPlatformActionPerformedMapsBooleanResult() {
-    assertEquals(
-      ProfileSnackbarActionResult.ActionPerformed,
-      profileSnackbarActionResultFromPlatformActionPerformed(actionPerformed = true),
-    )
-    assertEquals(
-      ProfileSnackbarActionResult.Dismissed,
-      profileSnackbarActionResultFromPlatformActionPerformed(actionPerformed = false),
-    )
-  }
-
-  @Test
   fun snackbarResultMapsToProfileSnackbarActionResult() {
     assertEquals(
       ProfileSnackbarActionResult.ActionPerformed,
