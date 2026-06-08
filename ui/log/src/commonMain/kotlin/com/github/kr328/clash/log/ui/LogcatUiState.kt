@@ -111,19 +111,17 @@ internal data class LogcatCopyMessagePayload(
   val text: String,
 )
 
-internal fun logcatExportResultFromPlatformPayload(
-  destinationSelected: Boolean
-): LogcatExportResult {
+internal fun logcatExportResult(destinationSelected: Boolean): LogcatExportResult {
   return LogcatExportResult(destinationSelected = destinationSelected)
 }
 
-internal fun logcatExportActionFromPlatformDestination(
+internal fun logcatExportActionFromDestinationSelection(
   currentFile: LogFile?,
-  destination: Any?,
+  destinationSelected: Boolean,
 ): LogcatExportAction {
   return logcatExportAction(
     currentFile = currentFile,
-    result = logcatExportResultFromPlatformPayload(destinationSelected = destination != null),
+    result = logcatExportResult(destinationSelected = destinationSelected),
   )
 }
 

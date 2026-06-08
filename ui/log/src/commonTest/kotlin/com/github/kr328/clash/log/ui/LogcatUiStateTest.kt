@@ -261,14 +261,14 @@ class LogcatUiStateTest {
   }
 
   @Test
-  fun logcatExportPlatformPayloadMapsDestinationSelection() {
+  fun logcatExportResultMapsDestinationSelection() {
     assertEquals(
       LogcatExportResult(destinationSelected = true),
-      logcatExportResultFromPlatformPayload(destinationSelected = true),
+      logcatExportResult(destinationSelected = true),
     )
     assertEquals(
       LogcatExportResult(destinationSelected = false),
-      logcatExportResultFromPlatformPayload(destinationSelected = false),
+      logcatExportResult(destinationSelected = false),
     )
   }
 
@@ -316,28 +316,28 @@ class LogcatUiStateTest {
   }
 
   @Test
-  fun logcatExportPlatformDestinationExportsCurrentFileOnlyWhenDestinationExists() {
+  fun logcatExportDestinationSelectionExportsCurrentFileOnlyWhenDestinationSelected() {
     val file = LogFile("clash-1234.log", 1234)
 
     assertEquals(
       LogcatExportAction.ExportFile(file),
-      logcatExportActionFromPlatformDestination(
+      logcatExportActionFromDestinationSelection(
         currentFile = file,
-        destination = "content://logs/export.txt",
+        destinationSelected = true,
       ),
     )
     assertEquals(
       LogcatExportAction.Ignore,
-      logcatExportActionFromPlatformDestination(
+      logcatExportActionFromDestinationSelection(
         currentFile = file,
-        destination = null,
+        destinationSelected = false,
       ),
     )
     assertEquals(
       LogcatExportAction.Ignore,
-      logcatExportActionFromPlatformDestination(
+      logcatExportActionFromDestinationSelection(
         currentFile = null,
-        destination = "content://logs/export.txt",
+        destinationSelected = true,
       ),
     )
   }
