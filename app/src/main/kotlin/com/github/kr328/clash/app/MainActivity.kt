@@ -57,7 +57,10 @@ class MainActivity : ComponentActivity() {
       finish()
       return
     }
-    if (savedInstanceState == null) enqueueExternalAppIntent(intent)
+    when (tabbyInitialExternalAppQueueAction(savedStateRestored = savedInstanceState != null)) {
+      TabbyInitialExternalAppQueueAction.Enqueue -> enqueueExternalAppIntent(intent)
+      TabbyInitialExternalAppQueueAction.Ignore -> Unit
+    }
 
     setContent {
       val backStack = rememberNavBackStackBuilder { addAll(tabbyInitialBackStack()) }

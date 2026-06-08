@@ -158,4 +158,20 @@ class TabbyExternalAppActionTest {
       tabbyExternalAppActionPlan(TabbyExternalAppAction.OpenApkBroken),
     )
   }
+
+  @Test
+  fun initialExternalAppQueueActionEnqueuesFreshLaunchPayload() {
+    assertEquals(
+      TabbyInitialExternalAppQueueAction.Enqueue,
+      tabbyInitialExternalAppQueueAction(savedStateRestored = false),
+    )
+  }
+
+  @Test
+  fun initialExternalAppQueueActionIgnoresRestoredLaunchPayload() {
+    assertEquals(
+      TabbyInitialExternalAppQueueAction.Ignore,
+      tabbyInitialExternalAppQueueAction(savedStateRestored = true),
+    )
+  }
 }

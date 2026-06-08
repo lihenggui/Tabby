@@ -22,6 +22,11 @@ sealed interface TabbyExternalAppActionPlan {
   data object Ignore : TabbyExternalAppActionPlan
 }
 
+enum class TabbyInitialExternalAppQueueAction {
+  Enqueue,
+  Ignore,
+}
+
 fun tabbyExternalAppActionFromString(
   action: String?,
   requestAvailable: Boolean,
@@ -61,3 +66,13 @@ fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction?): TabbyExternalAp
       TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenApkBroken)
     null -> TabbyExternalAppActionPlan.Ignore
   }
+
+fun tabbyInitialExternalAppQueueAction(
+  savedStateRestored: Boolean
+): TabbyInitialExternalAppQueueAction {
+  return if (savedStateRestored) {
+    TabbyInitialExternalAppQueueAction.Ignore
+  } else {
+    TabbyInitialExternalAppQueueAction.Enqueue
+  }
+}
