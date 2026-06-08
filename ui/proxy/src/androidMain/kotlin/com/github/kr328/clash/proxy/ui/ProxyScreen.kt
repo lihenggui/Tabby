@@ -43,13 +43,22 @@ internal fun ProxyScreen(
 }
 
 private fun Broadcasts.Event.toProfileLoadedSignal(): Unit? {
-  return when (this) {
-    Broadcasts.Event.ProfileLoaded -> Unit
-    Broadcasts.Event.ServiceRecreated,
-    Broadcasts.Event.Started,
-    Broadcasts.Event.ProfileChanged,
-    is Broadcasts.Event.Stopped,
-    is Broadcasts.Event.ProfileUpdateCompleted,
-    is Broadcasts.Event.ProfileUpdateFailed -> null
+  val event =
+    proxyBroadcastEventKindFromPlatformPayload(
+      profileLoaded =
+        when (this) {
+          Broadcasts.Event.ProfileLoaded -> true
+          Broadcasts.Event.ServiceRecreated,
+          Broadcasts.Event.Started,
+          Broadcasts.Event.ProfileChanged,
+          is Broadcasts.Event.Stopped,
+          is Broadcasts.Event.ProfileUpdateCompleted,
+          is Broadcasts.Event.ProfileUpdateFailed -> false
+        }
+    )
+
+  return when (event) {
+    ProxyBroadcastEventKind.ProfileLoaded -> Unit
+    ProxyBroadcastEventKind.Other -> null
   }
 }
