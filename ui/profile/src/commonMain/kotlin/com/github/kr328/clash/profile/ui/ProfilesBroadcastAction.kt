@@ -12,6 +12,16 @@ enum class ProfilesBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal enum class ProfilesPlatformBroadcastEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 data class ProfilesBroadcastEvent(
   val kind: ProfilesBroadcastEventKind,
   val uuid: Uuid? = null,
@@ -19,20 +29,34 @@ data class ProfilesBroadcastEvent(
 )
 
 internal fun profilesBroadcastEventFromPlatformPayload(
-  kind: ProfilesBroadcastEventKind,
+  kind: ProfilesPlatformBroadcastEventKind,
   uuid: Uuid? = null,
   reason: String? = null,
 ): ProfilesBroadcastEvent {
-  return when (kind) {
+  val eventKind =
+    when (kind) {
+      ProfilesPlatformBroadcastEventKind.ServiceRecreated ->
+        ProfilesBroadcastEventKind.ServiceRecreated
+      ProfilesPlatformBroadcastEventKind.Started -> ProfilesBroadcastEventKind.Started
+      ProfilesPlatformBroadcastEventKind.Stopped -> ProfilesBroadcastEventKind.Stopped
+      ProfilesPlatformBroadcastEventKind.ProfileChanged -> ProfilesBroadcastEventKind.ProfileChanged
+      ProfilesPlatformBroadcastEventKind.ProfileUpdateCompleted ->
+        ProfilesBroadcastEventKind.ProfileUpdateCompleted
+      ProfilesPlatformBroadcastEventKind.ProfileUpdateFailed ->
+        ProfilesBroadcastEventKind.ProfileUpdateFailed
+      ProfilesPlatformBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEventKind.ProfileLoaded
+    }
+
+  return when (eventKind) {
     ProfilesBroadcastEventKind.ProfileUpdateCompleted ->
-      ProfilesBroadcastEvent(kind = kind, uuid = uuid)
+      ProfilesBroadcastEvent(kind = eventKind, uuid = uuid)
     ProfilesBroadcastEventKind.ProfileUpdateFailed ->
-      ProfilesBroadcastEvent(kind = kind, uuid = uuid, reason = reason)
+      ProfilesBroadcastEvent(kind = eventKind, uuid = uuid, reason = reason)
     ProfilesBroadcastEventKind.ServiceRecreated,
     ProfilesBroadcastEventKind.Started,
     ProfilesBroadcastEventKind.Stopped,
     ProfilesBroadcastEventKind.ProfileChanged,
-    ProfilesBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEvent(kind)
+    ProfilesBroadcastEventKind.ProfileLoaded -> ProfilesBroadcastEvent(eventKind)
   }
 }
 

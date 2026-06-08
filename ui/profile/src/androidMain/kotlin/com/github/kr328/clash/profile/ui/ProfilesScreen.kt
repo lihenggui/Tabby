@@ -82,24 +82,24 @@ internal fun ProfilesScreen(
 private fun Broadcasts.Event.toProfilesEvent(): ProfilesBroadcastEvent =
   when (this) {
     Broadcasts.Event.ServiceRecreated ->
-      profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ServiceRecreated)
+      profilesBroadcastEventFromPlatformPayload(ProfilesPlatformBroadcastEventKind.ServiceRecreated)
     Broadcasts.Event.Started ->
-      profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.Started)
+      profilesBroadcastEventFromPlatformPayload(ProfilesPlatformBroadcastEventKind.Started)
     is Broadcasts.Event.Stopped ->
-      profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.Stopped)
+      profilesBroadcastEventFromPlatformPayload(ProfilesPlatformBroadcastEventKind.Stopped)
     Broadcasts.Event.ProfileChanged ->
-      profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ProfileChanged)
+      profilesBroadcastEventFromPlatformPayload(ProfilesPlatformBroadcastEventKind.ProfileChanged)
     is Broadcasts.Event.ProfileUpdateCompleted ->
       profilesBroadcastEventFromPlatformPayload(
-        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        kind = ProfilesPlatformBroadcastEventKind.ProfileUpdateCompleted,
         uuid = uuid,
       )
     is Broadcasts.Event.ProfileUpdateFailed ->
       profilesBroadcastEventFromPlatformPayload(
-        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        kind = ProfilesPlatformBroadcastEventKind.ProfileUpdateFailed,
         uuid = uuid,
         reason = reason,
       )
     Broadcasts.Event.ProfileLoaded ->
-      profilesBroadcastEventFromPlatformPayload(ProfilesBroadcastEventKind.ProfileLoaded)
+      profilesBroadcastEventFromPlatformPayload(ProfilesPlatformBroadcastEventKind.ProfileLoaded)
   }
