@@ -122,7 +122,7 @@ class AccessControlSelectionTest {
         hasPrimaryClipItem = true,
         clipboardText = "com.example.alpha",
       ),
-      accessControlClipboardImportPayloadFromPlatformPayload(
+      accessControlClipboardImportPayload(
         hasPrimaryClipItem = true,
         clipboardText = "com.example.alpha",
       ),
@@ -132,7 +132,7 @@ class AccessControlSelectionTest {
         hasPrimaryClipItem = false,
         clipboardText = null,
       ),
-      accessControlClipboardImportPayloadFromPlatformPayload(
+      accessControlClipboardImportPayload(
         hasPrimaryClipItem = false,
         clipboardText = "ignored",
       ),
@@ -140,43 +140,10 @@ class AccessControlSelectionTest {
   }
 
   @Test
-  fun clipboardPlatformItemActionReadsFirstItemOnlyWhenItemCountIsPositive() {
-    assertEquals(
-      AccessControlClipboardPlatformItemAction.Ignore,
-      accessControlClipboardPlatformItemAction(null),
-    )
-    assertEquals(
-      AccessControlClipboardPlatformItemAction.Ignore,
-      accessControlClipboardPlatformItemAction(0),
-    )
-    assertEquals(
-      AccessControlClipboardPlatformItemAction.ReadFirstItem,
-      accessControlClipboardPlatformItemAction(1),
-    )
-  }
-
-  @Test
-  fun clipboardImportPayloadMapsPlatformItemAction() {
-    assertEquals(
-      AccessControlClipboardImportPayload(
-        hasPrimaryClipItem = true,
-        clipboardText = "com.example.alpha",
-      ),
-      accessControlClipboardImportPayloadFromPlatformItemAction(
-        action = AccessControlClipboardPlatformItemAction.ReadFirstItem,
-        clipboardText = "com.example.alpha",
-      ),
-    )
-    assertEquals(
-      AccessControlClipboardImportPayload(
-        hasPrimaryClipItem = false,
-        clipboardText = null,
-      ),
-      accessControlClipboardImportPayloadFromPlatformItemAction(
-        action = AccessControlClipboardPlatformItemAction.Ignore,
-        clipboardText = "ignored",
-      ),
-    )
+  fun clipboardHasPrimaryClipItemOnlyWhenItemCountIsPositive() {
+    assertEquals(false, accessControlClipboardHasPrimaryClipItem(null))
+    assertEquals(false, accessControlClipboardHasPrimaryClipItem(0))
+    assertEquals(true, accessControlClipboardHasPrimaryClipItem(1))
   }
 
   @Test
@@ -202,19 +169,9 @@ class AccessControlSelectionTest {
   }
 
   @Test
-  fun accessControlPersistRequestedFromPlatformStopEventOnlyRequestsPersistOnStop() {
-    assertEquals(
-      true,
-      accessControlPersistRequestedFromPlatformStopEvent(
-        event = AccessControlPlatformStopEvent.Stop
-      ),
-    )
-    assertEquals(
-      false,
-      accessControlPersistRequestedFromPlatformStopEvent(
-        event = AccessControlPlatformStopEvent.Other
-      ),
-    )
+  fun accessControlPersistRequestedFromStopEventOnlyRequestsPersistOnStop() {
+    assertEquals(true, accessControlPersistRequestedFromStopEvent(isStopEvent = true))
+    assertEquals(false, accessControlPersistRequestedFromStopEvent(isStopEvent = false))
   }
 
   @Test

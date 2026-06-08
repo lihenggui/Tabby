@@ -23,16 +23,6 @@ internal sealed interface AccessControlClipboardImportAction {
   data object Ignore : AccessControlClipboardImportAction
 }
 
-internal enum class AccessControlClipboardPlatformItemAction {
-  ReadFirstItem,
-  Ignore,
-}
-
-internal enum class AccessControlPlatformStopEvent {
-  Stop,
-  Other,
-}
-
 internal fun <T> accessControlInitialUiState(
   selected: Set<String> = emptySet(),
   sort: AccessControlSort,
@@ -52,33 +42,17 @@ internal fun <T> accessControlInitialUiState(
   )
 }
 
-internal fun accessControlClipboardPlatformItemAction(
-  primaryClipItemCount: Int?
-): AccessControlClipboardPlatformItemAction {
-  return if (primaryClipItemCount != null && primaryClipItemCount > 0) {
-    AccessControlClipboardPlatformItemAction.ReadFirstItem
-  } else {
-    AccessControlClipboardPlatformItemAction.Ignore
-  }
+internal fun accessControlClipboardHasPrimaryClipItem(primaryClipItemCount: Int?): Boolean {
+  return primaryClipItemCount != null && primaryClipItemCount > 0
 }
 
-internal fun accessControlClipboardImportPayloadFromPlatformPayload(
+internal fun accessControlClipboardImportPayload(
   hasPrimaryClipItem: Boolean,
   clipboardText: String?,
 ): AccessControlClipboardImportPayload {
   return AccessControlClipboardImportPayload(
     hasPrimaryClipItem = hasPrimaryClipItem,
     clipboardText = if (hasPrimaryClipItem) clipboardText else null,
-  )
-}
-
-internal fun accessControlClipboardImportPayloadFromPlatformItemAction(
-  action: AccessControlClipboardPlatformItemAction,
-  clipboardText: String?,
-): AccessControlClipboardImportPayload {
-  return accessControlClipboardImportPayloadFromPlatformPayload(
-    hasPrimaryClipItem = action == AccessControlClipboardPlatformItemAction.ReadFirstItem,
-    clipboardText = clipboardText,
   )
 }
 
@@ -92,13 +66,8 @@ internal fun accessControlClipboardImportAction(
   }
 }
 
-internal fun accessControlPersistRequestedFromPlatformStopEvent(
-  event: AccessControlPlatformStopEvent
-): Boolean {
-  return when (event) {
-    AccessControlPlatformStopEvent.Stop -> true
-    AccessControlPlatformStopEvent.Other -> false
-  }
+internal fun accessControlPersistRequestedFromStopEvent(isStopEvent: Boolean): Boolean {
+  return isStopEvent
 }
 
 internal fun <T> AccessControlUiState<T>.withAccessControlApps(

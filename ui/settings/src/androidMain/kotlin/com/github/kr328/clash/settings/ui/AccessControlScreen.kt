@@ -84,9 +84,7 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
   DisposableEffect(lifecycleOwner, appContext, serviceStore) {
     val observer = LifecycleEventObserver { _, event ->
       if (
-        accessControlPersistRequestedFromPlatformStopEvent(
-          event = event.toAccessControlPlatformStopEvent()
-        )
+        accessControlPersistRequestedFromStopEvent(isStopEvent = event == Lifecycle.Event.ON_STOP)
       ) {
         Global.launch {
           appContext.persistAccessControlSelection(
@@ -242,15 +240,11 @@ private suspend fun Context.persistAccessControlSelection(
 private fun Context.accessControlClipboardImportPayload(): AccessControlClipboardImportPayload {
   val clipboard = getSystemService<ClipboardManager>()
   val data = clipboard?.primaryClip
-  val itemAction = accessControlClipboardPlatformItemAction(data?.itemCount)
-  val clipboardText =
-    when (itemAction) {
-      AccessControlClipboardPlatformItemAction.ReadFirstItem -> data?.getItemAt(0)?.text?.toString()
-      AccessControlClipboardPlatformItemAction.Ignore -> null
-    }
+  val hasPrimaryClipItem = accessControlClipboardHasPrimaryClipItem(data?.itemCount)
+  val clipboardText = if (hasPrimaryClipItem) data?.getItemAt(0)?.text?.toString() else null
 
-  return accessControlClipboardImportPayloadFromPlatformItemAction(
-    action = itemAction,
+  return accessControlClipboardImportPayload(
+    hasPrimaryClipItem = hasPrimaryClipItem,
     clipboardText = clipboardText,
   )
 }
@@ -268,12 +262,6 @@ private val PackageInfo.isSystemApp: Boolean
       flags = applicationInfo?.flags,
       systemAppFlag = ApplicationInfo.FLAG_SYSTEM,
     )
-
-private fun Lifecycle.Event.toAccessControlPlatformStopEvent(): AccessControlPlatformStopEvent =
-  when (this) {
-    Lifecycle.Event.ON_STOP -> AccessControlPlatformStopEvent.Stop
-    else -> AccessControlPlatformStopEvent.Other
-  }
 
 private fun PackageInfo.toAccessControlApp(pm: PackageManager): AndroidAccessControlApp {
   val applicationInfo = checkNotNull(applicationInfo)
