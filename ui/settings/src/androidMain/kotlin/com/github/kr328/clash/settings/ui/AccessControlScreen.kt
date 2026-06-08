@@ -84,8 +84,8 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
   DisposableEffect(lifecycleOwner, appContext, serviceStore) {
     val observer = LifecycleEventObserver { _, event ->
       if (
-        accessControlPersistRequestedFromPlatformLifecycleEvent(
-          stopEvent = event == Lifecycle.Event.ON_STOP
+        accessControlPersistRequestedFromPlatformStopEvent(
+          event = event.toAccessControlPlatformStopEvent()
         )
       ) {
         Global.launch {
@@ -260,6 +260,12 @@ private val PackageInfo.isSystemApp: Boolean
       flags = applicationInfo?.flags,
       systemAppFlag = ApplicationInfo.FLAG_SYSTEM,
     )
+
+private fun Lifecycle.Event.toAccessControlPlatformStopEvent(): AccessControlPlatformStopEvent =
+  when (this) {
+    Lifecycle.Event.ON_STOP -> AccessControlPlatformStopEvent.Stop
+    else -> AccessControlPlatformStopEvent.Other
+  }
 
 private fun PackageInfo.toAppInfo(pm: PackageManager): AppInfo {
   val applicationInfo = checkNotNull(applicationInfo)

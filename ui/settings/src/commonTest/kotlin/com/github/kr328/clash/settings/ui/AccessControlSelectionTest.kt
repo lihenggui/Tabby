@@ -202,14 +202,18 @@ class AccessControlSelectionTest {
   }
 
   @Test
-  fun accessControlPersistRequestedFromPlatformLifecycleEventOnlyRequestsPersistOnStop() {
+  fun accessControlPersistRequestedFromPlatformStopEventOnlyRequestsPersistOnStop() {
     assertEquals(
       true,
-      accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent = true),
+      accessControlPersistRequestedFromPlatformStopEvent(
+        event = AccessControlPlatformStopEvent.Stop
+      ),
     )
     assertEquals(
       false,
-      accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent = false),
+      accessControlPersistRequestedFromPlatformStopEvent(
+        event = AccessControlPlatformStopEvent.Other
+      ),
     )
   }
 

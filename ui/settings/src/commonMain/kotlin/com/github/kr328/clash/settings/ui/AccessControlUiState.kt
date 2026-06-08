@@ -28,6 +28,11 @@ internal enum class AccessControlClipboardPlatformItemAction {
   Ignore,
 }
 
+internal enum class AccessControlPlatformStopEvent {
+  Stop,
+  Other,
+}
+
 internal fun <T> accessControlInitialUiState(
   selected: Set<String> = emptySet(),
   sort: AccessControlSort,
@@ -87,8 +92,13 @@ internal fun accessControlClipboardImportAction(
   }
 }
 
-internal fun accessControlPersistRequestedFromPlatformLifecycleEvent(stopEvent: Boolean): Boolean {
-  return stopEvent
+internal fun accessControlPersistRequestedFromPlatformStopEvent(
+  event: AccessControlPlatformStopEvent
+): Boolean {
+  return when (event) {
+    AccessControlPlatformStopEvent.Stop -> true
+    AccessControlPlatformStopEvent.Other -> false
+  }
 }
 
 internal fun <T> AccessControlUiState<T>.withAccessControlApps(
