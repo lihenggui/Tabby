@@ -1,30 +1,28 @@
 package com.github.kr328.clash.settings.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.core.model.ConfigurationOverride
-import com.github.kr328.clash.settings.vm.OverrideSettingsViewModel
-import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
+import com.github.kr328.clash.engine.android.AndroidEngineController
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 
 @Composable
 internal fun OverrideSettingsScreen(
   modifier: Modifier = Modifier,
-  viewModel: OverrideSettingsViewModel = viewModelWithLifecycle(),
   onResetCompleted: () -> Unit,
 ) {
-  val configuration by viewModel.configuration.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  val appContext = context.applicationContext
+  val engineController = remember(appContext) { AndroidEngineController(appContext) }
 
-  OverrideSettingsRouteContent(
+  EngineControllerOverrideSettingsRouteContent(
+    engineController = engineController,
     onResetCompleted = onResetCompleted,
     modifier = modifier,
-    initialConfiguration = configuration,
-    onConfigurationChange = viewModel::setConfiguration,
-    onReset = viewModel::resetOverride,
   )
 }
 

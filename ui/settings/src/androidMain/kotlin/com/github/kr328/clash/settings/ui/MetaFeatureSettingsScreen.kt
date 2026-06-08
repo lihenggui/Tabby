@@ -1,5 +1,9 @@
 package com.github.kr328.clash.settings.ui
 
+import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.compose.material3.AlertDialog
@@ -11,30 +15,37 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.ConfigurationOverride
+import com.github.kr328.clash.engine.android.AndroidEngineController
+import com.github.kr328.clash.glue.util.clashDir
 import com.github.kr328.clash.settings.R
-import com.github.kr328.clash.settings.vm.MetaFeatureSettingsViewModel
-import com.github.kr328.clash.ui.lifecycle.viewModelWithLifecycle
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 internal fun MetaFeatureSettingsScreen(
   modifier: Modifier = Modifier,
-  viewModel: MetaFeatureSettingsViewModel = viewModelWithLifecycle(),
   onResetCompleted: () -> Unit,
 ) {
-  val configuration by viewModel.configuration.collectAsStateWithLifecycle()
-  val importResult by viewModel.importResult.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  val appContext = context.applicationContext
+  val engineController = remember(appContext) { AndroidEngineController(appContext) }
+  val importScope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
   val importedText = stringResource(R.string.geofile_imported)
   val importFailedText = stringResource(R.string.geofile_import_failed)
+  var importResult by remember { mutableStateOf(geoFileImportInitialResult()) }
   var pendingImportType by remember { mutableStateOf<GeoFileImportType?>(null) }
   var importDisplayState by remember { mutableStateOf(geoFileImportInitialDisplayState()) }
 
@@ -65,7 +76,10 @@ internal fun MetaFeatureSettingsScreen(
       ) {
         is GeoFileImportPickerResultAction.Import -> {
           pendingImportType = null
-          viewModel.importGeoFile(action.source, action.importType)
+          importScope.launch {
+            importResult = geoFileImportStartedResult()
+            importResult = appContext.importGeoFile(action.source, action.importType)
+          }
         }
         GeoFileImportPickerResultAction.Ignore -> Unit
       }
@@ -81,13 +95,11 @@ internal fun MetaFeatureSettingsScreen(
     }
   }
 
-  MetaFeatureSettingsRouteContent(
+  EngineControllerMetaFeatureSettingsRouteContent(
+    engineController = engineController,
     onResetCompleted = onResetCompleted,
     modifier = modifier,
     snackbarHostState = snackbarHostState,
-    initialConfiguration = configuration,
-    onConfigurationChange = viewModel::setConfiguration,
-    onReset = viewModel::resetOverride,
     onImportGeoIp = { requestGeoFileImport(GeoFileImportType.GeoIp) },
     onImportGeoSite = { requestGeoFileImport(GeoFileImportType.GeoSite) },
     onImportCountry = { requestGeoFileImport(GeoFileImportType.Country) },
@@ -120,6 +132,60 @@ internal fun MetaFeatureSettingsScreen(
     )
   }
 }
+
+private suspend fun Context.importGeoFile(
+  uri: Uri?,
+  importType: GeoFileImportType,
+): GeoFileImportResult =
+  withContext(Dispatchers.IO) {
+    try {
+      val sourceUri = uri ?: return@withContext geoFileImportFailedResult()
+      val cursor =
+        contentResolver.query(sourceUri, null, null, null, null, null)
+          ?: return@withContext geoFileImportFailedResult()
+
+      cursor.use {
+        val sourceReadable = it.moveToFirst()
+        val displayName = if (sourceReadable) it.displayName else null
+        when (
+          val sourceAction =
+            geoFileImportSourceAction(
+              sourceSelected = true,
+              sourceReadable = sourceReadable,
+              displayName = displayName,
+              importType = importType,
+            )
+        ) {
+          GeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
+          is GeoFileImportSourceAction.Import -> {
+            when (val action = sourceAction.action) {
+              is GeoFileImportAction.UnsupportedFormat -> geoFileImportResult(action)
+              is GeoFileImportAction.Copy -> {
+                val outputFile = clashDir.resolve(action.outputFileName)
+                outputFile.parentFile?.mkdirs()
+                val inputStream =
+                  contentResolver.openInputStream(sourceUri)
+                    ?: return@use geoFileImportResult(action, copySucceeded = false)
+                inputStream.use { ins ->
+                  outputFile.outputStream().use { outs -> ins.copyTo(outs) }
+                }
+                geoFileImportResult(action, copySucceeded = true)
+              }
+            }
+          }
+        }
+      }
+    } catch (e: Exception) {
+      Log.e("Import geo database failed: ${e.message}", e)
+      geoFileImportFailedResult()
+    }
+  }
+
+private val Cursor.displayName: String?
+  get() {
+    val columnIndex = getColumnIndex(OpenableColumns.DISPLAY_NAME)
+    return if (columnIndex != -1) getString(columnIndex) else null
+  }
 
 @PreviewWrapper(TabbyThemeWrapper::class)
 @PreviewTabby
