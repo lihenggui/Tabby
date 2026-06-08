@@ -100,10 +100,25 @@ internal sealed interface LogcatExportAction {
 
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
+internal data class LogcatServiceBinding<out ServiceT, out ConnectionT>(
+  val service: ServiceT,
+  val connection: ConnectionT,
+)
+
 internal fun logcatExportResultFromPlatformPayload(
   destinationSelected: Boolean
 ): LogcatExportResult {
   return LogcatExportResult(destinationSelected = destinationSelected)
+}
+
+internal fun <ServiceT, ConnectionT> logcatServiceBindingFromPlatformPayload(
+  service: ServiceT,
+  connection: ConnectionT,
+): LogcatServiceBinding<ServiceT, ConnectionT> {
+  return LogcatServiceBinding(
+    service = service,
+    connection = connection,
+  )
 }
 
 internal sealed interface LogcatPollAction {

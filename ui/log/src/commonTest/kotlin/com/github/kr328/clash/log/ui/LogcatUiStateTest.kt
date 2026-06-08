@@ -273,6 +273,17 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatServiceBindingPlatformPayloadKeepsOpaquePlatformValues() {
+    assertEquals(
+      LogcatServiceBinding(service = "service", connection = 42),
+      logcatServiceBindingFromPlatformPayload(
+        service = "service",
+        connection = 42,
+      ),
+    )
+  }
+
+  @Test
   fun logcatExportActionExportsCurrentFileOnlyWhenDestinationExists() {
     val file = LogFile("clash-1234.log", 1234)
 
