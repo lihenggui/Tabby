@@ -213,8 +213,7 @@ class NewProfileRouteContentTest {
         source = "content://provider/profile.yaml",
       ),
       newProfileCreateRequestFromExternalProviderPlatformResult(
-        resultCode = 10,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Accepted,
         source = "content://provider/profile.yaml",
         name = "External profile",
         sourceText = { it },
@@ -227,8 +226,7 @@ class NewProfileRouteContentTest {
     assertEquals(
       null,
       newProfileCreateRequestFromExternalProviderPlatformResult(
-        resultCode = 20,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Rejected,
         source = "content://provider/profile.yaml",
         name = "Ignored",
         sourceText = { it },
@@ -237,8 +235,7 @@ class NewProfileRouteContentTest {
     assertEquals(
       null,
       newProfileCreateRequestFromExternalProviderPlatformResult<String>(
-        resultCode = 10,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Accepted,
         source = null,
         name = "Ignored",
         sourceText = { it },

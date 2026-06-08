@@ -167,8 +167,7 @@ internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderResult(
 }
 
 internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderPlatformResult(
-  resultCode: Int,
-  acceptedResultCode: Int,
+  result: NewProfileExternalProviderPlatformResult,
   source: SourceT?,
   name: String?,
   sourceText: (SourceT) -> String,
@@ -176,8 +175,7 @@ internal fun <SourceT : Any> newProfileCreateRequestFromExternalProviderPlatform
   return newProfileCreateRequestFromExternalProviderResult(
     result =
       newProfileExternalProviderResultFromPlatformResult(
-        resultCode = resultCode,
-        acceptedResultCode = acceptedResultCode,
+        result = result,
         source = source,
         name = name,
       ),

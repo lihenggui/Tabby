@@ -153,6 +153,11 @@ internal data class NewProfileExternalProviderResult<out SourceT : Any>(
   val name: String?,
 )
 
+internal enum class NewProfileExternalProviderPlatformResult {
+  Accepted,
+  Rejected,
+}
+
 internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload(
   resultAccepted: Boolean,
   source: SourceT?,
@@ -168,17 +173,12 @@ internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload
 }
 
 internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformResult(
-  resultCode: Int,
-  acceptedResultCode: Int,
+  result: NewProfileExternalProviderPlatformResult,
   source: SourceT?,
   name: String?,
 ): NewProfileExternalProviderResult<SourceT> {
   return newProfileExternalProviderResultFromPlatformPayload(
-    resultAccepted =
-      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
-        resultCode = resultCode,
-        acceptedResultCode = acceptedResultCode,
-      ),
+    resultAccepted = newProfileExternalProviderResultAcceptedFromPlatformResult(result),
     source = source,
     name = name,
   )
@@ -337,11 +337,13 @@ internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   }
 }
 
-internal fun newProfileExternalProviderResultAcceptedFromPlatformResultCode(
-  resultCode: Int,
-  acceptedResultCode: Int,
+internal fun newProfileExternalProviderResultAcceptedFromPlatformResult(
+  result: NewProfileExternalProviderPlatformResult
 ): Boolean {
-  return resultCode == acceptedResultCode
+  return when (result) {
+    NewProfileExternalProviderPlatformResult.Accepted -> true
+    NewProfileExternalProviderPlatformResult.Rejected -> false
+  }
 }
 
 internal fun <ExternalProviderT> newProfileCreateEventState(

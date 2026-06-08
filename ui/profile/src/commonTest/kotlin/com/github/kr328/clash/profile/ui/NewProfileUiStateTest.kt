@@ -518,8 +518,7 @@ class NewProfileUiStateTest {
         name = "External config",
       ),
       newProfileExternalProviderResultFromPlatformResult(
-        resultCode = 10,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Accepted,
         source = "content://provider/profile.yaml",
         name = "External config",
       ),
@@ -535,8 +534,7 @@ class NewProfileUiStateTest {
         name = null,
       ),
       newProfileExternalProviderResultFromPlatformResult(
-        resultCode = 20,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Rejected,
         source = "content://provider/profile.yaml",
         name = "Ignored",
       ),
@@ -548,8 +546,7 @@ class NewProfileUiStateTest {
         name = null,
       ),
       newProfileExternalProviderResultFromPlatformResult<String>(
-        resultCode = 10,
-        acceptedResultCode = 10,
+        result = NewProfileExternalProviderPlatformResult.Accepted,
         source = null,
         name = "Ignored",
       ),
@@ -629,19 +626,17 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun newProfileExternalProviderResultAcceptedFromPlatformResultCodeMapsAcceptedCodeOnly() {
+  fun newProfileExternalProviderResultAcceptedFromPlatformResultMapsAcceptedResultOnly() {
     assertEquals(
       true,
-      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
-        resultCode = 10,
-        acceptedResultCode = 10,
+      newProfileExternalProviderResultAcceptedFromPlatformResult(
+        NewProfileExternalProviderPlatformResult.Accepted
       ),
     )
     assertEquals(
       false,
-      newProfileExternalProviderResultAcceptedFromPlatformResultCode(
-        resultCode = 20,
-        acceptedResultCode = 10,
+      newProfileExternalProviderResultAcceptedFromPlatformResult(
+        NewProfileExternalProviderPlatformResult.Rejected
       ),
     )
   }
