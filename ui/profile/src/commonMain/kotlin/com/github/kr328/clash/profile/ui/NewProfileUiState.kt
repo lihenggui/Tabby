@@ -144,11 +144,6 @@ internal data class NewProfileExternalProviderResult<out SourceT : Any>(
   val name: String?,
 )
 
-internal enum class NewProfileExternalProviderPlatformResult {
-  Accepted,
-  Rejected,
-}
-
 internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload(
   resultAccepted: Boolean,
   source: SourceT?,
@@ -160,18 +155,6 @@ internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformPayload
     resultAccepted = resultAccepted,
     source = selectedSource,
     name = if (selectedSource != null) name else null,
-  )
-}
-
-internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformResult(
-  result: NewProfileExternalProviderPlatformResult,
-  source: SourceT?,
-  name: String?,
-): NewProfileExternalProviderResult<SourceT> {
-  return newProfileExternalProviderResultFromPlatformPayload(
-    resultAccepted = newProfileExternalProviderResultAcceptedFromPlatformResult(result),
-    source = source,
-    name = name,
   )
 }
 
@@ -296,15 +279,6 @@ internal fun <SourceT : Any> newProfileExternalProviderResultAction(
     NewProfileExternalProviderResultAction.CreateProfile(source = source, name = name)
   } else {
     NewProfileExternalProviderResultAction.Ignore
-  }
-}
-
-internal fun newProfileExternalProviderResultAcceptedFromPlatformResult(
-  result: NewProfileExternalProviderPlatformResult
-): Boolean {
-  return when (result) {
-    NewProfileExternalProviderPlatformResult.Accepted -> true
-    NewProfileExternalProviderPlatformResult.Rejected -> false
   }
 }
 

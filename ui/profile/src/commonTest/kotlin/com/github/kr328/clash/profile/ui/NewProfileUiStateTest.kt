@@ -464,51 +464,6 @@ class NewProfileUiStateTest {
     )
   }
 
-  @Test
-  fun newProfileExternalProviderPlatformResultKeepsAcceptedSelectedSourceMetadata() {
-    assertEquals(
-      NewProfileExternalProviderResult(
-        resultAccepted = true,
-        source = "content://provider/profile.yaml",
-        name = "External config",
-      ),
-      newProfileExternalProviderResultFromPlatformResult(
-        result = NewProfileExternalProviderPlatformResult.Accepted,
-        source = "content://provider/profile.yaml",
-        name = "External config",
-      ),
-    )
-  }
-
-  @Test
-  fun newProfileExternalProviderPlatformResultDropsNameWhenResultCannotCreateProfile() {
-    assertEquals(
-      NewProfileExternalProviderResult(
-        resultAccepted = false,
-        source = null,
-        name = null,
-      ),
-      newProfileExternalProviderResultFromPlatformResult(
-        result = NewProfileExternalProviderPlatformResult.Rejected,
-        source = "content://provider/profile.yaml",
-        name = "Ignored",
-      ),
-    )
-    assertEquals(
-      NewProfileExternalProviderResult(
-        resultAccepted = true,
-        source = null,
-        name = null,
-      ),
-      newProfileExternalProviderResultFromPlatformResult<String>(
-        result = NewProfileExternalProviderPlatformResult.Accepted,
-        source = null,
-        name = "Ignored",
-      ),
-    )
-  }
-
-  @Test
   fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
     assertEquals(
       NewProfileExternalProviderResultAction.CreateProfile(
@@ -580,23 +535,6 @@ class NewProfileUiStateTest {
     )
   }
 
-  @Test
-  fun newProfileExternalProviderResultAcceptedFromPlatformResultMapsAcceptedResultOnly() {
-    assertEquals(
-      true,
-      newProfileExternalProviderResultAcceptedFromPlatformResult(
-        NewProfileExternalProviderPlatformResult.Accepted
-      ),
-    )
-    assertEquals(
-      false,
-      newProfileExternalProviderResultAcceptedFromPlatformResult(
-        NewProfileExternalProviderPlatformResult.Rejected
-      ),
-    )
-  }
-
-  @Test
   fun createEventStateEmitsOnlyLaunchEvents() {
     val externalProvider = "external-provider-intent"
 

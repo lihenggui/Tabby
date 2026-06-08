@@ -205,15 +205,15 @@ class NewProfileRouteContentTest {
   }
 
   @Test
-  fun externalProviderPlatformResultBuildsExternalProfileCreateRequest() {
+  fun externalProviderPayloadBuildsExternalProfileCreateRequest() {
     assertEquals(
       NewProfileCreateRequest(
         type = Profile.Type.External,
         name = "External profile",
         source = "content://provider/profile.yaml",
       ),
-      newProfileCreateRequestFromExternalProviderPlatformResult(
-        result = NewProfileExternalProviderPlatformResult.Accepted,
+      newProfileCreateRequestFromExternalProviderPayload(
+        resultAccepted = true,
         source = "content://provider/profile.yaml",
         name = "External profile",
         sourceText = { it },
@@ -222,11 +222,11 @@ class NewProfileRouteContentTest {
   }
 
   @Test
-  fun externalProviderPlatformResultIgnoresRejectedOrMissingSourcePayloads() {
+  fun externalProviderPayloadIgnoresRejectedOrMissingSourcePayloads() {
     assertEquals(
       null,
-      newProfileCreateRequestFromExternalProviderPlatformResult(
-        result = NewProfileExternalProviderPlatformResult.Rejected,
+      newProfileCreateRequestFromExternalProviderPayload(
+        resultAccepted = false,
         source = "content://provider/profile.yaml",
         name = "Ignored",
         sourceText = { it },
@@ -234,8 +234,8 @@ class NewProfileRouteContentTest {
     )
     assertEquals(
       null,
-      newProfileCreateRequestFromExternalProviderPlatformResult<String>(
-        result = NewProfileExternalProviderPlatformResult.Accepted,
+      newProfileCreateRequestFromExternalProviderPayload<String>(
+        resultAccepted = true,
         source = null,
         name = "Ignored",
         sourceText = { it },

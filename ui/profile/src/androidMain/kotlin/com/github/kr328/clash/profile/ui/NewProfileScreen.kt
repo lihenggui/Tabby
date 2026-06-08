@@ -91,8 +91,8 @@ internal fun NewProfileScreen(
   val externalProviderLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
       val request =
-        newProfileCreateRequestFromExternalProviderPlatformResult(
-          result = result.resultCode.toNewProfileExternalProviderPlatformResult(),
+        newProfileCreateRequestFromExternalProviderPayload(
+          resultAccepted = result.resultCode == RESULT_OK,
           source = result.data?.data,
           name = result.data?.getStringExtra(Intents.EXTRA_NAME),
           sourceText = Uri::toString,
@@ -202,14 +202,6 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
     is QRError -> profileQrScanResultFromPlatformPayload(kind = ProfileQrResultKind.Error)
   }
 }
-
-private fun Int.toNewProfileExternalProviderPlatformResult():
-  NewProfileExternalProviderPlatformResult =
-  if (this == RESULT_OK) {
-    NewProfileExternalProviderPlatformResult.Accepted
-  } else {
-    NewProfileExternalProviderPlatformResult.Rejected
-  }
 
 private val AndroidExternalProfileProvider.key: String
   get() =
