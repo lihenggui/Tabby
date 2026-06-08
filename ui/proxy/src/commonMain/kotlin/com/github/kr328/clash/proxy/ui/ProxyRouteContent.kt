@@ -29,7 +29,7 @@ fun ProxyRouteContent(
   modifier: Modifier = Modifier,
   onReLaunch: () -> Unit = {},
   initialPreferences: ProxyRoutePreferences = ProxyRoutePreferences(),
-  profileLoadedEvents: Flow<Unit> = emptyFlow(),
+  broadcastEvents: Flow<ProxyBroadcastEventKind> = emptyFlow(),
   onLastGroupChanged: (String) -> Unit = {},
   onExcludeNotSelectableChanged: (Boolean) -> Unit = {},
   onProxyLineChanged: (Int) -> Unit = {},
@@ -104,8 +104,8 @@ fun ProxyRouteContent(
     reloadAll()
   }
 
-  suspend fun handleProfileLoadedEvent() {
-    when (proxyBroadcastAction(ProxyBroadcastEventKind.ProfileLoaded, initialized)) {
+  suspend fun handleBroadcastEvent(kind: ProxyBroadcastEventKind) {
+    when (proxyBroadcastAction(kind, initialized)) {
       ProxyBroadcastAction.QueryGroupNames ->
         runCatching { engineController.queryProxyGroupNames(uiState.excludeNotSelectable) }
           .onSuccess { newNames ->
@@ -121,8 +121,8 @@ fun ProxyRouteContent(
 
   LaunchedEffect(engineController, initialPreferences.lastGroupName) { fetchInitialState() }
 
-  LaunchedEffect(engineController, profileLoadedEvents) {
-    profileLoadedEvents.collect { handleProfileLoadedEvent() }
+  LaunchedEffect(engineController, broadcastEvents) {
+    broadcastEvents.collect { kind -> handleBroadcastEvent(kind) }
   }
 
   ProxyContent(

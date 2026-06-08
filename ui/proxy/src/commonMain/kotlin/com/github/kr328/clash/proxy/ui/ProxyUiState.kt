@@ -134,7 +134,7 @@ internal sealed interface ProxyGroupSelectionAction {
   data object Ignore : ProxyGroupSelectionAction
 }
 
-internal enum class ProxyBroadcastEventKind {
+enum class ProxyBroadcastEventKind {
   ProfileLoaded,
   Other,
 }
