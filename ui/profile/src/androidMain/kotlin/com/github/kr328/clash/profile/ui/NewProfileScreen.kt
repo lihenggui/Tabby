@@ -39,8 +39,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private typealias AndroidExternalProfileProvider =
-  NewProfileExternalProviderPlatformPayload<Drawable, Intent>
+private data class AndroidExternalProfileProvider(
+  val componentKey: String?,
+  val packageName: String?,
+  val name: String,
+  val summary: String,
+  val icon: Drawable?,
+  val launchTarget: Intent,
+)
 
 @Composable
 internal fun NewProfileScreen(
@@ -135,7 +141,7 @@ private suspend fun loadExternalProfileProviders(
         Intent(Intents.ACTION_PROVIDE_URL)
           .setComponent(ComponentName(activity.packageName, activity.name))
 
-      newProfileExternalProviderFromPlatformPayload(
+      AndroidExternalProfileProvider(
         componentKey = intent.component?.flattenToString(),
         packageName = intent.component?.packageName,
         name = name.toString(),
@@ -150,7 +156,13 @@ private suspend fun loadExternalProfileProviders(
 @Composable
 private fun AndroidExternalProfileProvider.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
-  val presentation = newProfileExternalProviderPresentationFromPlatformPayload(this)
+  val presentation =
+    newProfileExternalProviderPresentationFromPlatformPayload(
+      componentKey = componentKey,
+      packageName = packageName,
+      name = name,
+      summary = summary,
+    )
 
   return NewProfileRouteExternalProvider(
     key = presentation.key,
@@ -199,12 +211,17 @@ private fun Int.toNewProfileExternalProviderPlatformResult():
     NewProfileExternalProviderPlatformResult.Rejected
   }
 
-private val NewProfileExternalProviderPlatformPayload<*, *>.key: String
-  get() = newProfileExternalProviderPresentationFromPlatformPayload(this).key
+private val AndroidExternalProfileProvider.key: String
+  get() =
+    newProfileExternalProviderPresentationFromPlatformPayload(
+        componentKey = componentKey,
+        packageName = packageName,
+        name = name,
+        summary = summary,
+      )
+      .key
 
-private fun NewProfileExternalProviderPlatformPayload<*, *>.openAppSettings(
-  startActivity: (Intent) -> Unit
-) {
+private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
   when (val action = newProfileDetailAction(packageName)) {
     is NewProfileDetailAction.OpenAppSettings ->
       startActivity(

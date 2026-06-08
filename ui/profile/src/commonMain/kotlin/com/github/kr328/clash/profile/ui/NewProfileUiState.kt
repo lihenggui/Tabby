@@ -52,15 +52,6 @@ internal data class NewProfileExternalProviderPresentation(
   val hasDetail: Boolean,
 )
 
-internal data class NewProfileExternalProviderPlatformPayload<out IconT, out LaunchTargetT>(
-  val componentKey: String?,
-  val packageName: String?,
-  val name: String,
-  val summary: String,
-  val icon: IconT?,
-  val launchTarget: LaunchTargetT,
-)
-
 internal fun <T> newProfileProviderTextPlatformToken(
   token: NewProfileProviderTextToken,
   file: T,
@@ -279,35 +270,6 @@ internal fun newProfileExternalProviderPresentationFromPlatformPayload(
     name = name,
     summary = summary,
     hasDetail = newProfileExternalProviderHasDetail(packageName),
-  )
-}
-
-internal fun <IconT, LaunchTargetT> newProfileExternalProviderFromPlatformPayload(
-  componentKey: String?,
-  packageName: String?,
-  name: String,
-  summary: String,
-  icon: IconT?,
-  launchTarget: LaunchTargetT,
-): NewProfileExternalProviderPlatformPayload<IconT, LaunchTargetT> {
-  return NewProfileExternalProviderPlatformPayload(
-    componentKey = componentKey,
-    packageName = packageName,
-    name = name,
-    summary = summary,
-    icon = icon,
-    launchTarget = launchTarget,
-  )
-}
-
-internal fun <IconT, LaunchTargetT> newProfileExternalProviderPresentationFromPlatformPayload(
-  provider: NewProfileExternalProviderPlatformPayload<IconT, LaunchTargetT>
-): NewProfileExternalProviderPresentation {
-  return newProfileExternalProviderPresentationFromPlatformPayload(
-    componentKey = provider.componentKey,
-    packageName = provider.packageName,
-    name = provider.name,
-    summary = provider.summary,
   )
 }
 
