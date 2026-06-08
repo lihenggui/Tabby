@@ -70,8 +70,17 @@ internal sealed interface GeoFileImportResultDisplayAction {
   data object Ignore : GeoFileImportResultDisplayAction
 }
 
+internal data class GeoFileImportDisplayState(
+  val showUnsupportedFormatDialog: Boolean = false,
+  val unsupportedFormatSummary: String = "",
+)
+
 internal fun geoFileImportInitialResult(): GeoFileImportResult {
   return GeoFileImportResult.Idle
+}
+
+internal fun geoFileImportInitialDisplayState(): GeoFileImportDisplayState {
+  return GeoFileImportDisplayState()
 }
 
 internal fun geoFileImportRequestAction(
@@ -100,6 +109,28 @@ internal fun geoFileImportResultDisplayAction(
       GeoFileImportResultDisplayAction.ShowUnsupportedFormat(result.summary)
     GeoFileImportResult.Failed -> GeoFileImportResultDisplayAction.ShowFailed
   }
+}
+
+internal fun updateGeoFileImportDisplayStateForAction(
+  state: GeoFileImportDisplayState,
+  action: GeoFileImportResultDisplayAction,
+): GeoFileImportDisplayState {
+  return when (action) {
+    is GeoFileImportResultDisplayAction.ShowUnsupportedFormat ->
+      state.copy(
+        showUnsupportedFormatDialog = true,
+        unsupportedFormatSummary = action.summary,
+      )
+    GeoFileImportResultDisplayAction.ShowFailed,
+    is GeoFileImportResultDisplayAction.ShowImported,
+    GeoFileImportResultDisplayAction.Ignore -> state
+  }
+}
+
+internal fun dismissGeoFileImportUnsupportedFormatDialog(
+  state: GeoFileImportDisplayState
+): GeoFileImportDisplayState {
+  return state.copy(showUnsupportedFormatDialog = false)
 }
 
 internal fun planGeoFileImport(

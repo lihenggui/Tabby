@@ -36,8 +36,7 @@ internal fun MetaFeatureSettingsScreen(
   val importedText = stringResource(R.string.geofile_imported)
   val importFailedText = stringResource(R.string.geofile_import_failed)
   var pendingImportType by remember { mutableStateOf<GeoFileImportType?>(null) }
-  var showUnsupportedFormatDialog by remember { mutableStateOf(false) }
-  var validExtensionsSummary by remember { mutableStateOf("") }
+  var importDisplayState by remember { mutableStateOf(geoFileImportInitialDisplayState()) }
 
   LaunchedEffect(importResult) {
     when (val action = geoFileImportResultDisplayAction(importResult)) {
@@ -45,8 +44,7 @@ internal fun MetaFeatureSettingsScreen(
         snackbarHostState.showSnackbar(message = importedText.format(action.displayName))
       }
       is GeoFileImportResultDisplayAction.ShowUnsupportedFormat -> {
-        validExtensionsSummary = action.summary
-        showUnsupportedFormatDialog = true
+        importDisplayState = updateGeoFileImportDisplayStateForAction(importDisplayState, action)
       }
       GeoFileImportResultDisplayAction.ShowFailed ->
         snackbarHostState.showSnackbar(message = importFailedText)
@@ -96,15 +94,26 @@ internal fun MetaFeatureSettingsScreen(
     onImportASN = { requestGeoFileImport(GeoFileImportType.ASN) },
   )
 
-  if (showUnsupportedFormatDialog) {
+  if (importDisplayState.showUnsupportedFormatDialog) {
     AlertDialog(
-      onDismissRequest = { showUnsupportedFormatDialog = false },
+      onDismissRequest = {
+        importDisplayState = dismissGeoFileImportUnsupportedFormatDialog(importDisplayState)
+      },
       title = { Text(stringResource(R.string.geofile_unknown_db_format)) },
       text = {
-        Text(stringResource(R.string.geofile_unknown_db_format_message, validExtensionsSummary))
+        Text(
+          stringResource(
+            R.string.geofile_unknown_db_format_message,
+            importDisplayState.unsupportedFormatSummary,
+          )
+        )
       },
       confirmButton = {
-        TextButton(onClick = { showUnsupportedFormatDialog = false }) {
+        TextButton(
+          onClick = {
+            importDisplayState = dismissGeoFileImportUnsupportedFormatDialog(importDisplayState)
+          }
+        ) {
           Text(text = stringResource(CommonR.string.ok))
         }
       },

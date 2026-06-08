@@ -10,6 +10,11 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun initialDisplayStateHidesUnsupportedFormatDialog() {
+    assertEquals(GeoFileImportDisplayState(), geoFileImportInitialDisplayState())
+  }
+
+  @Test
   fun importRequestActionRequestsPickerForSelectedImportType() {
     assertEquals(
       GeoFileImportRequestAction.RequestPicker(GeoFileImportType.GeoSite),
@@ -134,6 +139,60 @@ class GeoFileImportPlanTest {
     assertEquals(
       GeoFileImportResultDisplayAction.ShowFailed,
       geoFileImportResultDisplayAction(GeoFileImportResult.Failed),
+    )
+  }
+
+  @Test
+  fun unsupportedFormatDisplayActionShowsDialogWithSummary() {
+    assertEquals(
+      GeoFileImportDisplayState(
+        showUnsupportedFormatDialog = true,
+        unsupportedFormatSummary = ".metadb/.db/.dat/.mmdb",
+      ),
+      updateGeoFileImportDisplayStateForAction(
+        state = geoFileImportInitialDisplayState(),
+        action = GeoFileImportResultDisplayAction.ShowUnsupportedFormat(".metadb/.db/.dat/.mmdb"),
+      ),
+    )
+  }
+
+  @Test
+  fun importedAndFailedDisplayActionsKeepExistingDialogState() {
+    val state =
+      GeoFileImportDisplayState(
+        showUnsupportedFormatDialog = true,
+        unsupportedFormatSummary = ".dat",
+      )
+
+    assertEquals(
+      state,
+      updateGeoFileImportDisplayStateForAction(
+        state = state,
+        action = GeoFileImportResultDisplayAction.ShowImported("geosite.dat"),
+      ),
+    )
+    assertEquals(
+      state,
+      updateGeoFileImportDisplayStateForAction(
+        state = state,
+        action = GeoFileImportResultDisplayAction.ShowFailed,
+      ),
+    )
+  }
+
+  @Test
+  fun dismissUnsupportedFormatDialogPreservesSummary() {
+    assertEquals(
+      GeoFileImportDisplayState(
+        showUnsupportedFormatDialog = false,
+        unsupportedFormatSummary = ".dat",
+      ),
+      dismissGeoFileImportUnsupportedFormatDialog(
+        GeoFileImportDisplayState(
+          showUnsupportedFormatDialog = true,
+          unsupportedFormatSummary = ".dat",
+        )
+      ),
     )
   }
 
