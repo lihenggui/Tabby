@@ -1,13 +1,16 @@
 package com.github.kr328.clash.home.ui
 
 import android.content.ClipData
+import android.content.Context
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
@@ -16,16 +19,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as appInfoProvider
+import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.core.bridge.Bridge
 import com.github.kr328.clash.glue.util.openLink
 import com.github.kr328.clash.home.MIHOMO_CORE
 import com.github.kr328.clash.home.MIHOMO_WIKI
 import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.TABBY_GITHUB
-import com.github.kr328.clash.home.vm.HelpViewModel
+import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
+import com.github.kr328.clash.home.TABBY_REPO
+import com.github.kr328.clash.network.GitHubReleaseClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.home.generated.resources.Res as HomeRes
 import tabby.ui.home.generated.resources.open
@@ -34,16 +42,24 @@ import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.copied
 
 @Composable
-internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel = viewModel()) {
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val eventState by viewModel.eventState.collectAsStateWithLifecycle()
+internal fun HelpScreen(modifier: Modifier = Modifier) {
+  var uiState by remember { mutableStateOf(helpInitialContentState()) }
+  var eventState by remember { mutableStateOf<HelpEventState>(helpInitialEventState()) }
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
+  val appContext = context.applicationContext
   val clipboard = LocalClipboard.current
   val scope = rememberCoroutineScope()
+  val releaseClient = remember { GitHubReleaseClient() }
   val updateAvailableText = stringResource(HomeRes.string.update_available)
   val openActionText = stringResource(HomeRes.string.open)
   val messageCopied = stringResource(SharedRes.string.copied)
+
+  LaunchedEffect(appContext) {
+    val (appVersion, coreVersion) = withContext(Dispatchers.IO) { appContext.loadVersionInfo() }
+
+    uiState = uiState.withVersionInfo(appVersion = appVersion, coreVersion = coreVersion)
+  }
 
   LaunchedEffect(eventState) {
     when (val action = helpEventPlatformAction(eventState)) {
@@ -64,7 +80,7 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
         }
       }
     }
-    viewModel.consumeEvent()
+    eventState = helpConsumedEventState()
   }
 
   HelpRouteContent(
@@ -87,6 +103,50 @@ internal fun HelpScreen(modifier: Modifier = Modifier, viewModel: HelpViewModel 
         snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
       }
     },
-    onCheckForUpdates = viewModel::checkForUpdates,
+    onCheckForUpdates = {
+      when (helpUpdateCheckRequestAction(uiState)) {
+        HelpUpdateCheckRequestAction.StartCheck -> Unit
+        HelpUpdateCheckRequestAction.Ignore -> return@HelpRouteContent
+      }
+
+      scope.launch {
+        uiState = uiState.withUpdateCheckStarted()
+        try {
+          val latestTag = releaseClient.fetchLatestReleaseTag(TABBY_REPO)
+          val localVersion =
+            if (latestTag == null) {
+              null
+            } else {
+              withContext(Dispatchers.IO) { appContext.loadPackageVersionName() }
+            }
+          val action = helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
+
+          eventState =
+            helpUpdateCheckEventState(
+              action = action,
+              releasesUrl = TABBY_RELEASES_LATEST,
+              alreadyUpToDateMessage = appContext.getString(R.string.already_up_to_date),
+              updateCheckFailedMessage = appContext.getString(R.string.check_update_failed),
+            )
+        } catch (e: Exception) {
+          Log.e("Check for updates failed: ${e.message}", e)
+          eventState =
+            helpUpdateCheckFailureEventState(appContext.getString(R.string.check_update_failed))
+        } finally {
+          uiState = uiState.withUpdateCheckFinished()
+        }
+      }
+    },
   )
+}
+
+private fun Context.loadVersionInfo(): Pair<String, String> {
+  return formatAppVersionInfo(
+    versionName = loadPackageVersionName(),
+    buildCommit = appInfoProvider.buildCommit,
+  ) to Bridge.nativeCoreVersion()
+}
+
+private fun Context.loadPackageVersionName(): String? {
+  return packageManager.getPackageInfo(packageName, 0).versionName
 }
