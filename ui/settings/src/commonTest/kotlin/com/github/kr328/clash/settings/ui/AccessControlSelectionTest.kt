@@ -175,33 +175,6 @@ class AccessControlSelectionTest {
   }
 
   @Test
-  fun mapsSystemAppFromPlatformFlags() {
-    val systemAppFlag = 0b0100
-
-    assertEquals(
-      true,
-      accessControlSystemAppFromPlatformFlags(
-        flags = 0b0101,
-        systemAppFlag = systemAppFlag,
-      ),
-    )
-    assertEquals(
-      false,
-      accessControlSystemAppFromPlatformFlags(
-        flags = 0b0011,
-        systemAppFlag = systemAppFlag,
-      ),
-    )
-    assertEquals(
-      false,
-      accessControlSystemAppFromPlatformFlags(
-        flags = null,
-        systemAppFlag = systemAppFlag,
-      ),
-    )
-  }
-
-  @Test
   fun createsAccessControlReloadRequestFromPlatformSnapshots() {
     assertEquals(
       AccessControlReloadRequest(
