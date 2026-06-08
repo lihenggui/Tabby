@@ -113,7 +113,12 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun enqueueExternalAppIntent(intent: Intent) {
-    handleExternalAppIntent?.invoke(intent) ?: pendingExternalAppIntents.add(intent)
+    val consumer = handleExternalAppIntent
+
+    when (tabbyExternalAppDispatchAction(consumerAvailable = consumer != null)) {
+      TabbyExternalAppDispatchAction.DispatchToConsumer -> checkNotNull(consumer).invoke(intent)
+      TabbyExternalAppDispatchAction.Queue -> pendingExternalAppIntents.add(intent)
+    }
   }
 
   private fun Intent.handleExternalQuickAction(): Boolean {

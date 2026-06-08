@@ -27,6 +27,11 @@ enum class TabbyInitialExternalAppQueueAction {
   Ignore,
 }
 
+enum class TabbyExternalAppDispatchAction {
+  DispatchToConsumer,
+  Queue,
+}
+
 fun tabbyExternalAppActionFromString(
   action: String?,
   requestAvailable: Boolean,
@@ -74,5 +79,13 @@ fun tabbyInitialExternalAppQueueAction(
     TabbyInitialExternalAppQueueAction.Ignore
   } else {
     TabbyInitialExternalAppQueueAction.Enqueue
+  }
+}
+
+fun tabbyExternalAppDispatchAction(consumerAvailable: Boolean): TabbyExternalAppDispatchAction {
+  return if (consumerAvailable) {
+    TabbyExternalAppDispatchAction.DispatchToConsumer
+  } else {
+    TabbyExternalAppDispatchAction.Queue
   }
 }

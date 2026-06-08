@@ -174,4 +174,20 @@ class TabbyExternalAppActionTest {
       tabbyInitialExternalAppQueueAction(savedStateRestored = true),
     )
   }
+
+  @Test
+  fun externalAppDispatchActionUsesConsumerWhenAvailable() {
+    assertEquals(
+      TabbyExternalAppDispatchAction.DispatchToConsumer,
+      tabbyExternalAppDispatchAction(consumerAvailable = true),
+    )
+  }
+
+  @Test
+  fun externalAppDispatchActionQueuesWhenConsumerIsMissing() {
+    assertEquals(
+      TabbyExternalAppDispatchAction.Queue,
+      tabbyExternalAppDispatchAction(consumerAvailable = false),
+    )
+  }
 }
