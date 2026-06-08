@@ -297,6 +297,18 @@ internal fun homeVpnPermissionResultAction(
   }
 }
 
+internal fun homeVpnPermissionResultActionFromPlatformResultCode(
+  resultCode: Int,
+  grantedResultCode: Int,
+): HomeVpnPermissionResultAction {
+  return homeVpnPermissionResultAction(
+    homeVpnPermissionResultFromPlatformResultCode(
+      resultCode = resultCode,
+      grantedResultCode = grantedResultCode,
+    )
+  )
+}
+
 internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
   return when (mode) {
     TunnelState.Mode.Direct -> HomeModeLabel.Direct

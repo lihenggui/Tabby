@@ -1,5 +1,6 @@
 package com.github.kr328.clash.home.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -119,7 +120,12 @@ internal fun HomeScreen(
 
   val vpnLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      when (homeVpnPermissionResultAction(result.toHomeVpnPermissionResult())) {
+      when (
+        homeVpnPermissionResultActionFromPlatformResultCode(
+          resultCode = result.resultCode,
+          grantedResultCode = Activity.RESULT_OK,
+        )
+      ) {
         HomeVpnPermissionResultAction.StartEngine -> scope.launch { startEngine() }
         HomeVpnPermissionResultAction.Ignore -> Unit
       }
