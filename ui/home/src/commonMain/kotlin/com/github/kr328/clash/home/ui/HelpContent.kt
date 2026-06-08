@@ -72,17 +72,6 @@ internal fun HelpContentState.withVersionInfo(versionInfo: HelpVersionInfo): Hel
   return withVersionInfo(appVersion = versionInfo.appVersion, coreVersion = versionInfo.coreVersion)
 }
 
-internal fun helpVersionInfoFromPlatformPayload(
-  versionName: String?,
-  buildCommit: String,
-  coreVersion: String,
-): HelpVersionInfo {
-  return HelpVersionInfo(
-    appVersion = formatAppVersionInfo(versionName = versionName, buildCommit = buildCommit),
-    coreVersion = coreVersion,
-  )
-}
-
 internal fun helpCopyVersionPayload(version: String): HelpCopyVersionPayload {
   return HelpCopyVersionPayload(
     label = "version",

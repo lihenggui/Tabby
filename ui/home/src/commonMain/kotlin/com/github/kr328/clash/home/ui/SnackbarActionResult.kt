@@ -8,15 +8,7 @@ internal enum class SnackbarActionResult {
 }
 
 internal fun SnackbarResult.toSnackbarActionResult(): SnackbarActionResult {
-  return snackbarActionResultFromPlatformActionPerformed(
-    actionPerformed = this == SnackbarResult.ActionPerformed
-  )
-}
-
-internal fun snackbarActionResultFromPlatformActionPerformed(
-  actionPerformed: Boolean
-): SnackbarActionResult {
-  return if (actionPerformed) {
+  return if (this == SnackbarResult.ActionPerformed) {
     SnackbarActionResult.ActionPerformed
   } else {
     SnackbarActionResult.Dismissed

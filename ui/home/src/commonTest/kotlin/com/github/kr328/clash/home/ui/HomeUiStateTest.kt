@@ -152,7 +152,7 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeBroadcastActionAcceptsPlatformPayloadEvent() {
+  fun homeBroadcastActionAcceptsRouteEvent() {
     assertEquals(
       HomeBroadcastAction(shouldFetch = true, stoppedMessage = "Stopped by system"),
       homeBroadcastAction(
@@ -295,18 +295,6 @@ class HomeUiStateTest {
     assertEquals(
       HomeNoProfileSnackbarAction.Ignore,
       homeNoProfileSnackbarAction(SnackbarActionResult.Dismissed),
-    )
-  }
-
-  @Test
-  fun snackbarActionResultFromPlatformActionPerformedMapsBooleanResult() {
-    assertEquals(
-      SnackbarActionResult.ActionPerformed,
-      snackbarActionResultFromPlatformActionPerformed(actionPerformed = true),
-    )
-    assertEquals(
-      SnackbarActionResult.Dismissed,
-      snackbarActionResultFromPlatformActionPerformed(actionPerformed = false),
     )
   }
 

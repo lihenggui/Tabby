@@ -35,11 +35,10 @@ class HelpContentStateTest {
   }
 
   @Test
-  fun platformVersionPayloadMapsToVersionInfo() {
+  fun versionInfoUpdateAcceptsFormattedVersionInfo() {
     val versionInfo =
-      helpVersionInfoFromPlatformPayload(
-        versionName = "2.0.0",
-        buildCommit = "abc123",
+      HelpVersionInfo(
+        appVersion = formatAppVersionInfo(versionName = "2.0.0", buildCommit = "abc123"),
         coreVersion = "Meta 2.0",
       )
     val state = HelpContentState(checkingForUpdates = true).withVersionInfo(versionInfo)
