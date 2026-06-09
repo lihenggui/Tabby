@@ -168,6 +168,42 @@ class TabbyTileStateTest {
   }
 
   @Test
+  fun tabbyTileClickStateFromPlatformStateMapsPlatformStates() {
+    assertEquals(
+      TabbyTileClickState.Active,
+      tabbyTileClickStateFromPlatformState(
+        platformState = 1,
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
+    )
+    assertEquals(
+      TabbyTileClickState.Inactive,
+      tabbyTileClickStateFromPlatformState(
+        platformState = 2,
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
+    )
+    assertEquals(
+      TabbyTileClickState.Other,
+      tabbyTileClickStateFromPlatformState(
+        platformState = 3,
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
+    )
+    assertEquals(
+      null,
+      tabbyTileClickStateFromPlatformState(
+        platformState = null,
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
+    )
+  }
+
+  @Test
   fun tabbyTilePresentationUsesRunningStateAndProfileName() {
     assertEquals(
       TabbyTilePresentation(active = true, profileName = "profile-a"),
@@ -180,6 +216,26 @@ class TabbyTileStateTest {
     assertEquals(
       TabbyTilePresentation(active = false, profileName = null),
       tabbyTilePresentation(TabbyTileState(clashRunning = false, currentProfile = "")),
+    )
+  }
+
+  @Test
+  fun tabbyTilePresentationPlatformStateMapsActivePresentationState() {
+    assertEquals(
+      1,
+      tabbyTilePresentationPlatformState(
+        presentation = TabbyTilePresentation(active = true, profileName = "profile-a"),
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
+    )
+    assertEquals(
+      2,
+      tabbyTilePresentationPlatformState(
+        presentation = TabbyTilePresentation(active = false, profileName = null),
+        activePlatformState = 1,
+        inactivePlatformState = 2,
+      ),
     )
   }
 
