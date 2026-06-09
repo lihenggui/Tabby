@@ -6,9 +6,10 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.isHttpsProfileSource
-import com.github.kr328.clash.core.model.isValidProfileAutoUpdateIntervalMillis
+import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
@@ -244,16 +245,23 @@ object ProfileProcessor {
   private fun Pending.enforceFieldValid() {
     val scheme = source.toUri().scheme?.lowercase(Locale.getDefault())
 
-    when {
-      name.isBlank() -> throw IllegalArgumentException("Empty name")
-
-      source.isEmpty() && type != Profile.Type.File -> throw IllegalArgumentException("Invalid url")
-
-      source.isNotEmpty() && scheme != "https" && scheme != "http" && scheme != "content" ->
+    when (
+      profileFieldValidationError(
+        type = type,
+        name = name,
+        sourceMissing = source.isEmpty(),
+        sourceSupported =
+          source.isEmpty() || scheme == "https" || scheme == "http" || scheme == "content",
+        interval = interval,
+      )
+    ) {
+      ProfileFieldValidationError.EmptyName -> throw IllegalArgumentException("Empty name")
+      ProfileFieldValidationError.MissingSource -> throw IllegalArgumentException("Invalid url")
+      ProfileFieldValidationError.UnsupportedSource ->
         throw IllegalArgumentException("Unsupported url $source")
-
-      !isValidProfileAutoUpdateIntervalMillis(interval) ->
+      ProfileFieldValidationError.InvalidInterval ->
         throw IllegalArgumentException("Invalid interval")
+      null -> Unit
     }
   }
 }

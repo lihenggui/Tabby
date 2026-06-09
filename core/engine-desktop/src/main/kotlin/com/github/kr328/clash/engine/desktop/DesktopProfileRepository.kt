@@ -2,8 +2,9 @@ package com.github.kr328.clash.engine.desktop
 
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.isHttpProfileSource
-import com.github.kr328.clash.core.model.isValidProfileAutoUpdateIntervalMillis
+import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -373,14 +374,29 @@ class DesktopProfileRepository(
   }
 
   private fun ProfileEntity.enforceFieldValid() {
-    when {
-      name.isBlank() -> throw IllegalArgumentException("Empty name")
-      type == Profile.Type.External -> unsupported()
-      source.isBlank() && type != Profile.Type.File -> throw IllegalArgumentException("Invalid url")
-      source.isNotBlank() && type != Profile.Type.File && !isHttpProfileSource(source) ->
+    val validationError =
+      profileFieldValidationError(
+        type = type,
+        name = name,
+        sourceMissing = source.isBlank(),
+        sourceSupported =
+          source.isBlank() || type == Profile.Type.File || isHttpProfileSource(source),
+        interval = interval,
+      )
+
+    if (validationError == ProfileFieldValidationError.EmptyName) {
+      throw IllegalArgumentException("Empty name")
+    }
+
+    if (type == Profile.Type.External) unsupported()
+
+    when (validationError) {
+      ProfileFieldValidationError.MissingSource -> throw IllegalArgumentException("Invalid url")
+      ProfileFieldValidationError.UnsupportedSource ->
         throw IllegalArgumentException("Unsupported url $source")
-      !isValidProfileAutoUpdateIntervalMillis(interval) ->
+      ProfileFieldValidationError.InvalidInterval ->
         throw IllegalArgumentException("Invalid interval")
+      else -> Unit
     }
   }
 
