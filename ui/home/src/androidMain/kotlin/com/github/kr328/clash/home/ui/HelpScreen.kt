@@ -14,10 +14,6 @@ import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as ap
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.bridge.Bridge
 import com.github.kr328.clash.glue.util.openLink
-import com.github.kr328.clash.home.MIHOMO_CORE
-import com.github.kr328.clash.home.MIHOMO_WIKI
-import com.github.kr328.clash.home.TABBY_GITHUB
-import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.TABBY_REPO
 import com.github.kr328.clash.network.GitHubReleaseClient
 import kotlinx.coroutines.Dispatchers
@@ -33,15 +29,11 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
   HelpRouteContent(
     modifier = modifier,
     appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
-    mihomoWikiUrl = MIHOMO_WIKI,
-    mihomoCoreUrl = MIHOMO_CORE,
-    tabbyUrl = TABBY_GITHUB,
     onOpenLink = { url -> context.openLink(url) },
     onCopyVersion = { label, text ->
       val clipEntry = ClipData.newPlainText(label, text).toClipEntry()
       clipboard.setClipEntry(clipEntry)
     },
-    releasesUrl = TABBY_RELEASES_LATEST,
     onLoadVersionInfo = { withContext(Dispatchers.IO) { appContext.loadVersionInfo() } },
     onFetchLatestReleaseTag = { releaseClient.fetchLatestReleaseTag(TABBY_REPO) },
     onLoadLocalVersion = { withContext(Dispatchers.IO) { appContext.loadPackageVersionName() } },
