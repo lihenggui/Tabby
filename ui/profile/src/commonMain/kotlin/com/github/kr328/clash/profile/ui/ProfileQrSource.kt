@@ -1,13 +1,13 @@
 package com.github.kr328.clash.profile.ui
 
-internal enum class ProfileQrResultKind {
+enum class ProfileQrResultKind {
   Success,
   UserCanceled,
   MissingPermission,
   Error,
 }
 
-internal class ProfileQrScanResult(
+class ProfileQrScanResult(
   val kind: ProfileQrResultKind,
   val rawValue: String? = null,
   val rawBytes: ByteArray? = null,

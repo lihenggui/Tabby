@@ -10,7 +10,6 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,12 +23,10 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.core.graphics.drawable.toBitmap
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
-import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.ui.theme.tabbyDimens
 import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanQRCode
@@ -56,37 +53,24 @@ internal fun NewProfileScreen(
 ) {
   val context = LocalContext.current
   val profileRepository = remember { AndroidProfileRepository() }
-  val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val createRequests = remember { MutableSharedFlow<NewProfileCreateRequest>() }
+  val qrScanResults = remember { MutableSharedFlow<ProfileQrScanResult>() }
   var externalProviders by remember { mutableStateOf(emptyList<AndroidExternalProfileProvider>()) }
   val externalProvidersByKey =
     remember(externalProviders) { externalProviders.associateBy { it.key } }
-  val missingPermissionMessage = androidStringResource(R.string.import_from_qr_no_permission)
-  val scanErrorMessage = androidStringResource(R.string.import_from_qr_exception)
 
   fun launchCreateRequest(request: NewProfileCreateRequest) {
     scope.launch { createRequests.emit(request) }
   }
 
-  fun showQrMessage(message: String) {
-    scope.launch { snackbarHostState.showSnackbar(message) }
+  fun launchQrScanResult(result: ProfileQrScanResult) {
+    scope.launch { qrScanResults.emit(result) }
   }
 
   val qrLauncher =
     rememberLauncherForActivityResult(ScanQRCode()) { result ->
-      when (
-        val action =
-          newProfileQrScanAction(
-            result = result.toProfileQrScanResult(),
-            missingPermissionMessage = missingPermissionMessage,
-            scanErrorMessage = scanErrorMessage,
-          )
-      ) {
-        is NewProfileQrScanAction.CreateProfile -> launchCreateRequest(action.request)
-        is NewProfileQrScanAction.ShowMessage -> showQrMessage(action.message)
-        NewProfileQrScanAction.Ignore -> Unit
-      }
+      launchQrScanResult(result.toProfileQrScanResult())
     }
 
   val externalProviderLauncher =
@@ -108,8 +92,8 @@ internal fun NewProfileScreen(
     profileRepository = profileRepository,
     onProperties = onProperties,
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
     createRequests = createRequests,
+    qrScanResults = qrScanResults,
     externalProviders = externalProviders.map { it.toNewProfileRouteExternalProvider() },
     onLaunchQrScanner = { qrLauncher.launch(null) },
     onCreateExternal = { provider ->

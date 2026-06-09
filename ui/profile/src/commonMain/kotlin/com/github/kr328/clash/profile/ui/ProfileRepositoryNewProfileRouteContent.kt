@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import tabby.ui.profile.generated.resources.Res as ProfileRes
+import tabby.ui.profile.generated.resources.import_from_qr_exception
+import tabby.ui.profile.generated.resources.import_from_qr_no_permission
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.new_profile
 import tabby.ui.shared.generated.resources.unknown
@@ -38,6 +41,7 @@ fun ProfileRepositoryNewProfileRouteContent(
   modifier: Modifier = Modifier,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   createRequests: Flow<NewProfileCreateRequest> = emptyFlow(),
+  qrScanResults: Flow<ProfileQrScanResult> = emptyFlow(),
   externalProviders: List<NewProfileRouteExternalProvider> = emptyList(),
   onLaunchQrScanner: () -> Unit = {},
   onCreateExternal: (NewProfileRouteExternalProvider) -> Unit = {},
@@ -47,6 +51,8 @@ fun ProfileRepositoryNewProfileRouteContent(
   val scope = rememberCoroutineScope()
   val newProfileName = stringResource(SharedRes.string.new_profile)
   val unknownMessage = stringResource(SharedRes.string.unknown)
+  val missingPermissionMessage = stringResource(ProfileRes.string.import_from_qr_no_permission)
+  val scanErrorMessage = stringResource(ProfileRes.string.import_from_qr_exception)
 
   suspend fun createProfile(request: NewProfileCreateRequest) {
     try {
@@ -64,6 +70,21 @@ fun ProfileRepositoryNewProfileRouteContent(
     }
   }
 
+  suspend fun handleQrScanResult(result: ProfileQrScanResult) {
+    when (
+      val action =
+        newProfileQrScanAction(
+          result = result,
+          missingPermissionMessage = missingPermissionMessage,
+          scanErrorMessage = scanErrorMessage,
+        )
+    ) {
+      is NewProfileQrScanAction.CreateProfile -> createProfile(action.request)
+      is NewProfileQrScanAction.ShowMessage -> snackbarHostState.showSnackbar(action.message)
+      NewProfileQrScanAction.Ignore -> Unit
+    }
+  }
+
   fun launchCreateProfile(request: NewProfileCreateRequest) {
     scope.launch {
       createProfile(request)
@@ -72,6 +93,15 @@ fun ProfileRepositoryNewProfileRouteContent(
 
   LaunchedEffect(profileRepository, createRequests) {
     createRequests.collect { request -> createProfile(request) }
+  }
+
+  LaunchedEffect(
+    profileRepository,
+    qrScanResults,
+    missingPermissionMessage,
+    scanErrorMessage,
+  ) {
+    qrScanResults.collect { result -> handleQrScanResult(result) }
   }
 
   NewProfileRouteContent(

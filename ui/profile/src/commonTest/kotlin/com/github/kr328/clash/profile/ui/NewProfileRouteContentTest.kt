@@ -99,6 +99,27 @@ class NewProfileRouteContentTest {
   }
 
   @Test
+  fun qrScanResultActionCreatesUrlProfileCreateRequest() {
+    assertEquals(
+      NewProfileQrScanAction.CreateProfile(
+        NewProfileCreateRequest(
+          type = Profile.Type.Url,
+          source = "https://example.com/from-result.yaml",
+        )
+      ),
+      newProfileQrScanAction(
+        result =
+          ProfileQrScanResult(
+            kind = ProfileQrResultKind.Success,
+            rawValue = "https://example.com/from-result.yaml",
+          ),
+        missingPermissionMessage = "Camera permission denied",
+        scanErrorMessage = "QR scan failed",
+      ),
+    )
+  }
+
+  @Test
   fun qrScanActionShowsMessagesForPermissionAndScanErrors() {
     assertEquals(
       NewProfileQrScanAction.ShowMessage("Camera permission denied"),
