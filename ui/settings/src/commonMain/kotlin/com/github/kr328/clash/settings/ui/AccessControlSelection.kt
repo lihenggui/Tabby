@@ -35,6 +35,17 @@ internal fun accessControlReloadRequest(
   )
 }
 
+internal fun accessControlReloadRequest(
+  state: AccessControlSettingsState
+): AccessControlReloadRequest {
+  return accessControlReloadRequest(
+    selected = state.selected,
+    sort = state.sort,
+    reverse = state.reverse,
+    showSystemApps = state.showSystemApps,
+  )
+}
+
 internal fun planAccessControlPersist(
   selected: Set<String>,
   persistedSelection: Set<String>,

@@ -175,6 +175,26 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun createsAccessControlReloadRequestFromSettingsState() {
+    assertEquals(
+      AccessControlReloadRequest(
+        selected = setOf("com.example.alpha", "com.example.beta"),
+        sort = AccessControlSort.PackageName,
+        reverse = true,
+        showSystemApps = true,
+      ),
+      accessControlReloadRequest(
+        AccessControlSettingsState(
+          selected = setOf("com.example.alpha", "com.example.beta"),
+          sort = AccessControlSort.PackageName,
+          reverse = true,
+          showSystemApps = true,
+        )
+      ),
+    )
+  }
+
+  @Test
   fun plansNoAccessControlPersistWorkWhenSelectionIsUnchanged() {
     assertEquals(
       AccessControlPersistPlan(

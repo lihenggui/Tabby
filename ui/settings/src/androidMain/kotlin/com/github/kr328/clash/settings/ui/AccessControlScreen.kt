@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.compat.getInstalledPackagesCompat
-import com.github.kr328.clash.core.model.AccessControlSort
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
@@ -74,23 +73,22 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
       accessControlSettingsRepository.query(accessControlSettingsDefaults)
     }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
-  var selected by remember { mutableStateOf(accessControlSettings.selectedPackages) }
-  var sort by remember { mutableStateOf(accessControlSettings.sort) }
-  var reverse by remember { mutableStateOf(accessControlSettings.reverse) }
-  var showSystemApps by remember { mutableStateOf(accessControlSettings.showSystemApps) }
-  var androidApps by remember { mutableStateOf(emptyList<AndroidAccessControlApp>()) }
-  var lastAppliedSelected by remember { mutableStateOf(accessControlSettings.selectedPackages) }
-  var reloadRequest by remember {
+  var settingsState by remember {
     mutableStateOf(
-      accessControlReloadRequest(
-        selected = selected,
-        sort = sort,
-        reverse = reverse,
-        showSystemApps = showSystemApps,
+      AccessControlSettingsState(
+        selected = accessControlSettings.selectedPackages,
+        sort = accessControlSettings.sort,
+        reverse = accessControlSettings.reverse,
+        showSystemApps = accessControlSettings.showSystemApps,
       )
     )
   }
-  val currentSelected = rememberUpdatedState(selected)
+  var androidApps by remember { mutableStateOf(emptyList<AndroidAccessControlApp>()) }
+  var lastAppliedSelected by remember { mutableStateOf(accessControlSettings.selectedPackages) }
+  var reloadRequest by remember {
+    mutableStateOf(accessControlReloadRequest(settingsState))
+  }
+  val currentSelected = rememberUpdatedState(settingsState.selected)
   val currentAppliedSelected = rememberUpdatedState(lastAppliedSelected)
   val currentClashRunning = rememberUpdatedState(clashRunning)
   val apps =
@@ -124,19 +122,8 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
-  fun reloadApps(
-    selectedSnapshot: Set<String> = currentSelected.value,
-    sortSnapshot: AccessControlSort = sort,
-    reverseSnapshot: Boolean = reverse,
-    showSystemAppsSnapshot: Boolean = showSystemApps,
-  ) {
-    reloadRequest =
-      accessControlReloadRequest(
-        selected = selectedSnapshot,
-        sort = sortSnapshot,
-        reverse = reverseSnapshot,
-        showSystemApps = showSystemAppsSnapshot,
-      )
+  fun reloadApps(settingsSnapshot: AccessControlSettingsState = settingsState) {
+    reloadRequest = accessControlReloadRequest(settingsSnapshot)
   }
 
   AccessControlSettingsRepositoryRouteContent(
@@ -144,18 +131,23 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
     modifier = modifier,
     initialApps = apps,
     defaults = accessControlSettings,
-    onSelectedPackagesChange = { selected = it },
+    onSelectedPackagesChange = {
+      settingsState = updateAccessControlSelectedPackages(settingsState, it)
+    },
     onSortChange = {
-      sort = it
-      reloadApps(sortSnapshot = it)
+      val updatedSettings = updateAccessControlSort(settingsState, it)
+      settingsState = updatedSettings
+      reloadApps(updatedSettings)
     },
     onReverseChange = {
-      reverse = it
-      reloadApps(reverseSnapshot = it)
+      val updatedSettings = updateAccessControlReverse(settingsState, it)
+      settingsState = updatedSettings
+      reloadApps(updatedSettings)
     },
     onShowSystemAppsChange = {
-      showSystemApps = it
-      reloadApps(showSystemAppsSnapshot = it)
+      val updatedSettings = updateAccessControlShowSystemApps(settingsState, it)
+      settingsState = updatedSettings
+      reloadApps(updatedSettings)
     },
     onImportClipboardPayload = appContext::accessControlClipboardImportPayload,
     onExportClipboardPayload = appContext::exportAccessControlClipboardPayload,
