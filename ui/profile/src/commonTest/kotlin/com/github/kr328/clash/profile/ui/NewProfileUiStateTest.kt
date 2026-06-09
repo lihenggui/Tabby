@@ -323,6 +323,66 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun externalProviderKeyPrefersComponentThenPackageThenName() {
+    assertEquals(
+      "com.example/.Provider",
+      newProfileExternalProviderKey(
+        componentKey = "com.example/.Provider",
+        packageName = "com.example",
+        name = "Example",
+      ),
+    )
+    assertEquals(
+      "com.example",
+      newProfileExternalProviderKey(
+        componentKey = null,
+        packageName = "com.example",
+        name = "Example",
+      ),
+    )
+    assertEquals(
+      "Example",
+      newProfileExternalProviderKey(
+        componentKey = null,
+        packageName = null,
+        name = "Example",
+      ),
+    )
+  }
+
+  @Test
+  fun externalProviderPresentationUsesKeyAndDetailStateFromSourceFields() {
+    assertEquals(
+      NewProfileExternalProviderPresentation(
+        key = "com.example/.Provider",
+        name = "Example",
+        summary = "Example provider",
+        hasDetail = true,
+      ),
+      newProfileExternalProviderPresentation(
+        componentKey = "com.example/.Provider",
+        packageName = "com.example",
+        name = "Example",
+        summary = "Example provider",
+      ),
+    )
+    assertEquals(
+      NewProfileExternalProviderPresentation(
+        key = "Example",
+        name = "Example",
+        summary = "Example provider",
+        hasDetail = false,
+      ),
+      newProfileExternalProviderPresentation(
+        componentKey = null,
+        packageName = null,
+        name = "Example",
+        summary = "Example provider",
+      ),
+    )
+  }
+
+  @Test
   fun newProfileCreateActionCreatesFileProfile() {
     assertEquals(
       NewProfileCreateAction.CreateProfile(Profile.Type.File),

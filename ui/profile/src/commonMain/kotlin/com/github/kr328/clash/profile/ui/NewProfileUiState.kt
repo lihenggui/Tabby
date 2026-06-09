@@ -117,6 +117,33 @@ internal fun <T> newProfileProviderList(
   return newProfileBuiltInProviderKinds().mapNotNull(builtInProvider) + externalProviders
 }
 
+internal fun newProfileExternalProviderKey(
+  componentKey: String?,
+  packageName: String?,
+  name: String,
+): String {
+  return componentKey ?: packageName ?: name
+}
+
+internal fun newProfileExternalProviderPresentation(
+  componentKey: String?,
+  packageName: String?,
+  name: String,
+  summary: String,
+): NewProfileExternalProviderPresentation {
+  return NewProfileExternalProviderPresentation(
+    key =
+      newProfileExternalProviderKey(
+        componentKey = componentKey,
+        packageName = packageName,
+        name = name,
+      ),
+    name = name,
+    summary = summary,
+    hasDetail = newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore,
+  )
+}
+
 internal sealed interface NewProfileCreateAction {
   data class CreateProfile(val type: Profile.Type) : NewProfileCreateAction
 

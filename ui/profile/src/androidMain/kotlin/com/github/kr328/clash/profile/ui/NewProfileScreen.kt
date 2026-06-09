@@ -58,7 +58,9 @@ internal fun NewProfileScreen(
   val qrScanResults = remember { MutableSharedFlow<ProfileQrScanResult>() }
   var externalProviders by remember { mutableStateOf(emptyList<AndroidExternalProfileProvider>()) }
   val externalProvidersByKey =
-    remember(externalProviders) { externalProviders.associateBy { it.key } }
+    remember(externalProviders) {
+      externalProviders.associateBy { it.toNewProfileExternalProviderPresentation().key }
+    }
 
   fun launchCreateRequest(request: NewProfileCreateRequest) {
     scope.launch { createRequests.emit(request) }
@@ -139,13 +141,7 @@ private suspend fun loadExternalProfileProviders(
 @Composable
 private fun AndroidExternalProfileProvider.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
-  val presentation =
-    NewProfileExternalProviderPresentation(
-      key = key,
-      name = name,
-      summary = summary,
-      hasDetail = hasDetail,
-    )
+  val presentation = toNewProfileExternalProviderPresentation()
 
   return NewProfileRouteExternalProvider(
     key = presentation.key,
@@ -186,11 +182,14 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
   }
 }
 
-private val AndroidExternalProfileProvider.key: String
-  get() = componentKey ?: packageName ?: name
-
-private val AndroidExternalProfileProvider.hasDetail: Boolean
-  get() = newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
+private fun AndroidExternalProfileProvider.toNewProfileExternalProviderPresentation():
+  NewProfileExternalProviderPresentation =
+  newProfileExternalProviderPresentation(
+    componentKey = componentKey,
+    packageName = packageName,
+    name = name,
+    summary = summary,
+  )
 
 private fun ActivityResult.toNewProfileExternalProviderResult():
   NewProfileExternalProviderResult<Uri> =
