@@ -25,7 +25,8 @@ import com.github.kr328.clash.profile.ui.ProfileRepositoryNewProfileRouteContent
 import com.github.kr328.clash.profile.ui.ProfileRepositoryProfilesListRouteContent
 import com.github.kr328.clash.profile.ui.ProfileRepositoryPropertiesRouteContent
 import com.github.kr328.clash.proxy.proxyEntries
-import com.github.kr328.clash.proxy.ui.ProxyRouteContent
+import com.github.kr328.clash.proxy.ui.InMemoryProxyRoutePreferencesRepository
+import com.github.kr328.clash.proxy.ui.ProxyRoutePreferencesRepositoryRouteContent
 import com.github.kr328.clash.settings.SettingsRouteContent
 import com.github.kr328.clash.settings.settingsEntries
 import com.github.kr328.clash.settings.ui.AccessControlSettingsRepositoryRouteContent
@@ -81,8 +82,13 @@ fun PlaceholderTabbyApp(
         proxyEntries = { onReLaunch ->
           proxyEntries(
             proxyContent = {
-              ProxyRouteContent(
+              val proxyPreferencesRepository = remember {
+                InMemoryProxyRoutePreferencesRepository()
+              }
+
+              ProxyRoutePreferencesRepositoryRouteContent(
                 engineController = engineEnvironment.engineController,
+                preferencesRepository = proxyPreferencesRepository,
                 onReLaunch = onReLaunch,
               )
             }
