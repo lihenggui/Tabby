@@ -50,7 +50,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.log.generated.resources.Res as LogRes
-import tabby.ui.log.generated.resources.copied
 import tabby.ui.log.generated.resources.invalid_log_file
 
 private data class AndroidLogcatBinding(
@@ -72,7 +71,6 @@ internal fun LogcatScreen(
   val lifecycleOwner = LocalLifecycleOwner.current
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
-  val messageCopied = stringResource(LogRes.string.copied)
   val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
   val exportedMessage = context.getString(R.string.file_exported)
   val unknownMessage = context.getString(CommonR.string.unknown)
@@ -258,13 +256,9 @@ internal fun LogcatScreen(
         eventState = it
       }
     },
-    onCopyMessage = { message ->
-      scope.launch {
-        val payload = logcatCopyMessagePayload(message)
-        val clipEntry = ClipData.newPlainText(payload.label, payload.text).toClipEntry()
-        clipboard.setClipEntry(clipEntry)
-        snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
-      }
+    copyMessageText = { label, text ->
+      val clipEntry = ClipData.newPlainText(label, text).toClipEntry()
+      clipboard.setClipEntry(clipEntry)
     },
   )
 }

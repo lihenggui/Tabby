@@ -5,14 +5,17 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.ui.component.ModelProgressBarDialog
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.log.generated.resources.Res as LogRes
+import tabby.ui.log.generated.resources.copied
 import tabby.ui.log.generated.resources.invalid_log_file
 
 @Composable
@@ -32,7 +35,7 @@ fun LogcatRouteContent(
   onClose: () -> Unit = {},
   onDeleteFile: (LogFile) -> Unit = {},
   onRequestExport: (String) -> Unit = {},
-  onCopyMessage: (LogMessage) -> Unit = {},
+  copyMessageText: suspend (label: String, text: String) -> Unit = { _, _ -> },
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
@@ -93,7 +96,7 @@ fun LogcatRouteContent(
         LogcatRequestExportAction.Ignore -> Unit
       }
     },
-    onCopyMessage = onCopyMessage,
+    copyMessageText = copyMessageText,
   )
 }
 
@@ -106,10 +109,13 @@ internal fun LogcatStateRouteContent(
   onClose: () -> Unit,
   onDelete: () -> Unit,
   onExport: () -> Unit,
-  onCopyMessage: (LogMessage) -> Unit,
+  copyMessageText: suspend (label: String, text: String) -> Unit = { _, _ -> },
 ) {
   val listState = rememberLazyListState()
+  val scope = rememberCoroutineScope()
   val messageCount = rememberUpdatedState(state.messages.size)
+  val currentCopyMessageText = rememberUpdatedState(copyMessageText)
+  val copiedMessage = stringResource(LogRes.string.copied)
 
   LaunchedEffect(listState, state.streaming) {
     if (!state.streaming) return@LaunchedEffect
@@ -132,7 +138,13 @@ internal fun LogcatStateRouteContent(
     onClose = onClose,
     onDelete = onDelete,
     onExport = onExport,
-    onCopyMessage = onCopyMessage,
+    onCopyMessage = { message ->
+      scope.launch {
+        val payload = logcatCopyMessagePayload(message)
+        currentCopyMessageText.value(payload.label, payload.text)
+        snackbarHostState.showSnackbar(message = copiedMessage, withDismissAction = true)
+      }
+    },
   )
 
   ModelProgressBarDialog(
