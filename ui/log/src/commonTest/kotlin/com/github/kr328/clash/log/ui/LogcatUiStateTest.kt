@@ -20,6 +20,14 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun exportPlatformSpecUsesStableDocumentMimeType() {
+    assertEquals(
+      LogcatExportPlatformSpec(exportMimeType = "text/plain"),
+      logcatExportPlatformSpec(),
+    )
+  }
+
+  @Test
   fun logcatEventRouteEffectMapsEventStates() {
     assertEquals(
       LogcatEventRouteEffect.Ignore,

@@ -70,6 +70,7 @@ internal fun LogcatScreen(
   var logcatBinding by remember { mutableStateOf<AndroidLogcatBinding?>(null) }
   var started by remember { mutableStateOf(false) }
   var initialSnapshot by remember { mutableStateOf(true) }
+  val exportPlatformSpec = remember { logcatExportPlatformSpec() }
   val currentLogcatBinding = rememberUpdatedState(logcatBinding)
 
   LaunchedEffect(fileName, appContext) {
@@ -160,7 +161,7 @@ internal fun LogcatScreen(
   }
 
   val exportLauncher =
-    rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
+    rememberLauncherForActivityResult(CreateDocument(exportPlatformSpec.exportMimeType)) { uri ->
       when (
         val action = logcatExportDestinationAction(currentFile = currentFile, destination = uri)
       ) {

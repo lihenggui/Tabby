@@ -113,12 +113,18 @@ internal sealed interface LogcatExportDestinationAction<out DestinationT> {
   data object Ignore : LogcatExportDestinationAction<Nothing>
 }
 
+internal data class LogcatExportPlatformSpec(val exportMimeType: String)
+
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
 internal data class LogcatCopyMessagePayload(
   val label: String,
   val text: String,
 )
+
+internal fun logcatExportPlatformSpec(): LogcatExportPlatformSpec {
+  return LogcatExportPlatformSpec(exportMimeType = "text/plain")
+}
 
 internal fun logcatExportResult(destinationSelected: Boolean): LogcatExportResult {
   return LogcatExportResult(destinationSelected = destinationSelected)
