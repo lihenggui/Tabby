@@ -27,6 +27,8 @@ import tabby.ui.home.generated.resources.already_up_to_date
 import tabby.ui.home.generated.resources.check_update_failed
 import tabby.ui.home.generated.resources.open
 import tabby.ui.home.generated.resources.update_available
+import tabby.ui.shared.generated.resources.Res as SharedRes
+import tabby.ui.shared.generated.resources.copied
 
 @Composable
 fun HelpRouteContent(
@@ -42,7 +44,7 @@ fun HelpRouteContent(
   mihomoCoreUrl: String = MIHOMO_CORE,
   tabbyUrl: String = TABBY_GITHUB,
   onOpenLink: (String) -> Unit = {},
-  onCopyVersion: (String) -> Unit = {},
+  onCopyVersion: suspend (label: String, text: String) -> Unit = { _, _ -> },
   releasesUrl: String = TABBY_RELEASES_LATEST,
   onLoadVersionInfo: suspend () -> HelpVersionInfo = {
     HelpVersionInfo(appVersion = appVersion, coreVersion = coreVersion)
@@ -63,6 +65,7 @@ fun HelpRouteContent(
   var eventState by remember { mutableStateOf<HelpEventState>(helpInitialEventState()) }
   val scope = rememberCoroutineScope()
   val currentOnOpenLink by rememberUpdatedState(onOpenLink)
+  val currentOnCopyVersion by rememberUpdatedState(onCopyVersion)
   val currentOnLoadVersionInfo by rememberUpdatedState(onLoadVersionInfo)
   val currentOnFetchLatestReleaseTag by rememberUpdatedState(onFetchLatestReleaseTag)
   val currentOnLoadLocalVersion by rememberUpdatedState(onLoadLocalVersion)
@@ -71,6 +74,7 @@ fun HelpRouteContent(
   val openActionText = stringResource(HomeRes.string.open)
   val alreadyUpToDateMessage = stringResource(HomeRes.string.already_up_to_date)
   val updateCheckFailedMessage = stringResource(HomeRes.string.check_update_failed)
+  val copiedMessage = stringResource(SharedRes.string.copied)
 
   LaunchedEffect(Unit) { uiState = uiState.withVersionInfo(currentOnLoadVersionInfo()) }
 
@@ -109,7 +113,13 @@ fun HelpRouteContent(
     tabbyUrl = tabbyUrl,
     snackbarHostState = snackbarHostState,
     onOpenLink = onOpenLink,
-    onCopyVersion = onCopyVersion,
+    onCopyVersion = { version ->
+      scope.launch {
+        val payload = helpCopyVersionPayload(version)
+        currentOnCopyVersion(payload.label, payload.text)
+        snackbarHostState.showSnackbar(message = copiedMessage, withDismissAction = true)
+      }
+    },
     onCheckForUpdates = {
       when (helpUpdateCheckRequestAction(uiState)) {
         HelpUpdateCheckRequestAction.StartCheck -> Unit

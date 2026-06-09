@@ -2,10 +2,8 @@ package com.github.kr328.clash.home.ui
 
 import android.content.ClipData
 import android.content.Context
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
@@ -27,25 +25,17 @@ import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.TABBY_REPO
 import com.github.kr328.clash.network.GitHubReleaseClient
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.compose.resources.stringResource
-import tabby.ui.shared.generated.resources.Res as SharedRes
-import tabby.ui.shared.generated.resources.copied
 
 @Composable
 internal fun HelpScreen(modifier: Modifier = Modifier) {
-  val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
   val appContext = context.applicationContext
   val clipboard = LocalClipboard.current
-  val scope = rememberCoroutineScope()
   val releaseClient = remember { GitHubReleaseClient() }
-  val messageCopied = stringResource(SharedRes.string.copied)
 
   HelpRouteContent(
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
     tipsText = AnnotatedString.fromHtml(androidStringResource(R.string.tips_help)),
     appName = androidStringResource(CommonR.string.tabby),
     appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
@@ -53,13 +43,9 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
     mihomoCoreUrl = MIHOMO_CORE,
     tabbyUrl = TABBY_GITHUB,
     onOpenLink = { url -> context.openLink(url) },
-    onCopyVersion = { version ->
-      scope.launch {
-        val payload = helpCopyVersionPayload(version)
-        val clipEntry = ClipData.newPlainText(payload.label, payload.text).toClipEntry()
-        clipboard.setClipEntry(clipEntry)
-        snackbarHostState.showSnackbar(message = messageCopied, withDismissAction = true)
-      }
+    onCopyVersion = { label, text ->
+      val clipEntry = ClipData.newPlainText(label, text).toClipEntry()
+      clipboard.setClipEntry(clipEntry)
     },
     releasesUrl = TABBY_RELEASES_LATEST,
     onLoadVersionInfo = { withContext(Dispatchers.IO) { appContext.loadVersionInfo() } },
