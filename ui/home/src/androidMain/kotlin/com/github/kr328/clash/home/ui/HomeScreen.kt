@@ -100,8 +100,8 @@ internal fun HomeScreen(
       val providers = engineController.queryProviders()
       val profileName = profileRepository.queryActive()?.name
 
-      HomeFetchedState(
-        modeLabel = homeModeLabel(state.mode),
+      homeFetchedStateFromRuntimePayload(
+        mode = state.mode,
         hasProviders = providers.isNotEmpty(),
         profileName = profileName,
       )

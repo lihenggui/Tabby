@@ -69,8 +69,8 @@ fun HomeRouteContent(
           false
         }
 
-      HomeFetchedState(
-        modeLabel = homeModeLabel(state.mode),
+      homeFetchedStateFromRuntimePayload(
+        mode = state.mode,
         hasProviders = hasProviders,
         profileName = profileName,
       )

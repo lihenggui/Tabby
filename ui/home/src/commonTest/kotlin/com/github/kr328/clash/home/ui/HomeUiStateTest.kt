@@ -463,6 +463,22 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeFetchedStateFromRuntimePayloadMapsModeProviderAndProfileFields() {
+    assertEquals(
+      HomeFetchedState(
+        modeLabel = HomeModeLabel.Rule,
+        hasProviders = true,
+        profileName = "Daily",
+      ),
+      homeFetchedStateFromRuntimePayload(
+        mode = TunnelState.Mode.Rule,
+        hasProviders = true,
+        profileName = "Daily",
+      ),
+    )
+  }
+
+  @Test
   fun fetchedStateShowsModeWhenClashIsRunningAndKeepsForwardedTraffic() {
     val state =
       HomeUiState(forwarded = "10 MB")

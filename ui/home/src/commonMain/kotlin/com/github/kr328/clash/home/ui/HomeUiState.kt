@@ -20,6 +20,18 @@ internal fun homeInitialUiState(): HomeUiState {
   return HomeUiState()
 }
 
+internal fun homeFetchedStateFromRuntimePayload(
+  mode: TunnelState.Mode,
+  hasProviders: Boolean,
+  profileName: String?,
+): HomeFetchedState {
+  return HomeFetchedState(
+    modeLabel = homeModeLabel(mode),
+    hasProviders = hasProviders,
+    profileName = profileName,
+  )
+}
+
 internal enum class HomeStartAction {
   StartEngine,
   ShowNoProfileMessage,
