@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.ui.component.ModelProgressBarDialog
 import com.github.kr328.clash.ui.component.TabbyScaffold
 import com.github.kr328.clash.ui.icon.BaselineSave
@@ -125,7 +126,7 @@ internal fun PropertiesContent(
               }
             },
             title = { Text(stringResource(SharedRes.string.url)) },
-            textToValue = { input -> input.takeIf(::isHttpUrl) },
+            textToValue = ::profilePropertiesSourceInputValue,
             enabled = profile.type != Profile.Type.File && profile.type != Profile.Type.External,
             icon = { Icon(imageVector = TabbyIcons.OutlineInbox, contentDescription = null) },
             summary = {
@@ -217,8 +218,8 @@ private fun ExitWithoutSavingDialog(onConfirm: () -> Unit, onDismiss: () -> Unit
 
 private fun isNotBlank(value: String): Boolean = value.isNotBlank()
 
-private fun isHttpUrl(value: String): Boolean =
-  value.startsWith("https://", ignoreCase = true) || value.startsWith("http://", ignoreCase = true)
+internal fun profilePropertiesSourceInputValue(value: String): String? =
+  value.takeIf(::isHttpProfileSource)
 
 private fun isAutoUpdateInterval(value: String): Boolean =
   value.isEmpty() || (value.toLongOrNull() ?: 0) >= 15
