@@ -10,6 +10,10 @@ data class TabbyInstallProfileRequest(
   val source: String,
 )
 
+private const val INSTALL_PROFILE_SOURCE_QUERY_PARAMETER = "url"
+private const val INSTALL_PROFILE_TYPE_QUERY_PARAMETER = "type"
+private const val INSTALL_PROFILE_NAME_QUERY_PARAMETER = "name"
+
 sealed interface TabbyInstallProfileResultAction {
   data class OpenRoute(val routeAction: TabbyExternalRouteAction) : TabbyInstallProfileResultAction
 }
@@ -30,6 +34,19 @@ fun tabbyInstallProfileRequest(
       },
     name = name ?: defaultName,
     source = profileSource,
+  )
+}
+
+fun <T> tabbyInstallProfileRequestFromPlatformPayload(
+  payload: T,
+  queryParameter: (T, String) -> String?,
+  defaultName: String,
+): TabbyInstallProfileRequest? {
+  return tabbyInstallProfileRequest(
+    source = queryParameter(payload, INSTALL_PROFILE_SOURCE_QUERY_PARAMETER),
+    type = queryParameter(payload, INSTALL_PROFILE_TYPE_QUERY_PARAMETER),
+    name = queryParameter(payload, INSTALL_PROFILE_NAME_QUERY_PARAMETER),
+    defaultName = defaultName,
   )
 }
 

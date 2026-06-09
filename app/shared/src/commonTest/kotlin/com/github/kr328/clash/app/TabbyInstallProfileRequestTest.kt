@@ -70,6 +70,47 @@ class TabbyInstallProfileRequestTest {
   }
 
   @Test
+  fun tabbyInstallProfileRequestFromPlatformPayloadReadsCommonQueryKeys() {
+    assertEquals(
+      TabbyInstallProfileRequest(
+        type = Profile.Type.File,
+        name = "Imported",
+        source = "content://profiles/config.yaml",
+      ),
+      tabbyInstallProfileRequestFromPlatformPayload(
+        payload =
+          TestInstallProfilePayload(
+            parameters =
+              mapOf(
+                "url" to "content://profiles/config.yaml",
+                "type" to "file",
+                "name" to "Imported",
+              )
+          ),
+        queryParameter = TestInstallProfilePayload::parameter,
+        defaultName = "Default",
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyInstallProfileRequestFromPlatformPayloadFallsBackToDefaultNameAndUrlType() {
+    assertEquals(
+      TabbyInstallProfileRequest(
+        type = Profile.Type.Url,
+        name = "Default",
+        source = "https://example.com/config.yaml",
+      ),
+      tabbyInstallProfileRequestFromPlatformPayload(
+        payload =
+          TestInstallProfilePayload(parameters = mapOf("url" to "https://example.com/config.yaml")),
+        queryParameter = TestInstallProfilePayload::parameter,
+        defaultName = "Default",
+      ),
+    )
+  }
+
+  @Test
   fun tabbyInstallProfileCreatesAndPatchesRequestedProfile() = runTest {
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
     val repository = RecordingProfileRepository(uuid)
@@ -108,6 +149,12 @@ class TabbyInstallProfileRequestTest {
       ),
       tabbyInstallProfileResultAction(uuid),
     )
+  }
+
+  private data class TestInstallProfilePayload(val parameters: Map<String, String>) {
+    fun parameter(name: String): String? {
+      return parameters[name]
+    }
   }
 
   private class RecordingProfileRepository(private val createdUuid: Uuid) : ProfileRepository {

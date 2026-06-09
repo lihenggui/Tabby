@@ -201,10 +201,9 @@ class MainActivity : ComponentActivity() {
 
   private fun handleInstallConfigUri(uri: Uri, backStack: MutableList<NavKey>) {
     val request =
-      tabbyInstallProfileRequest(
-        source = uri.getQueryParameter("url"),
-        type = uri.getQueryParameter("type"),
-        name = uri.getQueryParameter("name"),
+      tabbyInstallProfileRequestFromPlatformPayload(
+        payload = uri,
+        queryParameter = Uri::getQueryParameter,
         defaultName = getString(CommonR.string.new_profile),
       ) ?: return
     lifecycleScope.launch {
