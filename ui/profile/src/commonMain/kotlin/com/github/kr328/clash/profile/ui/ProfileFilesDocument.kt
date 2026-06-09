@@ -33,44 +33,6 @@ data class ProfileFilesExportResult<out OutputT : Any>(
   val sourceDocumentId: String?,
 )
 
-internal fun <SourceT : Any> profileFilesImportResultFromPlatformPayload(
-  source: SourceT?,
-  sourceFileName: String?,
-  pendingTargetDocument: ProfileFilesDocument?,
-): ProfileFilesImportResult<SourceT> {
-  return ProfileFilesImportResult(
-    source = source,
-    sourceFileName = if (source != null) sourceFileName else null,
-    targetDocumentId = if (source != null) pendingTargetDocument?.id else null,
-  )
-}
-
-internal fun <OutputT : Any> profileFilesExportResultFromPlatformPayload(
-  output: OutputT?,
-  pendingSourceDocument: ProfileFilesDocument?,
-): ProfileFilesExportResult<OutputT> {
-  return ProfileFilesExportResult(
-    output = output,
-    sourceDocumentId = if (output != null) pendingSourceDocument?.id else null,
-  )
-}
-
-internal fun profileFilesDocumentFromPlatformPayload(
-  id: String,
-  name: String,
-  sizeBytes: Long,
-  lastModified: Long,
-  isDirectory: Boolean,
-): ProfileFilesDocument {
-  return ProfileFilesDocument(
-    id = id,
-    name = name,
-    sizeBytes = sizeBytes,
-    lastModified = lastModified,
-    isDirectory = isDirectory,
-  )
-}
-
 internal fun ProfileFilesDocument.toProfileFileRouteItem(): ProfileFileRouteItem {
   return ProfileFileRouteItem(
     id = id,

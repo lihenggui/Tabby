@@ -26,57 +26,6 @@ internal sealed interface ProfileFileImportResolvedAction<out SourceT : Any> {
   data object Ignore : ProfileFileImportResolvedAction<Nothing>
 }
 
-internal data class ProfileFileImportResult(
-  val sourceSelected: Boolean,
-  val sourceFileName: String?,
-  val targetDocumentId: String?,
-  val parentDocumentId: String,
-)
-
-internal data class ProfileFileImportResolvedResult<out SourceT : Any>(
-  val source: SourceT?,
-  val sourceFileName: String?,
-  val targetDocumentId: String?,
-  val parentDocumentId: String,
-)
-
-internal fun profileFileImportResultFromPlatformPayload(
-  sourceSelected: Boolean,
-  sourceFileName: String?,
-  targetDocumentId: String?,
-  parentDocumentId: String,
-): ProfileFileImportResult {
-  return ProfileFileImportResult(
-    sourceSelected = sourceSelected,
-    sourceFileName = if (sourceSelected) sourceFileName else null,
-    targetDocumentId = targetDocumentId,
-    parentDocumentId = parentDocumentId,
-  )
-}
-
-internal fun <SourceT : Any> profileFileImportResolvedResultFromPlatformPayload(
-  source: SourceT?,
-  sourceFileName: String?,
-  targetDocumentId: String?,
-  parentDocumentId: String,
-): ProfileFileImportResolvedResult<SourceT> {
-  return ProfileFileImportResolvedResult(
-    source = source,
-    sourceFileName = if (source != null) sourceFileName else null,
-    targetDocumentId = targetDocumentId,
-    parentDocumentId = parentDocumentId,
-  )
-}
-
-internal fun profileFileImportAction(result: ProfileFileImportResult): ProfileFileImportAction {
-  return profileFileImportAction(
-    sourceSelected = result.sourceSelected,
-    sourceFileName = result.sourceFileName,
-    targetDocumentId = result.targetDocumentId,
-    parentDocumentId = result.parentDocumentId,
-  )
-}
-
 internal fun profileFileImportAction(
   sourceSelected: Boolean,
   sourceFileName: String?,
@@ -93,17 +42,6 @@ internal fun profileFileImportAction(
   } else {
     ProfileFileImportAction.ReplaceFile(targetDocumentId)
   }
-}
-
-internal fun <SourceT : Any> profileFileImportResolvedAction(
-  result: ProfileFileImportResolvedResult<SourceT>
-): ProfileFileImportResolvedAction<SourceT> {
-  return profileFileImportResolvedAction(
-    source = result.source,
-    sourceFileName = result.sourceFileName,
-    targetDocumentId = result.targetDocumentId,
-    parentDocumentId = result.parentDocumentId,
-  )
 }
 
 internal fun <SourceT : Any> profileFileImportResolvedAction(

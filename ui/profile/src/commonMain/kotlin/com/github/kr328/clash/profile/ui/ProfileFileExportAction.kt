@@ -15,43 +15,6 @@ internal sealed interface ProfileFileExportResolvedAction<out OutputT : Any> {
   data object Ignore : ProfileFileExportResolvedAction<Nothing>
 }
 
-internal data class ProfileFileExportResult(
-  val outputSelected: Boolean,
-  val sourceDocumentId: String?,
-)
-
-internal data class ProfileFileExportResolvedResult<out OutputT : Any>(
-  val output: OutputT?,
-  val sourceDocumentId: String?,
-)
-
-internal fun profileFileExportResultFromPlatformPayload(
-  outputSelected: Boolean,
-  sourceDocumentId: String?,
-): ProfileFileExportResult {
-  return ProfileFileExportResult(
-    outputSelected = outputSelected,
-    sourceDocumentId = if (outputSelected) sourceDocumentId else null,
-  )
-}
-
-internal fun <OutputT : Any> profileFileExportResolvedResultFromPlatformPayload(
-  output: OutputT?,
-  sourceDocumentId: String?,
-): ProfileFileExportResolvedResult<OutputT> {
-  return ProfileFileExportResolvedResult(
-    output = output,
-    sourceDocumentId = if (output != null) sourceDocumentId else null,
-  )
-}
-
-internal fun profileFileExportAction(result: ProfileFileExportResult): ProfileFileExportAction {
-  return profileFileExportAction(
-    outputSelected = result.outputSelected,
-    sourceDocumentId = result.sourceDocumentId,
-  )
-}
-
 internal fun profileFileExportAction(
   outputSelected: Boolean,
   sourceDocumentId: String?,
@@ -61,15 +24,6 @@ internal fun profileFileExportAction(
   } else {
     ProfileFileExportAction.Ignore
   }
-}
-
-internal fun <OutputT : Any> profileFileExportResolvedAction(
-  result: ProfileFileExportResolvedResult<OutputT>
-): ProfileFileExportResolvedAction<OutputT> {
-  return profileFileExportResolvedAction(
-    output = result.output,
-    sourceDocumentId = result.sourceDocumentId,
-  )
 }
 
 internal fun <OutputT : Any> profileFileExportResolvedAction(

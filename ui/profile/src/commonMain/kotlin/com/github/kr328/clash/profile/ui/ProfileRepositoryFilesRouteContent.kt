@@ -141,12 +141,10 @@ fun <SourceT : Any, OutputT : Any> ProfileRepositoryFilesRouteContent(
     when (
       val action =
         profileFileImportResolvedAction(
-          profileFileImportResolvedResultFromPlatformPayload(
-            source = result.source,
-            sourceFileName = result.sourceFileName,
-            targetDocumentId = result.targetDocumentId,
-            parentDocumentId = location.currentDocumentId,
-          )
+          source = result.source,
+          sourceFileName = result.sourceFileName,
+          targetDocumentId = result.targetDocumentId,
+          parentDocumentId = location.currentDocumentId,
         )
     ) {
       is ProfileFileImportResolvedAction.ImportNewFile ->
@@ -165,10 +163,8 @@ fun <SourceT : Any, OutputT : Any> ProfileRepositoryFilesRouteContent(
     when (
       val action =
         profileFileExportResolvedAction(
-          profileFileExportResolvedResultFromPlatformPayload(
-            output = result.output,
-            sourceDocumentId = result.sourceDocumentId,
-          )
+          output = result.output,
+          sourceDocumentId = result.sourceDocumentId,
         )
     ) {
       is ProfileFileExportResolvedAction.ExportFile ->
