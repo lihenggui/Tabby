@@ -2,6 +2,7 @@ package com.github.kr328.clash.engine.desktop
 
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -282,7 +283,7 @@ class DesktopProfileRepository(
     force: Boolean,
   ): ProfileFetchResult? {
     val config = profileDir.resolve(CONFIGURATION_FILE)
-    if (!source.isHttpSource() || (!force && config.exists())) return null
+    if (!isHttpProfileSource(source) || (!force && config.exists())) return null
 
     return networkClient.fetchProfile(source).also { result ->
       profileDir.createDirectories()
@@ -375,7 +376,7 @@ class DesktopProfileRepository(
       name.isBlank() -> throw IllegalArgumentException("Empty name")
       type == Profile.Type.External -> unsupported()
       source.isBlank() && type != Profile.Type.File -> throw IllegalArgumentException("Invalid url")
-      source.isNotBlank() && type != Profile.Type.File && !source.isHttpSource() ->
+      source.isNotBlank() && type != Profile.Type.File && !isHttpProfileSource(source) ->
         throw IllegalArgumentException("Unsupported url $source")
       interval != 0L && interval < MINIMUM_INTERVAL_MILLIS ->
         throw IllegalArgumentException("Invalid interval")
@@ -423,8 +424,4 @@ private fun copyProfileDirectory(source: Path, target: Path) {
   target.deleteRecursively()
   target.parent?.createDirectories()
   source.toFile().copyRecursively(target.toFile(), overwrite = true)
-}
-
-private fun String.isHttpSource(): Boolean {
-  return startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true)
 }

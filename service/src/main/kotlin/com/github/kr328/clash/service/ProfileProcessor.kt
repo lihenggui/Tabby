@@ -6,6 +6,7 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
@@ -262,7 +263,7 @@ private suspend fun Context.fetchProfileConfigurationIfNeeded(
   reportStatus: (FetchStatus) -> Unit,
 ): ProfileFetchResult? {
   val config = processingDir.resolve("config.yaml")
-  if (!source.isHttpSource() || (!force && config.exists())) return null
+  if (!isHttpProfileSource(source) || (!force && config.exists())) return null
 
   val uri = source.toUri()
   reportStatus(
@@ -278,10 +279,6 @@ private suspend fun Context.fetchProfileConfigurationIfNeeded(
     config.parentFile?.mkdirs()
     config.writeText(result.content)
   }
-}
-
-private fun String.isHttpSource(): Boolean {
-  return startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true)
 }
 
 private val json = Json {
