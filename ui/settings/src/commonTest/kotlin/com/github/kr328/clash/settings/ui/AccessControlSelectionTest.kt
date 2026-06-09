@@ -157,7 +157,7 @@ class AccessControlSelectionTest {
   }
 
   @Test
-  fun createsAccessControlReloadRequestFromPlatformSnapshots() {
+  fun createsAccessControlReloadRequestFromSelectionSnapshot() {
     assertEquals(
       AccessControlReloadRequest(
         selected = setOf("com.example.alpha"),

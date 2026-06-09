@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class TabbyTileStateTest {
   @Test
-  fun tabbyTileBroadcastActionFromStringParsesKnownPlatformActions() {
+  fun tabbyTileBroadcastActionFromStringParsesKnownBroadcastActions() {
     assertEquals(
       TabbyTileBroadcastAction.ClashStarted,
       tabbyTileBroadcastActionFromString(
@@ -49,7 +49,7 @@ class TabbyTileStateTest {
   }
 
   @Test
-  fun tabbyTileBroadcastActionFromStringIgnoresUnknownPlatformActions() {
+  fun tabbyTileBroadcastActionFromStringIgnoresUnknownBroadcastActions() {
     assertEquals(
       null,
       tabbyTileBroadcastActionFromString(
