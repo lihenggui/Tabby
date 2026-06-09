@@ -46,13 +46,17 @@ fun Intent.grantPermissions(read: Boolean = true, write: Boolean = true): Intent
 }
 
 var Intent.uuid: Uuid?
-  get() = data?.takeIf { it.scheme == "uuid" }?.schemeSpecificPart?.let(Uuid::parse)
+  get() =
+    tabbyUuidFromUriPayload(
+      scheme = data?.scheme,
+      schemeSpecificPart = data?.schemeSpecificPart,
+    )
   set(value) {
     data =
       if (value == null) {
         null
       } else {
-        Uri.fromParts("uuid", value.toString(), null)
+        Uri.fromParts(TABBY_UUID_URI_SCHEME, tabbyUuidUriSchemeSpecificPart(value), null)
       }
   }
 
