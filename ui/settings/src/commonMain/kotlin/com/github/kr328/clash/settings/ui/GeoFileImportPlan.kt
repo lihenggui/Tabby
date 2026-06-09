@@ -27,6 +27,8 @@ internal sealed interface GeoFileImportPlatformSourceAction<out SourceT> {
   data object Fail : GeoFileImportPlatformSourceAction<Nothing>
 }
 
+internal data class GeoFileImportPickerPlatformSpec(val pickerMimeType: String)
+
 internal sealed interface GeoFileImportRequestAction {
   data class RequestPicker(val importType: GeoFileImportType) : GeoFileImportRequestAction
 
@@ -75,6 +77,10 @@ internal fun geoFileImportInitialResult(): GeoFileImportResult {
 
 internal fun geoFileImportInitialDisplayState(): GeoFileImportDisplayState {
   return GeoFileImportDisplayState()
+}
+
+internal fun geoFileImportPickerPlatformSpec(): GeoFileImportPickerPlatformSpec {
+  return GeoFileImportPickerPlatformSpec(pickerMimeType = "*/*")
 }
 
 internal fun geoFileImportRequestAction(

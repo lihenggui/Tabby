@@ -5,6 +5,14 @@ import kotlin.test.assertEquals
 
 class GeoFileImportPlanTest {
   @Test
+  fun pickerPlatformSpecUsesAnyFileMimeType() {
+    assertEquals(
+      GeoFileImportPickerPlatformSpec(pickerMimeType = "*/*"),
+      geoFileImportPickerPlatformSpec(),
+    )
+  }
+
+  @Test
   fun initialResultUsesIdleState() {
     assertEquals(GeoFileImportResult.Idle, geoFileImportInitialResult())
   }

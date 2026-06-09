@@ -33,6 +33,7 @@ internal fun MetaFeatureSettingsScreen(
   val context = LocalContext.current
   val appContext = context.applicationContext
   val engineController = remember(appContext) { AndroidEngineController(appContext) }
+  val pickerPlatformSpec = remember { geoFileImportPickerPlatformSpec() }
   val importScope = rememberCoroutineScope()
   var importResult by remember { mutableStateOf(geoFileImportInitialResult()) }
   var pendingImportType by remember { mutableStateOf<GeoFileImportType?>(null) }
@@ -59,7 +60,7 @@ internal fun MetaFeatureSettingsScreen(
     when (val action = geoFileImportRequestAction(importType)) {
       is GeoFileImportRequestAction.RequestPicker -> {
         pendingImportType = action.importType
-        importLauncher.launch("*/*")
+        importLauncher.launch(pickerPlatformSpec.pickerMimeType)
       }
       GeoFileImportRequestAction.Ignore -> Unit
     }
