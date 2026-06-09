@@ -102,7 +102,7 @@ internal fun <VpnPermissionT> HomeRuntimeRouteContent(
   active: Boolean,
   clashRunning: Boolean,
   broadcastEvents: Flow<HomeBroadcastEvent>,
-  vpnPermissionResults: Flow<Boolean>,
+  vpnPermissionResults: Flow<HomeVpnPermissionResult>,
   onFetchHomeState: suspend (clashRunning: Boolean) -> HomeFetchedState,
   onStartEngine: suspend () -> HomeEngineStartResult<VpnPermissionT>,
   onStopEngine: suspend () -> Unit,
@@ -223,8 +223,8 @@ internal fun <VpnPermissionT> HomeRuntimeRouteContent(
   }
 
   LaunchedEffect(vpnPermissionResults) {
-    vpnPermissionResults.collect { granted ->
-      when (homeVpnPermissionResultActionFromGranted(granted = granted)) {
+    vpnPermissionResults.collect { result ->
+      when (homeVpnPermissionResultAction(result)) {
         HomeVpnPermissionResultAction.StartEngine -> startEngine()
         HomeVpnPermissionResultAction.Ignore -> Unit
       }

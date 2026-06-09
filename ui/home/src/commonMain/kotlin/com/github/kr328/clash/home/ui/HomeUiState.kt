@@ -285,6 +285,13 @@ internal fun homeVpnPermissionResult(granted: Boolean): HomeVpnPermissionResult 
   return if (granted) HomeVpnPermissionResult.Granted else HomeVpnPermissionResult.Denied
 }
 
+internal fun homeVpnPermissionResultFromPlatformResult(
+  resultCode: Int,
+  grantedResultCode: Int,
+): HomeVpnPermissionResult {
+  return homeVpnPermissionResult(granted = resultCode == grantedResultCode)
+}
+
 internal fun homeVpnPermissionResultAction(
   result: HomeVpnPermissionResult
 ): HomeVpnPermissionResultAction {

@@ -53,14 +53,21 @@ internal fun HomeScreen(
   val profileRepository: ProfileRepository = remember { AndroidProfileRepository() }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
   var started by remember { mutableStateOf(false) }
-  val vpnPermissionResults = remember { MutableSharedFlow<Boolean>(extraBufferCapacity = 1) }
+  val vpnPermissionResults = remember {
+    MutableSharedFlow<HomeVpnPermissionResult>(extraBufferCapacity = 1)
+  }
   val broadcastEvents = remember {
     Remote.broadcasts.event.map { event -> event.toHomeBroadcastEvent() }
   }
 
   val vpnLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      vpnPermissionResults.tryEmit(result.resultCode == Activity.RESULT_OK)
+      vpnPermissionResults.tryEmit(
+        homeVpnPermissionResultFromPlatformResult(
+          resultCode = result.resultCode,
+          grantedResultCode = Activity.RESULT_OK,
+        )
+      )
     }
 
   DisposableEffect(engineControllerScope) { onDispose { engineControllerScope.cancel() } }

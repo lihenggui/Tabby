@@ -383,6 +383,24 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeVpnPermissionResultMapsPlatformResultCode() {
+    assertEquals(
+      HomeVpnPermissionResult.Granted,
+      homeVpnPermissionResultFromPlatformResult(
+        resultCode = 1,
+        grantedResultCode = 1,
+      ),
+    )
+    assertEquals(
+      HomeVpnPermissionResult.Denied,
+      homeVpnPermissionResultFromPlatformResult(
+        resultCode = 0,
+        grantedResultCode = 1,
+      ),
+    )
+  }
+
+  @Test
   fun homeVpnPermissionResultActionStartsEngineOnlyWhenPermissionIsGranted() {
     assertEquals(
       HomeVpnPermissionResultAction.StartEngine,
