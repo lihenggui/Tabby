@@ -5,6 +5,18 @@ import kotlin.test.assertEquals
 
 class ProfileFilesDocumentTest {
   @Test
+  fun documentPlatformSpecUsesStablePickerAndOpenMimeTypes() {
+    assertEquals(
+      ProfileFilesDocumentPlatformSpec(
+        importMimeType = "*/*",
+        exportMimeType = "text/plain",
+        openMimeType = "text/plain",
+      ),
+      profileFilesDocumentPlatformSpec(),
+    )
+  }
+
+  @Test
   fun mapsPlatformPayloadToDocument() {
     assertEquals(
       ProfileFilesDocument(

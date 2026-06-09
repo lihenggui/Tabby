@@ -33,6 +33,20 @@ data class ProfileFilesExportResult<out OutputT : Any>(
   val sourceDocumentId: String?,
 )
 
+internal data class ProfileFilesDocumentPlatformSpec(
+  val importMimeType: String,
+  val exportMimeType: String,
+  val openMimeType: String,
+)
+
+internal fun profileFilesDocumentPlatformSpec(): ProfileFilesDocumentPlatformSpec {
+  return ProfileFilesDocumentPlatformSpec(
+    importMimeType = "*/*",
+    exportMimeType = "text/plain",
+    openMimeType = "text/plain",
+  )
+}
+
 internal fun <T> profileFilesDocumentFromPlatformPayload(
   document: T,
   id: (T) -> String,

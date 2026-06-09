@@ -36,6 +36,7 @@ internal fun FilesScreen(
   val profileRepository = remember { AndroidProfileRepository() }
   val filesClient = remember(context) { FilesClient(context) }
   val documentClient = remember(filesClient) { AndroidProfileFilesDocumentClient(filesClient) }
+  val documentPlatformSpec = remember { profileFilesDocumentPlatformSpec() }
   val lifecycleOwner = LocalLifecycleOwner.current
   val refreshEvents = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
   val importResults = remember {
@@ -63,7 +64,7 @@ internal fun FilesScreen(
     }
 
   val exportLauncher =
-    rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
+    rememberLauncherForActivityResult(CreateDocument(documentPlatformSpec.exportMimeType)) { uri ->
       exportResults.tryEmit(
         profileFilesExportResult(
           output = uri,
@@ -98,13 +99,16 @@ internal fun FilesScreen(
     onOpenFile = { documentId ->
       openFileLauncher.launch(
         Intent(Intent.ACTION_VIEW)
-          .setDataAndType(filesClient.buildDocumentUri(documentId), "text/plain")
+          .setDataAndType(
+            filesClient.buildDocumentUri(documentId),
+            documentPlatformSpec.openMimeType,
+          )
           .grantPermissions()
       )
     },
     onRequestImport = { target ->
       pendingImportTarget = target
-      importLauncher.launch("*/*")
+      importLauncher.launch(documentPlatformSpec.importMimeType)
     },
     onRequestExport = { source ->
       pendingExportSource = source
