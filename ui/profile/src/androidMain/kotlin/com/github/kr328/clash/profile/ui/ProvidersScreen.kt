@@ -28,19 +28,20 @@ internal fun ProvidersScreen(modifier: Modifier = Modifier) {
 }
 
 private fun Broadcasts.Event.toProvidersEvent(): ProvidersBroadcastEvent =
+  providersBroadcastEventFromPlatformPayload(
+    event = this,
+    kind = Broadcasts.Event::providersBroadcastSourceEventKind,
+  )
+
+private fun Broadcasts.Event.providersBroadcastSourceEventKind():
+  ProvidersBroadcastSourceEventKind =
   when (this) {
-    Broadcasts.Event.ServiceRecreated ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.ServiceRecreated)
-    Broadcasts.Event.Started ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.Started)
-    is Broadcasts.Event.Stopped ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.Stopped)
-    Broadcasts.Event.ProfileChanged ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.ProfileChanged)
+    Broadcasts.Event.ServiceRecreated -> ProvidersBroadcastSourceEventKind.ServiceRecreated
+    Broadcasts.Event.Started -> ProvidersBroadcastSourceEventKind.Started
+    is Broadcasts.Event.Stopped -> ProvidersBroadcastSourceEventKind.Stopped
+    Broadcasts.Event.ProfileChanged -> ProvidersBroadcastSourceEventKind.ProfileChanged
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.ProfileUpdateCompleted)
-    is Broadcasts.Event.ProfileUpdateFailed ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.ProfileUpdateFailed)
-    Broadcasts.Event.ProfileLoaded ->
-      providersBroadcastEventFromSource(ProvidersBroadcastSourceEventKind.ProfileLoaded)
+      ProvidersBroadcastSourceEventKind.ProfileUpdateCompleted
+    is Broadcasts.Event.ProfileUpdateFailed -> ProvidersBroadcastSourceEventKind.ProfileUpdateFailed
+    Broadcasts.Event.ProfileLoaded -> ProvidersBroadcastSourceEventKind.ProfileLoaded
   }

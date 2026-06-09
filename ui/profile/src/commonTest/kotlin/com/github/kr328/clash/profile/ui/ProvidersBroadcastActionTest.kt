@@ -60,4 +60,25 @@ class ProvidersBroadcastActionTest {
       )
     }
   }
+
+  @Test
+  fun broadcastEventFromPlatformPayloadMapsGenericSourcePayload() {
+    assertEquals(
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileLoaded),
+      providersBroadcastEventFromPlatformPayload(
+        event = ProvidersBroadcastSourcePayload(ProvidersBroadcastSourceEventKind.ProfileLoaded),
+        kind = ProvidersBroadcastSourcePayload::kind,
+      ),
+    )
+    assertEquals(
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateFailed),
+      providersBroadcastEventFromPlatformPayload(
+        event =
+          ProvidersBroadcastSourcePayload(ProvidersBroadcastSourceEventKind.ProfileUpdateFailed),
+        kind = ProvidersBroadcastSourcePayload::kind,
+      ),
+    )
+  }
+
+  private data class ProvidersBroadcastSourcePayload(val kind: ProvidersBroadcastSourceEventKind)
 }

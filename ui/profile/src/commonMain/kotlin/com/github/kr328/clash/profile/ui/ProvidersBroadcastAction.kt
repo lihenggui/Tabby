@@ -52,6 +52,13 @@ internal fun providersBroadcastEventFromSource(
   }
 }
 
+internal fun <T> providersBroadcastEventFromPlatformPayload(
+  event: T,
+  kind: (T) -> ProvidersBroadcastSourceEventKind,
+): ProvidersBroadcastEvent {
+  return providersBroadcastEventFromSource(kind(event))
+}
+
 internal fun providersBroadcastAction(kind: ProvidersBroadcastEventKind): ProvidersBroadcastAction {
   return when (kind) {
     ProvidersBroadcastEventKind.ProfileLoaded -> ProvidersBroadcastAction.FetchProviders
