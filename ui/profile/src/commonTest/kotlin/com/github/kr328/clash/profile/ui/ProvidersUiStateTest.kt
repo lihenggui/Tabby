@@ -12,14 +12,14 @@ class ProvidersUiStateTest {
   }
 
   @Test
-  fun providersEventPlatformActionMapsEventStates() {
+  fun providersEventRouteEffectMapsEventStates() {
     assertEquals(
-      ProvidersEventPlatformAction.Ignore,
-      providersEventPlatformAction(ProvidersEventState.Idle),
+      ProvidersEventRouteEffect.Ignore,
+      providersEventRouteEffect(ProvidersEventState.Idle),
     )
     assertEquals(
-      ProvidersEventPlatformAction.ShowMessage("provider update failed"),
-      providersEventPlatformAction(ProvidersEventState.ShowMessage("provider update failed")),
+      ProvidersEventRouteEffect.ShowMessage("provider update failed"),
+      providersEventRouteEffect(ProvidersEventState.ShowMessage("provider update failed")),
     )
   }
 

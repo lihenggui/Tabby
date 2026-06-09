@@ -23,23 +23,20 @@ internal sealed interface ProvidersEventState {
   data class ShowMessage(val message: String) : ProvidersEventState
 }
 
-internal sealed interface ProvidersEventPlatformAction {
-  data object Ignore : ProvidersEventPlatformAction
+internal sealed interface ProvidersEventRouteEffect {
+  data object Ignore : ProvidersEventRouteEffect
 
-  data class ShowMessage(val message: String) : ProvidersEventPlatformAction
+  data class ShowMessage(val message: String) : ProvidersEventRouteEffect
 }
 
 internal fun providersInitialEventState(): ProvidersEventState {
   return ProvidersEventState.Idle
 }
 
-internal fun providersEventPlatformAction(
-  eventState: ProvidersEventState
-): ProvidersEventPlatformAction {
+internal fun providersEventRouteEffect(eventState: ProvidersEventState): ProvidersEventRouteEffect {
   return when (eventState) {
-    ProvidersEventState.Idle -> ProvidersEventPlatformAction.Ignore
-    is ProvidersEventState.ShowMessage ->
-      ProvidersEventPlatformAction.ShowMessage(eventState.message)
+    ProvidersEventState.Idle -> ProvidersEventRouteEffect.Ignore
+    is ProvidersEventState.ShowMessage -> ProvidersEventRouteEffect.ShowMessage(eventState.message)
   }
 }
 
