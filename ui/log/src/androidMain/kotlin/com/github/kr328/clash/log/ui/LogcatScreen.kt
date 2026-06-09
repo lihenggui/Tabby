@@ -212,16 +212,16 @@ internal fun LogcatScreen(
     }
 
   LaunchedEffect(eventState) {
-    when (val action = logcatEventPlatformAction(eventState)) {
-      LogcatEventPlatformAction.Ignore -> Unit
-      LogcatEventPlatformAction.Close -> onClose()
-      LogcatEventPlatformAction.InvalidFile -> {
+    when (val action = logcatEventRouteEffect(eventState)) {
+      LogcatEventRouteEffect.Ignore -> Unit
+      LogcatEventRouteEffect.Close -> onClose()
+      LogcatEventRouteEffect.InvalidFile -> {
         snackbarHostState.showSnackbar(message = invalidFileTip)
         onInvalidFile()
       }
-      LogcatEventPlatformAction.OpenLogs -> onOpenLogs()
-      is LogcatEventPlatformAction.RequestExport -> exportLauncher.launch(action.fileName)
-      is LogcatEventPlatformAction.ShowMessage -> {
+      LogcatEventRouteEffect.OpenLogs -> onOpenLogs()
+      is LogcatEventRouteEffect.RequestExport -> exportLauncher.launch(action.fileName)
+      is LogcatEventRouteEffect.ShowMessage -> {
         snackbarHostState.showSnackbar(message = action.message, withDismissAction = true)
       }
     }

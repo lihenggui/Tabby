@@ -50,33 +50,32 @@ internal sealed interface LogcatEventState {
   data class ShowMessage(val message: String) : LogcatEventState
 }
 
-internal sealed interface LogcatEventPlatformAction {
-  data object Ignore : LogcatEventPlatformAction
+internal sealed interface LogcatEventRouteEffect {
+  data object Ignore : LogcatEventRouteEffect
 
-  data object Close : LogcatEventPlatformAction
+  data object Close : LogcatEventRouteEffect
 
-  data object InvalidFile : LogcatEventPlatformAction
+  data object InvalidFile : LogcatEventRouteEffect
 
-  data object OpenLogs : LogcatEventPlatformAction
+  data object OpenLogs : LogcatEventRouteEffect
 
-  data class RequestExport(val fileName: String) : LogcatEventPlatformAction
+  data class RequestExport(val fileName: String) : LogcatEventRouteEffect
 
-  data class ShowMessage(val message: String) : LogcatEventPlatformAction
+  data class ShowMessage(val message: String) : LogcatEventRouteEffect
 }
 
 internal fun logcatInitialEventState(): LogcatEventState {
   return LogcatEventState.Idle
 }
 
-internal fun logcatEventPlatformAction(eventState: LogcatEventState): LogcatEventPlatformAction {
+internal fun logcatEventRouteEffect(eventState: LogcatEventState): LogcatEventRouteEffect {
   return when (eventState) {
-    LogcatEventState.Idle -> LogcatEventPlatformAction.Ignore
-    LogcatEventState.Close -> LogcatEventPlatformAction.Close
-    LogcatEventState.InvalidFile -> LogcatEventPlatformAction.InvalidFile
-    LogcatEventState.OpenLogs -> LogcatEventPlatformAction.OpenLogs
-    is LogcatEventState.RequestExport ->
-      LogcatEventPlatformAction.RequestExport(eventState.fileName)
-    is LogcatEventState.ShowMessage -> LogcatEventPlatformAction.ShowMessage(eventState.message)
+    LogcatEventState.Idle -> LogcatEventRouteEffect.Ignore
+    LogcatEventState.Close -> LogcatEventRouteEffect.Close
+    LogcatEventState.InvalidFile -> LogcatEventRouteEffect.InvalidFile
+    LogcatEventState.OpenLogs -> LogcatEventRouteEffect.OpenLogs
+    is LogcatEventState.RequestExport -> LogcatEventRouteEffect.RequestExport(eventState.fileName)
+    is LogcatEventState.ShowMessage -> LogcatEventRouteEffect.ShowMessage(eventState.message)
   }
 }
 
