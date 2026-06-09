@@ -8,4 +8,30 @@ class TabbyDialerReceiverActionTest {
   fun tabbyDialerReceiverActionOpensMainActivity() {
     assertEquals(TabbyDialerReceiverAction.OpenMainActivity, tabbyDialerReceiverAction())
   }
+
+  @Test
+  fun tabbyDialerReceiverMainActivityLaunchOptionsOpenInNewTask() {
+    assertEquals(
+      TabbyDialerReceiverMainActivityLaunchOptions(openInNewTask = true),
+      tabbyDialerReceiverMainActivityLaunchOptions(TabbyDialerReceiverAction.OpenMainActivity),
+    )
+  }
+
+  @Test
+  fun tabbyDialerReceiverMainActivityLaunchFlagsMapsNewTaskFlag() {
+    assertEquals(
+      4,
+      tabbyDialerReceiverMainActivityLaunchFlags(
+        launchOptions = TabbyDialerReceiverMainActivityLaunchOptions(openInNewTask = true),
+        openInNewTaskFlag = 4,
+      ),
+    )
+    assertEquals(
+      0,
+      tabbyDialerReceiverMainActivityLaunchFlags(
+        launchOptions = TabbyDialerReceiverMainActivityLaunchOptions(openInNewTask = false),
+        openInNewTaskFlag = 4,
+      ),
+    )
+  }
 }

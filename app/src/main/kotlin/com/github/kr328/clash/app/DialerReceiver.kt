@@ -12,7 +12,16 @@ class DialerReceiver : BroadcastReceiver() {
 
     when (action) {
       TabbyDialerReceiverAction.OpenMainActivity -> {
-        context.startActivity(context.mainIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(
+          context
+            .mainIntent()
+            .addFlags(
+              tabbyDialerReceiverMainActivityLaunchFlags(
+                launchOptions = tabbyDialerReceiverMainActivityLaunchOptions(action),
+                openInNewTaskFlag = Intent.FLAG_ACTIVITY_NEW_TASK,
+              )
+            )
+        )
       }
     }
   }
