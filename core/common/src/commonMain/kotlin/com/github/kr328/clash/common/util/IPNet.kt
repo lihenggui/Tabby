@@ -1,4 +1,4 @@
-package com.github.kr328.clash.service.util
+package com.github.kr328.clash.common.util
 
 data class IPNet(val ip: String, val prefix: Int) {
   companion object {
