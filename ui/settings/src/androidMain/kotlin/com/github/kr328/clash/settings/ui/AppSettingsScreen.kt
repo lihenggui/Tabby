@@ -89,19 +89,20 @@ private fun Context.hideAppIcon(hide: Boolean) {
 }
 
 private fun Int.toAppComponentEnabledState(): AppComponentEnabledState {
-  return when (this) {
-    PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> AppComponentEnabledState.Enabled
-    PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> AppComponentEnabledState.Disabled
-    else -> AppComponentEnabledState.Unspecified
-  }
+  return appComponentEnabledStateFromPlatformState(
+    platformState = this,
+    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+  )
 }
 
 private fun AppComponentEnabledState.toPlatformComponentState(): Int {
-  return when (this) {
-    AppComponentEnabledState.Enabled -> PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-    AppComponentEnabledState.Disabled -> PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-    AppComponentEnabledState.Unspecified -> PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
-  }
+  return appComponentEnabledPlatformState(
+    componentState = this,
+    enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+    disabledState = PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+    defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+  )
 }
 
 @PreviewWrapper(TabbyThemeWrapper::class)

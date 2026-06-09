@@ -8,6 +8,31 @@ internal enum class AppComponentEnabledState {
   Unspecified,
 }
 
+internal fun appComponentEnabledStateFromPlatformState(
+  platformState: Int,
+  enabledState: Int,
+  disabledState: Int,
+): AppComponentEnabledState {
+  return when (platformState) {
+    enabledState -> AppComponentEnabledState.Enabled
+    disabledState -> AppComponentEnabledState.Disabled
+    else -> AppComponentEnabledState.Unspecified
+  }
+}
+
+internal fun appComponentEnabledPlatformState(
+  componentState: AppComponentEnabledState,
+  enabledState: Int,
+  disabledState: Int,
+  defaultState: Int,
+): Int {
+  return when (componentState) {
+    AppComponentEnabledState.Enabled -> enabledState
+    AppComponentEnabledState.Disabled -> disabledState
+    AppComponentEnabledState.Unspecified -> defaultState
+  }
+}
+
 internal fun isAppSettingsAutoRestartEnabled(componentState: AppComponentEnabledState): Boolean {
   return componentState == AppComponentEnabledState.Enabled
 }

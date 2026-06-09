@@ -69,6 +69,58 @@ class AppNetworkSettingsStateTest {
 
     assertEquals(
       AppComponentEnabledState.Enabled,
+      appComponentEnabledStateFromPlatformState(
+        platformState = 1,
+        enabledState = 1,
+        disabledState = 2,
+      ),
+    )
+    assertEquals(
+      AppComponentEnabledState.Disabled,
+      appComponentEnabledStateFromPlatformState(
+        platformState = 2,
+        enabledState = 1,
+        disabledState = 2,
+      ),
+    )
+    assertEquals(
+      AppComponentEnabledState.Unspecified,
+      appComponentEnabledStateFromPlatformState(
+        platformState = 0,
+        enabledState = 1,
+        disabledState = 2,
+      ),
+    )
+    assertEquals(
+      1,
+      appComponentEnabledPlatformState(
+        componentState = AppComponentEnabledState.Enabled,
+        enabledState = 1,
+        disabledState = 2,
+        defaultState = 0,
+      ),
+    )
+    assertEquals(
+      2,
+      appComponentEnabledPlatformState(
+        componentState = AppComponentEnabledState.Disabled,
+        enabledState = 1,
+        disabledState = 2,
+        defaultState = 0,
+      ),
+    )
+    assertEquals(
+      0,
+      appComponentEnabledPlatformState(
+        componentState = AppComponentEnabledState.Unspecified,
+        enabledState = 1,
+        disabledState = 2,
+        defaultState = 0,
+      ),
+    )
+
+    assertEquals(
+      AppComponentEnabledState.Enabled,
       appSettingsAutoRestartComponentState(autoRestart = true),
     )
     assertEquals(
