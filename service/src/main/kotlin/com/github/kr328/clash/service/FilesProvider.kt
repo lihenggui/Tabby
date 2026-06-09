@@ -9,6 +9,8 @@ import android.provider.DocumentsContract.Root
 import android.provider.DocumentsProvider
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.document.Paths
+import com.github.kr328.clash.common.document.tabbyDocumentIdIsChild
+import com.github.kr328.clash.common.document.tabbyDocumentOpenModeRequestsWrite
 import com.github.kr328.clash.common.document.tabbyDocumentPlatformFlags
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
@@ -56,7 +58,7 @@ class FilesProvider : DocumentsProvider() {
     return runBlocking {
       val path = Paths.resolve(documentId ?: "/")
 
-      val document = picker.pick(path, mode?.requestWrite ?: true)
+      val document = picker.pick(path, tabbyDocumentOpenModeRequestsWrite(mode))
 
       require(document is FileDocument) { throw FileNotFoundException("invalid path $documentId") }
 
@@ -167,9 +169,7 @@ class FilesProvider : DocumentsProvider() {
   }
 
   override fun isChildDocument(parentDocumentId: String?, documentId: String?): Boolean {
-    if (parentDocumentId == null || documentId == null) return false
-
-    return documentId.startsWith(parentDocumentId)
+    return tabbyDocumentIdIsChild(parentDocumentId, documentId)
   }
 
   private fun MatrixCursor.RowBuilder.applyDocument(document: Document): MatrixCursor.RowBuilder {
@@ -193,9 +193,4 @@ class FilesProvider : DocumentsProvider() {
   private fun resolveDocumentProjection(projection: Array<out String>?): Array<out String> {
     return projection ?: DEFAULT_DOCUMENT_COLUMNS
   }
-
-  private val String.requestWrite: Boolean
-    get() {
-      return contains("w", ignoreCase = true)
-    }
 }
