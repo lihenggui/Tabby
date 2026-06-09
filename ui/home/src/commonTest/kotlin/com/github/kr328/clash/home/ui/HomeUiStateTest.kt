@@ -102,14 +102,33 @@ class HomeUiStateTest {
 
   @Test
   fun homeEngineStartResultsMapToEvents() {
-    assertEquals(null, homeEngineStartEventState(homeEngineStartedResult()))
+    assertEquals(
+      null,
+      homeEngineStartEventState(
+        homeEngineStartedResult(),
+        fallbackMessage = "Unable to start VPN",
+      ),
+    )
     assertEquals(
       HomeEventState.RequestVpnPermission("vpn-permission-token"),
-      homeEngineStartEventState(homeEngineVpnPermissionResult("vpn-permission-token")),
+      homeEngineStartEventState(
+        homeEngineVpnPermissionResult("vpn-permission-token"),
+        fallbackMessage = "Unable to start VPN",
+      ),
+    )
+    assertEquals(
+      HomeEventState.ShowMessage("Start failed"),
+      homeEngineStartEventState(
+        homeEngineStartFailedResult("Start failed"),
+        fallbackMessage = "Unable to start VPN",
+      ),
     )
     assertEquals(
       HomeEventState.ShowMessage("Unable to start VPN"),
-      homeEngineStartEventState(homeEngineStartFailedResult("Unable to start VPN")),
+      homeEngineStartEventState(
+        homeEngineStartFailedResult(),
+        fallbackMessage = "Unable to start VPN",
+      ),
     )
   }
 

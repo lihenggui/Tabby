@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource as androidStringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -108,13 +107,12 @@ internal fun HomeScreen(
         homeEngineVpnPermissionResult(e.prepareIntent)
       } catch (e: Exception) {
         Log.e("Start clash service failed: ${e.message}", e)
-        homeEngineStartFailedResult(appContext.getString(CommonR.string.unable_to_start_vpn))
+        homeEngineStartFailedResult()
       }
     },
     onStopEngine = { engineController.stop() },
     onRunningStateChanged = {},
     onRequestVpnPermission = { vpnLauncher.launch(it) },
-    appName = androidStringResource(CommonR.string.tabby),
     logoPainter = painterResource(CommonR.drawable.ic_tabby_foreground),
     onOpenProxy = onOpenProxy,
     onOpenProfiles = onOpenProfiles,

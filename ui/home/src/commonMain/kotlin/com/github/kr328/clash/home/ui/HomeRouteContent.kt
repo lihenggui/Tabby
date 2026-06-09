@@ -32,6 +32,7 @@ import tabby.ui.shared.generated.resources.direct_mode
 import tabby.ui.shared.generated.resources.global_mode
 import tabby.ui.shared.generated.resources.profiles
 import tabby.ui.shared.generated.resources.rule_mode
+import tabby.ui.shared.generated.resources.unable_to_start_vpn
 import tabby.ui.shared.generated.resources.unavailable
 
 @Composable
@@ -49,8 +50,6 @@ fun HomeRouteContent(
 ) {
   var clashRunning by remember { mutableStateOf(false) }
   val engineState by engineController.state.collectAsState()
-  val fallbackFailureMessage = stringResource(SharedRes.string.unavailable)
-
   HomeRuntimeRouteContent<Nothing>(
     modifier = modifier,
     engineController = engineController,
@@ -80,7 +79,7 @@ fun HomeRouteContent(
       runCatching { engineController.start() }
         .fold(
           onSuccess = { homeEngineStartedResult() },
-          onFailure = { homeEngineStartFailedResult(it.message ?: fallbackFailureMessage) },
+          onFailure = { homeEngineStartFailedResult(it.message) },
         )
     },
     onStopEngine = { engineController.stop() },
@@ -133,6 +132,7 @@ internal fun <VpnPermissionT> HomeRuntimeRouteContent(
   val ruleMode = stringResource(SharedRes.string.rule_mode)
   val noProfileMessage = stringResource(HomeRes.string.no_profile_selected)
   val profilesAction = stringResource(SharedRes.string.profiles)
+  val engineStartFailureMessage = stringResource(SharedRes.string.unable_to_start_vpn)
   val fallbackFailureMessage = stringResource(SharedRes.string.unavailable)
 
   suspend fun refreshHomeState(clashRunningSnapshot: Boolean) {
@@ -156,7 +156,9 @@ internal fun <VpnPermissionT> HomeRuntimeRouteContent(
       fetchRequest += 1
     }
 
-    homeEngineStartEventState(result)?.let { eventState = it }
+    homeEngineStartEventState(result, fallbackMessage = engineStartFailureMessage)?.let {
+      eventState = it
+    }
   }
 
   suspend fun startClash() {

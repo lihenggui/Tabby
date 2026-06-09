@@ -109,7 +109,7 @@ internal sealed interface HomeEngineStartResult<out VpnPermissionT> {
   data class VpnPermissionRequired<out VpnPermissionT>(val permissionRequest: VpnPermissionT) :
     HomeEngineStartResult<VpnPermissionT>
 
-  data class Failed(val message: String) : HomeEngineStartResult<Nothing>
+  data class Failed(val message: String? = null) : HomeEngineStartResult<Nothing>
 }
 
 internal fun homeInitialEventState(): HomeEventState<Nothing> {
@@ -171,18 +171,19 @@ internal fun <VpnPermissionT> homeEngineVpnPermissionResult(
   return HomeEngineStartResult.VpnPermissionRequired(permissionRequest)
 }
 
-internal fun homeEngineStartFailedResult(message: String): HomeEngineStartResult<Nothing> {
+internal fun homeEngineStartFailedResult(message: String? = null): HomeEngineStartResult<Nothing> {
   return HomeEngineStartResult.Failed(message)
 }
 
 internal fun <VpnPermissionT> homeEngineStartEventState(
-  result: HomeEngineStartResult<VpnPermissionT>
+  result: HomeEngineStartResult<VpnPermissionT>,
+  fallbackMessage: String,
 ): HomeEventState<VpnPermissionT>? {
   return when (result) {
     HomeEngineStartResult.Started -> null
     is HomeEngineStartResult.VpnPermissionRequired ->
       HomeEventState.RequestVpnPermission(result.permissionRequest)
-    is HomeEngineStartResult.Failed -> HomeEventState.ShowMessage(result.message)
+    is HomeEngineStartResult.Failed -> HomeEventState.ShowMessage(result.message ?: fallbackMessage)
   }
 }
 
