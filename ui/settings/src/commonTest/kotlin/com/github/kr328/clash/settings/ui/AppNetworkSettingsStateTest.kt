@@ -172,6 +172,31 @@ class AppNetworkSettingsStateTest {
     assertEquals(uiState.tunStackMode, accessControlModeUpdated.tunStackMode)
   }
 
+  @Test
+  fun systemProxyOptionAvailabilityUsesPlatformSdkThreshold() {
+    assertEquals(
+      false,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        platformSdk = 28,
+        systemProxyMinimumPlatformSdk = 29,
+      ),
+    )
+    assertEquals(
+      true,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        platformSdk = 29,
+        systemProxyMinimumPlatformSdk = 29,
+      ),
+    )
+    assertEquals(
+      true,
+      networkSettingsHasSystemProxyOptionFromPlatformSdk(
+        platformSdk = 30,
+        systemProxyMinimumPlatformSdk = 29,
+      ),
+    )
+  }
+
   private fun appSettingsUiState(): AppSettingsUiState {
     return AppSettingsUiState(
       autoRestart = true,

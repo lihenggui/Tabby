@@ -56,7 +56,10 @@ internal fun NetworkSettingsScreen(
 }
 
 private fun networkSettingsHasSystemProxyOption(): Boolean =
-  Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+  networkSettingsHasSystemProxyOptionFromPlatformSdk(
+    platformSdk = Build.VERSION.SDK_INT,
+    systemProxyMinimumPlatformSdk = Build.VERSION_CODES.Q,
+  )
 
 @PreviewWrapper(TabbyThemeWrapper::class)
 @PreviewTabby

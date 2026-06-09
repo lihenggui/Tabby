@@ -57,3 +57,10 @@ internal fun updateNetworkSettingsAccessControlMode(
 ): NetworkSettingsUiState {
   return uiState.copy(accessControlMode = accessControlMode)
 }
+
+internal fun networkSettingsHasSystemProxyOptionFromPlatformSdk(
+  platformSdk: Int,
+  systemProxyMinimumPlatformSdk: Int,
+): Boolean {
+  return platformSdk >= systemProxyMinimumPlatformSdk
+}
