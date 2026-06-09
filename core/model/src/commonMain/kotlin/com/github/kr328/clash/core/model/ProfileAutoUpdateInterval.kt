@@ -21,3 +21,14 @@ fun profileAutoUpdateIntervalMillisFromMinutesInput(value: String): Long? {
 fun isValidProfileAutoUpdateIntervalMillis(interval: Long): Boolean {
   return interval == 0L || interval >= MINIMUM_PROFILE_AUTO_UPDATE_INTERVAL_MILLIS
 }
+
+fun profileAutoUpdateScheduleDelayMillis(
+  interval: Long,
+  currentTimeMillis: Long,
+  lastModifiedMillis: Long,
+): Long? {
+  if (interval < MINIMUM_PROFILE_AUTO_UPDATE_INTERVAL_MILLIS) return null
+  if (lastModifiedMillis < 0) return null
+
+  return (interval - (currentTimeMillis - lastModifiedMillis)).coerceAtLeast(0)
+}

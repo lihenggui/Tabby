@@ -49,4 +49,52 @@ class ProfileAutoUpdateIntervalTest {
     assertFalse(isValidProfileAutoUpdateIntervalMillis(1))
     assertFalse(isValidProfileAutoUpdateIntervalMillis(899_999))
   }
+
+  @Test
+  fun profileAutoUpdateScheduleDelayReturnsRemainingDelayOrImmediateDelay() {
+    assertEquals(
+      300_000L,
+      profileAutoUpdateScheduleDelayMillis(
+        interval = 900_000L,
+        currentTimeMillis = 1_000_000L,
+        lastModifiedMillis = 400_000L,
+      ),
+    )
+    assertEquals(
+      0L,
+      profileAutoUpdateScheduleDelayMillis(
+        interval = 900_000L,
+        currentTimeMillis = 1_500_000L,
+        lastModifiedMillis = 400_000L,
+      ),
+    )
+  }
+
+  @Test
+  fun profileAutoUpdateScheduleDelayRejectsDisabledSmallOrMissingInputs() {
+    assertEquals(
+      null,
+      profileAutoUpdateScheduleDelayMillis(
+        interval = 0L,
+        currentTimeMillis = 1_000_000L,
+        lastModifiedMillis = 400_000L,
+      ),
+    )
+    assertEquals(
+      null,
+      profileAutoUpdateScheduleDelayMillis(
+        interval = 899_999L,
+        currentTimeMillis = 1_000_000L,
+        lastModifiedMillis = 400_000L,
+      ),
+    )
+    assertEquals(
+      null,
+      profileAutoUpdateScheduleDelayMillis(
+        interval = 900_000L,
+        currentTimeMillis = 1_000_000L,
+        lastModifiedMillis = -1L,
+      ),
+    )
+  }
 }
