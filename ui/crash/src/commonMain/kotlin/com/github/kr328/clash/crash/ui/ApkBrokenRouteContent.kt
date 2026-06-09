@@ -6,7 +6,7 @@ import com.github.kr328.clash.crash.TABBY_GITHUB
 
 @Composable
 fun ApkBrokenRouteContent(
-  onOpenReleases: () -> Unit,
+  onOpenReleases: (String) -> Unit,
   modifier: Modifier = Modifier,
   releasesUrl: String = TABBY_GITHUB,
 ) {

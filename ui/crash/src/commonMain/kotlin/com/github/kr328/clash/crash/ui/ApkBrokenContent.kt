@@ -22,7 +22,7 @@ import tabby.ui.crash.generated.resources.reinstall
 @Composable
 internal fun ApkBrokenContent(
   releasesUrl: String,
-  onOpenReleases: () -> Unit,
+  onOpenReleases: (String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   TabbyScaffold(
@@ -45,7 +45,7 @@ internal fun ApkBrokenContent(
           key = "github_releases",
           title = { Text(stringResource(CrashRes.string.github_releases)) },
           summary = { Text(releasesUrl) },
-          onClick = onOpenReleases,
+          onClick = { onOpenReleases(releasesUrl) },
         )
       }
     }

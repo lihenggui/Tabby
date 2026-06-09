@@ -196,7 +196,7 @@ fun PlaceholderTabbyApp(
             apkBrokenContent = {
               ApkBrokenRouteContent(
                 releasesUrl = TABBY_GITHUB_URL,
-                onOpenReleases = { uriHandler.openUri(TABBY_GITHUB_URL) },
+                onOpenReleases = uriHandler::openUri,
               )
             },
             appCrashedContent = {
