@@ -1,4 +1,4 @@
-package com.github.kr328.clash.service.document
+package com.github.kr328.clash.common.document
 
 import kotlin.uuid.Uuid
 

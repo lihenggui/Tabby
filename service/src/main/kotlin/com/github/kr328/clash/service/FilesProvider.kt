@@ -8,11 +8,11 @@ import android.provider.DocumentsContract.Document as D
 import android.provider.DocumentsContract.Root
 import android.provider.DocumentsProvider
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.document.Paths
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
 import com.github.kr328.clash.service.document.Document
 import com.github.kr328.clash.service.document.FileDocument
-import com.github.kr328.clash.service.document.Paths
 import com.github.kr328.clash.service.document.Picker
 import java.io.FileNotFoundException
 import kotlinx.coroutines.runBlocking
@@ -87,7 +87,7 @@ class FilesProvider : DocumentsProvider() {
     return runBlocking {
       val path = Paths.resolve(documentId ?: "/")
 
-      if (path.relative == null) throw IllegalArgumentException("unable to rename $documentId")
+      val relative = path.relative ?: throw IllegalArgumentException("unable to rename $documentId")
 
       val document = picker.pick(path, true)
 
@@ -101,7 +101,7 @@ class FilesProvider : DocumentsProvider() {
 
       document.file.renameTo(parent.resolve(name))
 
-      path.copy(relative = path.relative.dropLast(1) + name).toString()
+      path.copy(relative = relative.dropLast(1) + name).toString()
     }
   }
 

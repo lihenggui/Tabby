@@ -3,6 +3,8 @@ package com.github.kr328.clash.service.document
 import android.content.Context
 import android.provider.DocumentsContract
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.document.Path
+import com.github.kr328.clash.common.document.Paths
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.service.R
 import com.github.kr328.clash.service.data.ImportedDao
@@ -35,7 +37,9 @@ class Picker(private val context: Context) {
   }
 
   suspend fun pick(path: Path, writable: Boolean): Document {
-    if (path.uuid == null) {
+    val uuid = path.uuid
+
+    if (uuid == null) {
       return VirtualDocument(
         "",
         context.getString(CommonR.string.tabby),
@@ -47,17 +51,17 @@ class Picker(private val context: Context) {
     }
 
     if (writable) {
-      cloneToPending(path.uuid)
+      cloneToPending(uuid)
     }
 
-    val imported = ImportedDao().queryByUUID(path.uuid)
-    val pending = PendingDao().queryByUUID(path.uuid)
+    val imported = ImportedDao().queryByUUID(uuid)
+    val pending = PendingDao().queryByUUID(uuid)
 
     if (path.scope == null) {
       if (writable) throw IllegalArgumentException("invalid open mode")
 
       return VirtualDocument(
-        id = path.uuid.toString(),
+        id = uuid.toString(),
         name = pending?.name ?: imported?.name ?: throw FileNotFoundException("profile not found"),
         mimeType = DocumentsContract.Document.MIME_TYPE_DIR,
         size = 0,
@@ -66,7 +70,9 @@ class Picker(private val context: Context) {
       )
     }
 
-    if (path.relative == null) {
+    val relative = path.relative
+
+    if (relative == null) {
       if (path.scope == Path.Scope.Configuration) {
         val type =
           pending?.type ?: imported?.type ?: throw FileNotFoundException("profile not found")
@@ -112,7 +118,7 @@ class Picker(private val context: Context) {
             else -> throw FileNotFoundException("profile not found")
           }
           .resolve("providers")
-          .resolve(path.relative.joinToString(separator = "/")),
+          .resolve(relative.joinToString(separator = "/")),
       flags = setOf(Flag.Writable, Flag.Deletable),
     )
   }
