@@ -158,7 +158,7 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
       reloadApps(showSystemAppsSnapshot = it)
     },
     onImportClipboardPayload = appContext::accessControlClipboardImportPayload,
-    onExportClipboardText = appContext::exportAccessControlClipboardText,
+    onExportClipboardPayload = appContext::exportAccessControlClipboardPayload,
     appIcon = { app -> icons[app.packageName]?.let { icon -> AccessControlAppIcon(icon) } },
   )
 }
@@ -268,8 +268,7 @@ private fun Context.accessControlClipboardImportPayload(): AccessControlClipboar
   )
 }
 
-private fun Context.exportAccessControlClipboardText(text: String) {
-  val payload = accessControlExportPayload(text)
+private fun Context.exportAccessControlClipboardPayload(payload: AccessControlExportPayload) {
   val clipboard = getSystemService<ClipboardManager>()
   val data = ClipData.newPlainText(payload.label, payload.text)
   clipboard?.setPrimaryClip(data)

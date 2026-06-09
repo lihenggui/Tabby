@@ -31,7 +31,7 @@ fun AccessControlRouteContent(
   onImportClipboardPayload: () -> AccessControlClipboardImportPayload = {
     AccessControlClipboardImportPayload(hasPrimaryClipItem = false, clipboardText = null)
   },
-  onExportClipboardText: (String) -> Unit = {},
+  onExportClipboardPayload: (AccessControlExportPayload) -> Unit = {},
   appIcon: @Composable (AccessControlPackage) -> Unit = {},
 ) {
   var uiState by remember {
@@ -114,7 +114,7 @@ fun AccessControlRouteContent(
         }
 
         override fun exportToClipboard() {
-          onExportClipboardText(accessControlExportClipboardText(uiState))
+          onExportClipboardPayload(accessControlExportPayload(uiState))
         }
 
         override fun updateSort(sort: AccessControlSort) {

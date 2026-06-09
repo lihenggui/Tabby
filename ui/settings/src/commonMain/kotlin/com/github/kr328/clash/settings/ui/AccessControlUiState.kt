@@ -12,7 +12,7 @@ data class AccessControlClipboardImportPayload(
   val clipboardText: String?,
 )
 
-internal data class AccessControlExportPayload(
+data class AccessControlExportPayload(
   val label: String,
   val text: String,
 )
