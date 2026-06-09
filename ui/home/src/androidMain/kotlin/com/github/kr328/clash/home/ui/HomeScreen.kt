@@ -1,21 +1,13 @@
 package com.github.kr328.clash.home.ui
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,19 +26,12 @@ import com.github.kr328.clash.engine.api.EngineController
 import com.github.kr328.clash.engine.api.ProfileRepository
 import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
-import tabby.ui.home.generated.resources.Res as HomeRes
-import tabby.ui.home.generated.resources.no_profile_selected
-import tabby.ui.shared.generated.resources.Res as SharedRes
-import tabby.ui.shared.generated.resources.profiles
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.map
 
 @Composable
 internal fun HomeScreen(
@@ -61,7 +46,6 @@ internal fun HomeScreen(
   val context = LocalContext.current
   val appContext = context.applicationContext
   val lifecycleOwner = LocalLifecycleOwner.current
-  val scope = rememberCoroutineScope()
   val engineControllerScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
   val engineController: EngineController =
     remember(appContext, engineControllerScope) {
@@ -69,61 +53,15 @@ internal fun HomeScreen(
     }
   val profileRepository: ProfileRepository = remember { AndroidProfileRepository() }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
-  val snackbarHostState = remember { SnackbarHostState() }
-  var uiState by remember { mutableStateOf(homeInitialUiState()) }
-  var eventState by remember { mutableStateOf<HomeEventState<Intent>>(homeInitialEventState()) }
   var started by remember { mutableStateOf(false) }
-  var fetchRequest by remember { mutableIntStateOf(0) }
-  val currentFetchRequest = rememberUpdatedState(fetchRequest)
-
-  val noProfileText = stringResource(HomeRes.string.no_profile_selected)
-  val profilesActionText = stringResource(SharedRes.string.profiles)
-
-  suspend fun fetchHomeState(clashRunningSnapshot: Boolean) {
-    val state = engineController.queryState()
-    val providers = engineController.queryProviders()
-    val mode = homeModeLabel(state.mode).stringValue(appContext)
-    val profileName = profileRepository.queryActive()?.name
-
-    uiState =
-      uiState.withFetchedHomeState(
-        clashRunning = clashRunningSnapshot,
-        mode = mode,
-        hasProviders = providers.isNotEmpty(),
-        profileName = profileName,
-      )
-  }
-
-  suspend fun startEngine() {
-    val result =
-      try {
-        engineController.start()
-        homeEngineStartedResult()
-      } catch (e: VpnPermissionRequiredException) {
-        homeEngineVpnPermissionResult(e.prepareIntent)
-      } catch (e: Exception) {
-        Log.e("Start clash service failed: ${e.message}", e)
-        homeEngineStartFailedResult(appContext.getString(CommonR.string.unable_to_start_vpn))
-      }
-
-    homeEngineStartEventState(result)?.let { eventState = it }
-  }
-
-  suspend fun startClash() {
-    val action = homeStartAction(profileRepository.queryActive())
-    val event = homeStartEventState(action)
-
-    if (event != null) eventState = event else startEngine()
+  val vpnPermissionResults = remember { MutableSharedFlow<Boolean>(extraBufferCapacity = 1) }
+  val broadcastEvents = remember {
+    Remote.broadcasts.event.map { event -> event.toHomeBroadcastEvent() }
   }
 
   val vpnLauncher =
     rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-      when (
-        homeVpnPermissionResultActionFromGranted(granted = result.resultCode == Activity.RESULT_OK)
-      ) {
-        HomeVpnPermissionResultAction.StartEngine -> scope.launch { startEngine() }
-        HomeVpnPermissionResultAction.Ignore -> Unit
-      }
+      vpnPermissionResults.tryEmit(result.resultCode == Activity.RESULT_OK)
     }
 
   DisposableEffect(engineControllerScope) { onDispose { engineControllerScope.cancel() } }
@@ -143,80 +81,41 @@ internal fun HomeScreen(
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
-  LaunchedEffect(started) {
-    when (homeActiveFetchAction(active = started)) {
-      HomeActiveFetchAction.RequestFetch -> {
-        fetchRequest = currentFetchRequest.value + 1
-        Remote.broadcasts.event.collect { event ->
-          val action = homeBroadcastAction(event.toHomeBroadcastEvent())
-
-          homeBroadcastEventState(action)?.let { eventState = it }
-          if (action.shouldFetch) fetchRequest = currentFetchRequest.value + 1
-        }
-      }
-      HomeActiveFetchAction.Ignore -> Unit
-    }
-  }
-
-  LaunchedEffect(started, fetchRequest, clashRunning, engineController, profileRepository) {
-    when (homeActiveFetchAction(active = started)) {
-      HomeActiveFetchAction.RequestFetch -> fetchHomeState(clashRunning)
-      HomeActiveFetchAction.Ignore -> Unit
-    }
-  }
-
-  LaunchedEffect(started, clashRunning, engineController) {
-    when (homeTrafficPollAction(started = started, clashRunning = clashRunning)) {
-      HomeTrafficPollAction.QueryTraffic -> {
-        while (isActive) {
-          delay(1.seconds)
-          val total = engineController.queryTraffic()
-          uiState = uiState.withForwardedTraffic(homeTrafficTotalText(total))
-        }
-      }
-      HomeTrafficPollAction.Ignore -> Unit
-    }
-  }
-
-  LaunchedEffect(eventState) {
-    when (val action = homeEventRouteEffect(eventState)) {
-      HomeEventRouteEffect.Ignore -> Unit
-      is HomeEventRouteEffect.RequestVpnPermission -> vpnLauncher.launch(action.permissionRequest)
-      HomeEventRouteEffect.ShowNoProfileMessage -> {
-        val result =
-          snackbarHostState.showSnackbar(
-            message = noProfileText,
-            actionLabel = profilesActionText,
-            duration = SnackbarDuration.Long,
-          )
-
-        when (homeNoProfileSnackbarAction(result.toSnackbarActionResult())) {
-          HomeNoProfileSnackbarAction.OpenProfiles -> onOpenProfiles()
-          HomeNoProfileSnackbarAction.Ignore -> Unit
-        }
-      }
-      is HomeEventRouteEffect.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = action.message)
-      }
-    }
-    eventState = homeConsumedEventState()
-  }
-
-  HomeStateRouteContent(
+  HomeRuntimeRouteContent(
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
-    appName = androidStringResource(CommonR.string.tabby),
-    logoPainter = painterResource(CommonR.drawable.ic_tabby_foreground),
+    engineController = engineController,
+    profileRepository = profileRepository,
+    active = started,
     clashRunning = clashRunning,
-    state = uiState,
-    onToggleStatus = {
-      scope.launch {
-        when (homeToggleAction(clashRunning)) {
-          HomeToggleAction.StartClash -> startClash()
-          HomeToggleAction.StopClash -> engineController.stop()
-        }
+    broadcastEvents = broadcastEvents,
+    vpnPermissionResults = vpnPermissionResults,
+    onFetchHomeState = {
+      val state = engineController.queryState()
+      val providers = engineController.queryProviders()
+      val profileName = profileRepository.queryActive()?.name
+
+      HomeFetchedState(
+        modeLabel = homeModeLabel(state.mode),
+        hasProviders = providers.isNotEmpty(),
+        profileName = profileName,
+      )
+    },
+    onStartEngine = {
+      try {
+        engineController.start()
+        homeEngineStartedResult()
+      } catch (e: VpnPermissionRequiredException) {
+        homeEngineVpnPermissionResult(e.prepareIntent)
+      } catch (e: Exception) {
+        Log.e("Start clash service failed: ${e.message}", e)
+        homeEngineStartFailedResult(appContext.getString(CommonR.string.unable_to_start_vpn))
       }
     },
+    onStopEngine = { engineController.stop() },
+    onRunningStateChanged = {},
+    onRequestVpnPermission = { vpnLauncher.launch(it) },
+    appName = androidStringResource(CommonR.string.tabby),
+    logoPainter = painterResource(CommonR.drawable.ic_tabby_foreground),
     onOpenProxy = onOpenProxy,
     onOpenProfiles = onOpenProfiles,
     onOpenProviders = onOpenProviders,
@@ -242,13 +141,3 @@ private fun Broadcasts.Event.toHomeBroadcastEvent() =
       HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed)
     Broadcasts.Event.ProfileLoaded -> HomeBroadcastEvent(HomeBroadcastEventKind.ProfileLoaded)
   }
-
-private fun HomeModeLabel.stringValue(context: Context): String =
-  context.getString(
-    homeModeLabelResourceToken(
-      label = this,
-      directMode = CommonR.string.direct_mode,
-      globalMode = CommonR.string.global_mode,
-      ruleMode = CommonR.string.rule_mode,
-    )
-  )

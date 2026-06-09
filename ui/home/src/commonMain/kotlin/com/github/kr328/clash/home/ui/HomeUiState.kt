@@ -10,6 +10,12 @@ internal data class HomeUiState(
   val hasProviders: Boolean = false,
 )
 
+internal data class HomeFetchedState(
+  val modeLabel: HomeModeLabel,
+  val hasProviders: Boolean,
+  val profileName: String?,
+)
+
 internal fun homeInitialUiState(): HomeUiState {
   return HomeUiState()
 }
@@ -290,6 +296,27 @@ internal fun HomeUiState.withFetchedHomeState(
     mode = if (clashRunning) mode else null,
     hasProviders = clashRunning && hasProviders,
     profileName = profileName,
+  )
+}
+
+internal fun HomeUiState.withFetchedHomeState(
+  clashRunning: Boolean,
+  fetchedState: HomeFetchedState,
+  directMode: String,
+  globalMode: String,
+  ruleMode: String,
+): HomeUiState {
+  return withFetchedHomeState(
+    clashRunning = clashRunning,
+    mode =
+      homeModeLabelResourceToken(
+        label = fetchedState.modeLabel,
+        directMode = directMode,
+        globalMode = globalMode,
+        ruleMode = ruleMode,
+      ),
+    hasProviders = fetchedState.hasProviders,
+    profileName = fetchedState.profileName,
   )
 }
 

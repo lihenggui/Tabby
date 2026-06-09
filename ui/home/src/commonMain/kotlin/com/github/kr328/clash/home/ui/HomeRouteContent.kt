@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -19,6 +20,8 @@ import com.github.kr328.clash.ui.icon.BaselineSwapVerticalCircle
 import com.github.kr328.clash.ui.icon.TabbyIcons
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -44,11 +47,86 @@ fun HomeRouteContent(
   modifier: Modifier = Modifier,
   appName: String = "Tabby",
 ) {
+  var clashRunning by remember { mutableStateOf(false) }
   val engineState by engineController.state.collectAsState()
+  val fallbackFailureMessage = stringResource(SharedRes.string.unavailable)
+
+  HomeRuntimeRouteContent<Nothing>(
+    modifier = modifier,
+    engineController = engineController,
+    profileRepository = profileRepository,
+    active = true,
+    clashRunning = clashRunning,
+    broadcastEvents = emptyFlow(),
+    vpnPermissionResults = emptyFlow(),
+    refreshKey = engineState.mode,
+    onFetchHomeState = { clashRunningSnapshot ->
+      val state = runCatching { engineController.queryState() }.getOrDefault(engineState)
+      val profileName = runCatching { profileRepository.queryActive()?.name }.getOrNull()
+      val hasProviders =
+        if (clashRunningSnapshot) {
+          runCatching { engineController.queryProviders().isNotEmpty() }.getOrDefault(false)
+        } else {
+          false
+        }
+
+      HomeFetchedState(
+        modeLabel = homeModeLabel(state.mode),
+        hasProviders = hasProviders,
+        profileName = profileName,
+      )
+    },
+    onStartEngine = {
+      runCatching { engineController.start() }
+        .fold(
+          onSuccess = { homeEngineStartedResult() },
+          onFailure = { homeEngineStartFailedResult(it.message ?: fallbackFailureMessage) },
+        )
+    },
+    onStopEngine = { engineController.stop() },
+    onRunningStateChanged = { clashRunning = it },
+    onRequestVpnPermission = {},
+    appName = appName,
+    onOpenProxy = onOpenProxy,
+    onOpenProfiles = onOpenProfiles,
+    onOpenProviders = onOpenProviders,
+    onOpenLogs = onOpenLogs,
+    onOpenSettings = onOpenSettings,
+    onOpenHelp = onOpenHelp,
+  )
+}
+
+@Composable
+internal fun <VpnPermissionT> HomeRuntimeRouteContent(
+  engineController: EngineController,
+  profileRepository: ProfileRepository,
+  active: Boolean,
+  clashRunning: Boolean,
+  broadcastEvents: Flow<HomeBroadcastEvent>,
+  vpnPermissionResults: Flow<Boolean>,
+  onFetchHomeState: suspend (clashRunning: Boolean) -> HomeFetchedState,
+  onStartEngine: suspend () -> HomeEngineStartResult<VpnPermissionT>,
+  onStopEngine: suspend () -> Unit,
+  onRunningStateChanged: (Boolean) -> Unit,
+  onRequestVpnPermission: (VpnPermissionT) -> Unit,
+  onOpenProxy: () -> Unit,
+  onOpenProfiles: () -> Unit,
+  onOpenProviders: () -> Unit,
+  onOpenLogs: () -> Unit,
+  onOpenSettings: () -> Unit,
+  onOpenHelp: () -> Unit,
+  modifier: Modifier = Modifier,
+  appName: String = "Tabby",
+  logoPainter: Painter = rememberVectorPainter(TabbyIcons.BaselineSwapVerticalCircle),
+  refreshKey: Any? = Unit,
+) {
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
-  var clashRunning by remember { mutableStateOf(false) }
   var uiState by remember { mutableStateOf(homeInitialUiState()) }
+  var eventState by remember {
+    mutableStateOf<HomeEventState<VpnPermissionT>>(homeInitialEventState())
+  }
+  var fetchRequest by remember { mutableIntStateOf(0) }
 
   val directMode = stringResource(SharedRes.string.direct_mode)
   val globalMode = stringResource(SharedRes.string.global_mode)
@@ -56,88 +134,124 @@ fun HomeRouteContent(
   val noProfileMessage = stringResource(HomeRes.string.no_profile_selected)
   val profilesAction = stringResource(SharedRes.string.profiles)
   val fallbackFailureMessage = stringResource(SharedRes.string.unavailable)
-  val logoPainter = rememberVectorPainter(TabbyIcons.BaselineSwapVerticalCircle)
 
-  suspend fun refreshHomeState() {
-    val state = runCatching { engineController.queryState() }.getOrDefault(engineState)
-    val profileName = runCatching { profileRepository.queryActive()?.name }.getOrNull()
-    val hasProviders =
-      if (clashRunning) {
-        runCatching { engineController.queryProviders().isNotEmpty() }.getOrDefault(false)
-      } else {
-        false
-      }
+  suspend fun refreshHomeState(clashRunningSnapshot: Boolean) {
+    val fetchedState = onFetchHomeState(clashRunningSnapshot)
 
     uiState =
       uiState.withFetchedHomeState(
-        clashRunning = clashRunning,
-        mode =
-          homeModeLabelResourceToken(
-            label = homeModeLabel(state.mode),
-            directMode = directMode,
-            globalMode = globalMode,
-            ruleMode = ruleMode,
-          ),
-        hasProviders = hasProviders,
-        profileName = profileName,
+        clashRunning = clashRunningSnapshot,
+        fetchedState = fetchedState,
+        directMode = directMode,
+        globalMode = globalMode,
+        ruleMode = ruleMode,
       )
-  }
-
-  suspend fun showNoProfileMessage() {
-    val result =
-      snackbarHostState.showSnackbar(
-        message = noProfileMessage,
-        actionLabel = profilesAction,
-        duration = SnackbarDuration.Long,
-      )
-
-    when (homeNoProfileSnackbarAction(result.toSnackbarActionResult())) {
-      HomeNoProfileSnackbarAction.OpenProfiles -> onOpenProfiles()
-      HomeNoProfileSnackbarAction.Ignore -> Unit
-    }
   }
 
   suspend fun startEngine() {
-    val activeProfile = runCatching { profileRepository.queryActive() }.getOrNull()
+    val result = onStartEngine()
 
-    when (homeStartAction(activeProfile)) {
-      HomeStartAction.ShowNoProfileMessage -> showNoProfileMessage()
-      HomeStartAction.StartEngine ->
-        runCatching { engineController.start() }
-          .onSuccess {
-            clashRunning = true
-            refreshHomeState()
-          }
-          .onFailure {
-            snackbarHostState.showSnackbar(it.message ?: fallbackFailureMessage)
-          }
+    if (result == HomeEngineStartResult.Started) {
+      onRunningStateChanged(true)
+      fetchRequest += 1
+    }
+
+    homeEngineStartEventState(result)?.let { eventState = it }
+  }
+
+  suspend fun startClash() {
+    val action = homeStartAction(profileRepository.queryActive())
+    val event = homeStartEventState(action)
+
+    if (event != null) eventState = event else startEngine()
+  }
+
+  suspend fun stopClash() {
+    runCatching { onStopEngine() }
+      .onSuccess {
+        onRunningStateChanged(false)
+        fetchRequest += 1
+      }
+      .onFailure { eventState = homeStartFailureEventState(it.message ?: fallbackFailureMessage) }
+  }
+
+  LaunchedEffect(active, broadcastEvents) {
+    when (homeActiveFetchAction(active = active)) {
+      HomeActiveFetchAction.RequestFetch -> {
+        fetchRequest += 1
+        broadcastEvents.collect { event ->
+          val action = homeBroadcastAction(event)
+
+          homeBroadcastEventState(action)?.let { eventState = it }
+          if (action.shouldFetch) fetchRequest += 1
+        }
+      }
+      HomeActiveFetchAction.Ignore -> Unit
     }
   }
 
-  suspend fun stopEngine() {
-    runCatching { engineController.stop() }
-      .onSuccess {
-        clashRunning = false
-        refreshHomeState()
-      }
-      .onFailure { snackbarHostState.showSnackbar(it.message ?: fallbackFailureMessage) }
+  LaunchedEffect(
+    active,
+    fetchRequest,
+    clashRunning,
+    engineController,
+    profileRepository,
+    refreshKey,
+    directMode,
+    globalMode,
+    ruleMode,
+  ) {
+    when (homeActiveFetchAction(active = active)) {
+      HomeActiveFetchAction.RequestFetch -> refreshHomeState(clashRunning)
+      HomeActiveFetchAction.Ignore -> Unit
+    }
   }
 
-  LaunchedEffect(engineController, profileRepository, engineState.mode, clashRunning) {
-    refreshHomeState()
-  }
-
-  LaunchedEffect(engineController, clashRunning) {
-    when (homeTrafficPollAction(clashRunning)) {
+  LaunchedEffect(active, clashRunning, engineController) {
+    when (homeTrafficPollAction(started = active, clashRunning = clashRunning)) {
       HomeTrafficPollAction.QueryTraffic -> {
         while (isActive) {
           delay(1.seconds)
-          runCatching { engineController.queryTraffic() }
-            .onSuccess { uiState = uiState.withForwardedTraffic(homeTrafficTotalText(it)) }
+          val total = engineController.queryTraffic()
+          uiState = uiState.withForwardedTraffic(homeTrafficTotalText(total))
         }
       }
       HomeTrafficPollAction.Ignore -> Unit
     }
+  }
+
+  LaunchedEffect(vpnPermissionResults) {
+    vpnPermissionResults.collect { granted ->
+      when (homeVpnPermissionResultActionFromGranted(granted = granted)) {
+        HomeVpnPermissionResultAction.StartEngine -> startEngine()
+        HomeVpnPermissionResultAction.Ignore -> Unit
+      }
+    }
+  }
+
+  LaunchedEffect(eventState) {
+    when (val action = homeEventRouteEffect(eventState)) {
+      HomeEventRouteEffect.Ignore -> Unit
+      is HomeEventRouteEffect.RequestVpnPermission ->
+        onRequestVpnPermission(action.permissionRequest)
+      HomeEventRouteEffect.ShowNoProfileMessage -> {
+        val result =
+          snackbarHostState.showSnackbar(
+            message = noProfileMessage,
+            actionLabel = profilesAction,
+            duration = SnackbarDuration.Long,
+          )
+
+        when (homeNoProfileSnackbarAction(result.toSnackbarActionResult())) {
+          HomeNoProfileSnackbarAction.OpenProfiles -> onOpenProfiles()
+          HomeNoProfileSnackbarAction.Ignore -> Unit
+        }
+      }
+      is HomeEventRouteEffect.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message)
+      }
+    }
+    eventState = homeConsumedEventState()
   }
 
   HomeStateRouteContent(
@@ -150,8 +264,8 @@ fun HomeRouteContent(
     onToggleStatus = {
       scope.launch {
         when (homeToggleAction(clashRunning)) {
-          HomeToggleAction.StartClash -> startEngine()
-          HomeToggleAction.StopClash -> stopEngine()
+          HomeToggleAction.StartClash -> startClash()
+          HomeToggleAction.StopClash -> stopClash()
         }
       }
     },

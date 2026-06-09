@@ -419,6 +419,52 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun fetchedStateRouteDataMapsModeLabelAndProviderAvailabilityWhenRunning() {
+    val state =
+      HomeUiState(forwarded = "10 MB")
+        .withFetchedHomeState(
+          clashRunning = true,
+          fetchedState =
+            HomeFetchedState(
+              modeLabel = HomeModeLabel.Global,
+              hasProviders = true,
+              profileName = "Daily",
+            ),
+          directMode = "Direct",
+          globalMode = "Global",
+          ruleMode = "Rule",
+        )
+
+    assertEquals("10 MB", state.forwarded)
+    assertEquals("Global", state.mode)
+    assertEquals(true, state.hasProviders)
+    assertEquals("Daily", state.profileName)
+  }
+
+  @Test
+  fun fetchedStateRouteDataClearsModeAndProvidersWhenStopped() {
+    val state =
+      HomeUiState(forwarded = "10 MB", mode = "Rule", hasProviders = true, profileName = "Old")
+        .withFetchedHomeState(
+          clashRunning = false,
+          fetchedState =
+            HomeFetchedState(
+              modeLabel = HomeModeLabel.Direct,
+              hasProviders = true,
+              profileName = "Daily",
+            ),
+          directMode = "Direct",
+          globalMode = "Global",
+          ruleMode = "Rule",
+        )
+
+    assertEquals("10 MB", state.forwarded)
+    assertEquals(null, state.mode)
+    assertEquals(false, state.hasProviders)
+    assertEquals("Daily", state.profileName)
+  }
+
+  @Test
   fun forwardedTrafficUpdatePreservesFetchedStateFields() {
     val state =
       HomeUiState(mode = "Direct", hasProviders = true, profileName = "Daily")
