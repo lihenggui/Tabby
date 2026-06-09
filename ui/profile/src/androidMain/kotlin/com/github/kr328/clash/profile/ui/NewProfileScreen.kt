@@ -164,20 +164,33 @@ private fun rememberProfileProviderPainter(iconDrawable: Drawable?): Painter? {
 }
 
 private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
-  return when (this) {
-    is QRSuccess ->
-      profileQrScanResultFromSource(
-        kind = ProfileQrScanSourceResultKind.Success,
-        rawValue = content.rawValue,
-        rawBytes = content.rawBytes,
-      )
-    QRUserCanceled ->
-      profileQrScanResultFromSource(kind = ProfileQrScanSourceResultKind.UserCanceled)
-    QRMissingPermission ->
-      profileQrScanResultFromSource(kind = ProfileQrScanSourceResultKind.MissingPermission)
-    is QRError -> profileQrScanResultFromSource(kind = ProfileQrScanSourceResultKind.Error)
-  }
+  return profileQrScanResultFromPlatformPayload(
+    result = this,
+    kind = QRResult::profileQrScanSourceResultKind,
+    rawValue = QRResult::profileQrRawValue,
+    rawBytes = QRResult::profileQrRawBytes,
+  )
 }
+
+private fun QRResult.profileQrScanSourceResultKind(): ProfileQrScanSourceResultKind =
+  when (this) {
+    is QRSuccess -> ProfileQrScanSourceResultKind.Success
+    QRUserCanceled -> ProfileQrScanSourceResultKind.UserCanceled
+    QRMissingPermission -> ProfileQrScanSourceResultKind.MissingPermission
+    is QRError -> ProfileQrScanSourceResultKind.Error
+  }
+
+private fun QRResult.profileQrRawValue(): String? =
+  when (this) {
+    is QRSuccess -> content.rawValue
+    else -> null
+  }
+
+private fun QRResult.profileQrRawBytes(): ByteArray? =
+  when (this) {
+    is QRSuccess -> content.rawBytes
+    else -> null
+  }
 
 private fun AndroidExternalProfileProvider.toNewProfileExternalProviderPresentation():
   NewProfileExternalProviderPresentation =

@@ -54,6 +54,21 @@ internal fun profileQrScanResultFromSource(
   }
 }
 
+internal fun <T> profileQrScanResultFromPlatformPayload(
+  result: T,
+  kind: (T) -> ProfileQrScanSourceResultKind,
+  rawValue: (T) -> String? = { null },
+  rawBytes: (T) -> ByteArray? = { null },
+): ProfileQrScanResult {
+  val sourceKind = kind(result)
+
+  return profileQrScanResultFromSource(
+    kind = sourceKind,
+    rawValue = if (sourceKind == ProfileQrScanSourceResultKind.Success) rawValue(result) else null,
+    rawBytes = if (sourceKind == ProfileQrScanSourceResultKind.Success) rawBytes(result) else null,
+  )
+}
+
 internal fun profileQrAction(
   kind: ProfileQrResultKind,
   rawValue: String? = null,

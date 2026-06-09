@@ -109,6 +109,52 @@ class ProfileQrSourceTest {
   }
 
   @Test
+  fun qrScanResultFromPlatformPayloadReadsSuccessPayload() {
+    val rawBytes = "https://example.com/platform-bytes.yaml".encodeToByteArray()
+    val result =
+      profileQrScanResultFromPlatformPayload(
+        result =
+          ProfileQrPlatformPayload(
+            kind = ProfileQrScanSourceResultKind.Success,
+            rawValue = "https://example.com/platform-value.yaml",
+            rawBytes = rawBytes,
+          ),
+        kind = ProfileQrPlatformPayload::kind,
+        rawValue = ProfileQrPlatformPayload::rawValue,
+        rawBytes = ProfileQrPlatformPayload::rawBytes,
+      )
+
+    assertEquals(ProfileQrResultKind.Success, result.kind)
+    assertEquals("https://example.com/platform-value.yaml", result.rawValue)
+    assertContentEquals(rawBytes, result.rawBytes)
+  }
+
+  @Test
+  fun qrScanResultFromPlatformPayloadIgnoresNonSuccessPayloadReaders() {
+    var rawValueReads = 0
+    var rawBytesReads = 0
+    val result =
+      profileQrScanResultFromPlatformPayload(
+        result = ProfileQrPlatformPayload(kind = ProfileQrScanSourceResultKind.Error),
+        kind = ProfileQrPlatformPayload::kind,
+        rawValue = {
+          rawValueReads += 1
+          "https://example.com/ignored.yaml"
+        },
+        rawBytes = {
+          rawBytesReads += 1
+          "https://example.com/ignored.yaml".encodeToByteArray()
+        },
+      )
+
+    assertEquals(ProfileQrResultKind.Error, result.kind)
+    assertEquals(null, result.rawValue)
+    assertEquals(null, result.rawBytes)
+    assertEquals(0, rawValueReads)
+    assertEquals(0, rawBytesReads)
+  }
+
+  @Test
   fun qrUserCanceledIsIgnored() {
     assertEquals(
       ProfileQrAction.Ignore,
@@ -131,4 +177,10 @@ class ProfileQrSourceTest {
       profileQrAction(ProfileQrResultKind.Error),
     )
   }
+
+  private data class ProfileQrPlatformPayload(
+    val kind: ProfileQrScanSourceResultKind,
+    val rawValue: String? = null,
+    val rawBytes: ByteArray? = null,
+  )
 }
