@@ -221,13 +221,13 @@ fun <SourceT : Any, OutputT : Any> ProfileRepositoryFilesRouteContent(
     }
   }
   LaunchedEffect(eventState) {
-    when (val action = profileFilesEventPlatformAction(eventState)) {
-      ProfileFilesEventPlatformAction.Ignore -> Unit
-      ProfileFilesEventPlatformAction.Finish -> onFinish()
-      is ProfileFilesEventPlatformAction.OpenFile -> onOpenFile(action.uri)
-      is ProfileFilesEventPlatformAction.RequestImport -> onRequestImport(action.targetConfigFile)
-      is ProfileFilesEventPlatformAction.RequestExport -> onRequestExport(action.sourceConfigFile)
-      is ProfileFilesEventPlatformAction.ShowMessage ->
+    when (val action = profileFilesEventRouteEffect(eventState)) {
+      ProfileFilesEventRouteEffect.Ignore -> Unit
+      ProfileFilesEventRouteEffect.Finish -> onFinish()
+      is ProfileFilesEventRouteEffect.OpenFile -> onOpenFile(action.openFile)
+      is ProfileFilesEventRouteEffect.RequestImport -> onRequestImport(action.targetDocument)
+      is ProfileFilesEventRouteEffect.RequestExport -> onRequestExport(action.sourceDocument)
+      is ProfileFilesEventRouteEffect.ShowMessage ->
         snackbarHostState.showSnackbar(message = action.message)
     }
     eventState = profileFilesConsumedEventState()

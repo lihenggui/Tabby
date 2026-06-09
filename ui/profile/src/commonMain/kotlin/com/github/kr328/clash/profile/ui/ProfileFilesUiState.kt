@@ -12,58 +12,58 @@ internal fun <T> profileFilesInitialUiState(): ProfileFilesUiState<T> {
   return ProfileFilesUiState()
 }
 
-internal sealed interface ProfileFilesEventState<out ConfigFileT, out OpenFileT> {
+internal sealed interface ProfileFilesEventState<out DocumentT, out OpenFileT> {
   data object Idle : ProfileFilesEventState<Nothing, Nothing>
 
   data object Finish : ProfileFilesEventState<Nothing, Nothing>
 
-  data class OpenFile<out OpenFileT>(val uri: OpenFileT) :
+  data class OpenFile<out OpenFileT>(val openFile: OpenFileT) :
     ProfileFilesEventState<Nothing, OpenFileT>
 
-  data class RequestImport<out ConfigFileT>(val targetConfigFile: ConfigFileT?) :
-    ProfileFilesEventState<ConfigFileT, Nothing>
+  data class RequestImport<out DocumentT>(val targetDocument: DocumentT?) :
+    ProfileFilesEventState<DocumentT, Nothing>
 
-  data class RequestExport<out ConfigFileT>(val sourceConfigFile: ConfigFileT) :
-    ProfileFilesEventState<ConfigFileT, Nothing>
+  data class RequestExport<out DocumentT>(val sourceDocument: DocumentT) :
+    ProfileFilesEventState<DocumentT, Nothing>
 
   data class ShowMessage(val message: String) : ProfileFilesEventState<Nothing, Nothing>
 }
 
-internal sealed interface ProfileFilesEventPlatformAction<out ConfigFileT, out OpenFileT> {
-  data object Ignore : ProfileFilesEventPlatformAction<Nothing, Nothing>
+internal sealed interface ProfileFilesEventRouteEffect<out DocumentT, out OpenFileT> {
+  data object Ignore : ProfileFilesEventRouteEffect<Nothing, Nothing>
 
-  data object Finish : ProfileFilesEventPlatformAction<Nothing, Nothing>
+  data object Finish : ProfileFilesEventRouteEffect<Nothing, Nothing>
 
-  data class OpenFile<out OpenFileT>(val uri: OpenFileT) :
-    ProfileFilesEventPlatformAction<Nothing, OpenFileT>
+  data class OpenFile<out OpenFileT>(val openFile: OpenFileT) :
+    ProfileFilesEventRouteEffect<Nothing, OpenFileT>
 
-  data class RequestImport<out ConfigFileT>(val targetConfigFile: ConfigFileT?) :
-    ProfileFilesEventPlatformAction<ConfigFileT, Nothing>
+  data class RequestImport<out DocumentT>(val targetDocument: DocumentT?) :
+    ProfileFilesEventRouteEffect<DocumentT, Nothing>
 
-  data class RequestExport<out ConfigFileT>(val sourceConfigFile: ConfigFileT) :
-    ProfileFilesEventPlatformAction<ConfigFileT, Nothing>
+  data class RequestExport<out DocumentT>(val sourceDocument: DocumentT) :
+    ProfileFilesEventRouteEffect<DocumentT, Nothing>
 
-  data class ShowMessage(val message: String) : ProfileFilesEventPlatformAction<Nothing, Nothing>
+  data class ShowMessage(val message: String) : ProfileFilesEventRouteEffect<Nothing, Nothing>
 }
 
-internal fun <ConfigFileT, OpenFileT> profileFilesInitialEventState():
-  ProfileFilesEventState<ConfigFileT, OpenFileT> {
+internal fun <DocumentT, OpenFileT> profileFilesInitialEventState():
+  ProfileFilesEventState<DocumentT, OpenFileT> {
   return ProfileFilesEventState.Idle
 }
 
-internal fun <ConfigFileT, OpenFileT> profileFilesEventPlatformAction(
-  eventState: ProfileFilesEventState<ConfigFileT, OpenFileT>
-): ProfileFilesEventPlatformAction<ConfigFileT, OpenFileT> {
+internal fun <DocumentT, OpenFileT> profileFilesEventRouteEffect(
+  eventState: ProfileFilesEventState<DocumentT, OpenFileT>
+): ProfileFilesEventRouteEffect<DocumentT, OpenFileT> {
   return when (eventState) {
-    ProfileFilesEventState.Idle -> ProfileFilesEventPlatformAction.Ignore
-    ProfileFilesEventState.Finish -> ProfileFilesEventPlatformAction.Finish
-    is ProfileFilesEventState.OpenFile -> ProfileFilesEventPlatformAction.OpenFile(eventState.uri)
+    ProfileFilesEventState.Idle -> ProfileFilesEventRouteEffect.Ignore
+    ProfileFilesEventState.Finish -> ProfileFilesEventRouteEffect.Finish
+    is ProfileFilesEventState.OpenFile -> ProfileFilesEventRouteEffect.OpenFile(eventState.openFile)
     is ProfileFilesEventState.RequestImport ->
-      ProfileFilesEventPlatformAction.RequestImport(eventState.targetConfigFile)
+      ProfileFilesEventRouteEffect.RequestImport(eventState.targetDocument)
     is ProfileFilesEventState.RequestExport ->
-      ProfileFilesEventPlatformAction.RequestExport(eventState.sourceConfigFile)
+      ProfileFilesEventRouteEffect.RequestExport(eventState.sourceDocument)
     is ProfileFilesEventState.ShowMessage ->
-      ProfileFilesEventPlatformAction.ShowMessage(eventState.message)
+      ProfileFilesEventRouteEffect.ShowMessage(eventState.message)
   }
 }
 
@@ -123,14 +123,14 @@ internal fun <OpenFileT> profileFileOpenEventState(
   }
 }
 
-internal fun <ConfigFileT> profileFileImportRequestEventState(
-  targetConfigFile: ConfigFileT?
-): ProfileFilesEventState<ConfigFileT, Nothing> {
-  return ProfileFilesEventState.RequestImport(targetConfigFile)
+internal fun <DocumentT> profileFileImportRequestEventState(
+  targetDocument: DocumentT?
+): ProfileFilesEventState<DocumentT, Nothing> {
+  return ProfileFilesEventState.RequestImport(targetDocument)
 }
 
-internal fun <ConfigFileT> profileFileExportRequestEventState(
-  sourceConfigFile: ConfigFileT
-): ProfileFilesEventState<ConfigFileT, Nothing> {
-  return ProfileFilesEventState.RequestExport(sourceConfigFile)
+internal fun <DocumentT> profileFileExportRequestEventState(
+  sourceDocument: DocumentT
+): ProfileFilesEventState<DocumentT, Nothing> {
+  return ProfileFilesEventState.RequestExport(sourceDocument)
 }

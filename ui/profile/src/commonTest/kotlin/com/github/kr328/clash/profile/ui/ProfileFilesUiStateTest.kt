@@ -59,53 +59,53 @@ class ProfileFilesUiStateTest {
   }
 
   @Test
-  fun eventStateCarriesPlatformPayloadsAsGenericValues() {
+  fun eventStateCarriesRouteValuesAsGenericValues() {
     val targetFile = testFile("config.yaml")
-    val filePayload = "profile/config.yaml"
+    val openFileTarget = "profile/config.yaml"
     val openFileEvent: ProfileFilesEventState<TestFile, String> =
-      ProfileFilesEventState.OpenFile(filePayload)
+      ProfileFilesEventState.OpenFile(openFileTarget)
     val importEvent: ProfileFilesEventState<TestFile, String> =
       ProfileFilesEventState.RequestImport(targetFile)
     val exportEvent: ProfileFilesEventState<TestFile, String> =
       ProfileFilesEventState.RequestExport(targetFile)
 
-    assertEquals(ProfileFilesEventState.OpenFile(filePayload), openFileEvent)
+    assertEquals(ProfileFilesEventState.OpenFile(openFileTarget), openFileEvent)
     assertEquals(ProfileFilesEventState.RequestImport(targetFile), importEvent)
     assertEquals(ProfileFilesEventState.RequestExport(targetFile), exportEvent)
   }
 
   @Test
-  fun eventPlatformActionMapsEventStates() {
+  fun eventRouteEffectMapsEventStates() {
     val targetFile = testFile("config.yaml")
-    val filePayload = "profile/config.yaml"
+    val openFileTarget = "profile/config.yaml"
 
     assertEquals(
-      ProfileFilesEventPlatformAction.Ignore,
-      profileFilesEventPlatformAction(ProfileFilesEventState.Idle),
+      ProfileFilesEventRouteEffect.Ignore,
+      profileFilesEventRouteEffect(ProfileFilesEventState.Idle),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.Finish,
-      profileFilesEventPlatformAction(ProfileFilesEventState.Finish),
+      ProfileFilesEventRouteEffect.Finish,
+      profileFilesEventRouteEffect(ProfileFilesEventState.Finish),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.OpenFile(filePayload),
-      profileFilesEventPlatformAction(ProfileFilesEventState.OpenFile(filePayload)),
+      ProfileFilesEventRouteEffect.OpenFile(openFileTarget),
+      profileFilesEventRouteEffect(ProfileFilesEventState.OpenFile(openFileTarget)),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.RequestImport(targetFile),
-      profileFilesEventPlatformAction(ProfileFilesEventState.RequestImport(targetFile)),
+      ProfileFilesEventRouteEffect.RequestImport(targetFile),
+      profileFilesEventRouteEffect(ProfileFilesEventState.RequestImport(targetFile)),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.RequestImport(null),
-      profileFilesEventPlatformAction(ProfileFilesEventState.RequestImport(null)),
+      ProfileFilesEventRouteEffect.RequestImport(null),
+      profileFilesEventRouteEffect(ProfileFilesEventState.RequestImport(null)),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.RequestExport(targetFile),
-      profileFilesEventPlatformAction(ProfileFilesEventState.RequestExport(targetFile)),
+      ProfileFilesEventRouteEffect.RequestExport(targetFile),
+      profileFilesEventRouteEffect(ProfileFilesEventState.RequestExport(targetFile)),
     )
     assertEquals(
-      ProfileFilesEventPlatformAction.ShowMessage("Import failed"),
-      profileFilesEventPlatformAction(ProfileFilesEventState.ShowMessage("Import failed")),
+      ProfileFilesEventRouteEffect.ShowMessage("Import failed"),
+      profileFilesEventRouteEffect(ProfileFilesEventState.ShowMessage("Import failed")),
     )
   }
 
