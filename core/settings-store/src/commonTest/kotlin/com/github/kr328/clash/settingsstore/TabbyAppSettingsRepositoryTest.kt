@@ -46,6 +46,40 @@ class TabbyAppSettingsRepositoryTest {
   }
 
   @Test
+  fun settersPersistAcrossRepositoryInstances() {
+    val uiSettings = MapSettings()
+    val serviceSettings = MapSettings()
+    val firstRepository =
+      TabbyAppSettingsRepository(
+        uiStoreProvider = uiSettings.asStoreProvider(),
+        serviceStoreProvider = serviceSettings.asStoreProvider(),
+      )
+
+    firstRepository.setAutoRestart(true)
+    firstRepository.setDarkMode(DarkMode.ForceDark)
+    firstRepository.setHideAppIcon(true)
+    firstRepository.setHideFromRecents(true)
+    firstRepository.setDynamicNotification(false)
+
+    val secondRepository =
+      TabbyAppSettingsRepository(
+        uiStoreProvider = uiSettings.asStoreProvider(),
+        serviceStoreProvider = serviceSettings.asStoreProvider(),
+      )
+
+    assertEquals(
+      TabbyAppSettings(
+        autoRestart = true,
+        darkMode = DarkMode.ForceDark,
+        hideAppIcon = true,
+        hideFromRecents = true,
+        dynamicNotification = false,
+      ),
+      secondRepository.query(defaults = TabbyAppSettings(darkMode = DarkMode.ForceLight)),
+    )
+  }
+
+  @Test
   fun hasDarkModeTracksStoredDarkModePreference() {
     val repository = testRepository()
 

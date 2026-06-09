@@ -17,6 +17,8 @@ import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.ApplicationObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.settingsstore.TabbyAppSettings
+import com.github.kr328.clash.settingsstore.TabbyAppSettingsRepository
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 
@@ -26,27 +28,36 @@ internal fun AppSettingsScreen(modifier: Modifier = Modifier) {
   val appContext = context.applicationContext
   val uiStore = remember(appContext) { UiStore(appContext) }
   val serviceStore = remember(appContext) { ServiceStore(appContext) }
+  val appSettingsRepository =
+    remember(uiStore, serviceStore) {
+      TabbyAppSettingsRepository(
+        uiStoreProvider = uiStore.storeProvider,
+        serviceStoreProvider = serviceStore.storeProvider,
+      )
+    }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
 
-  AppSettingsRouteContent(
+  AppSettingsRepositoryRouteContent(
+    repository = appSettingsRepository,
     darkMode = uiStore.darkMode,
     modifier = modifier,
     clashRunning = clashRunning,
-    initialAutoRestart = appContext.autoRestartValue,
-    initialHideAppIcon = uiStore.hideAppIcon,
-    initialHideFromRecents = uiStore.hideFromRecents,
-    initialDynamicNotification = serviceStore.dynamicNotification,
+    defaults =
+      TabbyAppSettings(
+        autoRestart = appContext.autoRestartValue,
+        darkMode = uiStore.darkMode,
+        hideAppIcon = uiStore.hideAppIcon,
+        hideFromRecents = uiStore.hideFromRecents,
+        dynamicNotification = serviceStore.dynamicNotification,
+      ),
     onAutoRestartChange = { value -> appContext.autoRestartValue = value },
-    onDarkModeChange = { value -> uiStore.darkMode = value },
+    onDarkModeChange = {},
     onHideAppIconChange = { value ->
       appContext.hideAppIcon(value)
-      uiStore.hideAppIcon = value
     },
     onHideFromRecentsChange = { value ->
       ApplicationObserver.createdActivities.forEach { it.recreate() }
-      uiStore.hideFromRecents = value
     },
-    onDynamicNotificationChange = { value -> serviceStore.dynamicNotification = value },
   )
 }
 

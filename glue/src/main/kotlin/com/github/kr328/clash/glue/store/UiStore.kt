@@ -5,6 +5,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.pm.PackageManager
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.store.Store
+import com.github.kr328.clash.common.store.StoreProvider
 import com.github.kr328.clash.common.store.asStoreProvider
 import com.github.kr328.clash.common.util.mainActivityAlias
 import com.github.kr328.clash.common.util.unsafeLazy
@@ -22,7 +23,8 @@ import kotlinx.coroutines.flow.stateIn
 class UiStore(context: Context) {
   private val preferences =
     context.getSharedPreferences(SETTINGS_PREFERENCE_NAME, Context.MODE_PRIVATE)
-  private val store = Store(createStoreProvider(context, preferences))
+  val storeProvider: StoreProvider = createStoreProvider(context, preferences)
+  private val store = Store(storeProvider)
 
   val valueState: StateFlow<ValueState> by unsafeLazy {
     val readValues = {
