@@ -16,6 +16,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.isHttpProfileSource
+import com.github.kr328.clash.core.model.profileAutoUpdateIntervalMillisFromMinutesInput
 import com.github.kr328.clash.ui.component.ModelProgressBarDialog
 import com.github.kr328.clash.ui.component.TabbyScaffold
 import com.github.kr328.clash.ui.icon.BaselineSave
@@ -26,7 +27,6 @@ import com.github.kr328.clash.ui.icon.OutlineLabel
 import com.github.kr328.clash.ui.icon.OutlineUpdate
 import com.github.kr328.clash.ui.icon.TabbyIcons
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.TextFieldPreference
 import me.zhanghai.compose.preference.preference
@@ -143,14 +143,7 @@ internal fun PropertiesContent(
               }
             },
             title = { Text(stringResource(ProfileRes.string.auto_update)) },
-            textToValue = { input ->
-              if (!isAutoUpdateInterval(input)) {
-                null
-              } else {
-                val minutes = input.toLongOrNull() ?: 0
-                minutes.minutes.inWholeMilliseconds
-              }
-            },
+            textToValue = ::profileAutoUpdateIntervalMillisFromMinutesInput,
             enabled = profile.type != Profile.Type.File,
             icon = { Icon(imageVector = TabbyIcons.OutlineUpdate, contentDescription = null) },
             summary = {
@@ -220,6 +213,3 @@ private fun isNotBlank(value: String): Boolean = value.isNotBlank()
 
 internal fun profilePropertiesSourceInputValue(value: String): String? =
   value.takeIf(::isHttpProfileSource)
-
-private fun isAutoUpdateInterval(value: String): Boolean =
-  value.isEmpty() || (value.toLongOrNull() ?: 0) >= 15

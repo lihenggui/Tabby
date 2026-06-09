@@ -8,6 +8,7 @@ import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.isHttpsProfileSource
+import com.github.kr328.clash.core.model.isValidProfileAutoUpdateIntervalMillis
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
@@ -22,7 +23,6 @@ import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.processingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
 import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
@@ -252,7 +252,7 @@ object ProfileProcessor {
       source.isNotEmpty() && scheme != "https" && scheme != "http" && scheme != "content" ->
         throw IllegalArgumentException("Unsupported url $source")
 
-      interval != 0L && interval.milliseconds.inWholeMinutes < 15 ->
+      !isValidProfileAutoUpdateIntervalMillis(interval) ->
         throw IllegalArgumentException("Invalid interval")
     }
   }

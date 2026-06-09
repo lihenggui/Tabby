@@ -3,6 +3,7 @@ package com.github.kr328.clash.engine.desktop
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.isHttpProfileSource
+import com.github.kr328.clash.core.model.isValidProfileAutoUpdateIntervalMillis
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -378,7 +379,7 @@ class DesktopProfileRepository(
       source.isBlank() && type != Profile.Type.File -> throw IllegalArgumentException("Invalid url")
       source.isNotBlank() && type != Profile.Type.File && !isHttpProfileSource(source) ->
         throw IllegalArgumentException("Unsupported url $source")
-      interval != 0L && interval < MINIMUM_INTERVAL_MILLIS ->
+      !isValidProfileAutoUpdateIntervalMillis(interval) ->
         throw IllegalArgumentException("Invalid interval")
     }
   }
@@ -400,7 +401,6 @@ class DesktopProfileRepository(
 
 private const val CONFIGURATION_FILE = "config.yaml"
 internal const val PROVIDERS_DIR = "providers"
-private const val MINIMUM_INTERVAL_MILLIS = 15 * 60 * 1000L
 
 private fun Path.prepareNewProfileDirectory() {
   deleteRecursively()

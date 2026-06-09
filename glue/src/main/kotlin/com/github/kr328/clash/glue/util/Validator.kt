@@ -1,6 +1,8 @@
 package com.github.kr328.clash.glue.util
 
 import com.github.kr328.clash.common.util.PatternFileName
+import com.github.kr328.clash.core.model.isHttpProfileSource
+import com.github.kr328.clash.core.model.isProfileAutoUpdateIntervalMinutesInput
 
 typealias Validator = (String) -> Boolean
 
@@ -10,8 +12,6 @@ val ValidatorFileName: Validator = { PatternFileName.matches(it) && it.isNotBlan
 
 val ValidatorNotBlank: Validator = { it.isNotBlank() }
 
-val ValidatorHttpUrl: Validator = {
-  it.startsWith("https://", ignoreCase = true) || it.startsWith("http://", ignoreCase = true)
-}
+val ValidatorHttpUrl: Validator = ::isHttpProfileSource
 
-val ValidatorAutoUpdateInterval: Validator = { it.isEmpty() || (it.toLongOrNull() ?: 0) >= 15 }
+val ValidatorAutoUpdateInterval: Validator = ::isProfileAutoUpdateIntervalMinutesInput
