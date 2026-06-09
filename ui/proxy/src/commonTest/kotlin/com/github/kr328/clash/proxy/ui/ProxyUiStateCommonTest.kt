@@ -620,6 +620,24 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyBroadcastEventKindFromSourceMapsAllKinds() {
+    val expected =
+      mapOf(
+        ProxyBroadcastSourceEventKind.ServiceRecreated to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.Started to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.Stopped to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.ProfileChanged to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.ProfileUpdateCompleted to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.ProfileUpdateFailed to ProxyBroadcastEventKind.Other,
+        ProxyBroadcastSourceEventKind.ProfileLoaded to ProxyBroadcastEventKind.ProfileLoaded,
+      )
+
+    expected.forEach { (sourceKind, eventKind) ->
+      assertEquals(eventKind, proxyBroadcastEventKindFromSource(sourceKind))
+    }
+  }
+
+  @Test
   fun proxyGroupNamesChangeActionRelaunchesWhenNamesChange() {
     assertEquals(
       ProxyGroupNamesChangeAction.ReLaunch,

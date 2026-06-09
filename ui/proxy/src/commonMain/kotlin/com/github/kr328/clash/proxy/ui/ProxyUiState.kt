@@ -139,6 +139,16 @@ enum class ProxyBroadcastEventKind {
   Other,
 }
 
+internal enum class ProxyBroadcastSourceEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 internal sealed interface ProxyBroadcastAction {
   data object QueryGroupNames : ProxyBroadcastAction
 
@@ -298,6 +308,20 @@ internal fun proxyBroadcastAction(
     ProxyBroadcastAction.QueryGroupNames
   } else {
     ProxyBroadcastAction.Ignore
+  }
+}
+
+internal fun proxyBroadcastEventKindFromSource(
+  kind: ProxyBroadcastSourceEventKind
+): ProxyBroadcastEventKind {
+  return when (kind) {
+    ProxyBroadcastSourceEventKind.ProfileLoaded -> ProxyBroadcastEventKind.ProfileLoaded
+    ProxyBroadcastSourceEventKind.ServiceRecreated,
+    ProxyBroadcastSourceEventKind.Started,
+    ProxyBroadcastSourceEventKind.Stopped,
+    ProxyBroadcastSourceEventKind.ProfileChanged,
+    ProxyBroadcastSourceEventKind.ProfileUpdateCompleted,
+    ProxyBroadcastSourceEventKind.ProfileUpdateFailed -> ProxyBroadcastEventKind.Other
   }
 }
 
