@@ -20,18 +20,18 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
-  fun proxyEventPlatformActionMapsEventStates() {
+  fun proxyEventRouteEffectMapsEventStates() {
     assertEquals(
-      ProxyEventPlatformAction.Ignore,
-      proxyEventPlatformAction(ProxyEventState.Idle),
+      ProxyEventRouteEffect.Ignore,
+      proxyEventRouteEffect(ProxyEventState.Idle),
     )
     assertEquals(
-      ProxyEventPlatformAction.ReLaunch,
-      proxyEventPlatformAction(ProxyEventState.ReLaunch),
+      ProxyEventRouteEffect.ReLaunch,
+      proxyEventRouteEffect(ProxyEventState.ReLaunch),
     )
     assertEquals(
-      ProxyEventPlatformAction.ShowModeSwitchTips,
-      proxyEventPlatformAction(ProxyEventState.ShowModeSwitchTips),
+      ProxyEventRouteEffect.ShowModeSwitchTips,
+      proxyEventRouteEffect(ProxyEventState.ShowModeSwitchTips),
     )
   }
 
