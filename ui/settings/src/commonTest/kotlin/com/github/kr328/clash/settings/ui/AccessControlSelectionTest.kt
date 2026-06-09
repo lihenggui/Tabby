@@ -367,6 +367,33 @@ class AccessControlSelectionTest {
   }
 
   @Test
+  fun detectsSystemAppFromPlatformFlags() {
+    val systemAppFlag = 0b0010
+
+    assertEquals(
+      false,
+      accessControlIsSystemAppFromPlatformFlags(
+        flags = null,
+        systemAppFlag = systemAppFlag,
+      ),
+    )
+    assertEquals(
+      false,
+      accessControlIsSystemAppFromPlatformFlags(
+        flags = 0b0100,
+        systemAppFlag = systemAppFlag,
+      ),
+    )
+    assertEquals(
+      true,
+      accessControlIsSystemAppFromPlatformFlags(
+        flags = 0b0110,
+        systemAppFlag = systemAppFlag,
+      ),
+    )
+  }
+
+  @Test
   fun loadsAccessControlAppsByFilteringMappingAndSorting() {
     val packages =
       listOf(

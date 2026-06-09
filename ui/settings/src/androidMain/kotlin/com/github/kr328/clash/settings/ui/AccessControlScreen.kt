@@ -268,7 +268,11 @@ private fun Context.exportAccessControlClipboardPayload(payload: AccessControlEx
 }
 
 private val PackageInfo.isSystemApp: Boolean
-  get() = applicationInfo?.flags?.let { it and ApplicationInfo.FLAG_SYSTEM != 0 } == true
+  get() =
+    accessControlIsSystemAppFromPlatformFlags(
+      flags = applicationInfo?.flags,
+      systemAppFlag = ApplicationInfo.FLAG_SYSTEM,
+    )
 
 private fun PackageInfo.toAccessControlApp(pm: PackageManager): AndroidAccessControlApp {
   val applicationInfo = checkNotNull(applicationInfo)

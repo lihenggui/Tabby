@@ -197,6 +197,13 @@ internal fun <T> filterAccessControlPackageCandidates(
   }
 }
 
+internal fun accessControlIsSystemAppFromPlatformFlags(
+  flags: Int?,
+  systemAppFlag: Int,
+): Boolean {
+  return flags?.let { it and systemAppFlag != 0 } == true
+}
+
 internal fun <P, A> loadAccessControlApps(
   packages: Iterable<P>,
   selectedPackageNames: Set<String>,
