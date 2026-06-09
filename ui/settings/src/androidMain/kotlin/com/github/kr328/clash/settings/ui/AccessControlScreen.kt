@@ -177,11 +177,12 @@ private data class AndroidAccessControlApp(
 )
 
 private fun AndroidAccessControlApp.toAccessControlPackage(): AccessControlPackage {
-  return AccessControlPackage(
-    packageName = packageName,
-    label = label,
-    installTime = installTime,
-    updateDate = updateDate,
+  return accessControlPackageFromPlatformPayload(
+    app = this,
+    packageName = AndroidAccessControlApp::packageName,
+    label = AndroidAccessControlApp::label,
+    installTime = AndroidAccessControlApp::installTime,
+    updateDate = AndroidAccessControlApp::updateDate,
   )
 }
 
