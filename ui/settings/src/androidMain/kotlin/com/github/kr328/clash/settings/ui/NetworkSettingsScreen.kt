@@ -12,6 +12,8 @@ import com.github.kr328.clash.core.model.AccessControlMode
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.settingsstore.TabbyNetworkSettings
+import com.github.kr328.clash.settingsstore.TabbyNetworkSettingsRepository
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 
@@ -24,29 +26,32 @@ internal fun NetworkSettingsScreen(
   val appContext = context.applicationContext
   val uiStore = remember(appContext) { UiStore(appContext) }
   val serviceStore = remember(appContext) { ServiceStore(appContext) }
+  val networkSettingsRepository =
+    remember(uiStore, serviceStore) {
+      TabbyNetworkSettingsRepository(
+        uiStoreProvider = uiStore.storeProvider,
+        serviceStoreProvider = serviceStore.storeProvider,
+      )
+    }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
 
-  NetworkSettingsRouteContent(
+  NetworkSettingsRepositoryRouteContent(
+    repository = networkSettingsRepository,
     onStartAccessControlList = onStartAccessControlList,
     modifier = modifier,
     clashRunning = clashRunning,
-    initialHasSystemProxyOption = networkSettingsHasSystemProxyOption(),
-    initialEnableVpn = uiStore.enableVpn,
-    initialBypassPrivateNetwork = serviceStore.bypassPrivateNetwork,
-    initialDnsHijacking = serviceStore.dnsHijacking,
-    initialAllowBypass = serviceStore.allowBypass,
-    initialAllowIpv6 = serviceStore.allowIpv6,
-    initialSystemProxy = serviceStore.systemProxy,
-    initialTunStackMode = serviceStore.tunStackMode,
-    initialAccessControlMode = serviceStore.accessControlMode,
-    onEnableVpnChange = { value -> uiStore.enableVpn = value },
-    onBypassPrivateNetworkChange = { value -> serviceStore.bypassPrivateNetwork = value },
-    onDnsHijackingChange = { value -> serviceStore.dnsHijacking = value },
-    onAllowBypassChange = { value -> serviceStore.allowBypass = value },
-    onAllowIpv6Change = { value -> serviceStore.allowIpv6 = value },
-    onSystemProxyChange = { value -> serviceStore.systemProxy = value },
-    onTunStackModeChange = { value -> serviceStore.tunStackMode = value },
-    onAccessControlModeChange = { value -> serviceStore.accessControlMode = value },
+    defaults =
+      TabbyNetworkSettings(
+        hasSystemProxyOption = networkSettingsHasSystemProxyOption(),
+        enableVpn = uiStore.enableVpn,
+        bypassPrivateNetwork = serviceStore.bypassPrivateNetwork,
+        dnsHijacking = serviceStore.dnsHijacking,
+        allowBypass = serviceStore.allowBypass,
+        allowIpv6 = serviceStore.allowIpv6,
+        systemProxy = serviceStore.systemProxy,
+        tunStackMode = serviceStore.tunStackMode,
+        accessControlMode = serviceStore.accessControlMode,
+      ),
   )
 }
 

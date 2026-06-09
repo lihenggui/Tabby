@@ -54,6 +54,47 @@ class TabbyNetworkSettingsRepositoryTest {
     )
   }
 
+  @Test
+  fun settersPersistAcrossRepositoryInstances() {
+    val uiSettings = MapSettings()
+    val serviceSettings = MapSettings()
+    val firstRepository =
+      TabbyNetworkSettingsRepository(
+        uiStoreProvider = uiSettings.asStoreProvider(),
+        serviceStoreProvider = serviceSettings.asStoreProvider(),
+      )
+
+    firstRepository.setEnableVpn(false)
+    firstRepository.setBypassPrivateNetwork(false)
+    firstRepository.setDnsHijacking(false)
+    firstRepository.setAllowBypass(false)
+    firstRepository.setAllowIpv6(true)
+    firstRepository.setSystemProxy(false)
+    firstRepository.setTunStackMode("gvisor")
+    firstRepository.setAccessControlMode(AccessControlMode.AcceptSelected)
+
+    val secondRepository =
+      TabbyNetworkSettingsRepository(
+        uiStoreProvider = uiSettings.asStoreProvider(),
+        serviceStoreProvider = serviceSettings.asStoreProvider(),
+      )
+
+    assertEquals(
+      TabbyNetworkSettings(
+        hasSystemProxyOption = false,
+        enableVpn = false,
+        bypassPrivateNetwork = false,
+        dnsHijacking = false,
+        allowBypass = false,
+        allowIpv6 = true,
+        systemProxy = false,
+        tunStackMode = "gvisor",
+        accessControlMode = AccessControlMode.AcceptSelected,
+      ),
+      secondRepository.query(defaults = TabbyNetworkSettings(hasSystemProxyOption = false)),
+    )
+  }
+
   private fun testRepository(): TabbyNetworkSettingsRepository {
     return TabbyNetworkSettingsRepository(
       uiStoreProvider = MapSettings().asStoreProvider(),
