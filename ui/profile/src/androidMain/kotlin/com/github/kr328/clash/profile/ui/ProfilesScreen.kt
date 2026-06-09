@@ -39,22 +39,24 @@ internal fun ProfilesScreen(
 private fun Broadcasts.Event.toProfilesEvent(): ProfilesBroadcastEvent =
   when (this) {
     Broadcasts.Event.ServiceRecreated ->
-      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ServiceRecreated)
-    Broadcasts.Event.Started -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Started)
-    is Broadcasts.Event.Stopped -> ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Stopped)
+      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ServiceRecreated)
+    Broadcasts.Event.Started ->
+      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.Started)
+    is Broadcasts.Event.Stopped ->
+      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.Stopped)
     Broadcasts.Event.ProfileChanged ->
-      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileChanged)
+      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ProfileChanged)
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      ProfilesBroadcastEvent(
-        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+      profilesBroadcastEventFromSource(
+        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted,
         uuid = uuid,
       )
     is Broadcasts.Event.ProfileUpdateFailed ->
-      ProfilesBroadcastEvent(
-        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+      profilesBroadcastEventFromSource(
+        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateFailed,
         uuid = uuid,
         reason = reason,
       )
     Broadcasts.Event.ProfileLoaded ->
-      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded)
+      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ProfileLoaded)
   }

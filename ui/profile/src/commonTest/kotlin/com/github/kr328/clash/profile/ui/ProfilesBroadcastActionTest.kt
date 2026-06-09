@@ -69,6 +69,66 @@ class ProfilesBroadcastActionTest {
   }
 
   @Test
+  fun broadcastEventFromSourceMapsAllKinds() {
+    val expected =
+      mapOf(
+        ProfilesBroadcastSourceEventKind.ServiceRecreated to
+          ProfilesBroadcastEventKind.ServiceRecreated,
+        ProfilesBroadcastSourceEventKind.Started to ProfilesBroadcastEventKind.Started,
+        ProfilesBroadcastSourceEventKind.Stopped to ProfilesBroadcastEventKind.Stopped,
+        ProfilesBroadcastSourceEventKind.ProfileChanged to
+          ProfilesBroadcastEventKind.ProfileChanged,
+        ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted to
+          ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        ProfilesBroadcastSourceEventKind.ProfileUpdateFailed to
+          ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        ProfilesBroadcastSourceEventKind.ProfileLoaded to ProfilesBroadcastEventKind.ProfileLoaded,
+      )
+
+    expected.forEach { (sourceKind, eventKind) ->
+      assertEquals(
+        ProfilesBroadcastEvent(eventKind),
+        profilesBroadcastEventFromSource(sourceKind),
+      )
+    }
+  }
+
+  @Test
+  fun broadcastEventFromSourceKeepsUpdatePayloadsOnlyForUpdateEvents() {
+    assertEquals(
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        uuid = uuid,
+      ),
+      profilesBroadcastEventFromSource(
+        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted,
+        uuid = uuid,
+        reason = "unused",
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = "network",
+      ),
+      profilesBroadcastEventFromSource(
+        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = "network",
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded),
+      profilesBroadcastEventFromSource(
+        kind = ProfilesBroadcastSourceEventKind.ProfileLoaded,
+        uuid = uuid,
+        reason = "unused",
+      ),
+    )
+  }
+
+  @Test
   fun profileUpdateEventsAreIgnoredWhenUuidIsMissing() {
     assertEquals(
       ProfilesBroadcastAction.Ignore,

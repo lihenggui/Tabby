@@ -12,6 +12,16 @@ enum class ProfilesBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal enum class ProfilesBroadcastSourceEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 data class ProfilesBroadcastEvent(
   val kind: ProfilesBroadcastEventKind,
   val uuid: Uuid? = null,
@@ -34,6 +44,36 @@ internal fun profilesBroadcastAction(event: ProfilesBroadcastEvent): ProfilesBro
     uuid = event.uuid,
     reason = event.reason,
   )
+}
+
+internal fun profilesBroadcastEventFromSource(
+  kind: ProfilesBroadcastSourceEventKind,
+  uuid: Uuid? = null,
+  reason: String? = null,
+): ProfilesBroadcastEvent {
+  return when (kind) {
+    ProfilesBroadcastSourceEventKind.ServiceRecreated ->
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ServiceRecreated)
+    ProfilesBroadcastSourceEventKind.Started ->
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Started)
+    ProfilesBroadcastSourceEventKind.Stopped ->
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.Stopped)
+    ProfilesBroadcastSourceEventKind.ProfileChanged ->
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileChanged)
+    ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted ->
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        uuid = uuid,
+      )
+    ProfilesBroadcastSourceEventKind.ProfileUpdateFailed ->
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = reason,
+      )
+    ProfilesBroadcastSourceEventKind.ProfileLoaded ->
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded)
+  }
 }
 
 internal fun profilesBroadcastAction(
