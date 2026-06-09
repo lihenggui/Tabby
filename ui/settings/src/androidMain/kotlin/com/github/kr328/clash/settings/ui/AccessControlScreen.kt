@@ -36,6 +36,8 @@ import com.github.kr328.clash.glue.store.UiStore
 import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.settingsstore.TabbyAccessControlSettings
+import com.github.kr328.clash.settingsstore.TabbyAccessControlSettingsRepository
 import com.github.kr328.clash.ui.theme.tabbyDimens
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
@@ -51,34 +53,52 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
   val lifecycleOwner = LocalLifecycleOwner.current
   val uiStore = remember(appContext) { UiStore(appContext) }
   val serviceStore = remember(appContext) { ServiceStore(appContext) }
+  val accessControlSettingsRepository =
+    remember(uiStore, serviceStore) {
+      TabbyAccessControlSettingsRepository(
+        uiStoreProvider = uiStore.storeProvider,
+        serviceStoreProvider = serviceStore.storeProvider,
+      )
+    }
+  val accessControlSettingsDefaults =
+    remember(uiStore, serviceStore) {
+      TabbyAccessControlSettings(
+        selectedPackages = serviceStore.accessControlPackages,
+        sort = uiStore.accessControlSort,
+        reverse = uiStore.accessControlReverse,
+        showSystemApps = uiStore.accessControlSystemApp,
+      )
+    }
+  val accessControlSettings =
+    remember(accessControlSettingsRepository, accessControlSettingsDefaults) {
+      accessControlSettingsRepository.query(accessControlSettingsDefaults)
+    }
   val clashRunning by Remote.broadcasts.clashRunningFlow.collectAsStateWithLifecycle()
-  var selected by remember { mutableStateOf(emptySet<String>()) }
-  var sort by remember { mutableStateOf(uiStore.accessControlSort) }
-  var reverse by remember { mutableStateOf(uiStore.accessControlReverse) }
-  var showSystemApps by remember { mutableStateOf(uiStore.accessControlSystemApp) }
+  var selected by remember { mutableStateOf(accessControlSettings.selectedPackages) }
+  var sort by remember { mutableStateOf(accessControlSettings.sort) }
+  var reverse by remember { mutableStateOf(accessControlSettings.reverse) }
+  var showSystemApps by remember { mutableStateOf(accessControlSettings.showSystemApps) }
   var androidApps by remember { mutableStateOf(emptyList<AndroidAccessControlApp>()) }
-  var reloadRequest by remember { mutableStateOf<AccessControlReloadRequest?>(null) }
+  var lastAppliedSelected by remember { mutableStateOf(accessControlSettings.selectedPackages) }
+  var reloadRequest by remember {
+    mutableStateOf(
+      accessControlReloadRequest(
+        selected = selected,
+        sort = sort,
+        reverse = reverse,
+        showSystemApps = showSystemApps,
+      )
+    )
+  }
   val currentSelected = rememberUpdatedState(selected)
+  val currentAppliedSelected = rememberUpdatedState(lastAppliedSelected)
   val currentClashRunning = rememberUpdatedState(clashRunning)
   val apps =
     remember(androidApps) { androidApps.map(AndroidAccessControlApp::toAccessControlPackage) }
   val icons = remember(androidApps) { androidApps.associate { it.packageName to it.icon } }
 
-  LaunchedEffect(appContext, serviceStore) {
-    val persistedSelected = withContext(Dispatchers.IO) { serviceStore.accessControlPackages }
-    selected = persistedSelected
-    reloadRequest =
-      accessControlReloadRequest(
-        selected = persistedSelected,
-        sort = sort,
-        reverse = reverse,
-        showSystemApps = showSystemApps,
-      )
-  }
-
   LaunchedEffect(appContext, reloadRequest) {
-    val request = reloadRequest ?: return@LaunchedEffect
-    androidApps = appContext.loadAndroidAccessControlApps(request)
+    androidApps = appContext.loadAndroidAccessControlApps(reloadRequest)
   }
 
   DisposableEffect(lifecycleOwner, appContext, serviceStore) {
@@ -86,10 +106,14 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
       if (
         accessControlPersistRequestedFromStopEvent(isStopEvent = event == Lifecycle.Event.ON_STOP)
       ) {
+        val selectedSnapshot = currentSelected.value
+        val appliedSelectedSnapshot = currentAppliedSelected.value
+        lastAppliedSelected = selectedSnapshot
         Global.launch {
           appContext.persistAccessControlSelection(
             serviceStore = serviceStore,
-            selected = currentSelected.value,
+            selected = selectedSnapshot,
+            persistedSelection = appliedSelectedSnapshot,
             clashRunning = currentClashRunning.value,
           )
         }
@@ -115,26 +139,21 @@ internal fun AccessControlScreen(modifier: Modifier = Modifier) {
       )
   }
 
-  AccessControlRouteContent(
+  AccessControlSettingsRepositoryRouteContent(
+    repository = accessControlSettingsRepository,
     modifier = modifier,
     initialApps = apps,
-    initialSelected = selected,
-    initialSort = sort,
-    initialReverse = reverse,
-    initialShowSystemApps = showSystemApps,
-    onSelectedChange = { selected = it },
+    defaults = accessControlSettings,
+    onSelectedPackagesChange = { selected = it },
     onSortChange = {
-      uiStore.accessControlSort = it
       sort = it
       reloadApps(sortSnapshot = it)
     },
     onReverseChange = {
-      uiStore.accessControlReverse = it
       reverse = it
       reloadApps(reverseSnapshot = it)
     },
     onShowSystemAppsChange = {
-      uiStore.accessControlSystemApp = it
       showSystemApps = it
       reloadApps(showSystemAppsSnapshot = it)
     },
@@ -206,9 +225,9 @@ private suspend fun Context.loadAndroidAccessControlApps(
 private suspend fun Context.persistAccessControlSelection(
   serviceStore: ServiceStore,
   selected: Set<String>,
+  persistedSelection: Set<String>,
   clashRunning: Boolean,
 ) {
-  val persistedSelection = serviceStore.accessControlPackages
   val persistPlan =
     planAccessControlPersist(
       selected = selected,

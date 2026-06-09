@@ -21,6 +21,7 @@ fun AccessControlSettingsRepositoryRouteContent(
     AccessControlClipboardImportPayload(hasPrimaryClipItem = false, clipboardText = null)
   },
   onExportClipboardText: (String) -> Unit = {},
+  appIcon: @Composable (AccessControlPackage) -> Unit = {},
 ) {
   val settings = remember(repository, defaults) { repository.query(defaults) }
 
@@ -49,5 +50,6 @@ fun AccessControlSettingsRepositoryRouteContent(
     },
     onImportClipboardPayload = onImportClipboardPayload,
     onExportClipboardText = onExportClipboardText,
+    appIcon = appIcon,
   )
 }
