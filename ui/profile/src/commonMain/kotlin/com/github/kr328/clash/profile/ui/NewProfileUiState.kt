@@ -228,6 +228,20 @@ internal fun newProfileDetailAction(packageName: String?): NewProfileDetailActio
   else NewProfileDetailAction.OpenAppSettings(packageName)
 }
 
+internal fun <SourceT : Any> newProfileExternalProviderResult(
+  resultAccepted: Boolean,
+  source: SourceT?,
+  name: () -> String?,
+): NewProfileExternalProviderResult<SourceT> {
+  val acceptedSource = if (resultAccepted) source else null
+
+  return NewProfileExternalProviderResult(
+    resultAccepted = resultAccepted,
+    source = acceptedSource,
+    name = if (acceptedSource != null) name() else null,
+  )
+}
+
 internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   result: NewProfileExternalProviderResult<SourceT>
 ): NewProfileExternalProviderResultAction<SourceT> {

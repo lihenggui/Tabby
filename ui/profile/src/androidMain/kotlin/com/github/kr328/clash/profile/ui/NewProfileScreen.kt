@@ -191,16 +191,12 @@ private val AndroidExternalProfileProvider.hasDetail: Boolean
   get() = newProfileDetailAction(packageName) != NewProfileDetailAction.Ignore
 
 private fun ActivityResult.toNewProfileExternalProviderResult():
-  NewProfileExternalProviderResult<Uri> {
-  val resultAccepted = resultCode == RESULT_OK
-  val source = if (resultAccepted) data?.data else null
-
-  return NewProfileExternalProviderResult(
-    resultAccepted = resultAccepted,
-    source = source,
-    name = if (source != null) data?.getStringExtra(Intents.EXTRA_NAME) else null,
+  NewProfileExternalProviderResult<Uri> =
+  newProfileExternalProviderResult(
+    resultAccepted = resultCode == RESULT_OK,
+    source = data?.data,
+    name = { data?.getStringExtra(Intents.EXTRA_NAME) },
   )
-}
 
 private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
   when (val action = newProfileDetailAction(packageName)) {
