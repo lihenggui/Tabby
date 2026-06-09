@@ -349,6 +349,42 @@ class LogcatUiStateTest {
   }
 
   @Test
+  fun logcatExportDestinationActionKeepsSelectedDestinationWithCurrentFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportDestinationAction.ExportFile(
+        file = file,
+        destination = "content://logs/export",
+      ),
+      logcatExportDestinationAction(
+        currentFile = file,
+        destination = "content://logs/export",
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportDestinationActionIgnoresMissingFileOrDestination() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportDestinationAction.Ignore,
+      logcatExportDestinationAction(
+        currentFile = null,
+        destination = "content://logs/export",
+      ),
+    )
+    assertEquals(
+      LogcatExportDestinationAction.Ignore,
+      logcatExportDestinationAction<String>(
+        currentFile = file,
+        destination = null,
+      ),
+    )
+  }
+
+  @Test
   fun logcatExportResultEventStateKeepsSemanticResultForRouteConsumption() {
     assertEquals(
       LogcatEventState.ExportResult(success = true, errorMessage = null),

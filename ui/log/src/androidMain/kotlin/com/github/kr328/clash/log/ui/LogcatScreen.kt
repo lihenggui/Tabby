@@ -161,37 +161,34 @@ internal fun LogcatScreen(
 
   val exportLauncher =
     rememberLauncherForActivityResult(CreateDocument("text/plain")) { uri ->
-      val action =
-        logcatExportActionFromDestinationSelection(
-          currentFile = currentFile,
-          destinationSelected = uri != null,
-        )
-
-      if (action is LogcatExportAction.ExportFile) {
-        val destination = checkNotNull(uri)
-        scope.launch {
-          eventState =
-            try {
-              appContext.writeAndroidLogTo(
-                messages = uiState.messages,
-                file = action.file,
-                uri = destination,
-                onExportStarted = { max -> uiState = uiState.withExportStarted(max) },
-                onExportProgress = { progress -> uiState = uiState.withExportProgress(progress) },
-                onExportFinished = { uiState = uiState.withExportFinished() },
-              )
-              logcatExportResultEventState(
-                success = true,
-                errorMessage = null,
-              )
-            } catch (e: Exception) {
-              Log.e("Export log file failed: ${e.message}", e)
-              logcatExportResultEventState(
-                success = false,
-                errorMessage = e.message,
-              )
-            }
-        }
+      when (
+        val action = logcatExportDestinationAction(currentFile = currentFile, destination = uri)
+      ) {
+        is LogcatExportDestinationAction.ExportFile ->
+          scope.launch {
+            eventState =
+              try {
+                appContext.writeAndroidLogTo(
+                  messages = uiState.messages,
+                  file = action.file,
+                  uri = action.destination,
+                  onExportStarted = { max -> uiState = uiState.withExportStarted(max) },
+                  onExportProgress = { progress -> uiState = uiState.withExportProgress(progress) },
+                  onExportFinished = { uiState = uiState.withExportFinished() },
+                )
+                logcatExportResultEventState(
+                  success = true,
+                  errorMessage = null,
+                )
+              } catch (e: Exception) {
+                Log.e("Export log file failed: ${e.message}", e)
+                logcatExportResultEventState(
+                  success = false,
+                  errorMessage = e.message,
+                )
+              }
+          }
+        LogcatExportDestinationAction.Ignore -> Unit
       }
     }
 

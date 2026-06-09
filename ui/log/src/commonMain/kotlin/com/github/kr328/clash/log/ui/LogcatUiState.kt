@@ -106,6 +106,13 @@ internal sealed interface LogcatExportAction {
   data object Ignore : LogcatExportAction
 }
 
+internal sealed interface LogcatExportDestinationAction<out DestinationT> {
+  data class ExportFile<out DestinationT>(val file: LogFile, val destination: DestinationT) :
+    LogcatExportDestinationAction<DestinationT>
+
+  data object Ignore : LogcatExportDestinationAction<Nothing>
+}
+
 internal data class LogcatExportResult(val destinationSelected: Boolean)
 
 internal data class LogcatCopyMessagePayload(
@@ -124,6 +131,19 @@ internal fun logcatExportActionFromDestinationSelection(
   return logcatExportAction(
     currentFile = currentFile,
     result = logcatExportResult(destinationSelected = destinationSelected),
+  )
+}
+
+internal fun <DestinationT> logcatExportDestinationAction(
+  currentFile: LogFile?,
+  destination: DestinationT?,
+): LogcatExportDestinationAction<DestinationT> {
+  val file = currentFile ?: return LogcatExportDestinationAction.Ignore
+  val selectedDestination = destination ?: return LogcatExportDestinationAction.Ignore
+
+  return LogcatExportDestinationAction.ExportFile(
+    file = file,
+    destination = selectedDestination,
   )
 }
 
