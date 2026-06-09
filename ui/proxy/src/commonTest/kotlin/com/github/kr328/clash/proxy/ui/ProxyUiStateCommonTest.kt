@@ -638,6 +638,24 @@ class ProxyUiStateCommonTest {
   }
 
   @Test
+  fun proxyBroadcastEventKindFromPlatformPayloadMapsGenericSourcePayload() {
+    assertEquals(
+      ProxyBroadcastEventKind.ProfileLoaded,
+      proxyBroadcastEventKindFromPlatformPayload(
+        event = ProxyBroadcastSourcePayload(ProxyBroadcastSourceEventKind.ProfileLoaded),
+        kind = ProxyBroadcastSourcePayload::kind,
+      ),
+    )
+    assertEquals(
+      ProxyBroadcastEventKind.Other,
+      proxyBroadcastEventKindFromPlatformPayload(
+        event = ProxyBroadcastSourcePayload(ProxyBroadcastSourceEventKind.ProfileUpdateFailed),
+        kind = ProxyBroadcastSourcePayload::kind,
+      ),
+    )
+  }
+
+  @Test
   fun proxyGroupNamesChangeActionRelaunchesWhenNamesChange() {
     assertEquals(
       ProxyGroupNamesChangeAction.ReLaunch,
@@ -872,3 +890,5 @@ private fun proxy(name: String): Proxy =
     type = Proxy.Type.Direct,
     delay = 12,
   )
+
+private data class ProxyBroadcastSourcePayload(val kind: ProxyBroadcastSourceEventKind)

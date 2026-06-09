@@ -325,6 +325,13 @@ internal fun proxyBroadcastEventKindFromSource(
   }
 }
 
+internal fun <T> proxyBroadcastEventKindFromPlatformPayload(
+  event: T,
+  kind: (T) -> ProxyBroadcastSourceEventKind,
+): ProxyBroadcastEventKind {
+  return proxyBroadcastEventKindFromSource(kind(event))
+}
+
 internal fun proxyGroupNamesChangeAction(
   currentGroupNames: List<String>,
   newGroupNames: List<String>,

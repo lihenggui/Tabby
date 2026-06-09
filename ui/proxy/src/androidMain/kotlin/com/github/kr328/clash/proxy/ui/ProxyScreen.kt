@@ -40,7 +40,10 @@ internal fun ProxyScreen(
 }
 
 private fun Broadcasts.Event.toProxyBroadcastEventKind(): ProxyBroadcastEventKind =
-  proxyBroadcastEventKindFromSource(toProxyBroadcastSourceEventKind())
+  proxyBroadcastEventKindFromPlatformPayload(
+    event = this,
+    kind = Broadcasts.Event::toProxyBroadcastSourceEventKind,
+  )
 
 private fun Broadcasts.Event.toProxyBroadcastSourceEventKind(): ProxyBroadcastSourceEventKind =
   when (this) {
