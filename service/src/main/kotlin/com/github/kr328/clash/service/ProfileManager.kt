@@ -3,6 +3,7 @@ package com.github.kr328.clash.service
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -134,7 +135,7 @@ class ProfileManager(private val context: Context) :
   override suspend fun update(uuid: Uuid) {
     scheduleUpdate(uuid, true)
     ImportedDao().queryByUUID(uuid)?.let {
-      if (it.type == Profile.Type.Url && it.source.startsWith("https://", true)) {
+      if (it.type == Profile.Type.Url && isHttpsProfileSource(it.source)) {
         updateFlow(it)
       }
     }

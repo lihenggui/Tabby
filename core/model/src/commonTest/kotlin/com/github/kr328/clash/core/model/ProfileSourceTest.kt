@@ -26,4 +26,24 @@ class ProfileSourceTest {
     assertFalse(isHttpProfileSource(" https://example.com/config.yaml"))
     assertFalse(isHttpProfileSource("\thttp://example.com/config.yaml"))
   }
+
+  @Test
+  fun httpsProfileSourceAcceptsHttpsSourcesCaseInsensitively() {
+    assertTrue(isHttpsProfileSource("https://example.com/config.yaml"))
+    assertTrue(isHttpsProfileSource("HTTPS://example.com/config.yaml"))
+  }
+
+  @Test
+  fun httpsProfileSourceRejectsHttpAndNonHttpSources() {
+    assertFalse(isHttpsProfileSource("http://example.com/config.yaml"))
+    assertFalse(isHttpsProfileSource("content://profiles/config.yaml"))
+    assertFalse(isHttpsProfileSource("file:///profiles/config.yaml"))
+    assertFalse(isHttpsProfileSource(""))
+  }
+
+  @Test
+  fun httpsProfileSourceDoesNotTrimBeforeCheckingScheme() {
+    assertFalse(isHttpsProfileSource(" https://example.com/config.yaml"))
+    assertFalse(isHttpsProfileSource("\thttps://example.com/config.yaml"))
+  }
 }

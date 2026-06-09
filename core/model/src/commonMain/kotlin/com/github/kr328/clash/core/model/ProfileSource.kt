@@ -4,3 +4,7 @@ fun isHttpProfileSource(source: String): Boolean {
   return source.startsWith("https://", ignoreCase = true) ||
     source.startsWith("http://", ignoreCase = true)
 }
+
+fun isHttpsProfileSource(source: String): Boolean {
+  return source.startsWith("https://", ignoreCase = true)
+}
