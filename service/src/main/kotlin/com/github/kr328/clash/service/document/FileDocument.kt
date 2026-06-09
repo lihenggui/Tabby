@@ -1,6 +1,7 @@
 package com.github.kr328.clash.service.document
 
 import android.provider.DocumentsContract
+import com.github.kr328.clash.common.document.Flag
 import java.io.File
 
 class FileDocument(

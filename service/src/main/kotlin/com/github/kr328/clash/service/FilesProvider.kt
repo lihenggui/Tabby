@@ -9,6 +9,7 @@ import android.provider.DocumentsContract.Root
 import android.provider.DocumentsProvider
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.document.Paths
+import com.github.kr328.clash.common.document.tabbyDocumentPlatformFlags
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
 import com.github.kr328.clash.service.document.Document
@@ -172,16 +173,13 @@ class FilesProvider : DocumentsProvider() {
   }
 
   private fun MatrixCursor.RowBuilder.applyDocument(document: Document): MatrixCursor.RowBuilder {
-    var flags = 0
-
-    document.flags.forEach {
-      flags =
-        when (it) {
-          Writable -> flags or D.FLAG_SUPPORTS_WRITE
-          Deletable -> flags or D.FLAG_SUPPORTS_DELETE
-          Virtual -> flags or FLAG_VIRTUAL
-        }
-    }
+    val flags =
+      tabbyDocumentPlatformFlags(
+        flags = document.flags,
+        writableFlag = D.FLAG_SUPPORTS_WRITE,
+        deletableFlag = D.FLAG_SUPPORTS_DELETE,
+        virtualFlag = FLAG_VIRTUAL,
+      )
 
     add(D.COLUMN_DISPLAY_NAME, document.name)
     add(D.COLUMN_MIME_TYPE, document.mimeType)

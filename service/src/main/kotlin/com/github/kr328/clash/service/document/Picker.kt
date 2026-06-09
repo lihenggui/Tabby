@@ -3,6 +3,7 @@ package com.github.kr328.clash.service.document
 import android.content.Context
 import android.provider.DocumentsContract
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.document.Flag
 import com.github.kr328.clash.common.document.Path
 import com.github.kr328.clash.common.document.Paths
 import com.github.kr328.clash.core.model.Profile
