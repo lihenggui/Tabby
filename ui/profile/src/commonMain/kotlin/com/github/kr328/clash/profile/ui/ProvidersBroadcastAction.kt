@@ -10,6 +10,16 @@ enum class ProvidersBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal enum class ProvidersBroadcastSourceEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 data class ProvidersBroadcastEvent(val kind: ProvidersBroadcastEventKind)
 
 internal enum class ProvidersBroadcastAction {
@@ -19,6 +29,27 @@ internal enum class ProvidersBroadcastAction {
 
 internal fun providersBroadcastAction(event: ProvidersBroadcastEvent): ProvidersBroadcastAction {
   return providersBroadcastAction(event.kind)
+}
+
+internal fun providersBroadcastEventFromSource(
+  kind: ProvidersBroadcastSourceEventKind
+): ProvidersBroadcastEvent {
+  return when (kind) {
+    ProvidersBroadcastSourceEventKind.ServiceRecreated ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ServiceRecreated)
+    ProvidersBroadcastSourceEventKind.Started ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Started)
+    ProvidersBroadcastSourceEventKind.Stopped ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.Stopped)
+    ProvidersBroadcastSourceEventKind.ProfileChanged ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileChanged)
+    ProvidersBroadcastSourceEventKind.ProfileUpdateCompleted ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateCompleted)
+    ProvidersBroadcastSourceEventKind.ProfileUpdateFailed ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileUpdateFailed)
+    ProvidersBroadcastSourceEventKind.ProfileLoaded ->
+      ProvidersBroadcastEvent(ProvidersBroadcastEventKind.ProfileLoaded)
+  }
 }
 
 internal fun providersBroadcastAction(kind: ProvidersBroadcastEventKind): ProvidersBroadcastAction {

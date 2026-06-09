@@ -34,4 +34,30 @@ class ProvidersBroadcastActionTest {
         )
       }
   }
+
+  @Test
+  fun broadcastEventFromSourceMapsAllKinds() {
+    val expected =
+      mapOf(
+        ProvidersBroadcastSourceEventKind.ServiceRecreated to
+          ProvidersBroadcastEventKind.ServiceRecreated,
+        ProvidersBroadcastSourceEventKind.Started to ProvidersBroadcastEventKind.Started,
+        ProvidersBroadcastSourceEventKind.Stopped to ProvidersBroadcastEventKind.Stopped,
+        ProvidersBroadcastSourceEventKind.ProfileChanged to
+          ProvidersBroadcastEventKind.ProfileChanged,
+        ProvidersBroadcastSourceEventKind.ProfileUpdateCompleted to
+          ProvidersBroadcastEventKind.ProfileUpdateCompleted,
+        ProvidersBroadcastSourceEventKind.ProfileUpdateFailed to
+          ProvidersBroadcastEventKind.ProfileUpdateFailed,
+        ProvidersBroadcastSourceEventKind.ProfileLoaded to
+          ProvidersBroadcastEventKind.ProfileLoaded,
+      )
+
+    expected.forEach { (sourceKind, eventKind) ->
+      assertEquals(
+        ProvidersBroadcastEvent(eventKind),
+        providersBroadcastEventFromSource(sourceKind),
+      )
+    }
+  }
 }
