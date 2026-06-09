@@ -36,4 +36,28 @@ class TabbyNotificationPermissionActionTest {
       ),
     )
   }
+
+  @Test
+  fun tabbyNotificationPermissionPlatformStateRequestsAtRuntimePermissionSdkWhenMissing() {
+    assertEquals(
+      TabbyNotificationPermissionAction.RequestNotificationPermission,
+      tabbyNotificationPermissionActionFromPlatformState(
+        platformSdk = 33,
+        runtimePermissionMinimumPlatformSdk = 33,
+        permissionGranted = false,
+      ),
+    )
+  }
+
+  @Test
+  fun tabbyNotificationPermissionPlatformStateIgnoresBelowRuntimePermissionSdk() {
+    assertEquals(
+      TabbyNotificationPermissionAction.Ignore,
+      tabbyNotificationPermissionActionFromPlatformState(
+        platformSdk = 32,
+        runtimePermissionMinimumPlatformSdk = 33,
+        permissionGranted = false,
+      ),
+    )
+  }
 }

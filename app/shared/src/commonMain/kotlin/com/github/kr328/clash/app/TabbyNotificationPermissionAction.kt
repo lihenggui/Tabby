@@ -15,3 +15,13 @@ fun tabbyNotificationPermissionAction(
   } else {
     TabbyNotificationPermissionAction.Ignore
   }
+
+fun tabbyNotificationPermissionActionFromPlatformState(
+  platformSdk: Int,
+  runtimePermissionMinimumPlatformSdk: Int,
+  permissionGranted: Boolean,
+): TabbyNotificationPermissionAction =
+  tabbyNotificationPermissionAction(
+    runtimePermissionRequired = platformSdk >= runtimePermissionMinimumPlatformSdk,
+    permissionGranted = permissionGranted,
+  )

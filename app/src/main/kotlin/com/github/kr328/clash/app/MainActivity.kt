@@ -160,8 +160,9 @@ class MainActivity : ComponentActivity() {
 
   private fun requestNotificationPermission() {
     when (
-      tabbyNotificationPermissionAction(
-        runtimePermissionRequired = notificationRuntimePermissionRequired(),
+      tabbyNotificationPermissionActionFromPlatformState(
+        platformSdk = Build.VERSION.SDK_INT,
+        runtimePermissionMinimumPlatformSdk = Build.VERSION_CODES.TIRAMISU,
         permissionGranted = notificationPermissionGranted(),
       )
     ) {
@@ -170,9 +171,6 @@ class MainActivity : ComponentActivity() {
       TabbyNotificationPermissionAction.Ignore -> Unit
     }
   }
-
-  private fun notificationRuntimePermissionRequired(): Boolean =
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
   private fun notificationPermissionGranted(): Boolean =
     ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
