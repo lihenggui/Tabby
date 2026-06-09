@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +36,6 @@ internal fun FilesScreen(
   val profileRepository = remember { AndroidProfileRepository() }
   val filesClient = remember(context) { FilesClient(context) }
   val documentClient = remember(filesClient) { AndroidProfileFilesDocumentClient(filesClient) }
-  val snackbarHostState = remember { SnackbarHostState() }
   val lifecycleOwner = LocalLifecycleOwner.current
   val refreshEvents = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
   val importResults = remember {
@@ -93,7 +91,6 @@ internal fun FilesScreen(
     uuid = uuid,
     onFinish = onFinish,
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
     importResults = importResults,
     exportResults = exportResults,
     refreshEvents = refreshEvents,

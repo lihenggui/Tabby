@@ -30,7 +30,6 @@ fun <SourceT : Any, OutputT : Any> ProfileRepositoryFilesRouteContent(
   uuid: Uuid,
   onFinish: () -> Unit,
   modifier: Modifier = Modifier,
-  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   importResults: Flow<ProfileFilesImportResult<SourceT>> = emptyFlow(),
   exportResults: Flow<ProfileFilesExportResult<OutputT>> = emptyFlow(),
   refreshEvents: Flow<Unit> = emptyFlow(),
@@ -41,6 +40,7 @@ fun <SourceT : Any, OutputT : Any> ProfileRepositoryFilesRouteContent(
   onActionError: (Throwable) -> Unit = {},
 ) {
   val scope = rememberCoroutineScope()
+  val snackbarHostState = remember { SnackbarHostState() }
   val unknownMessage = stringResource(SharedRes.string.unknown)
   var location by
     remember(profileRepository, documentClient, uuid) {
