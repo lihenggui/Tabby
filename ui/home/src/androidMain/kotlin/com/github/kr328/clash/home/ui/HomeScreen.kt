@@ -131,21 +131,26 @@ internal fun HomeScreen(
 }
 
 private fun Broadcasts.Event.toHomeBroadcastEvent() =
+  homeBroadcastEventFromPlatformPayload(
+    event = this,
+    kind = Broadcasts.Event::homeBroadcastSourceEventKind,
+    stoppedMessage = Broadcasts.Event::homeStoppedMessage,
+  )
+
+private fun Broadcasts.Event.homeBroadcastSourceEventKind() =
   when (this) {
-    Broadcasts.Event.ServiceRecreated ->
-      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ServiceRecreated)
-    Broadcasts.Event.Started -> homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.Started)
-    is Broadcasts.Event.Stopped ->
-      homeBroadcastEventFromSource(
-        kind = HomeBroadcastSourceEventKind.Stopped,
-        stoppedMessage = cause,
-      )
-    Broadcasts.Event.ProfileChanged ->
-      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileChanged)
+    Broadcasts.Event.ServiceRecreated -> HomeBroadcastSourceEventKind.ServiceRecreated
+    Broadcasts.Event.Started -> HomeBroadcastSourceEventKind.Started
+    is Broadcasts.Event.Stopped -> HomeBroadcastSourceEventKind.Stopped
+    Broadcasts.Event.ProfileChanged -> HomeBroadcastSourceEventKind.ProfileChanged
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileUpdateCompleted)
-    is Broadcasts.Event.ProfileUpdateFailed ->
-      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileUpdateFailed)
-    Broadcasts.Event.ProfileLoaded ->
-      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileLoaded)
+      HomeBroadcastSourceEventKind.ProfileUpdateCompleted
+    is Broadcasts.Event.ProfileUpdateFailed -> HomeBroadcastSourceEventKind.ProfileUpdateFailed
+    Broadcasts.Event.ProfileLoaded -> HomeBroadcastSourceEventKind.ProfileLoaded
+  }
+
+private fun Broadcasts.Event.homeStoppedMessage() =
+  when (this) {
+    is Broadcasts.Event.Stopped -> cause
+    else -> null
   }

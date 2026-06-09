@@ -197,6 +197,17 @@ internal fun homeBroadcastEventFromSource(
   }
 }
 
+internal fun <T> homeBroadcastEventFromPlatformPayload(
+  event: T,
+  kind: (T) -> HomeBroadcastSourceEventKind,
+  stoppedMessage: (T) -> String? = { null },
+): HomeBroadcastEvent {
+  return homeBroadcastEventFromSource(
+    kind = kind(event),
+    stoppedMessage = stoppedMessage(event),
+  )
+}
+
 internal fun <VpnPermissionT> homeVpnPermissionEventState(
   permissionRequest: VpnPermissionT
 ): HomeEventState<VpnPermissionT> {

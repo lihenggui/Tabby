@@ -229,6 +229,37 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeBroadcastEventFromPlatformPayloadMapsGenericSourcePayload() {
+    assertEquals(
+      HomeBroadcastEvent(
+        kind = HomeBroadcastEventKind.Stopped,
+        stoppedMessage = "Stopped by system",
+      ),
+      homeBroadcastEventFromPlatformPayload(
+        event =
+          HomeBroadcastSourcePayload(
+            kind = HomeBroadcastSourceEventKind.Stopped,
+            stoppedMessage = "Stopped by system",
+          ),
+        kind = HomeBroadcastSourcePayload::kind,
+        stoppedMessage = HomeBroadcastSourcePayload::stoppedMessage,
+      ),
+    )
+    assertEquals(
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed),
+      homeBroadcastEventFromPlatformPayload(
+        event =
+          HomeBroadcastSourcePayload(
+            kind = HomeBroadcastSourceEventKind.ProfileUpdateFailed,
+            stoppedMessage = "Ignored",
+          ),
+        kind = HomeBroadcastSourcePayload::kind,
+        stoppedMessage = HomeBroadcastSourcePayload::stoppedMessage,
+      ),
+    )
+  }
+
+  @Test
   fun homeBroadcastActionIgnoresProfileUpdateEvents() {
     assertEquals(
       HomeBroadcastAction(shouldFetch = false),
@@ -587,4 +618,9 @@ class HomeUiStateTest {
       pending = !imported,
     )
   }
+
+  private data class HomeBroadcastSourcePayload(
+    val kind: HomeBroadcastSourceEventKind,
+    val stoppedMessage: String? = null,
+  )
 }
