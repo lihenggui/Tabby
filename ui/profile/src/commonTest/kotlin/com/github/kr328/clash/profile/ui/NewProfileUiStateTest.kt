@@ -456,6 +456,34 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileAppSettingsPlatformSpecUsesPlatformActionAndPackageParts() {
+    assertEquals(
+      NewProfileAppSettingsPlatformSpec(
+        action = "application-details-settings",
+        packageScheme = "package",
+        packageName = "com.example.provider",
+      ),
+      newProfileAppSettingsPlatformSpec(
+        action = NewProfileDetailAction.OpenAppSettings("com.example.provider"),
+        applicationDetailsSettingsAction = "application-details-settings",
+        packageScheme = "package",
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileAppSettingsPlatformSpecIgnoresMissingDetailAction() {
+    assertEquals(
+      null,
+      newProfileAppSettingsPlatformSpec(
+        action = NewProfileDetailAction.Ignore,
+        applicationDetailsSettingsAction = "application-details-settings",
+        packageScheme = "package",
+      ),
+    )
+  }
+
+  @Test
   fun newProfileExternalProviderResultKeepsAcceptedSourceAndName() {
     assertEquals(
       NewProfileExternalProviderResult(

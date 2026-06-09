@@ -199,12 +199,14 @@ private fun ActivityResult.toNewProfileExternalProviderResult():
   )
 
 private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
-  when (val action = newProfileDetailAction(packageName)) {
-    is NewProfileDetailAction.OpenAppSettings ->
-      startActivity(
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-          .setData(Uri.fromParts("package", action.packageName, null))
-      )
-    NewProfileDetailAction.Ignore -> Unit
-  }
+  val spec =
+    newProfileAppSettingsPlatformSpec(
+      action = newProfileDetailAction(packageName),
+      applicationDetailsSettingsAction = Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+      packageScheme = "package",
+    ) ?: return
+
+  startActivity(
+    Intent(spec.action).setData(Uri.fromParts(spec.packageScheme, spec.packageName, null))
+  )
 }

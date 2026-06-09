@@ -180,6 +180,12 @@ internal sealed interface NewProfileExternalProviderResultAction<out SourceT : A
   data object Ignore : NewProfileExternalProviderResultAction<Nothing>
 }
 
+internal data class NewProfileAppSettingsPlatformSpec(
+  val action: String,
+  val packageScheme: String,
+  val packageName: String,
+)
+
 internal data class NewProfileExternalProviderResult<out SourceT : Any>(
   val resultAccepted: Boolean,
   val source: SourceT?,
@@ -268,6 +274,22 @@ internal fun newProfileCreateAction(kind: NewProfileProviderKind): NewProfileCre
 internal fun newProfileDetailAction(packageName: String?): NewProfileDetailAction {
   return if (packageName == null) NewProfileDetailAction.Ignore
   else NewProfileDetailAction.OpenAppSettings(packageName)
+}
+
+internal fun newProfileAppSettingsPlatformSpec(
+  action: NewProfileDetailAction,
+  applicationDetailsSettingsAction: String,
+  packageScheme: String,
+): NewProfileAppSettingsPlatformSpec? {
+  return when (action) {
+    is NewProfileDetailAction.OpenAppSettings ->
+      NewProfileAppSettingsPlatformSpec(
+        action = applicationDetailsSettingsAction,
+        packageScheme = packageScheme,
+        packageName = action.packageName,
+      )
+    NewProfileDetailAction.Ignore -> null
+  }
 }
 
 internal fun <SourceT : Any> newProfileExternalProviderResult(
