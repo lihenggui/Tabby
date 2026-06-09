@@ -175,6 +175,20 @@ internal fun geoFileImportSourceAction(
   )
 }
 
+internal fun geoFileImportSourceActionFromPlatformState(
+  sourceAvailable: Boolean,
+  sourceReadable: Boolean,
+  displayName: () -> String?,
+  importType: GeoFileImportType,
+): GeoFileImportSourceAction {
+  return geoFileImportSourceAction(
+    sourceAvailable = sourceAvailable,
+    sourceReadable = sourceReadable,
+    displayName = if (sourceAvailable && sourceReadable) displayName() else null,
+    importType = importType,
+  )
+}
+
 internal fun geoFileImportStartedResult(): GeoFileImportResult {
   return GeoFileImportResult.InProgress
 }

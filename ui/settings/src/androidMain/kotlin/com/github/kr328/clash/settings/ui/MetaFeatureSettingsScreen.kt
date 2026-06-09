@@ -125,13 +125,12 @@ private fun Context.readAndroidGeoFileImportSourceAction(
 
   cursor.use {
     val sourceReadable = it.moveToFirst()
-    val displayName = if (sourceReadable) it.displayName else null
     return when (
       val action =
-        geoFileImportSourceAction(
+        geoFileImportSourceActionFromPlatformState(
           sourceAvailable = true,
           sourceReadable = sourceReadable,
-          displayName = displayName,
+          displayName = { it.displayName },
           importType = importType,
         )
     ) {

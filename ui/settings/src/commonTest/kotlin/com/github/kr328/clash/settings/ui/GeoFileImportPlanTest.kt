@@ -283,6 +283,66 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun platformSourceActionSkipsDisplayNameWhenSourceIsMissing() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceActionFromPlatformState(
+        sourceAvailable = false,
+        sourceReadable = true,
+        displayName = {
+          displayNameLoaded = true
+          "geoip.mmdb"
+        },
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+    assertEquals(false, displayNameLoaded)
+  }
+
+  @Test
+  fun platformSourceActionSkipsDisplayNameWhenSourceCannotBeRead() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportSourceAction.Fail,
+      geoFileImportSourceActionFromPlatformState(
+        sourceAvailable = true,
+        sourceReadable = false,
+        displayName = {
+          displayNameLoaded = true
+          "geoip.mmdb"
+        },
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+    assertEquals(false, displayNameLoaded)
+  }
+
+  @Test
+  fun platformSourceActionLoadsDisplayNameOnlyForReadableSource() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportSourceAction.Import(
+        action =
+          GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat")
+      ),
+      geoFileImportSourceActionFromPlatformState(
+        sourceAvailable = true,
+        sourceReadable = true,
+        displayName = {
+          displayNameLoaded = true
+          "GeoSite.DAT"
+        },
+        importType = GeoFileImportType.GeoSite,
+      ),
+    )
+    assertEquals(true, displayNameLoaded)
+  }
+
+  @Test
   fun importStartedAndFailedResultsMapToCommonStates() {
     assertEquals(GeoFileImportResult.InProgress, geoFileImportStartedResult())
     assertEquals(GeoFileImportResult.Failed, geoFileImportFailedResult())
