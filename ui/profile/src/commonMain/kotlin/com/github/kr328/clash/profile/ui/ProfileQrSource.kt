@@ -7,6 +7,13 @@ enum class ProfileQrResultKind {
   Error,
 }
 
+internal enum class ProfileQrScanSourceResultKind {
+  Success,
+  UserCanceled,
+  MissingPermission,
+  Error,
+}
+
 class ProfileQrScanResult(
   val kind: ProfileQrResultKind,
   val rawValue: String? = null,
@@ -25,6 +32,26 @@ internal sealed interface ProfileQrAction {
 
 internal fun decodeProfileQrSource(rawValue: String?, rawBytes: ByteArray?): String {
   return rawValue ?: rawBytes?.decodeToString().orEmpty()
+}
+
+internal fun profileQrScanResultFromSource(
+  kind: ProfileQrScanSourceResultKind,
+  rawValue: String? = null,
+  rawBytes: ByteArray? = null,
+): ProfileQrScanResult {
+  return when (kind) {
+    ProfileQrScanSourceResultKind.Success ->
+      ProfileQrScanResult(
+        kind = ProfileQrResultKind.Success,
+        rawValue = rawValue,
+        rawBytes = rawBytes,
+      )
+    ProfileQrScanSourceResultKind.UserCanceled ->
+      ProfileQrScanResult(kind = ProfileQrResultKind.UserCanceled)
+    ProfileQrScanSourceResultKind.MissingPermission ->
+      ProfileQrScanResult(kind = ProfileQrResultKind.MissingPermission)
+    ProfileQrScanSourceResultKind.Error -> ProfileQrScanResult(kind = ProfileQrResultKind.Error)
+  }
 }
 
 internal fun profileQrAction(

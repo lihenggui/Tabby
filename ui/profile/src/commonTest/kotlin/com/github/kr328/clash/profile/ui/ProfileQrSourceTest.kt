@@ -1,6 +1,7 @@
 package com.github.kr328.clash.profile.ui
 
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class ProfileQrSourceTest {
@@ -67,6 +68,44 @@ class ProfileQrSourceTest {
         )
       ),
     )
+  }
+
+  @Test
+  fun qrScanResultFromSourceKeepsSuccessPayload() {
+    val rawBytes = "https://example.com/source-bytes.yaml".encodeToByteArray()
+    val result =
+      profileQrScanResultFromSource(
+        kind = ProfileQrScanSourceResultKind.Success,
+        rawValue = "https://example.com/source-value.yaml",
+        rawBytes = rawBytes,
+      )
+
+    assertEquals(ProfileQrResultKind.Success, result.kind)
+    assertEquals("https://example.com/source-value.yaml", result.rawValue)
+    assertContentEquals(rawBytes, result.rawBytes)
+  }
+
+  @Test
+  fun qrScanResultFromSourceMapsNonSuccessKindsWithoutPayload() {
+    val payload = "https://example.com/ignored.yaml".encodeToByteArray()
+
+    listOf(
+        ProfileQrScanSourceResultKind.UserCanceled to ProfileQrResultKind.UserCanceled,
+        ProfileQrScanSourceResultKind.MissingPermission to ProfileQrResultKind.MissingPermission,
+        ProfileQrScanSourceResultKind.Error to ProfileQrResultKind.Error,
+      )
+      .forEach { (sourceKind, expectedKind) ->
+        val result =
+          profileQrScanResultFromSource(
+            kind = sourceKind,
+            rawValue = "https://example.com/ignored.yaml",
+            rawBytes = payload,
+          )
+
+        assertEquals(expectedKind, result.kind)
+        assertEquals(null, result.rawValue)
+        assertEquals(null, result.rawBytes)
+      }
   }
 
   @Test
