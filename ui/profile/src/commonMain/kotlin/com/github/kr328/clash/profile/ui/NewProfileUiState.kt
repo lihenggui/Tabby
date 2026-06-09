@@ -319,6 +319,23 @@ internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformResult(
   )
 }
 
+internal fun <T, SourceT : Any> newProfileExternalProviderResultFromPlatformPayload(
+  result: T,
+  resultCode: (T) -> Int,
+  acceptedResultCode: Int,
+  source: (T) -> SourceT?,
+  name: (T) -> String?,
+): NewProfileExternalProviderResult<SourceT> {
+  val resultAccepted = resultCode(result) == acceptedResultCode
+  val acceptedSource = if (resultAccepted) source(result) else null
+
+  return newProfileExternalProviderResult(
+    resultAccepted = resultAccepted,
+    source = acceptedSource,
+    name = { name(result) },
+  )
+}
+
 internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   result: NewProfileExternalProviderResult<SourceT>
 ): NewProfileExternalProviderResultAction<SourceT> {

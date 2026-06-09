@@ -607,6 +607,82 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileExternalProviderResultFromPlatformPayloadReadsAcceptedSourceAndName() {
+    assertEquals(
+      NewProfileExternalProviderResult(
+        resultAccepted = true,
+        source = "content://provider/profile.yaml",
+        name = "External config",
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        result =
+          TestPlatformExternalProviderResult(
+            resultCode = 1,
+            source = "content://provider/profile.yaml",
+            name = "External config",
+          ),
+        resultCode = TestPlatformExternalProviderResult::resultCode,
+        acceptedResultCode = 1,
+        source = TestPlatformExternalProviderResult::source,
+        name = TestPlatformExternalProviderResult::name,
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileExternalProviderResultFromPlatformPayloadSkipsRejectedPayloadReaders() {
+    var sourceLoaded = false
+    var nameLoaded = false
+
+    assertEquals(
+      NewProfileExternalProviderResult<String>(
+        resultAccepted = false,
+        source = null,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        result = TestPlatformExternalProviderResult(resultCode = 0),
+        resultCode = TestPlatformExternalProviderResult::resultCode,
+        acceptedResultCode = 1,
+        source = {
+          sourceLoaded = true
+          "content://provider/profile.yaml"
+        },
+        name = {
+          nameLoaded = true
+          "Ignored"
+        },
+      ),
+    )
+    assertEquals(false, sourceLoaded)
+    assertEquals(false, nameLoaded)
+  }
+
+  @Test
+  fun newProfileExternalProviderResultFromPlatformPayloadSkipsNameWhenSourceIsMissing() {
+    var nameLoaded = false
+
+    assertEquals(
+      NewProfileExternalProviderResult<String>(
+        resultAccepted = true,
+        source = null,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformPayload(
+        result = TestPlatformExternalProviderResult(resultCode = 1),
+        resultCode = TestPlatformExternalProviderResult::resultCode,
+        acceptedResultCode = 1,
+        source = TestPlatformExternalProviderResult::source,
+        name = {
+          nameLoaded = true
+          "Ignored"
+        },
+      ),
+    )
+    assertEquals(false, nameLoaded)
+  }
+
+  @Test
   fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
     assertEquals(
       NewProfileExternalProviderResultAction.CreateProfile(
@@ -879,5 +955,11 @@ class NewProfileUiStateTest {
     val packageName: String?,
     val name: String,
     val summary: String,
+  )
+
+  private data class TestPlatformExternalProviderResult(
+    val resultCode: Int,
+    val source: String? = null,
+    val name: String? = null,
   )
 }

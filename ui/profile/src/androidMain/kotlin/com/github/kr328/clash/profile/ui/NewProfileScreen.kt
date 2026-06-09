@@ -204,12 +204,18 @@ private fun AndroidExternalProfileProvider.toNewProfileExternalProviderPresentat
 
 private fun ActivityResult.toNewProfileExternalProviderResult():
   NewProfileExternalProviderResult<Uri> =
-  newProfileExternalProviderResultFromPlatformResult(
-    resultCode = resultCode,
+  newProfileExternalProviderResultFromPlatformPayload(
+    result = this,
+    resultCode = ActivityResult::resultCode,
     acceptedResultCode = RESULT_OK,
-    source = data?.data,
-    name = { data?.getStringExtra(Intents.EXTRA_NAME) },
+    source = ActivityResult::newProfileExternalProviderSource,
+    name = ActivityResult::newProfileExternalProviderName,
   )
+
+private fun ActivityResult.newProfileExternalProviderSource(): Uri? = data?.data
+
+private fun ActivityResult.newProfileExternalProviderName(): String? =
+  data?.getStringExtra(Intents.EXTRA_NAME)
 
 private fun AndroidExternalProfileProvider.openAppSettings(startActivity: (Intent) -> Unit) {
   val spec =
