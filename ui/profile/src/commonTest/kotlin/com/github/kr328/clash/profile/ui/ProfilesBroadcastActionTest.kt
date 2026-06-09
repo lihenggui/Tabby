@@ -129,6 +129,59 @@ class ProfilesBroadcastActionTest {
   }
 
   @Test
+  fun broadcastEventFromPlatformPayloadMapsGenericSourcePayload() {
+    assertEquals(
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateCompleted,
+        uuid = uuid,
+      ),
+      profilesBroadcastEventFromPlatformPayload(
+        event =
+          ProfilesBroadcastSourcePayload(
+            kind = ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted,
+            uuid = uuid,
+            reason = "unused",
+          ),
+        kind = ProfilesBroadcastSourcePayload::kind,
+        uuid = ProfilesBroadcastSourcePayload::uuid,
+        reason = ProfilesBroadcastSourcePayload::reason,
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(
+        kind = ProfilesBroadcastEventKind.ProfileUpdateFailed,
+        uuid = uuid,
+        reason = "network",
+      ),
+      profilesBroadcastEventFromPlatformPayload(
+        event =
+          ProfilesBroadcastSourcePayload(
+            kind = ProfilesBroadcastSourceEventKind.ProfileUpdateFailed,
+            uuid = uuid,
+            reason = "network",
+          ),
+        kind = ProfilesBroadcastSourcePayload::kind,
+        uuid = ProfilesBroadcastSourcePayload::uuid,
+        reason = ProfilesBroadcastSourcePayload::reason,
+      ),
+    )
+    assertEquals(
+      ProfilesBroadcastEvent(ProfilesBroadcastEventKind.ProfileLoaded),
+      profilesBroadcastEventFromPlatformPayload(
+        event =
+          ProfilesBroadcastSourcePayload(
+            kind = ProfilesBroadcastSourceEventKind.ProfileLoaded,
+            uuid = uuid,
+            reason = "unused",
+          ),
+        kind = ProfilesBroadcastSourcePayload::kind,
+        uuid = ProfilesBroadcastSourcePayload::uuid,
+        reason = ProfilesBroadcastSourcePayload::reason,
+      ),
+    )
+  }
+
+  @Test
   fun profileUpdateEventsAreIgnoredWhenUuidIsMissing() {
     assertEquals(
       ProfilesBroadcastAction.Ignore,
@@ -149,4 +202,10 @@ class ProfilesBroadcastActionTest {
       ),
     )
   }
+
+  private data class ProfilesBroadcastSourcePayload(
+    val kind: ProfilesBroadcastSourceEventKind,
+    val uuid: Uuid? = null,
+    val reason: String? = null,
+  )
 }

@@ -76,6 +76,19 @@ internal fun profilesBroadcastEventFromSource(
   }
 }
 
+internal fun <T> profilesBroadcastEventFromPlatformPayload(
+  event: T,
+  kind: (T) -> ProfilesBroadcastSourceEventKind,
+  uuid: (T) -> Uuid? = { null },
+  reason: (T) -> String? = { null },
+): ProfilesBroadcastEvent {
+  return profilesBroadcastEventFromSource(
+    kind = kind(event),
+    uuid = uuid(event),
+    reason = reason(event),
+  )
+}
+
 internal fun profilesBroadcastAction(
   kind: ProfilesBroadcastEventKind,
   uuid: Uuid? = null,

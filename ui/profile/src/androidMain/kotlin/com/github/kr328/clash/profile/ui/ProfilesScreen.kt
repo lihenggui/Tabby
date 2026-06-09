@@ -37,26 +37,34 @@ internal fun ProfilesScreen(
 }
 
 private fun Broadcasts.Event.toProfilesEvent(): ProfilesBroadcastEvent =
+  profilesBroadcastEventFromPlatformPayload(
+    event = this,
+    kind = Broadcasts.Event::profilesBroadcastSourceEventKind,
+    uuid = Broadcasts.Event::profilesUpdateUuid,
+    reason = Broadcasts.Event::profilesUpdateReason,
+  )
+
+private fun Broadcasts.Event.profilesBroadcastSourceEventKind(): ProfilesBroadcastSourceEventKind =
   when (this) {
-    Broadcasts.Event.ServiceRecreated ->
-      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ServiceRecreated)
-    Broadcasts.Event.Started ->
-      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.Started)
-    is Broadcasts.Event.Stopped ->
-      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.Stopped)
-    Broadcasts.Event.ProfileChanged ->
-      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ProfileChanged)
+    Broadcasts.Event.ServiceRecreated -> ProfilesBroadcastSourceEventKind.ServiceRecreated
+    Broadcasts.Event.Started -> ProfilesBroadcastSourceEventKind.Started
+    is Broadcasts.Event.Stopped -> ProfilesBroadcastSourceEventKind.Stopped
+    Broadcasts.Event.ProfileChanged -> ProfilesBroadcastSourceEventKind.ProfileChanged
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      profilesBroadcastEventFromSource(
-        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted,
-        uuid = uuid,
-      )
-    is Broadcasts.Event.ProfileUpdateFailed ->
-      profilesBroadcastEventFromSource(
-        kind = ProfilesBroadcastSourceEventKind.ProfileUpdateFailed,
-        uuid = uuid,
-        reason = reason,
-      )
-    Broadcasts.Event.ProfileLoaded ->
-      profilesBroadcastEventFromSource(ProfilesBroadcastSourceEventKind.ProfileLoaded)
+      ProfilesBroadcastSourceEventKind.ProfileUpdateCompleted
+    is Broadcasts.Event.ProfileUpdateFailed -> ProfilesBroadcastSourceEventKind.ProfileUpdateFailed
+    Broadcasts.Event.ProfileLoaded -> ProfilesBroadcastSourceEventKind.ProfileLoaded
+  }
+
+private fun Broadcasts.Event.profilesUpdateUuid(): Uuid? =
+  when (this) {
+    is Broadcasts.Event.ProfileUpdateCompleted -> uuid
+    is Broadcasts.Event.ProfileUpdateFailed -> uuid
+    else -> null
+  }
+
+private fun Broadcasts.Event.profilesUpdateReason(): String? =
+  when (this) {
+    is Broadcasts.Event.ProfileUpdateFailed -> reason
+    else -> null
   }
