@@ -86,15 +86,15 @@ internal sealed interface HomeEventState<out VpnPermissionT> {
   data class ShowMessage(val message: String) : HomeEventState<Nothing>
 }
 
-internal sealed interface HomeEventPlatformAction<out VpnPermissionT> {
-  data object Ignore : HomeEventPlatformAction<Nothing>
+internal sealed interface HomeEventRouteEffect<out VpnPermissionT> {
+  data object Ignore : HomeEventRouteEffect<Nothing>
 
   data class RequestVpnPermission<out VpnPermissionT>(val permissionRequest: VpnPermissionT) :
-    HomeEventPlatformAction<VpnPermissionT>
+    HomeEventRouteEffect<VpnPermissionT>
 
-  data object ShowNoProfileMessage : HomeEventPlatformAction<Nothing>
+  data object ShowNoProfileMessage : HomeEventRouteEffect<Nothing>
 
-  data class ShowMessage(val message: String) : HomeEventPlatformAction<Nothing>
+  data class ShowMessage(val message: String) : HomeEventRouteEffect<Nothing>
 }
 
 internal sealed interface HomeEngineStartResult<out VpnPermissionT> {
@@ -110,15 +110,15 @@ internal fun homeInitialEventState(): HomeEventState<Nothing> {
   return HomeEventState.Idle
 }
 
-internal fun <VpnPermissionT> homeEventPlatformAction(
+internal fun <VpnPermissionT> homeEventRouteEffect(
   eventState: HomeEventState<VpnPermissionT>
-): HomeEventPlatformAction<VpnPermissionT> {
+): HomeEventRouteEffect<VpnPermissionT> {
   return when (eventState) {
-    HomeEventState.Idle -> HomeEventPlatformAction.Ignore
+    HomeEventState.Idle -> HomeEventRouteEffect.Ignore
     is HomeEventState.RequestVpnPermission ->
-      HomeEventPlatformAction.RequestVpnPermission(eventState.permissionRequest)
-    HomeEventState.ShowNoProfileMessage -> HomeEventPlatformAction.ShowNoProfileMessage
-    is HomeEventState.ShowMessage -> HomeEventPlatformAction.ShowMessage(eventState.message)
+      HomeEventRouteEffect.RequestVpnPermission(eventState.permissionRequest)
+    HomeEventState.ShowNoProfileMessage -> HomeEventRouteEffect.ShowNoProfileMessage
+    is HomeEventState.ShowMessage -> HomeEventRouteEffect.ShowMessage(eventState.message)
   }
 }
 

@@ -179,11 +179,10 @@ internal fun HomeScreen(
   }
 
   LaunchedEffect(eventState) {
-    when (val action = homeEventPlatformAction(eventState)) {
-      HomeEventPlatformAction.Ignore -> Unit
-      is HomeEventPlatformAction.RequestVpnPermission ->
-        vpnLauncher.launch(action.permissionRequest)
-      HomeEventPlatformAction.ShowNoProfileMessage -> {
+    when (val action = homeEventRouteEffect(eventState)) {
+      HomeEventRouteEffect.Ignore -> Unit
+      is HomeEventRouteEffect.RequestVpnPermission -> vpnLauncher.launch(action.permissionRequest)
+      HomeEventRouteEffect.ShowNoProfileMessage -> {
         val result =
           snackbarHostState.showSnackbar(
             message = noProfileText,
@@ -196,7 +195,7 @@ internal fun HomeScreen(
           HomeNoProfileSnackbarAction.Ignore -> Unit
         }
       }
-      is HomeEventPlatformAction.ShowMessage -> {
+      is HomeEventRouteEffect.ShowMessage -> {
         snackbarHostState.showSnackbar(message = action.message)
       }
     }

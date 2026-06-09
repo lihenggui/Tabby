@@ -59,22 +59,22 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeEventPlatformActionMapsEventStates() {
+  fun homeEventRouteEffectMapsEventStates() {
     assertEquals(
-      HomeEventPlatformAction.Ignore,
-      homeEventPlatformAction(HomeEventState.Idle),
+      HomeEventRouteEffect.Ignore,
+      homeEventRouteEffect(HomeEventState.Idle),
     )
     assertEquals(
-      HomeEventPlatformAction.RequestVpnPermission("vpn-permission-intent"),
-      homeEventPlatformAction(HomeEventState.RequestVpnPermission("vpn-permission-intent")),
+      HomeEventRouteEffect.RequestVpnPermission("vpn-permission-intent"),
+      homeEventRouteEffect(HomeEventState.RequestVpnPermission("vpn-permission-intent")),
     )
     assertEquals(
-      HomeEventPlatformAction.ShowNoProfileMessage,
-      homeEventPlatformAction(HomeEventState.ShowNoProfileMessage),
+      HomeEventRouteEffect.ShowNoProfileMessage,
+      homeEventRouteEffect(HomeEventState.ShowNoProfileMessage),
     )
     assertEquals(
-      HomeEventPlatformAction.ShowMessage("Stopped by system"),
-      homeEventPlatformAction(HomeEventState.ShowMessage("Stopped by system")),
+      HomeEventRouteEffect.ShowMessage("Stopped by system"),
+      homeEventRouteEffect(HomeEventState.ShowMessage("Stopped by system")),
     )
   }
 

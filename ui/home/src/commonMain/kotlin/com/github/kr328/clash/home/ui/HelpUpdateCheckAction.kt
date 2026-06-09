@@ -34,24 +34,24 @@ internal sealed interface HelpEventState {
   data class UpdateAvailable(val releasesUrl: String) : HelpEventState
 }
 
-internal sealed interface HelpEventPlatformAction {
-  data object Ignore : HelpEventPlatformAction
+internal sealed interface HelpEventRouteEffect {
+  data object Ignore : HelpEventRouteEffect
 
-  data class ShowMessage(val message: String) : HelpEventPlatformAction
+  data class ShowMessage(val message: String) : HelpEventRouteEffect
 
-  data class ShowUpdateAvailable(val releasesUrl: String) : HelpEventPlatformAction
+  data class ShowUpdateAvailable(val releasesUrl: String) : HelpEventRouteEffect
 }
 
 internal fun helpInitialEventState(): HelpEventState {
   return HelpEventState.Idle
 }
 
-internal fun helpEventPlatformAction(eventState: HelpEventState): HelpEventPlatformAction {
+internal fun helpEventRouteEffect(eventState: HelpEventState): HelpEventRouteEffect {
   return when (eventState) {
-    HelpEventState.Idle -> HelpEventPlatformAction.Ignore
-    is HelpEventState.ShowMessage -> HelpEventPlatformAction.ShowMessage(eventState.message)
+    HelpEventState.Idle -> HelpEventRouteEffect.Ignore
+    is HelpEventState.ShowMessage -> HelpEventRouteEffect.ShowMessage(eventState.message)
     is HelpEventState.UpdateAvailable ->
-      HelpEventPlatformAction.ShowUpdateAvailable(eventState.releasesUrl)
+      HelpEventRouteEffect.ShowUpdateAvailable(eventState.releasesUrl)
   }
 }
 

@@ -62,12 +62,12 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
   }
 
   LaunchedEffect(eventState) {
-    when (val action = helpEventPlatformAction(eventState)) {
-      HelpEventPlatformAction.Ignore -> Unit
-      is HelpEventPlatformAction.ShowMessage -> {
+    when (val action = helpEventRouteEffect(eventState)) {
+      HelpEventRouteEffect.Ignore -> Unit
+      is HelpEventRouteEffect.ShowMessage -> {
         snackbarHostState.showSnackbar(message = action.message)
       }
-      is HelpEventPlatformAction.ShowUpdateAvailable -> {
+      is HelpEventRouteEffect.ShowUpdateAvailable -> {
         val result =
           snackbarHostState.showSnackbar(
             message = updateAvailableText,
