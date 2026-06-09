@@ -75,4 +75,16 @@ class HelpContentStateTest {
       formatAppVersionInfo(versionName = null, buildCommit = "abc123"),
     )
   }
+
+  @Test
+  fun helpVersionInfoFormatsAppVersionAndKeepsCoreVersion() {
+    assertEquals(
+      HelpVersionInfo(appVersion = "1.2.3 - abc123", coreVersion = "Mihomo 2.0"),
+      helpVersionInfo(
+        versionName = "1.2.3",
+        buildCommit = "abc123",
+        coreVersion = "Mihomo 2.0",
+      ),
+    )
+  }
 }

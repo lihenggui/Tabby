@@ -42,12 +42,9 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
 }
 
 private fun Context.loadVersionInfo(): HelpVersionInfo {
-  return HelpVersionInfo(
-    appVersion =
-      formatAppVersionInfo(
-        versionName = loadPackageVersionName(),
-        buildCommit = appInfoProvider.buildCommit,
-      ),
+  return helpVersionInfo(
+    versionName = loadPackageVersionName(),
+    buildCommit = appInfoProvider.buildCommit,
     coreVersion = Bridge.nativeCoreVersion(),
   )
 }

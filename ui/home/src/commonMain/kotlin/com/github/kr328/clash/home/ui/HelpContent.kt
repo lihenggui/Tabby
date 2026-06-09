@@ -83,6 +83,17 @@ internal fun formatAppVersionInfo(versionName: String?, buildCommit: String): St
   return "$versionName - $buildCommit"
 }
 
+internal fun helpVersionInfo(
+  versionName: String?,
+  buildCommit: String,
+  coreVersion: String,
+): HelpVersionInfo {
+  return HelpVersionInfo(
+    appVersion = formatAppVersionInfo(versionName = versionName, buildCommit = buildCommit),
+    coreVersion = coreVersion,
+  )
+}
+
 @Composable
 internal fun HelpContent(
   uiState: HelpContentState,
