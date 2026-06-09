@@ -20,6 +20,13 @@ internal sealed interface GeoFileImportSourceAction {
   data object Fail : GeoFileImportSourceAction
 }
 
+internal sealed interface GeoFileImportPlatformSourceAction<out SourceT> {
+  data class Import<out SourceT>(val source: SourceT, val action: GeoFileImportAction) :
+    GeoFileImportPlatformSourceAction<SourceT>
+
+  data object Fail : GeoFileImportPlatformSourceAction<Nothing>
+}
+
 internal sealed interface GeoFileImportRequestAction {
   data class RequestPicker(val importType: GeoFileImportType) : GeoFileImportRequestAction
 
@@ -187,6 +194,28 @@ internal fun geoFileImportSourceActionFromPlatformState(
     displayName = if (sourceAvailable && sourceReadable) displayName() else null,
     importType = importType,
   )
+}
+
+internal fun <SourceT> geoFileImportPlatformSourceAction(
+  source: SourceT,
+  sourceAvailable: Boolean,
+  sourceReadable: Boolean,
+  displayName: () -> String?,
+  importType: GeoFileImportType,
+): GeoFileImportPlatformSourceAction<SourceT> {
+  return when (
+    val action =
+      geoFileImportSourceActionFromPlatformState(
+        sourceAvailable = sourceAvailable,
+        sourceReadable = sourceReadable,
+        displayName = displayName,
+        importType = importType,
+      )
+  ) {
+    GeoFileImportSourceAction.Fail -> GeoFileImportPlatformSourceAction.Fail
+    is GeoFileImportSourceAction.Import ->
+      GeoFileImportPlatformSourceAction.Import(source = source, action = action.action)
+  }
 }
 
 internal fun geoFileImportStartedResult(): GeoFileImportResult {

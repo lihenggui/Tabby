@@ -84,8 +84,8 @@ private suspend fun Context.importGeoFile(
   withContext(Dispatchers.IO) {
     try {
       when (val sourceAction = readAndroidGeoFileImportSourceAction(uri, importType)) {
-        AndroidGeoFileImportSourceAction.Fail -> geoFileImportFailedResult()
-        is AndroidGeoFileImportSourceAction.Import -> {
+        GeoFileImportPlatformSourceAction.Fail -> geoFileImportFailedResult()
+        is GeoFileImportPlatformSourceAction.Import -> {
           when (val action = sourceAction.action) {
             is GeoFileImportAction.UnsupportedFormat -> geoFileImportResult(action)
             is GeoFileImportAction.Copy -> {
@@ -108,36 +108,23 @@ private suspend fun Context.importGeoFile(
     }
   }
 
-private sealed interface AndroidGeoFileImportSourceAction {
-  data class Import(val source: Uri, val action: GeoFileImportAction) :
-    AndroidGeoFileImportSourceAction
-
-  data object Fail : AndroidGeoFileImportSourceAction
-}
-
 private fun Context.readAndroidGeoFileImportSourceAction(
   uri: Uri,
   importType: GeoFileImportType,
-): AndroidGeoFileImportSourceAction {
+): GeoFileImportPlatformSourceAction<Uri> {
   val cursor =
     contentResolver.query(uri, null, null, null, null, null)
-      ?: return AndroidGeoFileImportSourceAction.Fail
+      ?: return GeoFileImportPlatformSourceAction.Fail
 
   cursor.use {
     val sourceReadable = it.moveToFirst()
-    return when (
-      val action =
-        geoFileImportSourceActionFromPlatformState(
-          sourceAvailable = true,
-          sourceReadable = sourceReadable,
-          displayName = { it.displayName },
-          importType = importType,
-        )
-    ) {
-      GeoFileImportSourceAction.Fail -> AndroidGeoFileImportSourceAction.Fail
-      is GeoFileImportSourceAction.Import ->
-        AndroidGeoFileImportSourceAction.Import(source = uri, action = action.action)
-    }
+    return geoFileImportPlatformSourceAction(
+      source = uri,
+      sourceAvailable = true,
+      sourceReadable = sourceReadable,
+      displayName = { it.displayName },
+      importType = importType,
+    )
   }
 }
 

@@ -343,6 +343,70 @@ class GeoFileImportPlanTest {
   }
 
   @Test
+  fun platformSourceActionWithSourceFailsWhenSourceIsMissing() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportPlatformSourceAction.Fail,
+      geoFileImportPlatformSourceAction(
+        source = "content://geoip.mmdb",
+        sourceAvailable = false,
+        sourceReadable = true,
+        displayName = {
+          displayNameLoaded = true
+          "geoip.mmdb"
+        },
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+    assertEquals(false, displayNameLoaded)
+  }
+
+  @Test
+  fun platformSourceActionWithSourceFailsWhenSourceCannotBeRead() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportPlatformSourceAction.Fail,
+      geoFileImportPlatformSourceAction(
+        source = "content://geoip.mmdb",
+        sourceAvailable = true,
+        sourceReadable = false,
+        displayName = {
+          displayNameLoaded = true
+          "geoip.mmdb"
+        },
+        importType = GeoFileImportType.GeoIp,
+      ),
+    )
+    assertEquals(false, displayNameLoaded)
+  }
+
+  @Test
+  fun platformSourceActionWithSourceKeepsReadableSourceAndAction() {
+    var displayNameLoaded = false
+
+    assertEquals(
+      GeoFileImportPlatformSourceAction.Import(
+        source = "content://geosite.dat",
+        action =
+          GeoFileImportAction.Copy(displayName = "GeoSite.DAT", outputFileName = "geosite.dat"),
+      ),
+      geoFileImportPlatformSourceAction(
+        source = "content://geosite.dat",
+        sourceAvailable = true,
+        sourceReadable = true,
+        displayName = {
+          displayNameLoaded = true
+          "GeoSite.DAT"
+        },
+        importType = GeoFileImportType.GeoSite,
+      ),
+    )
+    assertEquals(true, displayNameLoaded)
+  }
+
+  @Test
   fun importStartedAndFailedResultsMapToCommonStates() {
     assertEquals(GeoFileImportResult.InProgress, geoFileImportStartedResult())
     assertEquals(GeoFileImportResult.Failed, geoFileImportFailedResult())
