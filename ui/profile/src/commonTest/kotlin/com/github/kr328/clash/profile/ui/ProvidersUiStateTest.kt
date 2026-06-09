@@ -215,7 +215,7 @@ class ProvidersUiStateTest {
   }
 
   @Test
-  fun providerUpdateFailureEventStateUsesPlatformFormattedMessage() {
+  fun providerUpdateFailureEventStateUsesFormattedMessage() {
     val event =
       providerUpdateFailureEventState(
         providerName = "Remote",

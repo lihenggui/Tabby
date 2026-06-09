@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class TabbyExternalQuickActionTest {
   @Test
-  fun tabbyExternalQuickActionStringMapsActionsToPlatformStrings() {
+  fun tabbyExternalQuickActionStringMapsActionsToActionStrings() {
     assertEquals(
       "toggle",
       tabbyExternalQuickActionString(
@@ -36,7 +36,7 @@ class TabbyExternalQuickActionTest {
   }
 
   @Test
-  fun tabbyExternalQuickActionFromStringParsesKnownPlatformStrings() {
+  fun tabbyExternalQuickActionFromStringParsesKnownActionStrings() {
     assertEquals(
       TabbyExternalQuickAction.ToggleClash,
       tabbyExternalQuickActionFromString(
@@ -67,7 +67,7 @@ class TabbyExternalQuickActionTest {
   }
 
   @Test
-  fun tabbyExternalQuickActionFromStringIgnoresUnknownPlatformStrings() {
+  fun tabbyExternalQuickActionFromStringIgnoresUnknownActionStrings() {
     assertEquals(
       null,
       tabbyExternalQuickActionFromString(

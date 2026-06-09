@@ -22,7 +22,7 @@ class NewProfileRouteContentTest {
   }
 
   @Test
-  fun builtInQrProviderKeepsPlatformScannerAction() {
+  fun builtInQrProviderKeepsQrScannerAction() {
     assertEquals(
       NewProfileRouteCreateAction.LaunchQrScanner,
       newProfileRouteCreateAction(NewProfileRouteBuiltInProvider.QR),
