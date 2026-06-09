@@ -19,16 +19,6 @@ data class TabbyExternalQuickActionShortcutResources(
   val icon: Int,
 )
 
-data class TabbyExternalQuickActionShortcutPlatformSpec(
-  val id: String,
-  val shortLabel: Int,
-  val longLabel: Int,
-  val icon: Int,
-  val intentAction: String,
-  val intentFlags: Int,
-  val rank: Int,
-)
-
 enum class TabbyExternalQuickActionShortcutPresentation {
   ToggleClash,
   StartClash,
@@ -129,65 +119,4 @@ fun tabbyExternalQuickActionShortcutPlan(
       shortcuts = tabbyExternalQuickActionShortcuts(),
       launchOptions = tabbyExternalQuickActionShortcutLaunchOptions(),
     )
-  }
-
-fun tabbyExternalQuickActionShortcutPlatformSpecs(
-  plan: TabbyExternalQuickActionShortcutPlan,
-  toggleClashAction: String,
-  startClashAction: String,
-  stopClashAction: String,
-  openInNewTaskFlag: Int,
-  excludeFromRecentsFlag: Int,
-  noAnimationFlag: Int,
-  toggleShortLabel: Int,
-  toggleLongLabel: Int,
-  toggleIcon: Int,
-  startShortLabel: Int,
-  startLongLabel: Int,
-  startIcon: Int,
-  stopShortLabel: Int,
-  stopLongLabel: Int,
-  stopIcon: Int,
-): List<TabbyExternalQuickActionShortcutPlatformSpec>? =
-  when (plan) {
-    is TabbyExternalQuickActionShortcutPlan.Install -> {
-      val intentFlags =
-        tabbyExternalQuickActionShortcutLaunchFlags(
-          launchOptions = plan.launchOptions,
-          openInNewTaskFlag = openInNewTaskFlag,
-          excludeFromRecentsFlag = excludeFromRecentsFlag,
-          noAnimationFlag = noAnimationFlag,
-        )
-      plan.shortcuts.map { shortcut ->
-        val resources =
-          tabbyExternalQuickActionShortcutPresentationResources(
-            presentation = shortcut.presentation,
-            toggleShortLabel = toggleShortLabel,
-            toggleLongLabel = toggleLongLabel,
-            toggleIcon = toggleIcon,
-            startShortLabel = startShortLabel,
-            startLongLabel = startLongLabel,
-            startIcon = startIcon,
-            stopShortLabel = stopShortLabel,
-            stopLongLabel = stopLongLabel,
-            stopIcon = stopIcon,
-          )
-        TabbyExternalQuickActionShortcutPlatformSpec(
-          id = shortcut.id,
-          shortLabel = resources.shortLabel,
-          longLabel = resources.longLabel,
-          icon = resources.icon,
-          intentAction =
-            tabbyExternalQuickActionString(
-              action = shortcut.action,
-              toggleClashAction = toggleClashAction,
-              startClashAction = startClashAction,
-              stopClashAction = stopClashAction,
-            ),
-          intentFlags = intentFlags,
-          rank = shortcut.rank,
-        )
-      }
-    }
-    TabbyExternalQuickActionShortcutPlan.Skip -> null
   }

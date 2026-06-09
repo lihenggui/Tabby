@@ -194,18 +194,9 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupShortcuts() {
-    val shortcutSpecs =
-      tabbyExternalQuickActionShortcutPlan(appIconHidden = uiStore.hideAppIcon)
-        .androidShortcutPlatformSpecs() ?: return
-    val shortcuts = shortcutSpecs.map { shortcut ->
-      ShortcutInfoCompat.Builder(this, shortcut.id)
-        .setShortLabel(getString(shortcut.shortLabel))
-        .setLongLabel(getString(shortcut.longLabel))
-        .setIcon(IconCompat.createWithResource(this, shortcut.icon))
-        .setIntent(mainIntent { action = shortcut.intentAction }.addFlags(shortcut.intentFlags))
-        .setRank(shortcut.rank)
-        .build()
-    }
+    val shortcuts =
+      androidShortcuts(tabbyExternalQuickActionShortcutPlan(appIconHidden = uiStore.hideAppIcon))
+        ?: return
 
     ShortcutManagerCompat.setDynamicShortcuts(this, shortcuts)
   }
@@ -278,16 +269,50 @@ private fun Intent.tabbyExternalAppAction(): TabbyExternalAppAction? =
     apkBrokenAction = Intents.ACTION_APK_BROKEN,
   )
 
-private fun TabbyExternalQuickActionShortcutPlan.androidShortcutPlatformSpecs():
-  List<TabbyExternalQuickActionShortcutPlatformSpec>? =
-  tabbyExternalQuickActionShortcutPlatformSpecs(
-    plan = this,
+private fun Activity.androidShortcuts(
+  plan: TabbyExternalQuickActionShortcutPlan
+): List<ShortcutInfoCompat>? =
+  when (plan) {
+    is TabbyExternalQuickActionShortcutPlan.Install -> {
+      val intentFlags = plan.launchOptions.androidIntentFlags()
+
+      plan.shortcuts.map { shortcut ->
+        val resources = shortcut.presentation.androidShortcutResources()
+
+        ShortcutInfoCompat.Builder(this, shortcut.id)
+          .setShortLabel(getString(resources.shortLabel))
+          .setLongLabel(getString(resources.longLabel))
+          .setIcon(IconCompat.createWithResource(this, resources.icon))
+          .setIntent(
+            mainIntent { action = shortcut.action.androidIntentAction() }.addFlags(intentFlags)
+          )
+          .setRank(shortcut.rank)
+          .build()
+      }
+    }
+    TabbyExternalQuickActionShortcutPlan.Skip -> null
+  }
+
+private fun TabbyExternalQuickAction.androidIntentAction(): String =
+  tabbyExternalQuickActionString(
+    action = this,
     toggleClashAction = Intents.ACTION_TOGGLE_CLASH,
     startClashAction = Intents.ACTION_START_CLASH,
     stopClashAction = Intents.ACTION_STOP_CLASH,
+  )
+
+private fun TabbyExternalQuickActionShortcutLaunchOptions.androidIntentFlags(): Int =
+  tabbyExternalQuickActionShortcutLaunchFlags(
+    launchOptions = this,
     openInNewTaskFlag = Intent.FLAG_ACTIVITY_NEW_TASK,
     excludeFromRecentsFlag = Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS,
     noAnimationFlag = Intent.FLAG_ACTIVITY_NO_ANIMATION,
+  )
+
+private fun TabbyExternalQuickActionShortcutPresentation.androidShortcutResources():
+  TabbyExternalQuickActionShortcutResources =
+  tabbyExternalQuickActionShortcutPresentationResources(
+    presentation = this,
     toggleShortLabel = R.string.shortcut_toggle_short,
     toggleLongLabel = R.string.shortcut_toggle_long,
     toggleIcon = R.drawable.ic_toggle_all,
