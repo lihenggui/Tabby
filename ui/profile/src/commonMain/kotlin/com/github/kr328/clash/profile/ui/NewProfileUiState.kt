@@ -52,7 +52,7 @@ internal data class NewProfileExternalProviderPresentation(
   val hasDetail: Boolean,
 )
 
-internal fun <T> newProfileProviderTextPlatformToken(
+internal fun <T> newProfileProviderTextResourceToken(
   token: NewProfileProviderTextToken,
   file: T,
   url: T,
@@ -71,7 +71,7 @@ internal fun <T> newProfileProviderTextPlatformToken(
   }
 }
 
-internal fun <T> newProfileProviderGraphicPlatformToken(
+internal fun <T> newProfileProviderGraphicResourceToken(
   token: NewProfileProviderGraphicToken,
   file: T,
   url: T,

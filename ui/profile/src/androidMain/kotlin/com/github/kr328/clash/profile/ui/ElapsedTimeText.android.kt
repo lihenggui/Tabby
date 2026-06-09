@@ -9,7 +9,7 @@ internal fun elapsedTimeTextString(context: Context, elapsedMillis: Long): Strin
 
 private fun ElapsedTimeText.androidString(context: Context): String {
   val resource =
-    elapsedTimeTextPlatformToken(
+    elapsedTimeTextResourceToken(
       token = token,
       recently = CommonR.string.recently,
       minutesAgo = CommonR.string.format_minutes_ago,

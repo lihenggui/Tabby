@@ -72,7 +72,7 @@ fun HomeRouteContent(
       uiState.withFetchedHomeState(
         clashRunning = clashRunning,
         mode =
-          homeModeLabelPlatformToken(
+          homeModeLabelResourceToken(
             label = homeModeLabel(state.mode),
             directMode = directMode,
             globalMode = globalMode,

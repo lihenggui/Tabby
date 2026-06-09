@@ -16,7 +16,7 @@ internal enum class ElapsedTimeTextToken {
   DaysAgo,
 }
 
-internal fun <T> elapsedTimeTextPlatformToken(
+internal fun <T> elapsedTimeTextResourceToken(
   token: ElapsedTimeTextToken,
   recently: T,
   minutesAgo: T,
@@ -67,7 +67,7 @@ internal fun elapsedTimeTextString(elapsedMillis: Long): String {
 @Composable
 private fun ElapsedTimeText.stringResource(): String {
   val resource =
-    elapsedTimeTextPlatformToken(
+    elapsedTimeTextResourceToken(
       token = token,
       recently = SharedRes.string.recently,
       minutesAgo = SharedRes.string.format_minutes_ago,

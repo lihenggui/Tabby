@@ -245,7 +245,7 @@ private fun Broadcasts.Event.toHomeBroadcastEvent() =
 
 private fun HomeModeLabel.stringValue(context: Context): String =
   context.getString(
-    homeModeLabelPlatformToken(
+    homeModeLabelResourceToken(
       label = this,
       directMode = CommonR.string.direct_mode,
       globalMode = CommonR.string.global_mode,

@@ -27,7 +27,7 @@ internal fun profileTypeText(
   return ProfileTypeText(token = token, pending = pending)
 }
 
-internal fun <T> profileTypeTextPlatformToken(
+internal fun <T> profileTypeTextResourceToken(
   token: ProfileTypeTextToken,
   file: T,
   url: T,

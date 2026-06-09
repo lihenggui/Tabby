@@ -117,10 +117,10 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun providerTextPlatformTokenMapsTextTokens() {
+  fun providerTextResourceTokenMapsTextTokens() {
     assertEquals(
       "file",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.File,
         file = "file",
         url = "url",
@@ -132,7 +132,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "url",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.Url,
         file = "file",
         url = "url",
@@ -144,7 +144,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "qr",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.Qr,
         file = "file",
         url = "url",
@@ -156,7 +156,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "import-file",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.ImportFromFile,
         file = "file",
         url = "url",
@@ -168,7 +168,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "import-url",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.ImportFromUrl,
         file = "file",
         url = "url",
@@ -180,7 +180,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "import-qr",
-      newProfileProviderTextPlatformToken(
+      newProfileProviderTextResourceToken(
         token = NewProfileProviderTextToken.ImportFromQr,
         file = "file",
         url = "url",
@@ -193,10 +193,10 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun providerGraphicPlatformTokenMapsGraphicTokens() {
+  fun providerGraphicResourceTokenMapsGraphicTokens() {
     assertEquals(
       "file",
-      newProfileProviderGraphicPlatformToken(
+      newProfileProviderGraphicResourceToken(
         token = NewProfileProviderGraphicToken.File,
         file = "file",
         url = "url",
@@ -205,7 +205,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "url",
-      newProfileProviderGraphicPlatformToken(
+      newProfileProviderGraphicResourceToken(
         token = NewProfileProviderGraphicToken.Url,
         file = "file",
         url = "url",
@@ -214,7 +214,7 @@ class NewProfileUiStateTest {
     )
     assertEquals(
       "qr",
-      newProfileProviderGraphicPlatformToken(
+      newProfileProviderGraphicResourceToken(
         token = NewProfileProviderGraphicToken.Qr,
         file = "file",
         url = "url",

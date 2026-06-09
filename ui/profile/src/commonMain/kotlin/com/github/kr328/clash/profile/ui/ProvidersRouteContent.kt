@@ -77,7 +77,7 @@ private fun providerTypeTextString(typeText: ProviderTypeText): String {
 @Composable
 private fun ProviderTypeTextToken.stringResource(): String {
   return stringResource(
-    providerTypeTextPlatformToken(
+    providerTypeTextResourceToken(
       token = this,
       proxy = SharedRes.string.proxy,
       rule = SharedRes.string.rule,
@@ -88,7 +88,7 @@ private fun ProviderTypeTextToken.stringResource(): String {
 @Composable
 private fun ProviderVehicleTextToken.stringResource(): String {
   return stringResource(
-    providerVehicleTextPlatformToken(
+    providerVehicleTextResourceToken(
       token = this,
       http = SharedRes.string.http,
       file = SharedRes.string.file,

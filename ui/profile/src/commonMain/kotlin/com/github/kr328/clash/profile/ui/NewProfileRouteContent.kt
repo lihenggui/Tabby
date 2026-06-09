@@ -139,7 +139,7 @@ private fun NewProfileRouteBuiltInProvider.toProviderKind(): NewProfileProviderK
 @Composable
 private fun NewProfileProviderTextToken.text(): String {
   return stringResource(
-    newProfileProviderTextPlatformToken(
+    newProfileProviderTextResourceToken(
       token = this,
       file = SharedRes.string.file,
       url = SharedRes.string.url,
@@ -154,7 +154,7 @@ private fun NewProfileProviderTextToken.text(): String {
 @Composable
 private fun NewProfileProviderGraphicToken.iconPainter(): Painter {
   return rememberVectorPainter(
-    newProfileProviderGraphicPlatformToken(
+    newProfileProviderGraphicResourceToken(
       token = this,
       file = TabbyIcons.BaselineAttachFile,
       url = TabbyIcons.BaselineCloudDownload,

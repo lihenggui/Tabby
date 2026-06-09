@@ -9,10 +9,10 @@ import kotlin.time.Duration.Companion.seconds
 
 class ElapsedTimeTextTest {
   @Test
-  fun elapsedTimeTextPlatformTokenMapsTokensToPlatformResources() {
+  fun elapsedTimeTextResourceTokenMapsTokensToResources() {
     assertEquals(
       "recently",
-      elapsedTimeTextPlatformToken(
+      elapsedTimeTextResourceToken(
         token = ElapsedTimeTextToken.Recently,
         recently = "recently",
         minutesAgo = "minutes",
@@ -22,7 +22,7 @@ class ElapsedTimeTextTest {
     )
     assertEquals(
       "minutes",
-      elapsedTimeTextPlatformToken(
+      elapsedTimeTextResourceToken(
         token = ElapsedTimeTextToken.MinutesAgo,
         recently = "recently",
         minutesAgo = "minutes",
@@ -32,7 +32,7 @@ class ElapsedTimeTextTest {
     )
     assertEquals(
       "hours",
-      elapsedTimeTextPlatformToken(
+      elapsedTimeTextResourceToken(
         token = ElapsedTimeTextToken.HoursAgo,
         recently = "recently",
         minutesAgo = "minutes",
@@ -42,7 +42,7 @@ class ElapsedTimeTextTest {
     )
     assertEquals(
       "days",
-      elapsedTimeTextPlatformToken(
+      elapsedTimeTextResourceToken(
         token = ElapsedTimeTextToken.DaysAgo,
         recently = "recently",
         minutesAgo = "minutes",

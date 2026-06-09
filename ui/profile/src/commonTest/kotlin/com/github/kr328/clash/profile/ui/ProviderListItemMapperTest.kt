@@ -88,10 +88,10 @@ class ProviderListItemMapperTest {
   }
 
   @Test
-  fun providerTypeTextPlatformTokenMapsTypeTokens() {
+  fun providerTypeTextResourceTokenMapsTypeTokens() {
     assertEquals(
       "proxy",
-      providerTypeTextPlatformToken(
+      providerTypeTextResourceToken(
         token = ProviderTypeTextToken.Proxy,
         proxy = "proxy",
         rule = "rule",
@@ -99,7 +99,7 @@ class ProviderListItemMapperTest {
     )
     assertEquals(
       "rule",
-      providerTypeTextPlatformToken(
+      providerTypeTextResourceToken(
         token = ProviderTypeTextToken.Rule,
         proxy = "proxy",
         rule = "rule",
@@ -108,10 +108,10 @@ class ProviderListItemMapperTest {
   }
 
   @Test
-  fun providerVehicleTextPlatformTokenMapsVehicleTokens() {
+  fun providerVehicleTextResourceTokenMapsVehicleTokens() {
     assertEquals(
       "http",
-      providerVehicleTextPlatformToken(
+      providerVehicleTextResourceToken(
         token = ProviderVehicleTextToken.Http,
         http = "http",
         file = "file",
@@ -121,7 +121,7 @@ class ProviderListItemMapperTest {
     )
     assertEquals(
       "file",
-      providerVehicleTextPlatformToken(
+      providerVehicleTextResourceToken(
         token = ProviderVehicleTextToken.File,
         http = "http",
         file = "file",
@@ -131,7 +131,7 @@ class ProviderListItemMapperTest {
     )
     assertEquals(
       "inline",
-      providerVehicleTextPlatformToken(
+      providerVehicleTextResourceToken(
         token = ProviderVehicleTextToken.Inline,
         http = "http",
         file = "file",
@@ -141,7 +141,7 @@ class ProviderListItemMapperTest {
     )
     assertEquals(
       "compatible",
-      providerVehicleTextPlatformToken(
+      providerVehicleTextResourceToken(
         token = ProviderVehicleTextToken.Compatible,
         http = "http",
         file = "file",

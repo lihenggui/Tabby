@@ -39,7 +39,7 @@ internal fun providerTypeText(
   return ProviderTypeText(typeToken = typeToken, vehicleToken = vehicleToken)
 }
 
-internal fun <T> providerTypeTextPlatformToken(
+internal fun <T> providerTypeTextResourceToken(
   token: ProviderTypeTextToken,
   proxy: T,
   rule: T,
@@ -50,7 +50,7 @@ internal fun <T> providerTypeTextPlatformToken(
   }
 }
 
-internal fun <T> providerVehicleTextPlatformToken(
+internal fun <T> providerVehicleTextResourceToken(
   token: ProviderVehicleTextToken,
   http: T,
   file: T,

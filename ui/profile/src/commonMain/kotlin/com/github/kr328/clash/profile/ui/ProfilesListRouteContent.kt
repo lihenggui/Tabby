@@ -97,7 +97,7 @@ private fun List<Profile>.toProfileRouteListItems(
 private fun profileTypeTextString(typeText: ProfileTypeText): String {
   val text =
     stringResource(
-      profileTypeTextPlatformToken(
+      profileTypeTextResourceToken(
         token = typeText.token,
         file = SharedRes.string.file,
         url = SharedRes.string.url,

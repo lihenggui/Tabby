@@ -97,10 +97,10 @@ class ProfileListItemMapperTest {
   }
 
   @Test
-  fun profileTypeTextPlatformTokenMapsTypeTokens() {
+  fun profileTypeTextResourceTokenMapsTypeTokens() {
     assertEquals(
       "file",
-      profileTypeTextPlatformToken(
+      profileTypeTextResourceToken(
         token = ProfileTypeTextToken.File,
         file = "file",
         url = "url",
@@ -109,7 +109,7 @@ class ProfileListItemMapperTest {
     )
     assertEquals(
       "url",
-      profileTypeTextPlatformToken(
+      profileTypeTextResourceToken(
         token = ProfileTypeTextToken.Url,
         file = "file",
         url = "url",
@@ -118,7 +118,7 @@ class ProfileListItemMapperTest {
     )
     assertEquals(
       "external",
-      profileTypeTextPlatformToken(
+      profileTypeTextResourceToken(
         token = ProfileTypeTextToken.External,
         file = "file",
         url = "url",

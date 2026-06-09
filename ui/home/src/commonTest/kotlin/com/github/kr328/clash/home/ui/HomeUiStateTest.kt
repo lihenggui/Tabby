@@ -354,10 +354,10 @@ class HomeUiStateTest {
   }
 
   @Test
-  fun homeModeLabelPlatformTokenMapsModeLabels() {
+  fun homeModeLabelResourceTokenMapsModeLabels() {
     assertEquals(
       "direct",
-      homeModeLabelPlatformToken(
+      homeModeLabelResourceToken(
         label = HomeModeLabel.Direct,
         directMode = "direct",
         globalMode = "global",
@@ -366,7 +366,7 @@ class HomeUiStateTest {
     )
     assertEquals(
       "global",
-      homeModeLabelPlatformToken(
+      homeModeLabelResourceToken(
         label = HomeModeLabel.Global,
         directMode = "direct",
         globalMode = "global",
@@ -375,7 +375,7 @@ class HomeUiStateTest {
     )
     assertEquals(
       "rule",
-      homeModeLabelPlatformToken(
+      homeModeLabelResourceToken(
         label = HomeModeLabel.Rule,
         directMode = "direct",
         globalMode = "global",

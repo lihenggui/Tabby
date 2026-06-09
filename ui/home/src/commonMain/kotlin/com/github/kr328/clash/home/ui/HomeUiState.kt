@@ -267,7 +267,7 @@ internal fun homeModeLabel(mode: TunnelState.Mode): HomeModeLabel {
   }
 }
 
-internal fun <T> homeModeLabelPlatformToken(
+internal fun <T> homeModeLabelResourceToken(
   label: HomeModeLabel,
   directMode: T,
   globalMode: T,
