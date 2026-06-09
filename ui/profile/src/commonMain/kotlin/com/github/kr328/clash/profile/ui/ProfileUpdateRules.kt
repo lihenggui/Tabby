@@ -133,3 +133,7 @@ fun profileUpdateAllTargets(profiles: List<Profile>): List<Uuid> {
 internal fun profileUpdateFailureReasonText(reason: String?, unknownText: String): String {
   return reason?.takeUnless { it.isBlank() } ?: unknownText
 }
+
+internal fun profileUpdateProfileNameText(profileName: String?, unknownText: String): String {
+  return profileName?.takeUnless { it.isBlank() } ?: unknownText
+}

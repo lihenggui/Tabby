@@ -239,6 +239,26 @@ class ProfileUpdateRulesTest {
     assertEquals("Unknown", profileUpdateFailureReasonText(reason = "  ", unknownText = "Unknown"))
   }
 
+  @Test
+  fun updateProfileNameFallsBackToUnknownTextWhenMissingOrBlank() {
+    assertEquals(
+      "Primary",
+      profileUpdateProfileNameText(profileName = "Primary", unknownText = "Unknown"),
+    )
+    assertEquals(
+      "Unknown",
+      profileUpdateProfileNameText(profileName = null, unknownText = "Unknown"),
+    )
+    assertEquals(
+      "Unknown",
+      profileUpdateProfileNameText(profileName = "", unknownText = "Unknown"),
+    )
+    assertEquals(
+      "Unknown",
+      profileUpdateProfileNameText(profileName = "  ", unknownText = "Unknown"),
+    )
+  }
+
   private fun profile(
     type: Profile.Type,
     imported: Boolean,
