@@ -27,7 +27,7 @@ fun ProfileRepositoryPropertiesRouteContent(
   onFinish: (Boolean) -> Unit,
   modifier: Modifier = Modifier,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-  tipsProperties: AnnotatedString = AnnotatedString("Accept Only Tabby Config"),
+  tipsProperties: AnnotatedString? = null,
   autoSaveEvents: Flow<Unit> = emptyFlow(),
   onActionError: (Throwable) -> Unit = {},
 ) {

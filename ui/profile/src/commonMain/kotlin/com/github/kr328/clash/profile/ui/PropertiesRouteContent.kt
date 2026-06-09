@@ -26,6 +26,7 @@ import tabby.ui.profile.generated.resources.format_fetching_configuration
 import tabby.ui.profile.generated.resources.format_fetching_provider
 import tabby.ui.profile.generated.resources.initializing
 import tabby.ui.profile.generated.resources.invalid_url
+import tabby.ui.profile.generated.resources.tips_properties
 import tabby.ui.profile.generated.resources.verifying
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.unavailable
@@ -35,7 +36,7 @@ fun PropertiesRouteContent(
   modifier: Modifier = Modifier,
   profile: Profile = defaultPropertiesRouteProfile(),
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-  tipsProperties: AnnotatedString = AnnotatedString("Accept Only Tabby Config"),
+  tipsProperties: AnnotatedString? = null,
   onBrowseFiles: (Profile) -> Unit = {},
   onCommit: suspend (Profile, suspend (FetchStatus) -> Unit) -> Unit = { _, _ -> },
   onProfileChange: (Profile) -> Unit = {},
@@ -45,6 +46,8 @@ fun PropertiesRouteContent(
   val emptyNameMessage = stringResource(ProfileRes.string.empty_name)
   val initializingMessage = stringResource(ProfileRes.string.initializing)
   val invalidUrlMessage = stringResource(ProfileRes.string.invalid_url)
+  val resolvedTipsProperties =
+    tipsProperties ?: AnnotatedString(stringResource(ProfileRes.string.tips_properties))
   val unavailableMessage = stringResource(SharedRes.string.unavailable)
   val navigationEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
   var uiState by
@@ -93,7 +96,7 @@ fun PropertiesRouteContent(
     snackbarHostState = snackbarHostState,
     state = uiState,
     showExitWithoutSavingDialog = showExitWithoutSavingDialog,
-    tipsProperties = tipsProperties,
+    tipsProperties = resolvedTipsProperties,
     onBack = onBack,
     onDismissExitWithoutSavingDialog = { showExitWithoutSavingDialog = false },
     onBrowseFiles = { uiState.profile?.let(onBrowseFiles) },
@@ -168,10 +171,10 @@ private suspend fun PropertiesUiState.withLocalizedFetchStatusProgress(
 @Composable
 internal fun PropertiesStateRouteContent(
   modifier: Modifier = Modifier,
-  snackbarHostState: SnackbarHostState,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   state: PropertiesUiState,
   showExitWithoutSavingDialog: Boolean,
-  tipsProperties: AnnotatedString,
+  tipsProperties: AnnotatedString = AnnotatedString("Accept Only Tabby Config"),
   onBack: () -> Unit,
   onDismissExitWithoutSavingDialog: () -> Unit,
   onBrowseFiles: () -> Unit,

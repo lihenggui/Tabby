@@ -1,13 +1,9 @@
 package com.github.kr328.clash.profile.ui
 
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource as androidStringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -15,7 +11,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.android.AndroidProfileRepository
-import com.github.kr328.clash.profile.R
 import com.github.kr328.clash.ui.theme.PreviewTabby
 import com.github.kr328.clash.ui.theme.TabbyThemeWrapper
 import kotlin.time.Duration.Companion.minutes
@@ -30,7 +25,6 @@ internal fun PropertiesScreen(
   onFinish: (Boolean) -> Unit,
 ) {
   val profileRepository = remember { AndroidProfileRepository() }
-  val snackbarHostState = remember { SnackbarHostState() }
   val autoSaveEvents = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
   val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -54,8 +48,6 @@ internal fun PropertiesScreen(
     onBrowseFiles = onBrowseFiles,
     onFinish = onFinish,
     modifier = modifier,
-    snackbarHostState = snackbarHostState,
-    tipsProperties = AnnotatedString.fromHtml(androidStringResource(R.string.tips_properties)),
     autoSaveEvents = autoSaveEvents,
     onActionError = { cause -> Log.e("Profile properties action failed: ${cause.message}", cause) },
   )
@@ -66,7 +58,6 @@ internal fun PropertiesScreen(
 @Composable
 private fun PropertiesContentPreview() {
   PropertiesStateRouteContent(
-    snackbarHostState = SnackbarHostState(),
     state =
       propertiesInitialUiState()
         .withLoadedProfile(
@@ -87,7 +78,6 @@ private fun PropertiesContentPreview() {
           )
         ),
     showExitWithoutSavingDialog = false,
-    tipsProperties = AnnotatedString("Accept Only Tabby Config"),
     onBack = {},
     onDismissExitWithoutSavingDialog = {},
     onBrowseFiles = {},
