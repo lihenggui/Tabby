@@ -39,7 +39,7 @@ internal data class HelpContentState(
   val coreVersion: String = "",
 )
 
-internal data class HelpVersionInfo(
+data class HelpVersionInfo(
   val appVersion: String,
   val coreVersion: String,
 )

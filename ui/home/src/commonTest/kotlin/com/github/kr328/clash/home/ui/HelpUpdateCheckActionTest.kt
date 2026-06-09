@@ -2,6 +2,7 @@ package com.github.kr328.clash.home.ui
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.test.runTest
 
 class HelpUpdateCheckActionTest {
   @Test
@@ -146,6 +147,46 @@ class HelpUpdateCheckActionTest {
         updateCheckFailedMessage = "failed",
       ),
     )
+  }
+
+  @Test
+  fun updateCheckEventStateLoadsLocalVersionWhenLatestTagExists() = runTest {
+    var localVersionLoads = 0
+
+    assertEquals(
+      HelpEventState.UpdateAvailable("https://example.com/releases"),
+      helpUpdateCheckEventState(
+        fetchLatestReleaseTag = { "1.2.0" },
+        loadLocalVersion = {
+          localVersionLoads += 1
+          "1.1.0"
+        },
+        releasesUrl = "https://example.com/releases",
+        alreadyUpToDateMessage = "already up to date",
+        updateCheckFailedMessage = "failed",
+      ),
+    )
+    assertEquals(1, localVersionLoads)
+  }
+
+  @Test
+  fun updateCheckEventStateSkipsLocalVersionLoadWhenLatestTagIsMissing() = runTest {
+    var localVersionLoads = 0
+
+    assertEquals(
+      HelpEventState.ShowMessage("failed"),
+      helpUpdateCheckEventState(
+        fetchLatestReleaseTag = { null },
+        loadLocalVersion = {
+          localVersionLoads += 1
+          "1.1.0"
+        },
+        releasesUrl = "https://example.com/releases",
+        alreadyUpToDateMessage = "already up to date",
+        updateCheckFailedMessage = "failed",
+      ),
+    )
+    assertEquals(0, localVersionLoads)
   }
 
   @Test

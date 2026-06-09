@@ -106,6 +106,29 @@ internal fun helpUpdateCheckEventState(
   }
 }
 
+internal suspend fun helpUpdateCheckEventState(
+  fetchLatestReleaseTag: suspend () -> String?,
+  loadLocalVersion: suspend () -> String?,
+  releasesUrl: String,
+  alreadyUpToDateMessage: String,
+  updateCheckFailedMessage: String,
+): HelpEventState {
+  val latestTag = fetchLatestReleaseTag()
+  val localVersion =
+    when (helpLocalVersionLoadAction(latestTag)) {
+      HelpLocalVersionLoadAction.Load -> loadLocalVersion()
+      HelpLocalVersionLoadAction.Ignore -> null
+    }
+  val action = helpUpdateCheckAction(latestTag = latestTag, localVersion = localVersion)
+
+  return helpUpdateCheckEventState(
+    action = action,
+    releasesUrl = releasesUrl,
+    alreadyUpToDateMessage = alreadyUpToDateMessage,
+    updateCheckFailedMessage = updateCheckFailedMessage,
+  )
+}
+
 internal fun helpUpdateCheckFailureEventState(updateCheckFailedMessage: String): HelpEventState {
   return HelpEventState.ShowMessage(updateCheckFailedMessage)
 }
