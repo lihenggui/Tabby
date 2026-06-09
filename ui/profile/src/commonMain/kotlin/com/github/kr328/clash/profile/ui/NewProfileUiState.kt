@@ -269,6 +269,19 @@ internal fun <SourceT : Any> newProfileExternalProviderResult(
   )
 }
 
+internal fun <SourceT : Any> newProfileExternalProviderResultFromPlatformResult(
+  resultCode: Int,
+  acceptedResultCode: Int,
+  source: SourceT?,
+  name: () -> String?,
+): NewProfileExternalProviderResult<SourceT> {
+  return newProfileExternalProviderResult(
+    resultAccepted = resultCode == acceptedResultCode,
+    source = source,
+    name = name,
+  )
+}
+
 internal fun <SourceT : Any> newProfileExternalProviderResultAction(
   result: NewProfileExternalProviderResult<SourceT>
 ): NewProfileExternalProviderResultAction<SourceT> {

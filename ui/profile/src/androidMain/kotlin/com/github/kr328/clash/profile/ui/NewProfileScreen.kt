@@ -193,8 +193,9 @@ private fun AndroidExternalProfileProvider.toNewProfileExternalProviderPresentat
 
 private fun ActivityResult.toNewProfileExternalProviderResult():
   NewProfileExternalProviderResult<Uri> =
-  newProfileExternalProviderResult(
-    resultAccepted = resultCode == RESULT_OK,
+  newProfileExternalProviderResultFromPlatformResult(
+    resultCode = resultCode,
+    acceptedResultCode = RESULT_OK,
     source = data?.data,
     name = { data?.getStringExtra(Intents.EXTRA_NAME) },
   )

@@ -491,6 +491,69 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun newProfileExternalProviderResultFromPlatformResultMapsAcceptedCode() {
+    assertEquals(
+      NewProfileExternalProviderResult(
+        resultAccepted = true,
+        source = "content://provider/profile.yaml",
+        name = "External config",
+      ),
+      newProfileExternalProviderResultFromPlatformResult(
+        resultCode = 1,
+        acceptedResultCode = 1,
+        source = "content://provider/profile.yaml",
+        name = { "External config" },
+      ),
+    )
+  }
+
+  @Test
+  fun newProfileExternalProviderResultFromPlatformResultDropsRejectedSourceAndSkipsName() {
+    var nameLoaded = false
+
+    assertEquals(
+      NewProfileExternalProviderResult<String>(
+        resultAccepted = false,
+        source = null,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformResult(
+        resultCode = 0,
+        acceptedResultCode = 1,
+        source = "content://provider/profile.yaml",
+        name = {
+          nameLoaded = true
+          "Ignored"
+        },
+      ),
+    )
+    assertEquals(false, nameLoaded)
+  }
+
+  @Test
+  fun newProfileExternalProviderResultFromPlatformResultSkipsNameForMissingSource() {
+    var nameLoaded = false
+
+    assertEquals(
+      NewProfileExternalProviderResult<String>(
+        resultAccepted = true,
+        source = null,
+        name = null,
+      ),
+      newProfileExternalProviderResultFromPlatformResult(
+        resultCode = 1,
+        acceptedResultCode = 1,
+        source = null,
+        name = {
+          nameLoaded = true
+          "Ignored"
+        },
+      ),
+    )
+    assertEquals(false, nameLoaded)
+  }
+
+  @Test
   fun newProfileExternalProviderResultActionCreatesExternalProfileForAcceptedSource() {
     assertEquals(
       NewProfileExternalProviderResultAction.CreateProfile(
