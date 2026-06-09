@@ -142,11 +142,12 @@ private class AndroidProfileFilesDocumentClient(private val client: FilesClient)
 }
 
 private fun FilesClientDocument.toProfileFilesDocument(): ProfileFilesDocument {
-  return ProfileFilesDocument(
-    id = id,
-    name = name,
-    sizeBytes = size,
-    lastModified = lastModified,
-    isDirectory = isDirectory,
+  return profileFilesDocumentFromPlatformPayload(
+    document = this,
+    id = FilesClientDocument::id,
+    name = FilesClientDocument::name,
+    sizeBytes = FilesClientDocument::size,
+    lastModified = FilesClientDocument::lastModified,
+    isDirectory = FilesClientDocument::isDirectory,
   )
 }

@@ -33,6 +33,23 @@ data class ProfileFilesExportResult<out OutputT : Any>(
   val sourceDocumentId: String?,
 )
 
+internal fun <T> profileFilesDocumentFromPlatformPayload(
+  document: T,
+  id: (T) -> String,
+  name: (T) -> String,
+  sizeBytes: (T) -> Long,
+  lastModified: (T) -> Long,
+  isDirectory: (T) -> Boolean,
+): ProfileFilesDocument {
+  return ProfileFilesDocument(
+    id = id(document),
+    name = name(document),
+    sizeBytes = sizeBytes(document),
+    lastModified = lastModified(document),
+    isDirectory = isDirectory(document),
+  )
+}
+
 internal fun <SourceT : Any> profileFilesImportResult(
   source: SourceT?,
   sourceFileName: (SourceT) -> String?,
