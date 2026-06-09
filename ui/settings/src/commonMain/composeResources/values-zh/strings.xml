@@ -60,6 +60,10 @@
   <string name="format_elements">%d 个条目</string>
   <string name="general">常规</string>
   <string name="geodata_mode">Geodata 模式</string>
+  <string name="geofile_import_failed">导入失败</string>
+  <string name="geofile_imported">%1$s 已导入</string>
+  <string name="geofile_unknown_db_format">数据库类型错误</string>
+  <string name="geofile_unknown_db_format_message">只支持 %1$s 格式的 Geo 数据库</string>
   <string name="geoip_fallback">GeoIP Fallback</string>
   <string name="geoip_fallback_code">GeoIP Fallback 区域代码</string>
   <string name="geox_files">Geo 文件</string>

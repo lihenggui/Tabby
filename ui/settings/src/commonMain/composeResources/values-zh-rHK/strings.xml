@@ -60,6 +60,10 @@
   <string name="format_elements">%d 個條目</string>
   <string name="general">常規</string>
   <string name="geodata_mode">Geodata Mode</string>
+  <string name="geofile_import_failed">Import failed</string>
+  <string name="geofile_imported">%1$s imported</string>
+  <string name="geofile_unknown_db_format">Unknown Database format</string>
+  <string name="geofile_unknown_db_format_message">Only %1$s are supported</string>
   <string name="geoip_fallback">GeoIP Fallback</string>
   <string name="geoip_fallback_code">GeoIP Fallback 區域代碼</string>
   <string name="geox_files">Geo Files</string>

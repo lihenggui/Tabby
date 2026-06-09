@@ -1,6 +1,9 @@
 package com.github.kr328.clash.settings.ui
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +11,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.ConfigurationOverride
+import org.jetbrains.compose.resources.stringResource
+import tabby.ui.settings.generated.resources.Res
+import tabby.ui.settings.generated.resources.geofile_import_failed
+import tabby.ui.settings.generated.resources.geofile_imported
+import tabby.ui.settings.generated.resources.geofile_unknown_db_format
+import tabby.ui.settings.generated.resources.geofile_unknown_db_format_message
+import tabby.ui.settings.generated.resources.ok
 
 @Composable
 fun MetaFeatureSettingsRouteContent(
@@ -15,6 +25,7 @@ fun MetaFeatureSettingsRouteContent(
   modifier: Modifier = Modifier,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   initialConfiguration: ConfigurationOverride = metaFeatureSettingsInitialConfiguration(),
+  geoFileImportResult: GeoFileImportResult = GeoFileImportResult.Idle,
   onConfigurationChange: (ConfigurationOverride) -> Unit = {},
   onReset: () -> Unit = {},
   onImportGeoIp: () -> Unit = {},
@@ -23,8 +34,14 @@ fun MetaFeatureSettingsRouteContent(
   onImportASN: () -> Unit = {},
 ) {
   val configurationState = remember { mutableStateOf(initialConfiguration) }
+  val geoFileImportDisplayState = remember { mutableStateOf(geoFileImportInitialDisplayState()) }
   val currentOnConfigurationChange = rememberUpdatedState(onConfigurationChange)
   val currentOnReset = rememberUpdatedState(onReset)
+  val geoFileImportedText =
+    (geoFileImportResult as? GeoFileImportResult.Success)?.let {
+      stringResource(Res.string.geofile_imported, it.displayName)
+    }
+  val geoFileImportFailedText = stringResource(Res.string.geofile_import_failed)
 
   fun updateConfiguration(transform: (ConfigurationOverride) -> ConfigurationOverride) {
     val updated = transform(configurationState.value)
@@ -115,6 +132,21 @@ fun MetaFeatureSettingsRouteContent(
     }
   }
 
+  LaunchedEffect(geoFileImportResult, geoFileImportedText, geoFileImportFailedText) {
+    when (val action = geoFileImportResultDisplayAction(geoFileImportResult)) {
+      is GeoFileImportResultDisplayAction.ShowImported -> {
+        snackbarHostState.showSnackbar(message = geoFileImportedText ?: action.displayName)
+      }
+      is GeoFileImportResultDisplayAction.ShowUnsupportedFormat -> {
+        geoFileImportDisplayState.value =
+          updateGeoFileImportDisplayStateForAction(geoFileImportDisplayState.value, action)
+      }
+      GeoFileImportResultDisplayAction.ShowFailed ->
+        snackbarHostState.showSnackbar(message = geoFileImportFailedText)
+      GeoFileImportResultDisplayAction.Ignore -> Unit
+    }
+  }
+
   MetaFeatureSettingsNavigatorContent { onOpenEditableTextList ->
     val showResetConfirmDialog = remember { mutableStateOf(false) }
 
@@ -137,6 +169,36 @@ fun MetaFeatureSettingsRouteContent(
       onImportCountry = onImportCountry,
       onImportASN = onImportASN,
       onOpenEditableTextList = onOpenEditableTextList,
+    )
+  }
+
+  val currentGeoFileImportDisplayState = geoFileImportDisplayState.value
+
+  if (currentGeoFileImportDisplayState.showUnsupportedFormatDialog) {
+    AlertDialog(
+      onDismissRequest = {
+        geoFileImportDisplayState.value =
+          dismissGeoFileImportUnsupportedFormatDialog(geoFileImportDisplayState.value)
+      },
+      title = { Text(stringResource(Res.string.geofile_unknown_db_format)) },
+      text = {
+        Text(
+          stringResource(
+            Res.string.geofile_unknown_db_format_message,
+            currentGeoFileImportDisplayState.unsupportedFormatSummary,
+          )
+        )
+      },
+      confirmButton = {
+        TextButton(
+          onClick = {
+            geoFileImportDisplayState.value =
+              dismissGeoFileImportUnsupportedFormatDialog(geoFileImportDisplayState.value)
+          }
+        ) {
+          Text(text = stringResource(Res.string.ok))
+        }
+      },
     )
   }
 }

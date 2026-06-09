@@ -60,6 +60,10 @@
   <string name="format_elements">%d elements</string>
   <string name="general">Chung</string>
   <string name="geodata_mode">Chế độ dữ liệu địa lý</string>
+  <string name="geofile_import_failed">Nhập thất bại</string>
+  <string name="geofile_imported">Đã nhập %1$s</string>
+  <string name="geofile_unknown_db_format">Định dạng cơ sở dữ liệu không xác định</string>
+  <string name="geofile_unknown_db_format_message">Chỉ hỗ trợ %1$s</string>
   <string name="geoip_fallback">Dự phòng GeoIP</string>
   <string name="geoip_fallback_code">Mã dự phòng GeoIP</string>
   <string name="geox_files">Tệp địa lý</string>

@@ -26,7 +26,7 @@ internal sealed interface GeoFileImportRequestAction {
   data object Ignore : GeoFileImportRequestAction
 }
 
-internal sealed interface GeoFileImportResult {
+sealed interface GeoFileImportResult {
   data object Idle : GeoFileImportResult
 
   data object InProgress : GeoFileImportResult
