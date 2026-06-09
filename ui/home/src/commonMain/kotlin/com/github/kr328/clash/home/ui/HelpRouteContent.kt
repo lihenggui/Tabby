@@ -26,6 +26,7 @@ import tabby.ui.home.generated.resources.Res as HomeRes
 import tabby.ui.home.generated.resources.already_up_to_date
 import tabby.ui.home.generated.resources.check_update_failed
 import tabby.ui.home.generated.resources.open
+import tabby.ui.home.generated.resources.tips_help
 import tabby.ui.home.generated.resources.update_available
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.copied
@@ -37,7 +38,7 @@ fun HelpRouteContent(
   checkingForUpdates: Boolean = false,
   appVersion: String = "Tabby",
   coreVersion: String = "Mihomo",
-  tipsText: AnnotatedString = AnnotatedString(DEFAULT_HELP_TIPS_TEXT),
+  tipsText: AnnotatedString? = null,
   appName: String = "Tabby",
   appIconPainter: Painter = rememberVectorPainter(TabbyIcons.BaselineHelpCenter),
   mihomoWikiUrl: String = MIHOMO_WIKI,
@@ -75,6 +76,7 @@ fun HelpRouteContent(
   val alreadyUpToDateMessage = stringResource(HomeRes.string.already_up_to_date)
   val updateCheckFailedMessage = stringResource(HomeRes.string.check_update_failed)
   val copiedMessage = stringResource(SharedRes.string.copied)
+  val resolvedTipsText = tipsText ?: AnnotatedString(stringResource(HomeRes.string.tips_help))
 
   LaunchedEffect(Unit) { uiState = uiState.withVersionInfo(currentOnLoadVersionInfo()) }
 
@@ -105,7 +107,7 @@ fun HelpRouteContent(
   HelpContent(
     modifier = modifier,
     uiState = uiState,
-    tipsText = tipsText,
+    tipsText = resolvedTipsText,
     appName = appName,
     appIconPainter = appIconPainter,
     mihomoWikiUrl = mihomoWikiUrl,
@@ -147,5 +149,3 @@ fun HelpRouteContent(
     },
   )
 }
-
-private const val DEFAULT_HELP_TIPS_TEXT = "Tabby is freeware and does not provide a proxy service."

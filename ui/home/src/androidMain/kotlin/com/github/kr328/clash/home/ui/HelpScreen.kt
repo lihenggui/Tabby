@@ -9,9 +9,6 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource as androidStringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as appInfoProvider
 import com.github.kr328.clash.common.log.Log
@@ -19,7 +16,6 @@ import com.github.kr328.clash.core.bridge.Bridge
 import com.github.kr328.clash.glue.util.openLink
 import com.github.kr328.clash.home.MIHOMO_CORE
 import com.github.kr328.clash.home.MIHOMO_WIKI
-import com.github.kr328.clash.home.R
 import com.github.kr328.clash.home.TABBY_GITHUB
 import com.github.kr328.clash.home.TABBY_RELEASES_LATEST
 import com.github.kr328.clash.home.TABBY_REPO
@@ -36,8 +32,6 @@ internal fun HelpScreen(modifier: Modifier = Modifier) {
 
   HelpRouteContent(
     modifier = modifier,
-    tipsText = AnnotatedString.fromHtml(androidStringResource(R.string.tips_help)),
-    appName = androidStringResource(CommonR.string.tabby),
     appIconPainter = painterResource(CommonR.drawable.ic_tabby_small),
     mihomoWikiUrl = MIHOMO_WIKI,
     mihomoCoreUrl = MIHOMO_CORE,
