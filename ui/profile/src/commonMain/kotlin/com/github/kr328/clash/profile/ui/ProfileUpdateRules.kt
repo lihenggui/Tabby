@@ -30,32 +30,30 @@ internal sealed interface ProfilesEventState {
   data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventState
 }
 
-internal sealed interface ProfilesEventPlatformAction {
-  data object Ignore : ProfilesEventPlatformAction
+internal sealed interface ProfilesEventRouteEffect {
+  data object Ignore : ProfilesEventRouteEffect
 
-  data object OpenCreate : ProfilesEventPlatformAction
+  data object OpenCreate : ProfilesEventRouteEffect
 
-  data class OpenEdit(val uuid: Uuid) : ProfilesEventPlatformAction
+  data class OpenEdit(val uuid: Uuid) : ProfilesEventRouteEffect
 
-  data class ShowMessage(val message: String) : ProfilesEventPlatformAction
+  data class ShowMessage(val message: String) : ProfilesEventRouteEffect
 
-  data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventPlatformAction
+  data class ShowEditableMessage(val message: String, val uuid: Uuid) : ProfilesEventRouteEffect
 }
 
 internal fun profilesInitialEventState(): ProfilesEventState {
   return ProfilesEventState.Idle
 }
 
-internal fun profilesEventPlatformAction(
-  eventState: ProfilesEventState
-): ProfilesEventPlatformAction {
+internal fun profilesEventRouteEffect(eventState: ProfilesEventState): ProfilesEventRouteEffect {
   return when (eventState) {
-    ProfilesEventState.Idle -> ProfilesEventPlatformAction.Ignore
-    ProfilesEventState.OpenCreate -> ProfilesEventPlatformAction.OpenCreate
-    is ProfilesEventState.OpenEdit -> ProfilesEventPlatformAction.OpenEdit(eventState.uuid)
-    is ProfilesEventState.ShowMessage -> ProfilesEventPlatformAction.ShowMessage(eventState.message)
+    ProfilesEventState.Idle -> ProfilesEventRouteEffect.Ignore
+    ProfilesEventState.OpenCreate -> ProfilesEventRouteEffect.OpenCreate
+    is ProfilesEventState.OpenEdit -> ProfilesEventRouteEffect.OpenEdit(eventState.uuid)
+    is ProfilesEventState.ShowMessage -> ProfilesEventRouteEffect.ShowMessage(eventState.message)
     is ProfilesEventState.ShowEditableMessage ->
-      ProfilesEventPlatformAction.ShowEditableMessage(eventState.message, eventState.uuid)
+      ProfilesEventRouteEffect.ShowEditableMessage(eventState.message, eventState.uuid)
   }
 }
 

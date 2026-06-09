@@ -64,28 +64,28 @@ class ProfileUpdateRulesTest {
   }
 
   @Test
-  fun profileEventPlatformActionMapsEventStates() {
+  fun profileEventRouteEffectMapsEventStates() {
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000007")
 
     assertEquals(
-      ProfilesEventPlatformAction.Ignore,
-      profilesEventPlatformAction(ProfilesEventState.Idle),
+      ProfilesEventRouteEffect.Ignore,
+      profilesEventRouteEffect(ProfilesEventState.Idle),
     )
     assertEquals(
-      ProfilesEventPlatformAction.OpenCreate,
-      profilesEventPlatformAction(ProfilesEventState.OpenCreate),
+      ProfilesEventRouteEffect.OpenCreate,
+      profilesEventRouteEffect(ProfilesEventState.OpenCreate),
     )
     assertEquals(
-      ProfilesEventPlatformAction.OpenEdit(uuid),
-      profilesEventPlatformAction(ProfilesEventState.OpenEdit(uuid)),
+      ProfilesEventRouteEffect.OpenEdit(uuid),
+      profilesEventRouteEffect(ProfilesEventState.OpenEdit(uuid)),
     )
     assertEquals(
-      ProfilesEventPlatformAction.ShowMessage("Profile updated"),
-      profilesEventPlatformAction(ProfilesEventState.ShowMessage("Profile updated")),
+      ProfilesEventRouteEffect.ShowMessage("Profile updated"),
+      profilesEventRouteEffect(ProfilesEventState.ShowMessage("Profile updated")),
     )
     assertEquals(
-      ProfilesEventPlatformAction.ShowEditableMessage("Profile update failed", uuid),
-      profilesEventPlatformAction(
+      ProfilesEventRouteEffect.ShowEditableMessage("Profile update failed", uuid),
+      profilesEventRouteEffect(
         ProfilesEventState.ShowEditableMessage("Profile update failed", uuid)
       ),
     )

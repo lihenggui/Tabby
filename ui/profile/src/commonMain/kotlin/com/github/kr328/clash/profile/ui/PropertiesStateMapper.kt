@@ -67,30 +67,29 @@ internal sealed interface PropertiesEventState {
   data class ShowMessage(val message: String) : PropertiesEventState
 }
 
-internal sealed interface PropertiesEventPlatformAction {
-  data object Ignore : PropertiesEventPlatformAction
+internal sealed interface PropertiesEventRouteEffect {
+  data object Ignore : PropertiesEventRouteEffect
 
-  data class BrowseFiles(val uuid: Uuid) : PropertiesEventPlatformAction
+  data class BrowseFiles(val uuid: Uuid) : PropertiesEventRouteEffect
 
-  data class Finish(val success: Boolean) : PropertiesEventPlatformAction
+  data class Finish(val success: Boolean) : PropertiesEventRouteEffect
 
-  data class ShowMessage(val message: String) : PropertiesEventPlatformAction
+  data class ShowMessage(val message: String) : PropertiesEventRouteEffect
 }
 
 internal fun propertiesInitialEventState(): PropertiesEventState {
   return PropertiesEventState.Idle
 }
 
-internal fun propertiesEventPlatformAction(
+internal fun propertiesEventRouteEffect(
   eventState: PropertiesEventState
-): PropertiesEventPlatformAction {
+): PropertiesEventRouteEffect {
   return when (eventState) {
-    PropertiesEventState.Idle -> PropertiesEventPlatformAction.Ignore
-    is PropertiesEventState.BrowseFiles ->
-      PropertiesEventPlatformAction.BrowseFiles(eventState.uuid)
-    is PropertiesEventState.Finish -> PropertiesEventPlatformAction.Finish(eventState.success)
+    PropertiesEventState.Idle -> PropertiesEventRouteEffect.Ignore
+    is PropertiesEventState.BrowseFiles -> PropertiesEventRouteEffect.BrowseFiles(eventState.uuid)
+    is PropertiesEventState.Finish -> PropertiesEventRouteEffect.Finish(eventState.success)
     is PropertiesEventState.ShowMessage ->
-      PropertiesEventPlatformAction.ShowMessage(eventState.message)
+      PropertiesEventRouteEffect.ShowMessage(eventState.message)
   }
 }
 

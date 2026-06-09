@@ -17,38 +17,38 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun newProfileEventPlatformActionMapsEventStates() {
+  fun newProfileEventRouteEffectMapsEventStates() {
     val externalProvider = "external-provider-intent"
     val appSettingsTarget = "package:com.example.provider"
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000007")
 
     assertEquals(
-      NewProfileEventPlatformAction.Ignore,
-      newProfileEventPlatformAction(NewProfileEventState.Idle),
+      NewProfileEventRouteEffect.Ignore,
+      newProfileEventRouteEffect(NewProfileEventState.Idle),
     )
     assertEquals(
-      NewProfileEventPlatformAction.LaunchQRScanner,
-      newProfileEventPlatformAction(NewProfileEventState.LaunchQRScanner),
+      NewProfileEventRouteEffect.LaunchQRScanner,
+      newProfileEventRouteEffect(NewProfileEventState.LaunchQRScanner),
     )
     assertEquals(
-      NewProfileEventPlatformAction.LaunchExternalProvider(externalProvider),
-      newProfileEventPlatformAction(NewProfileEventState.LaunchExternalProvider(externalProvider)),
+      NewProfileEventRouteEffect.LaunchExternalProvider(externalProvider),
+      newProfileEventRouteEffect(NewProfileEventState.LaunchExternalProvider(externalProvider)),
     )
     assertEquals(
-      NewProfileEventPlatformAction.LaunchProperties(uuid),
-      newProfileEventPlatformAction(NewProfileEventState.LaunchProperties(uuid)),
+      NewProfileEventRouteEffect.LaunchProperties(uuid),
+      newProfileEventRouteEffect(NewProfileEventState.LaunchProperties(uuid)),
     )
     assertEquals(
-      NewProfileEventPlatformAction.OpenAppSettings(appSettingsTarget),
-      newProfileEventPlatformAction(NewProfileEventState.OpenAppSettings(appSettingsTarget)),
+      NewProfileEventRouteEffect.OpenAppSettings(appSettingsTarget),
+      newProfileEventRouteEffect(NewProfileEventState.OpenAppSettings(appSettingsTarget)),
     )
     assertEquals(
-      NewProfileEventPlatformAction.ShowMessage("create failed"),
-      newProfileEventPlatformAction(NewProfileEventState.ShowMessage("create failed")),
+      NewProfileEventRouteEffect.ShowMessage("create failed"),
+      newProfileEventRouteEffect(NewProfileEventState.ShowMessage("create failed")),
     )
     assertEquals(
-      NewProfileEventPlatformAction.Finish,
-      newProfileEventPlatformAction(NewProfileEventState.Finish),
+      NewProfileEventRouteEffect.Finish,
+      newProfileEventRouteEffect(NewProfileEventState.Finish),
     )
   }
 

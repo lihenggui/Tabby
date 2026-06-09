@@ -169,26 +169,26 @@ internal sealed interface NewProfileEventState<out ExternalProviderT, out AppSet
   data object Finish : NewProfileEventState<Nothing, Nothing>
 }
 
-internal sealed interface NewProfileEventPlatformAction<
+internal sealed interface NewProfileEventRouteEffect<
   out ExternalProviderT,
   out AppSettingsTargetT,
 > {
-  data object Ignore : NewProfileEventPlatformAction<Nothing, Nothing>
+  data object Ignore : NewProfileEventRouteEffect<Nothing, Nothing>
 
-  data object LaunchQRScanner : NewProfileEventPlatformAction<Nothing, Nothing>
+  data object LaunchQRScanner : NewProfileEventRouteEffect<Nothing, Nothing>
 
   data class LaunchExternalProvider<out ExternalProviderT>(
     val externalProvider: ExternalProviderT
-  ) : NewProfileEventPlatformAction<ExternalProviderT, Nothing>
+  ) : NewProfileEventRouteEffect<ExternalProviderT, Nothing>
 
-  data class LaunchProperties(val uuid: Uuid) : NewProfileEventPlatformAction<Nothing, Nothing>
+  data class LaunchProperties(val uuid: Uuid) : NewProfileEventRouteEffect<Nothing, Nothing>
 
   data class OpenAppSettings<out AppSettingsTargetT>(val target: AppSettingsTargetT) :
-    NewProfileEventPlatformAction<Nothing, AppSettingsTargetT>
+    NewProfileEventRouteEffect<Nothing, AppSettingsTargetT>
 
-  data class ShowMessage(val message: String) : NewProfileEventPlatformAction<Nothing, Nothing>
+  data class ShowMessage(val message: String) : NewProfileEventRouteEffect<Nothing, Nothing>
 
-  data object Finish : NewProfileEventPlatformAction<Nothing, Nothing>
+  data object Finish : NewProfileEventRouteEffect<Nothing, Nothing>
 }
 
 internal fun <ExternalProviderT, AppSettingsTargetT> newProfileInitialEventState():
@@ -196,21 +196,21 @@ internal fun <ExternalProviderT, AppSettingsTargetT> newProfileInitialEventState
   return NewProfileEventState.Idle
 }
 
-internal fun <ExternalProviderT, AppSettingsTargetT> newProfileEventPlatformAction(
+internal fun <ExternalProviderT, AppSettingsTargetT> newProfileEventRouteEffect(
   eventState: NewProfileEventState<ExternalProviderT, AppSettingsTargetT>
-): NewProfileEventPlatformAction<ExternalProviderT, AppSettingsTargetT> {
+): NewProfileEventRouteEffect<ExternalProviderT, AppSettingsTargetT> {
   return when (eventState) {
-    NewProfileEventState.Idle -> NewProfileEventPlatformAction.Ignore
-    NewProfileEventState.LaunchQRScanner -> NewProfileEventPlatformAction.LaunchQRScanner
+    NewProfileEventState.Idle -> NewProfileEventRouteEffect.Ignore
+    NewProfileEventState.LaunchQRScanner -> NewProfileEventRouteEffect.LaunchQRScanner
     is NewProfileEventState.LaunchExternalProvider ->
-      NewProfileEventPlatformAction.LaunchExternalProvider(eventState.externalProvider)
+      NewProfileEventRouteEffect.LaunchExternalProvider(eventState.externalProvider)
     is NewProfileEventState.LaunchProperties ->
-      NewProfileEventPlatformAction.LaunchProperties(eventState.uuid)
+      NewProfileEventRouteEffect.LaunchProperties(eventState.uuid)
     is NewProfileEventState.OpenAppSettings ->
-      NewProfileEventPlatformAction.OpenAppSettings(eventState.target)
+      NewProfileEventRouteEffect.OpenAppSettings(eventState.target)
     is NewProfileEventState.ShowMessage ->
-      NewProfileEventPlatformAction.ShowMessage(eventState.message)
-    NewProfileEventState.Finish -> NewProfileEventPlatformAction.Finish
+      NewProfileEventRouteEffect.ShowMessage(eventState.message)
+    NewProfileEventState.Finish -> NewProfileEventRouteEffect.Finish
   }
 }
 

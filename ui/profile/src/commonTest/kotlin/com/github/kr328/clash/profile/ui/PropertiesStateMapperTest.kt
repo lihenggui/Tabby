@@ -16,24 +16,24 @@ class PropertiesStateMapperTest {
   }
 
   @Test
-  fun propertiesEventPlatformActionMapsEventStates() {
+  fun propertiesEventRouteEffectMapsEventStates() {
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
 
     assertEquals(
-      PropertiesEventPlatformAction.Ignore,
-      propertiesEventPlatformAction(PropertiesEventState.Idle),
+      PropertiesEventRouteEffect.Ignore,
+      propertiesEventRouteEffect(PropertiesEventState.Idle),
     )
     assertEquals(
-      PropertiesEventPlatformAction.BrowseFiles(uuid),
-      propertiesEventPlatformAction(PropertiesEventState.BrowseFiles(uuid)),
+      PropertiesEventRouteEffect.BrowseFiles(uuid),
+      propertiesEventRouteEffect(PropertiesEventState.BrowseFiles(uuid)),
     )
     assertEquals(
-      PropertiesEventPlatformAction.Finish(success = true),
-      propertiesEventPlatformAction(PropertiesEventState.Finish(success = true)),
+      PropertiesEventRouteEffect.Finish(success = true),
+      propertiesEventRouteEffect(PropertiesEventState.Finish(success = true)),
     )
     assertEquals(
-      PropertiesEventPlatformAction.ShowMessage("commit failed"),
-      propertiesEventPlatformAction(PropertiesEventState.ShowMessage("commit failed")),
+      PropertiesEventRouteEffect.ShowMessage("commit failed"),
+      propertiesEventRouteEffect(PropertiesEventState.ShowMessage("commit failed")),
     )
   }
 
