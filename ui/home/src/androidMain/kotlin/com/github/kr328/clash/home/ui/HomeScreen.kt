@@ -125,17 +125,20 @@ internal fun HomeScreen(
 
 private fun Broadcasts.Event.toHomeBroadcastEvent() =
   when (this) {
-    Broadcasts.Event.ServiceRecreated -> HomeBroadcastEvent(HomeBroadcastEventKind.ServiceRecreated)
-    Broadcasts.Event.Started -> HomeBroadcastEvent(HomeBroadcastEventKind.Started)
+    Broadcasts.Event.ServiceRecreated ->
+      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ServiceRecreated)
+    Broadcasts.Event.Started -> homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.Started)
     is Broadcasts.Event.Stopped ->
-      HomeBroadcastEvent(
-        kind = HomeBroadcastEventKind.Stopped,
+      homeBroadcastEventFromSource(
+        kind = HomeBroadcastSourceEventKind.Stopped,
         stoppedMessage = cause,
       )
-    Broadcasts.Event.ProfileChanged -> HomeBroadcastEvent(HomeBroadcastEventKind.ProfileChanged)
+    Broadcasts.Event.ProfileChanged ->
+      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileChanged)
     is Broadcasts.Event.ProfileUpdateCompleted ->
-      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateCompleted)
+      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileUpdateCompleted)
     is Broadcasts.Event.ProfileUpdateFailed ->
-      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed)
-    Broadcasts.Event.ProfileLoaded -> HomeBroadcastEvent(HomeBroadcastEventKind.ProfileLoaded)
+      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileUpdateFailed)
+    Broadcasts.Event.ProfileLoaded ->
+      homeBroadcastEventFromSource(HomeBroadcastSourceEventKind.ProfileLoaded)
   }

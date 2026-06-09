@@ -35,6 +35,16 @@ internal enum class HomeBroadcastEventKind {
   ProfileLoaded,
 }
 
+internal enum class HomeBroadcastSourceEventKind {
+  ServiceRecreated,
+  Started,
+  Stopped,
+  ProfileChanged,
+  ProfileUpdateCompleted,
+  ProfileUpdateFailed,
+  ProfileLoaded,
+}
+
 internal data class HomeBroadcastEvent(
   val kind: HomeBroadcastEventKind,
   val stoppedMessage: String? = null,
@@ -149,6 +159,30 @@ internal fun homeBroadcastAction(event: HomeBroadcastEvent): HomeBroadcastAction
     kind = event.kind,
     stoppedMessage = event.stoppedMessage,
   )
+}
+
+internal fun homeBroadcastEventFromSource(
+  kind: HomeBroadcastSourceEventKind,
+  stoppedMessage: String? = null,
+): HomeBroadcastEvent {
+  return when (kind) {
+    HomeBroadcastSourceEventKind.ServiceRecreated ->
+      HomeBroadcastEvent(HomeBroadcastEventKind.ServiceRecreated)
+    HomeBroadcastSourceEventKind.Started -> HomeBroadcastEvent(HomeBroadcastEventKind.Started)
+    HomeBroadcastSourceEventKind.Stopped ->
+      HomeBroadcastEvent(
+        kind = HomeBroadcastEventKind.Stopped,
+        stoppedMessage = stoppedMessage,
+      )
+    HomeBroadcastSourceEventKind.ProfileChanged ->
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileChanged)
+    HomeBroadcastSourceEventKind.ProfileUpdateCompleted ->
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateCompleted)
+    HomeBroadcastSourceEventKind.ProfileUpdateFailed ->
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed)
+    HomeBroadcastSourceEventKind.ProfileLoaded ->
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileLoaded)
+  }
 }
 
 internal fun <VpnPermissionT> homeVpnPermissionEventState(

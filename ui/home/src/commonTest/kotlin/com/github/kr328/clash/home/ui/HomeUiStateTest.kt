@@ -188,6 +188,47 @@ class HomeUiStateTest {
   }
 
   @Test
+  fun homeBroadcastEventFromSourcePreservesStoppedMessageOnlyForStoppedEvents() {
+    assertEquals(
+      HomeBroadcastEvent(
+        kind = HomeBroadcastEventKind.Stopped,
+        stoppedMessage = "Stopped by system",
+      ),
+      homeBroadcastEventFromSource(
+        kind = HomeBroadcastSourceEventKind.Stopped,
+        stoppedMessage = "Stopped by system",
+      ),
+    )
+    assertEquals(
+      HomeBroadcastEvent(HomeBroadcastEventKind.ProfileUpdateFailed),
+      homeBroadcastEventFromSource(
+        kind = HomeBroadcastSourceEventKind.ProfileUpdateFailed,
+        stoppedMessage = "Ignored",
+      ),
+    )
+  }
+
+  @Test
+  fun homeBroadcastEventFromSourceMapsStateChangingKinds() {
+    val expected =
+      mapOf(
+        HomeBroadcastSourceEventKind.ServiceRecreated to HomeBroadcastEventKind.ServiceRecreated,
+        HomeBroadcastSourceEventKind.Started to HomeBroadcastEventKind.Started,
+        HomeBroadcastSourceEventKind.ProfileChanged to HomeBroadcastEventKind.ProfileChanged,
+        HomeBroadcastSourceEventKind.ProfileUpdateCompleted to
+          HomeBroadcastEventKind.ProfileUpdateCompleted,
+        HomeBroadcastSourceEventKind.ProfileLoaded to HomeBroadcastEventKind.ProfileLoaded,
+      )
+
+    expected.forEach { (sourceKind, eventKind) ->
+      assertEquals(
+        HomeBroadcastEvent(eventKind),
+        homeBroadcastEventFromSource(sourceKind),
+      )
+    }
+  }
+
+  @Test
   fun homeBroadcastActionIgnoresProfileUpdateEvents() {
     assertEquals(
       HomeBroadcastAction(shouldFetch = false),
