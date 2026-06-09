@@ -39,13 +39,17 @@ internal fun MetaFeatureSettingsScreen(
 
   val importLauncher =
     rememberLauncherForActivityResult(GetContent()) { uri ->
-      when (val action = geoFileImportPickerResultAction(pendingImportType)) {
+      when (val action = geoFileImportPickerResultAction(pendingImportType, uri)) {
         is GeoFileImportPickerResultAction.Import -> {
           pendingImportType = null
           importScope.launch {
             importResult = geoFileImportStartedResult()
-            importResult = appContext.importGeoFile(uri, action.importType)
+            importResult = appContext.importGeoFile(action.source, action.importType)
           }
+        }
+        GeoFileImportPickerResultAction.Fail -> {
+          pendingImportType = null
+          importResult = geoFileImportFailedResult()
         }
         GeoFileImportPickerResultAction.Ignore -> Unit
       }
@@ -74,7 +78,7 @@ internal fun MetaFeatureSettingsScreen(
 }
 
 private suspend fun Context.importGeoFile(
-  uri: Uri?,
+  uri: Uri,
   importType: GeoFileImportType,
 ): GeoFileImportResult =
   withContext(Dispatchers.IO) {
@@ -112,13 +116,11 @@ private sealed interface AndroidGeoFileImportSourceAction {
 }
 
 private fun Context.readAndroidGeoFileImportSourceAction(
-  uri: Uri?,
+  uri: Uri,
   importType: GeoFileImportType,
 ): AndroidGeoFileImportSourceAction {
-  val sourceUri = uri ?: return AndroidGeoFileImportSourceAction.Fail
-
   val cursor =
-    contentResolver.query(sourceUri, null, null, null, null, null)
+    contentResolver.query(uri, null, null, null, null, null)
       ?: return AndroidGeoFileImportSourceAction.Fail
 
   cursor.use {
@@ -135,7 +137,7 @@ private fun Context.readAndroidGeoFileImportSourceAction(
     ) {
       GeoFileImportSourceAction.Fail -> AndroidGeoFileImportSourceAction.Fail
       is GeoFileImportSourceAction.Import ->
-        AndroidGeoFileImportSourceAction.Import(source = sourceUri, action = action.action)
+        AndroidGeoFileImportSourceAction.Import(source = uri, action = action.action)
     }
   }
 }

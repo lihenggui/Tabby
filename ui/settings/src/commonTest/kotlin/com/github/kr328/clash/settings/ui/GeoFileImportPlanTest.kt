@@ -31,15 +31,35 @@ class GeoFileImportPlanTest {
   fun ignoresPickerResultWhenPendingImportTypeIsMissing() {
     assertEquals(
       GeoFileImportPickerResultAction.Ignore,
-      geoFileImportPickerResultAction(pendingImportType = null),
+      geoFileImportPickerResultAction(
+        pendingImportType = null,
+        source = "content://geoip.mmdb",
+      ),
     )
   }
 
   @Test
-  fun createsImportActionForPendingImportType() {
+  fun failsPickerResultWhenSelectedSourceIsMissing() {
     assertEquals(
-      GeoFileImportPickerResultAction.Import(importType = GeoFileImportType.GeoIp),
-      geoFileImportPickerResultAction(pendingImportType = GeoFileImportType.GeoIp),
+      GeoFileImportPickerResultAction.Fail,
+      geoFileImportPickerResultAction<String>(
+        pendingImportType = GeoFileImportType.GeoIp,
+        source = null,
+      ),
+    )
+  }
+
+  @Test
+  fun createsImportActionForPendingImportTypeAndSelectedSource() {
+    assertEquals(
+      GeoFileImportPickerResultAction.Import(
+        importType = GeoFileImportType.GeoIp,
+        source = "content://geoip.mmdb",
+      ),
+      geoFileImportPickerResultAction(
+        pendingImportType = GeoFileImportType.GeoIp,
+        source = "content://geoip.mmdb",
+      ),
     )
   }
 
