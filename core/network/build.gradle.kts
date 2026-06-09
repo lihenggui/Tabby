@@ -6,6 +6,7 @@ plugins {
 kotlin {
   sourceSets {
     commonMain.dependencies {
+      implementation(projects.core.model)
       implementation(libs.kotlin.serialization.json)
       implementation(libs.kotlinx.coroutines.core)
       implementation(libs.ktor.client.content.negotiation)

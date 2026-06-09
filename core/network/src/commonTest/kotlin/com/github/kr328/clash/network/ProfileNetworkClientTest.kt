@@ -1,5 +1,6 @@
 package com.github.kr328.clash.network
 
+import com.github.kr328.clash.core.model.isHttpProfileSource
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -45,6 +46,39 @@ class ProfileNetworkClientTest {
       ProfileNetworkClient(createTabbyHttpClient(MockEngine { error("No request should be made") }))
 
     assertFailsWith<IllegalArgumentException> { client.fetchProfile("file:///profile.yaml") }
+  }
+
+  @Test
+  fun profileSourceGateMatchesCommonHttpProfileSourcePredicate() = runTest {
+    var requestCount = 0
+    val sources =
+      listOf(
+        "https://example.com/config.yaml",
+        "http://example.com/config.yaml",
+        "content://profiles/config.yaml",
+        "file:///profile.yaml",
+        " https://example.com/config.yaml",
+        "",
+      )
+    val client =
+      ProfileNetworkClient(
+        createTabbyHttpClient(
+          MockEngine {
+            requestCount += 1
+            respond("", HttpStatusCode.OK)
+          }
+        )
+      )
+
+    sources.forEach { source ->
+      if (isHttpProfileSource(source)) {
+        client.fetchSubscriptionUserInfo(source)
+      } else {
+        assertFailsWith<IllegalArgumentException> { client.fetchSubscriptionUserInfo(source) }
+      }
+    }
+
+    assertEquals(sources.count(::isHttpProfileSource), requestCount)
   }
 
   @Test

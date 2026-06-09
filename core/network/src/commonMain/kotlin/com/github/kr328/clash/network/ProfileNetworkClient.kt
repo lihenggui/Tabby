@@ -1,5 +1,6 @@
 package com.github.kr328.clash.network
 
+import com.github.kr328.clash.core.model.isHttpProfileSource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -49,10 +50,7 @@ class ProfileFetchException(
 ) : IllegalStateException("Profile fetch failed for $source: HTTP ${status.value}")
 
 private fun requireHttpSource(source: String) {
-  require(
-    source.startsWith("https://", ignoreCase = true) ||
-      source.startsWith("http://", ignoreCase = true)
-  ) {
+  require(isHttpProfileSource(source)) {
     "Only HTTP(S) profile sources are supported"
   }
 }
