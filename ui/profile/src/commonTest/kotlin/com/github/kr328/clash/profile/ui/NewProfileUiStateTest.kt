@@ -592,7 +592,7 @@ class NewProfileUiStateTest {
   }
 
   @Test
-  fun eventStateCarriesPlatformPayloadsAsGenericValues() {
+  fun eventStateCarriesRoutePayloadsAsGenericValues() {
     val externalProvider = "external-provider-intent"
     val appSettingsTarget = "package:com.example.provider"
     val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
