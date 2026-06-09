@@ -383,6 +383,31 @@ class NewProfileUiStateTest {
   }
 
   @Test
+  fun externalProviderPresentationMapsPlatformPayloadFields() {
+    assertEquals(
+      NewProfileExternalProviderPresentation(
+        key = "com.example/.Provider",
+        name = "Example",
+        summary = "Example provider",
+        hasDetail = true,
+      ),
+      newProfileExternalProviderPresentationFromPlatformPayload(
+        provider =
+          TestPlatformExternalProvider(
+            componentKey = "com.example/.Provider",
+            packageName = "com.example",
+            name = "Example",
+            summary = "Example provider",
+          ),
+        componentKey = TestPlatformExternalProvider::componentKey,
+        packageName = TestPlatformExternalProvider::packageName,
+        name = TestPlatformExternalProvider::name,
+        summary = TestPlatformExternalProvider::summary,
+      ),
+    )
+  }
+
+  @Test
   fun newProfileCreateActionCreatesFileProfile() {
     assertEquals(
       NewProfileCreateAction.CreateProfile(Profile.Type.File),
@@ -820,4 +845,11 @@ class NewProfileUiStateTest {
   }
 
   private data class TestProvider(val id: String, val detail: Boolean)
+
+  private data class TestPlatformExternalProvider(
+    val componentKey: String?,
+    val packageName: String?,
+    val name: String,
+    val summary: String,
+  )
 }

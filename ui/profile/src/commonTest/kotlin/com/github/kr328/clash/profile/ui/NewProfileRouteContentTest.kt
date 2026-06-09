@@ -30,6 +30,26 @@ class NewProfileRouteContentTest {
   }
 
   @Test
+  fun externalProviderPresentationMapsToRouteProvider() {
+    assertEquals(
+      NewProfileRouteExternalProvider(
+        key = "com.example/.Provider",
+        name = "Example",
+        summary = "Example provider",
+        hasDetail = true,
+      ),
+      newProfileRouteExternalProviderFromPresentation(
+        NewProfileExternalProviderPresentation(
+          key = "com.example/.Provider",
+          name = "Example",
+          summary = "Example provider",
+          hasDetail = true,
+        )
+      ),
+    )
+  }
+
+  @Test
   fun createProfileNameUsesProvidedNameBeforeDefaultName() {
     assertEquals(
       "External profile",

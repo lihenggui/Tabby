@@ -143,12 +143,9 @@ private fun AndroidExternalProfileProvider.toNewProfileRouteExternalProvider():
   NewProfileRouteExternalProvider {
   val presentation = toNewProfileExternalProviderPresentation()
 
-  return NewProfileRouteExternalProvider(
-    key = presentation.key,
-    name = presentation.name,
-    summary = presentation.summary,
+  return newProfileRouteExternalProviderFromPresentation(
+    presentation = presentation,
     iconPainter = rememberProfileProviderPainter(icon),
-    hasDetail = presentation.hasDetail,
   )
 }
 
@@ -184,11 +181,12 @@ private fun QRResult.toProfileQrScanResult(): ProfileQrScanResult {
 
 private fun AndroidExternalProfileProvider.toNewProfileExternalProviderPresentation():
   NewProfileExternalProviderPresentation =
-  newProfileExternalProviderPresentation(
-    componentKey = componentKey,
-    packageName = packageName,
-    name = name,
-    summary = summary,
+  newProfileExternalProviderPresentationFromPlatformPayload(
+    provider = this,
+    componentKey = AndroidExternalProfileProvider::componentKey,
+    packageName = AndroidExternalProfileProvider::packageName,
+    name = AndroidExternalProfileProvider::name,
+    summary = AndroidExternalProfileProvider::summary,
   )
 
 private fun ActivityResult.toNewProfileExternalProviderResult():

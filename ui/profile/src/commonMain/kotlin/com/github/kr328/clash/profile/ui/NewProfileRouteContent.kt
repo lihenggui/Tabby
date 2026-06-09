@@ -41,6 +41,19 @@ data class NewProfileRouteExternalProvider(
   val hasDetail: Boolean = true,
 )
 
+internal fun newProfileRouteExternalProviderFromPresentation(
+  presentation: NewProfileExternalProviderPresentation,
+  iconPainter: Painter? = null,
+): NewProfileRouteExternalProvider {
+  return NewProfileRouteExternalProvider(
+    key = presentation.key,
+    name = presentation.name,
+    summary = presentation.summary,
+    iconPainter = iconPainter,
+    hasDetail = presentation.hasDetail,
+  )
+}
+
 @Composable
 fun NewProfileRouteContent(
   modifier: Modifier = Modifier,

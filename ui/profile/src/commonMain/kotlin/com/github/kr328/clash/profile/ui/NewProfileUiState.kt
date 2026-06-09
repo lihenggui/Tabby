@@ -144,6 +144,21 @@ internal fun newProfileExternalProviderPresentation(
   )
 }
 
+internal fun <T> newProfileExternalProviderPresentationFromPlatformPayload(
+  provider: T,
+  componentKey: (T) -> String?,
+  packageName: (T) -> String?,
+  name: (T) -> String,
+  summary: (T) -> String,
+): NewProfileExternalProviderPresentation {
+  return newProfileExternalProviderPresentation(
+    componentKey = componentKey(provider),
+    packageName = packageName(provider),
+    name = name(provider),
+    summary = summary(provider),
+  )
+}
+
 internal sealed interface NewProfileCreateAction {
   data class CreateProfile(val type: Profile.Type) : NewProfileCreateAction
 
