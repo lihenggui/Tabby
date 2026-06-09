@@ -12,12 +12,7 @@ class DialerReceiver : BroadcastReceiver() {
 
     when (action) {
       TabbyDialerReceiverAction.OpenMainActivity -> {
-        val spec =
-          tabbyDialerReceiverPlatformSpec(
-            action = action,
-            openInNewTaskFlag = Intent.FLAG_ACTIVITY_NEW_TASK,
-          )
-        context.startActivity(context.mainIntent().addFlags(spec.intentFlags))
+        context.startActivity(context.mainIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
       }
     }
   }

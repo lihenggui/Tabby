@@ -13,15 +13,17 @@ class RestartReceiver : BroadcastReceiver() {
         event = intent.tabbyRestartReceiverEvent(),
         shouldStartClashOnBoot = StatusProvider.shouldStartClashOnBoot,
       )
-    val spec = tabbyRestartReceiverPlatformSpec(action)
 
-    if (spec.startClash) context.startClashService()
+    when (action) {
+      TabbyRestartReceiverAction.StartClash -> context.startClashService()
+      TabbyRestartReceiverAction.Ignore -> Unit
+    }
   }
 }
 
 private fun Intent.tabbyRestartReceiverEvent(): TabbyRestartReceiverEvent? =
   tabbyRestartReceiverEventFromString(
     action = action,
-    bootCompletedAction = Intent.ACTION_BOOT_COMPLETED,
-    packageReplacedAction = Intent.ACTION_MY_PACKAGE_REPLACED,
+    bootCompletedBroadcastAction = Intent.ACTION_BOOT_COMPLETED,
+    packageReplacedBroadcastAction = Intent.ACTION_MY_PACKAGE_REPLACED,
   )

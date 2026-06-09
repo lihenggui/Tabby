@@ -5,41 +5,41 @@ import kotlin.test.assertEquals
 
 class TabbyRestartReceiverActionTest {
   @Test
-  fun tabbyRestartReceiverEventFromStringParsesKnownPlatformActions() {
+  fun tabbyRestartReceiverEventFromStringParsesKnownBroadcastActions() {
     assertEquals(
       TabbyRestartReceiverEvent.BootCompleted,
       tabbyRestartReceiverEventFromString(
         action = "boot-completed",
-        bootCompletedAction = "boot-completed",
-        packageReplacedAction = "package-replaced",
+        bootCompletedBroadcastAction = "boot-completed",
+        packageReplacedBroadcastAction = "package-replaced",
       ),
     )
     assertEquals(
       TabbyRestartReceiverEvent.PackageReplaced,
       tabbyRestartReceiverEventFromString(
         action = "package-replaced",
-        bootCompletedAction = "boot-completed",
-        packageReplacedAction = "package-replaced",
+        bootCompletedBroadcastAction = "boot-completed",
+        packageReplacedBroadcastAction = "package-replaced",
       ),
     )
   }
 
   @Test
-  fun tabbyRestartReceiverEventFromStringIgnoresUnknownPlatformActions() {
+  fun tabbyRestartReceiverEventFromStringIgnoresUnknownBroadcastActions() {
     assertEquals(
       null,
       tabbyRestartReceiverEventFromString(
         action = "unknown",
-        bootCompletedAction = "boot-completed",
-        packageReplacedAction = "package-replaced",
+        bootCompletedBroadcastAction = "boot-completed",
+        packageReplacedBroadcastAction = "package-replaced",
       ),
     )
     assertEquals(
       null,
       tabbyRestartReceiverEventFromString(
         action = null,
-        bootCompletedAction = "boot-completed",
-        packageReplacedAction = "package-replaced",
+        bootCompletedBroadcastAction = "boot-completed",
+        packageReplacedBroadcastAction = "package-replaced",
       ),
     )
   }
@@ -88,22 +88,6 @@ class TabbyRestartReceiverActionTest {
         event = TabbyRestartReceiverEvent.PackageReplaced,
         shouldStartClashOnBoot = true,
       ),
-    )
-  }
-
-  @Test
-  fun tabbyRestartReceiverPlatformSpecStartsServiceForStartClashAction() {
-    assertEquals(
-      TabbyRestartReceiverPlatformSpec(startClash = true),
-      tabbyRestartReceiverPlatformSpec(TabbyRestartReceiverAction.StartClash),
-    )
-  }
-
-  @Test
-  fun tabbyRestartReceiverPlatformSpecDoesNotStartServiceForIgnoreAction() {
-    assertEquals(
-      TabbyRestartReceiverPlatformSpec(startClash = false),
-      tabbyRestartReceiverPlatformSpec(TabbyRestartReceiverAction.Ignore),
     )
   }
 }
