@@ -16,7 +16,10 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.log.generated.resources.Res as LogRes
 import tabby.ui.log.generated.resources.copied
+import tabby.ui.log.generated.resources.file_exported
 import tabby.ui.log.generated.resources.invalid_log_file
+import tabby.ui.shared.generated.resources.Res as SharedRes
+import tabby.ui.shared.generated.resources.unknown
 
 @Composable
 fun LogcatRouteContent(
@@ -83,6 +86,7 @@ fun LogcatRouteContent(
             LogcatEventState.InvalidFile,
             LogcatEventState.OpenLogs,
             is LogcatEventState.RequestExport,
+            is LogcatEventState.ExportResult,
             is LogcatEventState.ShowMessage,
             null -> Unit
           }
@@ -104,18 +108,32 @@ fun LogcatRouteContent(
 internal fun LogcatStateRouteContent(
   modifier: Modifier = Modifier,
   state: LogcatUiState,
+  eventState: LogcatEventState = logcatInitialEventState(),
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   formatMessageTime: (Long) -> String = { "" },
   onClose: () -> Unit,
+  onRouteClose: () -> Unit = {},
   onDelete: () -> Unit,
   onExport: () -> Unit,
+  onRouteOpenLogs: () -> Unit = {},
+  onRouteInvalidFile: () -> Unit = {},
+  onRouteRequestExport: (String) -> Unit = {},
+  onRouteEventConsumed: () -> Unit = {},
   copyMessageText: suspend (label: String, text: String) -> Unit = { _, _ -> },
 ) {
   val listState = rememberLazyListState()
   val scope = rememberCoroutineScope()
   val messageCount = rememberUpdatedState(state.messages.size)
   val currentCopyMessageText = rememberUpdatedState(copyMessageText)
+  val currentOnRouteClose = rememberUpdatedState(onRouteClose)
+  val currentOnRouteOpenLogs = rememberUpdatedState(onRouteOpenLogs)
+  val currentOnRouteInvalidFile = rememberUpdatedState(onRouteInvalidFile)
+  val currentOnRouteRequestExport = rememberUpdatedState(onRouteRequestExport)
+  val currentOnRouteEventConsumed = rememberUpdatedState(onRouteEventConsumed)
   val copiedMessage = stringResource(LogRes.string.copied)
+  val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
+  val exportedMessage = stringResource(LogRes.string.file_exported)
+  val unknownMessage = stringResource(SharedRes.string.unknown)
 
   LaunchedEffect(listState, state.streaming) {
     if (!state.streaming) return@LaunchedEffect
@@ -126,6 +144,36 @@ internal fun LogcatStateRouteContent(
           listState.animateScrollToItem(size - 1)
         }
       }
+  }
+
+  LaunchedEffect(eventState, invalidFileTip, exportedMessage, unknownMessage) {
+    when (val action = logcatEventRouteEffect(eventState)) {
+      LogcatEventRouteEffect.Ignore -> return@LaunchedEffect
+      LogcatEventRouteEffect.Close -> currentOnRouteClose.value()
+      LogcatEventRouteEffect.InvalidFile -> {
+        snackbarHostState.showSnackbar(message = invalidFileTip)
+        currentOnRouteInvalidFile.value()
+      }
+      LogcatEventRouteEffect.OpenLogs -> currentOnRouteOpenLogs.value()
+      is LogcatEventRouteEffect.RequestExport -> currentOnRouteRequestExport.value(action.fileName)
+      is LogcatEventRouteEffect.ExportResult -> {
+        snackbarHostState.showSnackbar(
+          message =
+            logcatExportResultMessage(
+              success = action.success,
+              errorMessage = action.errorMessage,
+              exportedMessage = exportedMessage,
+              unknownMessage = unknownMessage,
+            ),
+          withDismissAction = true,
+        )
+      }
+      is LogcatEventRouteEffect.ShowMessage -> {
+        snackbarHostState.showSnackbar(message = action.message, withDismissAction = true)
+      }
+    }
+
+    currentOnRouteEventConsumed.value()
   }
 
   LogcatContent(

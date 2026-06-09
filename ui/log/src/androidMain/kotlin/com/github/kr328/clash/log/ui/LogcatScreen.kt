@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.IBinder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,14 +24,12 @@ import androidx.compose.ui.platform.toClipEntry
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.core.model.LogMessage
 import com.github.kr328.clash.glue.util.format
 import com.github.kr328.clash.glue.util.logsDir
 import com.github.kr328.clash.log.LogcatService
-import com.github.kr328.clash.log.R
 import com.github.kr328.clash.log.model.LogFile
 import com.github.kr328.clash.log.util.LogcatExportWriter
 import com.github.kr328.clash.log.util.LogcatReader
@@ -48,9 +45,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.jetbrains.compose.resources.stringResource
-import tabby.ui.log.generated.resources.Res as LogRes
-import tabby.ui.log.generated.resources.invalid_log_file
 
 private data class AndroidLogcatBinding(
   val service: LogcatService,
@@ -69,11 +63,7 @@ internal fun LogcatScreen(
   val context = LocalContext.current
   val appContext = context.applicationContext
   val lifecycleOwner = LocalLifecycleOwner.current
-  val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
-  val invalidFileTip = stringResource(LogRes.string.invalid_log_file)
-  val exportedMessage = context.getString(R.string.file_exported)
-  val unknownMessage = context.getString(CommonR.string.unknown)
   var uiState by remember { mutableStateOf(logcatInitialUiState()) }
   var eventState by remember { mutableStateOf(logcatInitialEventState()) }
   var currentFile by remember { mutableStateOf<LogFile?>(null) }
@@ -193,43 +183,22 @@ internal fun LogcatScreen(
               logcatExportResultEventState(
                 success = true,
                 errorMessage = null,
-                exportedMessage = exportedMessage,
-                unknownMessage = unknownMessage,
               )
             } catch (e: Exception) {
               Log.e("Export log file failed: ${e.message}", e)
               logcatExportResultEventState(
                 success = false,
                 errorMessage = e.message,
-                exportedMessage = exportedMessage,
-                unknownMessage = unknownMessage,
               )
             }
         }
       }
     }
 
-  LaunchedEffect(eventState) {
-    when (val action = logcatEventRouteEffect(eventState)) {
-      LogcatEventRouteEffect.Ignore -> Unit
-      LogcatEventRouteEffect.Close -> onClose()
-      LogcatEventRouteEffect.InvalidFile -> {
-        snackbarHostState.showSnackbar(message = invalidFileTip)
-        onInvalidFile()
-      }
-      LogcatEventRouteEffect.OpenLogs -> onOpenLogs()
-      is LogcatEventRouteEffect.RequestExport -> exportLauncher.launch(action.fileName)
-      is LogcatEventRouteEffect.ShowMessage -> {
-        snackbarHostState.showSnackbar(message = action.message, withDismissAction = true)
-      }
-    }
-    eventState = logcatConsumedEventState()
-  }
-
   LogcatStateRouteContent(
     modifier = modifier,
     state = uiState,
-    snackbarHostState = snackbarHostState,
+    eventState = eventState,
     formatMessageTime = { time ->
       Date(time).format(context, includeDate = false, includeTime = true)
     },
@@ -240,6 +209,7 @@ internal fun LogcatScreen(
       }
       eventState = logcatCloseEventState(action)
     },
+    onRouteClose = onClose,
     onDelete = {
       when (val action = logcatDeleteAction(currentFile)) {
         is LogcatDeleteAction.DeleteFile -> {
@@ -256,6 +226,10 @@ internal fun LogcatScreen(
         eventState = it
       }
     },
+    onRouteOpenLogs = onOpenLogs,
+    onRouteInvalidFile = onInvalidFile,
+    onRouteRequestExport = { fileName -> exportLauncher.launch(fileName) },
+    onRouteEventConsumed = { eventState = logcatConsumedEventState() },
     copyMessageText = { label, text ->
       val clipEntry = ClipData.newPlainText(label, text).toClipEntry()
       clipboard.setClipEntry(clipEntry)

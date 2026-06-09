@@ -42,6 +42,12 @@ class LogcatUiStateTest {
       logcatEventRouteEffect(LogcatEventState.RequestExport("clash-1234.log")),
     )
     assertEquals(
+      LogcatEventRouteEffect.ExportResult(success = false, errorMessage = "write failed"),
+      logcatEventRouteEffect(
+        LogcatEventState.ExportResult(success = false, errorMessage = "write failed")
+      ),
+    )
+    assertEquals(
       LogcatEventRouteEffect.ShowMessage("exported"),
       logcatEventRouteEffect(LogcatEventState.ShowMessage("exported")),
     )
@@ -343,10 +349,28 @@ class LogcatUiStateTest {
   }
 
   @Test
-  fun logcatExportResultEventStateShowsSuccessOrFallbackErrorMessage() {
+  fun logcatExportResultEventStateKeepsSemanticResultForRouteConsumption() {
     assertEquals(
-      LogcatEventState.ShowMessage("exported"),
+      LogcatEventState.ExportResult(success = true, errorMessage = null),
       logcatExportResultEventState(
+        success = true,
+        errorMessage = null,
+      ),
+    )
+    assertEquals(
+      LogcatEventState.ExportResult(success = false, errorMessage = "write failed"),
+      logcatExportResultEventState(
+        success = false,
+        errorMessage = "write failed",
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportResultMessageShowsSuccessOrFallbackErrorMessage() {
+    assertEquals(
+      "exported",
+      logcatExportResultMessage(
         success = true,
         errorMessage = null,
         exportedMessage = "exported",
@@ -354,8 +378,8 @@ class LogcatUiStateTest {
       ),
     )
     assertEquals(
-      LogcatEventState.ShowMessage("write failed"),
-      logcatExportResultEventState(
+      "write failed",
+      logcatExportResultMessage(
         success = false,
         errorMessage = "write failed",
         exportedMessage = "exported",
@@ -363,8 +387,8 @@ class LogcatUiStateTest {
       ),
     )
     assertEquals(
-      LogcatEventState.ShowMessage("unknown"),
-      logcatExportResultEventState(
+      "unknown",
+      logcatExportResultMessage(
         success = false,
         errorMessage = null,
         exportedMessage = "exported",

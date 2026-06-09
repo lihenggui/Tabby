@@ -47,6 +47,8 @@ internal sealed interface LogcatEventState {
 
   data class RequestExport(val fileName: String) : LogcatEventState
 
+  data class ExportResult(val success: Boolean, val errorMessage: String?) : LogcatEventState
+
   data class ShowMessage(val message: String) : LogcatEventState
 }
 
@@ -60,6 +62,8 @@ internal sealed interface LogcatEventRouteEffect {
   data object OpenLogs : LogcatEventRouteEffect
 
   data class RequestExport(val fileName: String) : LogcatEventRouteEffect
+
+  data class ExportResult(val success: Boolean, val errorMessage: String?) : LogcatEventRouteEffect
 
   data class ShowMessage(val message: String) : LogcatEventRouteEffect
 }
@@ -75,6 +79,11 @@ internal fun logcatEventRouteEffect(eventState: LogcatEventState): LogcatEventRo
     LogcatEventState.InvalidFile -> LogcatEventRouteEffect.InvalidFile
     LogcatEventState.OpenLogs -> LogcatEventRouteEffect.OpenLogs
     is LogcatEventState.RequestExport -> LogcatEventRouteEffect.RequestExport(eventState.fileName)
+    is LogcatEventState.ExportResult ->
+      LogcatEventRouteEffect.ExportResult(
+        success = eventState.success,
+        errorMessage = eventState.errorMessage,
+      )
     is LogcatEventState.ShowMessage -> LogcatEventRouteEffect.ShowMessage(eventState.message)
   }
 }
@@ -251,12 +260,20 @@ internal fun logcatExportAction(
 internal fun logcatExportResultEventState(
   success: Boolean,
   errorMessage: String?,
+): LogcatEventState {
+  return LogcatEventState.ExportResult(
+    success = success,
+    errorMessage = errorMessage,
+  )
+}
+
+internal fun logcatExportResultMessage(
+  success: Boolean,
+  errorMessage: String?,
   exportedMessage: String,
   unknownMessage: String,
-): LogcatEventState {
-  val message = if (success) exportedMessage else errorMessage ?: unknownMessage
-
-  return LogcatEventState.ShowMessage(message)
+): String {
+  return if (success) exportedMessage else errorMessage ?: unknownMessage
 }
 
 internal fun logcatPollAction(
