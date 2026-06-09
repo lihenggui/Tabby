@@ -5,6 +5,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.engine.api.EngineController
+import com.github.kr328.clash.settingsstore.TabbyProxyRoutePreferences
+import com.github.kr328.clash.settingsstore.TabbyProxyRoutePreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -46,6 +48,31 @@ class InMemoryProxyRoutePreferencesRepository(
   }
 }
 
+class SettingsStoreProxyRoutePreferencesRepository(
+  private val repository: TabbyProxyRoutePreferencesRepository,
+  private val defaults: ProxyRoutePreferences = ProxyRoutePreferences(proxyLine = 2),
+) : ProxyRoutePreferencesRepository {
+  override fun query(): ProxyRoutePreferences {
+    return repository.query(defaults.toTabbyProxyRoutePreferences()).toProxyRoutePreferences()
+  }
+
+  override fun setLastGroupName(value: String) {
+    repository.setLastGroupName(value)
+  }
+
+  override fun setExcludeNotSelectable(value: Boolean) {
+    repository.setExcludeNotSelectable(value)
+  }
+
+  override fun setProxyLine(value: Int) {
+    repository.setProxyLine(value)
+  }
+
+  override fun setProxySort(value: ProxySort) {
+    repository.setProxySort(value)
+  }
+}
+
 @Composable
 fun ProxyRoutePreferencesRepositoryRouteContent(
   engineController: EngineController,
@@ -82,5 +109,23 @@ fun ProxyRoutePreferencesRepositoryRouteContent(
       preferencesRepository.setProxySort(value)
       onProxySortChanged(value)
     },
+  )
+}
+
+private fun ProxyRoutePreferences.toTabbyProxyRoutePreferences(): TabbyProxyRoutePreferences {
+  return TabbyProxyRoutePreferences(
+    proxyLine = proxyLine,
+    excludeNotSelectable = excludeNotSelectable,
+    proxySort = proxySort,
+    lastGroupName = lastGroupName,
+  )
+}
+
+private fun TabbyProxyRoutePreferences.toProxyRoutePreferences(): ProxyRoutePreferences {
+  return ProxyRoutePreferences(
+    proxyLine = proxyLine,
+    excludeNotSelectable = excludeNotSelectable,
+    proxySort = proxySort,
+    lastGroupName = lastGroupName,
   )
 }

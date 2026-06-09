@@ -11,8 +11,11 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(projects.core.engineApi)
+      implementation(projects.core.settingsStore)
       implementation(projects.ui.shared)
     }
+
+    commonTest.dependencies { implementation(libs.multiplatform.settings.test) }
 
     desktopTest.dependencies { implementation(libs.kotlin.test.junit) }
 
