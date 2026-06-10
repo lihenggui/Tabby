@@ -1,6 +1,7 @@
 package com.github.kr328.clash.common.document
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -19,6 +20,30 @@ class DocumentProviderRuleTest {
   @Test
   fun readOnlyOpenModeDoesNotRequestWrite() {
     assertFalse(tabbyDocumentOpenModeRequestsWrite("r"))
+  }
+
+  @Test
+  fun urlProfileConfigurationDocumentsAreReadOnly() {
+    assertFalse(tabbyProfileConfigurationDocumentAllowsWritableOpen(profileIsFile = false))
+    assertEquals(emptySet(), tabbyProfileConfigurationDocumentFlags(profileIsUrl = true))
+  }
+
+  @Test
+  fun fileProfileConfigurationDocumentsAreWritable() {
+    assertTrue(tabbyProfileConfigurationDocumentAllowsWritableOpen(profileIsFile = true))
+    assertEquals(
+      setOf(Flag.Writable),
+      tabbyProfileConfigurationDocumentFlags(profileIsUrl = false),
+    )
+  }
+
+  @Test
+  fun nonUrlNonFileProfileConfigurationDocumentsExposeWritableFlagButRejectWritableOpen() {
+    assertFalse(tabbyProfileConfigurationDocumentAllowsWritableOpen(profileIsFile = false))
+    assertEquals(
+      setOf(Flag.Writable),
+      tabbyProfileConfigurationDocumentFlags(profileIsUrl = false),
+    )
   }
 
   @Test

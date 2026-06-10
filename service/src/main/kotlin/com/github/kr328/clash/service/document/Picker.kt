@@ -6,6 +6,8 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.document.Flag
 import com.github.kr328.clash.common.document.Path
 import com.github.kr328.clash.common.document.Paths
+import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentAllowsWritableOpen
+import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentFlags
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.service.R
 import com.github.kr328.clash.service.data.ImportedDao
@@ -78,10 +80,15 @@ class Picker(private val context: Context) {
         val type =
           pending?.type ?: imported?.type ?: throw FileNotFoundException("profile not found")
 
-        if (writable && type != Profile.Type.File)
+        if (
+          writable &&
+            !tabbyProfileConfigurationDocumentAllowsWritableOpen(
+              profileIsFile = type == Profile.Type.File
+            )
+        )
           throw IllegalArgumentException("invalid open mode")
 
-        val flags: Set<Flag> = if (type == Profile.Type.Url) emptySet() else setOf(Flag.Writable)
+        val flags = tabbyProfileConfigurationDocumentFlags(profileIsUrl = type == Profile.Type.Url)
 
         return FileDocument(
           file =
