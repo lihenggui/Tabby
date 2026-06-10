@@ -10,6 +10,7 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import com.github.kr328.clash.common.compat.TABBY_SERIALIZABLE_EXTRA_TYPED_API_MIN_SDK
 import com.github.kr328.clash.common.compat.queryIntentActivitiesCompat
 import com.github.kr328.clash.common.compat.tabbySerializableExtraUsesTypedApi
+import com.github.kr328.clash.common.compat.tabbyUriPermissionGrantFlags
 import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as appInfoProvider
 import java.io.Serializable
 import kotlin.uuid.Uuid
@@ -39,13 +40,14 @@ val Context.mainActivityAlias: ComponentName
   }
 
 fun Intent.grantPermissions(read: Boolean = true, write: Boolean = true): Intent = apply {
-  var flags = 0
-
-  if (read) flags = flags or Intent.FLAG_GRANT_READ_URI_PERMISSION
-
-  if (write) flags = flags or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-  addFlags(flags)
+  addFlags(
+    tabbyUriPermissionGrantFlags(
+      read = read,
+      write = write,
+      readFlag = Intent.FLAG_GRANT_READ_URI_PERMISSION,
+      writeFlag = Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+    )
+  )
 }
 
 var Intent.uuid: Uuid?
