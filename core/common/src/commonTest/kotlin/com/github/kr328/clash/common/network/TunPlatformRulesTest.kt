@@ -76,4 +76,40 @@ class TunPlatformRulesTest {
       ),
     )
   }
+
+  @Test
+  fun buildsIpv4OnlyTunDeviceText() {
+    assertEquals(
+      TabbyTunDeviceText(
+        gateway = "172.19.0.1/30",
+        portal = "172.19.0.2",
+        dns = "172.19.0.2",
+      ),
+      tabbyTunDeviceText(allowIpv6 = false, dnsHijacking = false),
+    )
+  }
+
+  @Test
+  fun appendsIpv6TunDeviceTextWhenIpv6IsAllowed() {
+    assertEquals(
+      TabbyTunDeviceText(
+        gateway = "172.19.0.1/30,fdfe:dcba:9876::1/126",
+        portal = "172.19.0.2,fdfe:dcba:9876::2",
+        dns = "172.19.0.2,fdfe:dcba:9876::2",
+      ),
+      tabbyTunDeviceText(allowIpv6 = true, dnsHijacking = false),
+    )
+  }
+
+  @Test
+  fun usesAnyIpv4AddressForTunDnsWhenDnsHijackingIsEnabled() {
+    assertEquals(
+      TabbyTunDeviceText(
+        gateway = "172.19.0.1/30,fdfe:dcba:9876::1/126",
+        portal = "172.19.0.2,fdfe:dcba:9876::2",
+        dns = "0.0.0.0",
+      ),
+      tabbyTunDeviceText(allowIpv6 = true, dnsHijacking = true),
+    )
+  }
 }

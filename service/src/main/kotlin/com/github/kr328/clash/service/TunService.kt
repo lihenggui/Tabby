@@ -8,10 +8,19 @@ import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.network.TABBY_TUN_ANY_IPV4_ADDRESS
+import com.github.kr328.clash.common.network.TABBY_TUN_ANY_IPV6_ADDRESS
 import com.github.kr328.clash.common.network.TABBY_TUN_HTTP_PROXY_MIN_SDK
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_DNS
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_GATEWAY
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_SUBNET_PREFIX
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_DNS
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_GATEWAY
+import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_SUBNET_PREFIX
 import com.github.kr328.clash.common.network.TABBY_TUN_METERED_MIN_SDK
 import com.github.kr328.clash.common.network.tabbyTunCanSetHttpProxy
 import com.github.kr328.clash.common.network.tabbyTunCanSetMetered
+import com.github.kr328.clash.common.network.tabbyTunDeviceText
 import com.github.kr328.clash.common.network.tabbyTunShouldSetUnderlyingNetworks
 import com.github.kr328.clash.common.util.IPNet
 import com.github.kr328.clash.common.util.mainIntent
@@ -137,9 +146,9 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
     val device =
       with(Builder()) {
         // Interface address
-        addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
+        addAddress(TABBY_TUN_IPV4_GATEWAY, TABBY_TUN_IPV4_SUBNET_PREFIX)
         if (store.allowIpv6) {
-          addAddress(TUN_GATEWAY6, TUN_SUBNET_PREFIX6)
+          addAddress(TABBY_TUN_IPV6_GATEWAY, TABBY_TUN_IPV6_SUBNET_PREFIX)
         }
 
         // Route
@@ -150,14 +159,14 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
           }
 
           // Route of virtual DNS
-          addRoute(TUN_DNS, 32)
+          addRoute(TABBY_TUN_IPV4_DNS, 32)
           if (store.allowIpv6) {
-            addRoute(TUN_DNS6, 128)
+            addRoute(TABBY_TUN_IPV6_DNS, 128)
           }
         } else {
-          addRoute(NET_ANY, 0)
+          addRoute(TABBY_TUN_ANY_IPV4_ADDRESS, 0)
           if (store.allowIpv6) {
-            addRoute(NET_ANY6, 0)
+            addRoute(TABBY_TUN_ANY_IPV6_ADDRESS, 0)
           }
         }
 
@@ -188,9 +197,9 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         setSession("Clash")
 
         // Virtual Dns Server
-        addDnsServer(TUN_DNS)
+        addDnsServer(TABBY_TUN_IPV4_DNS)
         if (store.allowIpv6) {
-          addDnsServer(TUN_DNS6)
+          addDnsServer(TABBY_TUN_IPV6_DNS)
         }
 
         // Open MainActivity
@@ -228,18 +237,20 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
           allowBypass()
         }
 
+        val tunDeviceText =
+          tabbyTunDeviceText(
+            allowIpv6 = store.allowIpv6,
+            dnsHijacking = store.dnsHijacking,
+          )
+
         TunModule.TunDevice(
           fd =
             establish()?.detachFd()
               ?: throw NullPointerException("Establish VPN rejected by system"),
           stack = store.tunStackMode,
-          gateway =
-            "$TUN_GATEWAY/$TUN_SUBNET_PREFIX" +
-              if (store.allowIpv6) ",$TUN_GATEWAY6/$TUN_SUBNET_PREFIX6" else "",
-          portal = TUN_PORTAL + if (store.allowIpv6) ",$TUN_PORTAL6" else "",
-          dns =
-            if (store.dnsHijacking) NET_ANY
-            else (TUN_DNS + if (store.allowIpv6) ",$TUN_DNS6" else ""),
+          gateway = tunDeviceText.gateway,
+          portal = tunDeviceText.portal,
+          dns = tunDeviceText.dns,
         )
       }
 
@@ -261,16 +272,6 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
 
   companion object {
     private const val TUN_MTU = 9000
-    private const val TUN_SUBNET_PREFIX = 30
-    private const val TUN_GATEWAY = "172.19.0.1"
-    private const val TUN_SUBNET_PREFIX6 = 126
-    private const val TUN_GATEWAY6 = "fdfe:dcba:9876::1"
-    private const val TUN_PORTAL = "172.19.0.2"
-    private const val TUN_PORTAL6 = "fdfe:dcba:9876::2"
-    private const val TUN_DNS = TUN_PORTAL
-    private const val TUN_DNS6 = TUN_PORTAL6
-    private const val NET_ANY = "0.0.0.0"
-    private const val NET_ANY6 = "::"
     /** Public IPv4 route set used when bypassing private and other special-use ranges. */
     private val BYPASS_PRIVATE_ROUTE_V4: List<IPNet> =
       listOf(
