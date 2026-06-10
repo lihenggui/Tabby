@@ -113,6 +113,35 @@ class StoredProfileTest {
   }
 
   @Test
+  fun writablePendingProfilePreservesEditableFieldsAndClearsSubscriptionFields() {
+    assertEquals(
+      storedProfile(
+        name = "Imported",
+        type = Profile.Type.Url,
+        source = "https://example.com/imported.yaml",
+        interval = 120,
+        upload = 0,
+        download = 0,
+        total = 0,
+        expire = 0,
+      ),
+      profileWritablePendingProfile(
+        imported =
+          storedProfile(
+            name = "Imported",
+            type = Profile.Type.Url,
+            source = "https://example.com/imported.yaml",
+            interval = 120,
+            upload = 11,
+            download = 22,
+            total = 33,
+            expire = 44,
+          )
+      ),
+    )
+  }
+
+  @Test
   fun returnsNullWhenNoStoredProfileExists() {
     assertNull(
       profileFromStoredProfileState(

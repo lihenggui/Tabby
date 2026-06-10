@@ -54,6 +54,15 @@ fun profilePatchedPendingProfile(
   )
 }
 
+fun profileWritablePendingProfile(imported: StoredProfile): StoredProfile {
+  return imported.copy(
+    upload = 0,
+    download = 0,
+    total = 0,
+    expire = 0,
+  )
+}
+
 data class AppliedImportedProfile(val profile: StoredProfile, val createdAt: Long)
 
 fun profileUpdatedImportedProfile(

@@ -10,7 +10,10 @@ import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentF
 import com.github.kr328.clash.common.document.tabbyProviderFileDocumentFlags
 import com.github.kr328.clash.common.document.tabbyVirtualDirectoryDocumentFlags
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.StoredProfile
+import com.github.kr328.clash.core.model.profileWritablePendingProfile
 import com.github.kr328.clash.service.R
+import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
@@ -139,19 +142,7 @@ class Picker(private val context: Context) {
       ImportedDao().queryByUUID(uuid) ?: throw FileNotFoundException("profile not found")
 
     PendingDao()
-      .insert(
-        Pending(
-          imported.uuid,
-          imported.name,
-          imported.type,
-          imported.source,
-          imported.interval,
-          0,
-          0,
-          0,
-          0,
-        )
-      )
+      .insert(profileWritablePendingProfile(imported.toStoredProfile()).toPending(imported.uuid))
 
     val source = context.importedDir.resolve(uuid.toString())
     val target = context.pendingDir.resolve(uuid.toString())
@@ -159,4 +150,31 @@ class Picker(private val context: Context) {
     target.deleteRecursively()
     source.copyRecursively(target)
   }
+}
+
+private fun Imported.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun StoredProfile.toPending(uuid: Uuid): Pending {
+  return Pending(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
 }
