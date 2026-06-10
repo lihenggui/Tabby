@@ -5,8 +5,14 @@ import android.content.Intent
 import android.net.ProxyInfo
 import android.net.VpnService
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.network.TABBY_TUN_HTTP_PROXY_MIN_SDK
+import com.github.kr328.clash.common.network.TABBY_TUN_METERED_MIN_SDK
+import com.github.kr328.clash.common.network.tabbyTunCanSetHttpProxy
+import com.github.kr328.clash.common.network.tabbyTunCanSetMetered
+import com.github.kr328.clash.common.network.tabbyTunShouldSetUnderlyingNetworks
 import com.github.kr328.clash.common.util.IPNet
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.service.clash.clashRuntime
@@ -63,7 +69,7 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
             true
           }
           network.onEvent { n ->
-            if (Build.VERSION.SDK_INT in 22..28) {
+            if (tabbyTunShouldSetUnderlyingNetworks(Build.VERSION.SDK_INT)) {
               setUnderlyingNetworks(arrayOf(n))
             }
 
@@ -200,12 +206,12 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         )
 
         // Metered
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (canSetTunMetered()) {
           setMetered(false)
         }
 
         // System Proxy
-        if (Build.VERSION.SDK_INT >= 29 && store.systemProxy) {
+        if (canSetTunHttpProxy(store.systemProxy)) {
           listenHttp()?.let {
             setHttpProxy(
               ProxyInfo.buildDirectProxy(
@@ -238,6 +244,19 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
       }
 
     attach(device)
+  }
+
+  @ChecksSdkIntAtLeast(api = TABBY_TUN_METERED_MIN_SDK)
+  private fun canSetTunMetered(): Boolean {
+    return tabbyTunCanSetMetered(Build.VERSION.SDK_INT)
+  }
+
+  @ChecksSdkIntAtLeast(api = TABBY_TUN_HTTP_PROXY_MIN_SDK)
+  private fun canSetTunHttpProxy(systemProxy: Boolean): Boolean {
+    return tabbyTunCanSetHttpProxy(
+      platformSdk = Build.VERSION.SDK_INT,
+      systemProxy = systemProxy,
+    )
   }
 
   companion object {
