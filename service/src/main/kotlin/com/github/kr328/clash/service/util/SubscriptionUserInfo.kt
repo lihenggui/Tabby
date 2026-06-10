@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.network.ProfileNetworkClient
 import com.github.kr328.clash.network.SubscriptionUserInfo
+import com.github.kr328.clash.network.tabbyProfileUserAgent
 
 private val profileNetworkClient = ProfileNetworkClient()
 
@@ -16,6 +17,6 @@ internal suspend fun Context.fetchSubscriptionUserInfo(source: String): Subscrip
 }
 
 private fun Context.tabbyUserAgent(): String {
-  val versionName = packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
-  return "Tabby/$versionName"
+  val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+  return tabbyProfileUserAgent(versionName)
 }
