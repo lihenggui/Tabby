@@ -6,6 +6,7 @@ import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.profileFromStoredProfileState
+import com.github.kr328.clash.core.model.profilePatchedPendingProfile
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -106,29 +107,23 @@ class ProfileManager(private val context: Context) :
 
       PendingDao()
         .insert(
-          Pending(
-            uuid = imported.uuid,
-            name = name,
-            type = imported.type,
-            source = source,
-            interval = interval,
-            upload = 0,
-            total = 0,
-            download = 0,
-            expire = 0,
-          )
+          profilePatchedPendingProfile(
+              current = imported.toStoredProfile(),
+              name = name,
+              source = source,
+              interval = interval,
+            )
+            .toPending(imported.uuid)
         )
     } else {
       val newPending =
-        pending.copy(
-          name = name,
-          source = source,
-          interval = interval,
-          upload = 0,
-          total = 0,
-          download = 0,
-          expire = 0,
-        )
+        profilePatchedPendingProfile(
+            current = pending.toStoredProfile(),
+            name = name,
+            source = source,
+            interval = interval,
+          )
+          .toPending(pending.uuid, createdAt = pending.createdAt)
 
       PendingDao().update(newPending)
     }
@@ -280,5 +275,23 @@ private fun Pending.toStoredProfile(): StoredProfile {
     download = download,
     total = total,
     expire = expire,
+  )
+}
+
+private fun StoredProfile.toPending(
+  uuid: Uuid,
+  createdAt: Long = System.currentTimeMillis(),
+): Pending {
+  return Pending(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+    createdAt = createdAt,
   )
 }

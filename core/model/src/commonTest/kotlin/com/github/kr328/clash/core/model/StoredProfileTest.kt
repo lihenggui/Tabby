@@ -7,6 +7,62 @@ import kotlin.uuid.Uuid
 
 class StoredProfileTest {
   @Test
+  fun patchedPendingProfileUsesEditedFieldsAndClearsSubscriptionFields() {
+    assertEquals(
+      storedProfile(
+        name = "Edited",
+        type = Profile.Type.Url,
+        source = "https://example.com/edited.yaml",
+        interval = 120,
+        upload = 0,
+        download = 0,
+        total = 0,
+        expire = 0,
+      ),
+      profilePatchedPendingProfile(
+        current =
+          storedProfile(
+            name = "Original",
+            type = Profile.Type.Url,
+            source = "https://example.com/original.yaml",
+            interval = 60,
+            upload = 11,
+            download = 22,
+            total = 33,
+            expire = 44,
+          ),
+        name = "Edited",
+        source = "https://example.com/edited.yaml",
+        interval = 120,
+      ),
+    )
+  }
+
+  @Test
+  fun patchedPendingProfilePreservesProfileType() {
+    assertEquals(
+      Profile.Type.File,
+      profilePatchedPendingProfile(
+          current = storedProfile(type = Profile.Type.File),
+          name = "Edited",
+          source = "",
+          interval = 0,
+        )
+        .type,
+    )
+    assertEquals(
+      Profile.Type.External,
+      profilePatchedPendingProfile(
+          current = storedProfile(type = Profile.Type.External),
+          name = "Edited",
+          source = "",
+          interval = 0,
+        )
+        .type,
+    )
+  }
+
+  @Test
   fun returnsNullWhenNoStoredProfileExists() {
     assertNull(
       profileFromStoredProfileState(

@@ -20,6 +20,23 @@ data class ProfileSubscriptionUserInfo(
   val expire: Long,
 )
 
+fun profilePatchedPendingProfile(
+  current: StoredProfile,
+  name: String,
+  source: String,
+  interval: Long,
+): StoredProfile {
+  return current.copy(
+    name = name,
+    source = source,
+    interval = interval,
+    upload = 0,
+    download = 0,
+    total = 0,
+    expire = 0,
+  )
+}
+
 data class AppliedImportedProfile(val profile: StoredProfile, val createdAt: Long)
 
 fun profileAppliedImportedProfile(
