@@ -20,6 +20,12 @@ fun tabbyProviderFileDocumentFlags(): Set<Flag> {
   return setOf(Flag.Writable, Flag.Deletable)
 }
 
+const val TABBY_TEXT_DOCUMENT_MIME_TYPE = "text/plain"
+
+fun tabbyFileDocumentMimeType(isDirectory: Boolean, directoryMimeType: String): String {
+  return if (isDirectory) directoryMimeType else TABBY_TEXT_DOCUMENT_MIME_TYPE
+}
+
 fun tabbyDocumentProviderRootFlags(localOnlyFlag: Int, supportsIsChildFlag: Int): Int {
   return localOnlyFlag or supportsIsChildFlag
 }

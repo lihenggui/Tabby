@@ -57,6 +57,24 @@ class DocumentProviderRuleTest {
   }
 
   @Test
+  fun fileDocumentMimeTypeUsesDirectoryTokenForDirectoriesAndTextForFiles() {
+    assertEquals(
+      "directory-mime-token",
+      tabbyFileDocumentMimeType(
+        isDirectory = true,
+        directoryMimeType = "directory-mime-token",
+      ),
+    )
+    assertEquals(
+      TABBY_TEXT_DOCUMENT_MIME_TYPE,
+      tabbyFileDocumentMimeType(
+        isDirectory = false,
+        directoryMimeType = "directory-mime-token",
+      ),
+    )
+  }
+
+  @Test
   fun documentProviderRootFlagsExposeLocalOnlyChildSupport() {
     assertEquals(
       0b11,
