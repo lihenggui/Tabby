@@ -12,6 +12,14 @@ fun tabbyProfileConfigurationDocumentFlags(profileIsUrl: Boolean): Set<Flag> {
   return if (profileIsUrl) emptySet() else setOf(Flag.Writable)
 }
 
+fun tabbyVirtualDirectoryDocumentFlags(): Set<Flag> {
+  return setOf(Flag.Virtual)
+}
+
+fun tabbyProviderFileDocumentFlags(): Set<Flag> {
+  return setOf(Flag.Writable, Flag.Deletable)
+}
+
 fun tabbyDocumentIdIsChild(parentDocumentId: String?, documentId: String?): Boolean {
   if (parentDocumentId == null || documentId == null) return false
 

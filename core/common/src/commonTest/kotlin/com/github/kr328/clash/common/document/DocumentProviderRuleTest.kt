@@ -47,6 +47,16 @@ class DocumentProviderRuleTest {
   }
 
   @Test
+  fun virtualDirectoryDocumentsExposeVirtualFlagOnly() {
+    assertEquals(setOf(Flag.Virtual), tabbyVirtualDirectoryDocumentFlags())
+  }
+
+  @Test
+  fun providerFileDocumentsExposeWritableAndDeletableFlags() {
+    assertEquals(setOf(Flag.Writable, Flag.Deletable), tabbyProviderFileDocumentFlags())
+  }
+
+  @Test
   fun nullDocumentIdsAreNotChildDocuments() {
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = null, documentId = "/profile"))
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = "/", documentId = null))

@@ -3,11 +3,12 @@ package com.github.kr328.clash.service.document
 import android.content.Context
 import android.provider.DocumentsContract
 import com.github.kr328.clash.common.R as CommonR
-import com.github.kr328.clash.common.document.Flag
 import com.github.kr328.clash.common.document.Path
 import com.github.kr328.clash.common.document.Paths
 import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentAllowsWritableOpen
 import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentFlags
+import com.github.kr328.clash.common.document.tabbyProviderFileDocumentFlags
+import com.github.kr328.clash.common.document.tabbyVirtualDirectoryDocumentFlags
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.service.R
 import com.github.kr328.clash.service.data.ImportedDao
@@ -49,7 +50,7 @@ class Picker(private val context: Context) {
         DocumentsContract.Document.MIME_TYPE_DIR,
         0,
         0,
-        setOf(Flag.Virtual),
+        tabbyVirtualDirectoryDocumentFlags(),
       )
     }
 
@@ -69,7 +70,7 @@ class Picker(private val context: Context) {
         mimeType = DocumentsContract.Document.MIME_TYPE_DIR,
         size = 0,
         updatedAt = 0,
-        flags = setOf(Flag.Virtual),
+        flags = tabbyVirtualDirectoryDocumentFlags(),
       )
     }
 
@@ -111,7 +112,7 @@ class Picker(private val context: Context) {
             }.resolve("providers"),
           idOverride = Paths.PROVIDERS_ID,
           nameOverride = context.getString(R.string.provider_files),
-          flags = setOf(Flag.Virtual),
+          flags = tabbyVirtualDirectoryDocumentFlags(),
         )
       }
     }
@@ -127,7 +128,7 @@ class Picker(private val context: Context) {
           }
           .resolve("providers")
           .resolve(relative.joinToString(separator = "/")),
-      flags = setOf(Flag.Writable, Flag.Deletable),
+      flags = tabbyProviderFileDocumentFlags(),
     )
   }
 
