@@ -7,6 +7,56 @@ import kotlin.uuid.Uuid
 
 class StoredProfileTest {
   @Test
+  fun createdPendingProfileUsesInputFieldsAndClearsSubscriptionFields() {
+    assertEquals(
+      storedProfile(
+        name = "Created",
+        type = Profile.Type.Url,
+        source = "https://example.com/created.yaml",
+        interval = 0,
+        upload = 0,
+        download = 0,
+        total = 0,
+        expire = 0,
+      ),
+      profileCreatedPendingProfile(
+        type = Profile.Type.Url,
+        name = "Created",
+        source = "https://example.com/created.yaml",
+      ),
+    )
+  }
+
+  @Test
+  fun clonedPendingProfileUsesFileTypeAndPreservesImportedMetadata() {
+    assertEquals(
+      storedProfile(
+        name = "Imported",
+        type = Profile.Type.File,
+        source = "https://example.com/imported.yaml",
+        interval = 120,
+        upload = 11,
+        download = 22,
+        total = 33,
+        expire = 44,
+      ),
+      profileClonedPendingProfile(
+        imported =
+          storedProfile(
+            name = "Imported",
+            type = Profile.Type.Url,
+            source = "https://example.com/imported.yaml",
+            interval = 120,
+            upload = 11,
+            download = 22,
+            total = 33,
+            expire = 44,
+          )
+      ),
+    )
+  }
+
+  @Test
   fun patchedPendingProfileUsesEditedFieldsAndClearsSubscriptionFields() {
     assertEquals(
       storedProfile(

@@ -6,6 +6,8 @@ import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpsProfileSource
+import com.github.kr328.clash.core.model.profileClonedPendingProfile
+import com.github.kr328.clash.core.model.profileCreatedPendingProfile
 import com.github.kr328.clash.core.model.profileFromStoredProfileState
 import com.github.kr328.clash.core.model.profilePatchedPendingProfile
 import com.github.kr328.clash.core.model.profileUpdatedImportedProfile
@@ -48,17 +50,7 @@ class ProfileManager(private val context: Context) :
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid {
     val uuid = generateProfileUUID()
     val pending =
-      Pending(
-        uuid = uuid,
-        name = name,
-        type = type,
-        source = source,
-        interval = 0,
-        upload = 0,
-        total = 0,
-        download = 0,
-        expire = 0,
-      )
+      profileCreatedPendingProfile(type = type, name = name, source = source).toPending(uuid)
 
     PendingDao().insert(pending)
 
@@ -79,18 +71,7 @@ class ProfileManager(private val context: Context) :
     val imported =
       ImportedDao().queryByUUID(uuid) ?: throw FileNotFoundException("profile $uuid not found")
 
-    val pending =
-      Pending(
-        uuid = newUUID,
-        name = imported.name,
-        type = Profile.Type.File,
-        source = imported.source,
-        interval = imported.interval,
-        upload = imported.upload,
-        total = imported.total,
-        download = imported.download,
-        expire = imported.expire,
-      )
+    val pending = profileClonedPendingProfile(imported.toStoredProfile()).toPending(newUUID)
 
     cloneImportedFiles(uuid, newUUID)
 
