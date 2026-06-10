@@ -160,4 +160,44 @@ class TunPlatformRulesTest {
       tabbyTunHttpProxyExclusionList(bypassPrivateNetwork = true),
     )
   }
+
+  @Test
+  fun buildsIpv4OnlyTunNetworkPlanWithDefaultRoute() {
+    assertEquals(
+      TabbyTunNetworkPlan(
+        addresses = listOf(IPNet.parse("172.19.0.1/30")),
+        routes = listOf(IPNet.parse("0.0.0.0/0")),
+        dnsServers = listOf("172.19.0.2"),
+      ),
+      tabbyTunNetworkPlan(allowIpv6 = false, bypassPrivateNetwork = false),
+    )
+  }
+
+  @Test
+  fun appendsIpv6TunNetworkPlanEntriesWhenIpv6IsAllowed() {
+    assertEquals(
+      TabbyTunNetworkPlan(
+        addresses = listOf(IPNet.parse("172.19.0.1/30"), IPNet.parse("fdfe:dcba:9876::1/126")),
+        routes = listOf(IPNet.parse("0.0.0.0/0"), IPNet.parse("::/0")),
+        dnsServers = listOf("172.19.0.2", "fdfe:dcba:9876::2"),
+      ),
+      tabbyTunNetworkPlan(allowIpv6 = true, bypassPrivateNetwork = false),
+    )
+  }
+
+  @Test
+  fun buildsBypassPrivateTunNetworkPlanWithVirtualDnsRoutes() {
+    val plan = tabbyTunNetworkPlan(allowIpv6 = true, bypassPrivateNetwork = true)
+
+    assertEquals(
+      listOf(IPNet.parse("172.19.0.1/30"), IPNet.parse("fdfe:dcba:9876::1/126")),
+      plan.addresses,
+    )
+    assertEquals(84, plan.routes.size)
+    assertEquals(IPNet.parse("1.0.0.0/8"), plan.routes.first())
+    assertEquals(IPNet.parse("::/1"), plan.routes[74])
+    assertEquals(IPNet.parse("172.19.0.2/32"), plan.routes[82])
+    assertEquals(IPNet.parse("fdfe:dcba:9876::2/128"), plan.routes.last())
+    assertEquals(listOf("172.19.0.2", "fdfe:dcba:9876::2"), plan.dnsServers)
+  }
 }

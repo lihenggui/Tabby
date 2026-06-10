@@ -8,21 +8,13 @@ import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.common.network.TABBY_TUN_ANY_IPV4_ADDRESS
-import com.github.kr328.clash.common.network.TABBY_TUN_ANY_IPV6_ADDRESS
 import com.github.kr328.clash.common.network.TABBY_TUN_HTTP_PROXY_MIN_SDK
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_DNS
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_GATEWAY
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV4_SUBNET_PREFIX
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_DNS
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_GATEWAY
-import com.github.kr328.clash.common.network.TABBY_TUN_IPV6_SUBNET_PREFIX
 import com.github.kr328.clash.common.network.TABBY_TUN_METERED_MIN_SDK
-import com.github.kr328.clash.common.network.tabbyTunBypassPrivateRoutes
 import com.github.kr328.clash.common.network.tabbyTunCanSetHttpProxy
 import com.github.kr328.clash.common.network.tabbyTunCanSetMetered
 import com.github.kr328.clash.common.network.tabbyTunDeviceText
 import com.github.kr328.clash.common.network.tabbyTunHttpProxyExclusionList
+import com.github.kr328.clash.common.network.tabbyTunNetworkPlan
 import com.github.kr328.clash.common.network.tabbyTunShouldSetUnderlyingNetworks
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.core.model.accessControlPackagePlan
@@ -147,29 +139,14 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
 
     val device =
       with(Builder()) {
-        // Interface address
-        addAddress(TABBY_TUN_IPV4_GATEWAY, TABBY_TUN_IPV4_SUBNET_PREFIX)
-        if (store.allowIpv6) {
-          addAddress(TABBY_TUN_IPV6_GATEWAY, TABBY_TUN_IPV6_SUBNET_PREFIX)
-        }
+        val networkPlan =
+          tabbyTunNetworkPlan(
+            allowIpv6 = store.allowIpv6,
+            bypassPrivateNetwork = store.bypassPrivateNetwork,
+          )
 
-        // Route
-        if (store.bypassPrivateNetwork) {
-          tabbyTunBypassPrivateRoutes(allowIpv6 = store.allowIpv6).forEach {
-            addRoute(it.ip, it.prefix)
-          }
-
-          // Route of virtual DNS
-          addRoute(TABBY_TUN_IPV4_DNS, 32)
-          if (store.allowIpv6) {
-            addRoute(TABBY_TUN_IPV6_DNS, 128)
-          }
-        } else {
-          addRoute(TABBY_TUN_ANY_IPV4_ADDRESS, 0)
-          if (store.allowIpv6) {
-            addRoute(TABBY_TUN_ANY_IPV6_ADDRESS, 0)
-          }
-        }
+        networkPlan.addresses.forEach { addAddress(it.ip, it.prefix) }
+        networkPlan.routes.forEach { addRoute(it.ip, it.prefix) }
 
         val accessControlPlan =
           accessControlPackagePlan(
@@ -196,11 +173,7 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         // Session Name
         setSession("Clash")
 
-        // Virtual Dns Server
-        addDnsServer(TABBY_TUN_IPV4_DNS)
-        if (store.allowIpv6) {
-          addDnsServer(TABBY_TUN_IPV6_DNS)
-        }
+        networkPlan.dnsServers.forEach { addDnsServer(it) }
 
         // Open MainActivity
         setConfigureIntent(

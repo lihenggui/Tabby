@@ -24,6 +24,12 @@ data class TabbyTunDeviceText(
   val dns: String,
 )
 
+data class TabbyTunNetworkPlan(
+  val addresses: List<IPNet>,
+  val routes: List<IPNet>,
+  val dnsServers: List<String>,
+)
+
 fun tabbyTunCanQueryConnectionOwnerUid(platformSdk: Int): Boolean {
   return platformSdk >= TABBY_TUN_CONNECTION_OWNER_UID_MIN_SDK
 }
@@ -55,6 +61,32 @@ fun tabbyTunDeviceText(allowIpv6: Boolean, dnsHijacking: Boolean): TabbyTunDevic
 fun tabbyTunBypassPrivateRoutes(allowIpv6: Boolean): List<IPNet> {
   return TABBY_TUN_BYPASS_PRIVATE_ROUTE_V4 +
     if (allowIpv6) TABBY_TUN_BYPASS_PRIVATE_ROUTE_V6 else emptyList()
+}
+
+fun tabbyTunNetworkPlan(
+  allowIpv6: Boolean,
+  bypassPrivateNetwork: Boolean,
+): TabbyTunNetworkPlan {
+  val ipv6Addresses =
+    if (allowIpv6) listOf(IPNet(TABBY_TUN_IPV6_GATEWAY, TABBY_TUN_IPV6_SUBNET_PREFIX))
+    else emptyList()
+  val addresses =
+    listOf(IPNet(TABBY_TUN_IPV4_GATEWAY, TABBY_TUN_IPV4_SUBNET_PREFIX)) + ipv6Addresses
+  val routes =
+    if (bypassPrivateNetwork) {
+      val ipv6VirtualDnsRoutes =
+        if (allowIpv6) listOf(IPNet(TABBY_TUN_IPV6_DNS, 128)) else emptyList()
+      val virtualDnsRoutes = listOf(IPNet(TABBY_TUN_IPV4_DNS, 32)) + ipv6VirtualDnsRoutes
+      tabbyTunBypassPrivateRoutes(allowIpv6 = allowIpv6) + virtualDnsRoutes
+    } else {
+      val defaultIpv6Routes =
+        if (allowIpv6) listOf(IPNet(TABBY_TUN_ANY_IPV6_ADDRESS, 0)) else emptyList()
+      listOf(IPNet(TABBY_TUN_ANY_IPV4_ADDRESS, 0)) + defaultIpv6Routes
+    }
+  val ipv6DnsServers = if (allowIpv6) listOf(TABBY_TUN_IPV6_DNS) else emptyList()
+  val dnsServers = listOf(TABBY_TUN_IPV4_DNS) + ipv6DnsServers
+
+  return TabbyTunNetworkPlan(addresses = addresses, routes = routes, dnsServers = dnsServers)
 }
 
 fun tabbyTunHttpProxyExclusionList(bypassPrivateNetwork: Boolean): List<String> {
