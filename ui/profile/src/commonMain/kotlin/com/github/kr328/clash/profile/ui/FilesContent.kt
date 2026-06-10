@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.github.kr328.clash.common.util.PatternFileName
+import com.github.kr328.clash.common.util.tabbyIsValidFileNameInput
 import com.github.kr328.clash.ui.component.SizeSpacer
 import com.github.kr328.clash.ui.component.TabbyScaffold
 import com.github.kr328.clash.ui.icon.BaselineAdd
@@ -314,5 +314,4 @@ private fun FilesMenuAction(
   }
 }
 
-private fun isValidFileName(value: String): Boolean =
-  value.isNotBlank() && PatternFileName.matches(value)
+private fun isValidFileName(value: String): Boolean = tabbyIsValidFileNameInput(value)
