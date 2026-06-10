@@ -3,7 +3,6 @@ package com.github.kr328.clash.service
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.profileClonedPendingProfile
@@ -11,7 +10,7 @@ import com.github.kr328.clash.core.model.profileCreatedPendingProfile
 import com.github.kr328.clash.core.model.profileFromStoredProfileState
 import com.github.kr328.clash.core.model.profilePatchedPendingProfile
 import com.github.kr328.clash.core.model.profileUpdatedImportedProfile
-import com.github.kr328.clash.network.SubscriptionUserInfo
+import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -286,14 +285,5 @@ private fun StoredProfile.toImported(uuid: Uuid, createdAt: Long): Imported {
     total = total,
     expire = expire,
     createdAt = createdAt,
-  )
-}
-
-private fun SubscriptionUserInfo.toProfileSubscriptionUserInfo(): ProfileSubscriptionUserInfo {
-  return ProfileSubscriptionUserInfo(
-    upload = upload,
-    download = download,
-    total = total,
-    expire = expire,
   )
 }

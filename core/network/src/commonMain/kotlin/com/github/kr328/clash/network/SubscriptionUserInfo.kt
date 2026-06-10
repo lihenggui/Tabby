@@ -1,5 +1,7 @@
 package com.github.kr328.clash.network
 
+import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
+
 const val SUBSCRIPTION_USER_INFO_HEADER = "subscription-userinfo"
 
 data class SubscriptionUserInfo(
@@ -8,6 +10,15 @@ data class SubscriptionUserInfo(
   val total: Long,
   val expire: Long,
 )
+
+fun SubscriptionUserInfo.toProfileSubscriptionUserInfo(): ProfileSubscriptionUserInfo {
+  return ProfileSubscriptionUserInfo(
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
 
 fun parseSubscriptionUserInfo(userInfo: String): SubscriptionUserInfo {
   var upload = 0L

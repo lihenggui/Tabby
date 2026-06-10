@@ -7,7 +7,6 @@ import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.AppliedImportedProfile
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.isHttpsProfileSource
@@ -16,7 +15,7 @@ import com.github.kr328.clash.core.model.profileAppliedImportedProfile
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.network.ProfileFetchResult
-import com.github.kr328.clash.network.SubscriptionUserInfo
+import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -239,15 +238,6 @@ private fun Pending.toStoredProfile(): StoredProfile {
     type = type,
     source = source,
     interval = interval,
-    upload = upload,
-    download = download,
-    total = total,
-    expire = expire,
-  )
-}
-
-private fun SubscriptionUserInfo.toProfileSubscriptionUserInfo(): ProfileSubscriptionUserInfo {
-  return ProfileSubscriptionUserInfo(
     upload = upload,
     download = download,
     total = total,
