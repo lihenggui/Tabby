@@ -11,6 +11,7 @@ import com.github.kr328.clash.common.R as CommonR
 import com.github.kr328.clash.common.compat.getColorCompat
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.common.service.tabbyScreenPowerEventFromPlatformAction
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.common.util.ticker
 import com.github.kr328.clash.core.Clash
@@ -84,10 +85,12 @@ class DynamicNotificationModule(service: Service) : Module<Unit>(service) {
     while (true) {
       select<Unit> {
         screenToggle.onReceive {
-          when (it.action) {
-            Intent.ACTION_SCREEN_ON -> shouldUpdate = true
-            Intent.ACTION_SCREEN_OFF -> shouldUpdate = false
-          }
+          tabbyScreenPowerEventFromPlatformAction(
+              action = it.action,
+              screenOnAction = Intent.ACTION_SCREEN_ON,
+              screenOffAction = Intent.ACTION_SCREEN_OFF,
+            )
+            ?.let { event -> shouldUpdate = event.isInteractive }
         }
         profileLoaded.onReceive {
           builder.setContentTitle(StatusProvider.currentProfile ?: "Not selected")

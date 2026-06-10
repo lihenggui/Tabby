@@ -5,6 +5,9 @@ import android.content.Intent
 import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.service.TabbyScreenPowerEvent
+import com.github.kr328.clash.common.service.tabbyScreenPowerEventFromPlatformAction
+import com.github.kr328.clash.common.service.tabbyShouldSuspendCoreForInteractiveState
 import com.github.kr328.clash.core.Clash
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
@@ -14,7 +17,7 @@ class SuspendModule(service: Service) : Module<Unit>(service) {
   override suspend fun run() {
     val interactive = service.getSystemService<PowerManager>()?.isInteractive ?: true
 
-    Clash.suspendCore(!interactive)
+    Clash.suspendCore(tabbyShouldSuspendCoreForInteractiveState(interactive))
 
     val screenToggle =
       receiveBroadcast(false, Channel.CONFLATED) {
@@ -24,18 +27,24 @@ class SuspendModule(service: Service) : Module<Unit>(service) {
 
     try {
       while (true) {
-        when (screenToggle.receive().action) {
-          Intent.ACTION_SCREEN_ON -> {
+        when (
+          tabbyScreenPowerEventFromPlatformAction(
+            action = screenToggle.receive().action,
+            screenOnAction = Intent.ACTION_SCREEN_ON,
+            screenOffAction = Intent.ACTION_SCREEN_OFF,
+          )
+        ) {
+          TabbyScreenPowerEvent.ScreenOn -> {
             Clash.suspendCore(false)
 
             Log.d("Clash resumed")
           }
-          Intent.ACTION_SCREEN_OFF -> {
+          TabbyScreenPowerEvent.ScreenOff -> {
             Clash.suspendCore(true)
 
             Log.d("Clash suspended")
           }
-          else -> {
+          null -> {
             // unreachable
 
             Clash.healthCheckAll()
