@@ -7,7 +7,7 @@ import android.content.pm.ResolveInfo
 import android.os.Build
 
 fun PackageManager.getInstalledPackagesCompat(flags: Int): List<PackageInfo> {
-  return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+  return if (tabbyPackageManagerUsesTypedFlags(Build.VERSION.SDK_INT)) {
     getInstalledPackages(PackageManager.PackageInfoFlags.of(flags.toLong()))
   } else {
     getInstalledPackages(flags)
@@ -15,7 +15,7 @@ fun PackageManager.getInstalledPackagesCompat(flags: Int): List<PackageInfo> {
 }
 
 fun PackageManager.queryIntentActivitiesCompat(intent: Intent, flags: Int): List<ResolveInfo> {
-  return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+  return if (tabbyPackageManagerUsesTypedFlags(Build.VERSION.SDK_INT)) {
     queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(flags.toLong()))
   } else {
     queryIntentActivities(intent, flags)
