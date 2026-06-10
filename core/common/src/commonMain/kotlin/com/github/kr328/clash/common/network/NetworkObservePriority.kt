@@ -35,6 +35,13 @@ fun tabbyNetworkObservePriority(
   return transportPriority + if (isAvailable) 0 else 10
 }
 
+fun tabbyNetworkObservedAvailability(
+  losingAtMillis: Long,
+  currentTimeMillis: Long,
+): Boolean {
+  return losingAtMillis < currentTimeMillis
+}
+
 fun tabbyNetworkSupportsUsbTransport(platformSdk: Int): Boolean {
   return platformSdk >= TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
 }

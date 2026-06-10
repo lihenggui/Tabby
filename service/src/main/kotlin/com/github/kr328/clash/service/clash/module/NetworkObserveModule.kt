@@ -14,6 +14,7 @@ import com.github.kr328.clash.common.network.TABBY_NETWORK_SATELLITE_TRANSPORT_M
 import com.github.kr328.clash.common.network.TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
 import com.github.kr328.clash.common.network.TabbyNetworkTransportState
 import com.github.kr328.clash.common.network.tabbyNetworkObservePriority
+import com.github.kr328.clash.common.network.tabbyNetworkObservedAvailability
 import com.github.kr328.clash.common.network.tabbyNetworkObservedDnsChange
 import com.github.kr328.clash.common.network.tabbyNetworkSupportsSatelliteTransport
 import com.github.kr328.clash.common.network.tabbyNetworkSupportsUsbTransport
@@ -43,7 +44,12 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
     val losingMs: Long = 0,
     val dnsList: List<InetAddress> = emptyList(),
   ) {
-    fun isAvailable(): Boolean = losingMs < System.currentTimeMillis()
+    fun isAvailable(currentTimeMillis: Long): Boolean {
+      return tabbyNetworkObservedAvailability(
+        losingAtMillis = losingMs,
+        currentTimeMillis = currentTimeMillis,
+      )
+    }
   }
 
   private val networkInfos = ConcurrentHashMap<Network, NetworkInfo>()
@@ -120,7 +126,7 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
     return tabbyNetworkObservePriority(
       transportState = capabilities?.toTabbyTransportState(),
       platformSdk = Build.VERSION.SDK_INT,
-      isAvailable = entry.value.isAvailable(),
+      isAvailable = entry.value.isAvailable(System.currentTimeMillis()),
     )
   }
 

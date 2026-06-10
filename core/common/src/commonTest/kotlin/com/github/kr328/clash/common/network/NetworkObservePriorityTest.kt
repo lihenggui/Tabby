@@ -53,6 +53,31 @@ class NetworkObservePriorityTest {
   }
 
   @Test
+  fun mapsLosingDeadlineToAvailability() {
+    assertEquals(
+      true,
+      tabbyNetworkObservedAvailability(
+        losingAtMillis = 900,
+        currentTimeMillis = 1000,
+      ),
+    )
+    assertEquals(
+      false,
+      tabbyNetworkObservedAvailability(
+        losingAtMillis = 1000,
+        currentTimeMillis = 1000,
+      ),
+    )
+    assertEquals(
+      false,
+      tabbyNetworkObservedAvailability(
+        losingAtMillis = 1100,
+        currentTimeMillis = 1000,
+      ),
+    )
+  }
+
+  @Test
   fun treatsMissingCapabilitiesAsLowestPriority() {
     assertEquals(
       100,
