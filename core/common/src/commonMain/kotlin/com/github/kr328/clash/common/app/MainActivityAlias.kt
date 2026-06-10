@@ -19,3 +19,11 @@ fun tabbyMainActivityAliasFromLauncherActivities(
     .firstOrNull { it.targetActivity == mainActivityName }
     ?.let { TabbyActivityComponentSpec(packageName = it.packageName, name = it.name) }
 }
+
+fun tabbyMainActivityAliasHiddenByDefault(
+  componentState: Int,
+  enabledState: Int,
+  defaultState: Int,
+): Boolean {
+  return componentState != enabledState && componentState != defaultState
+}

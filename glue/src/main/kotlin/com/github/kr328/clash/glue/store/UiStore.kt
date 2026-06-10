@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.pm.PackageManager
 import com.github.kr328.clash.common.Global
+import com.github.kr328.clash.common.app.tabbyMainActivityAliasHiddenByDefault
 import com.github.kr328.clash.common.store.Store
 import com.github.kr328.clash.common.store.StoreProvider
 import com.github.kr328.clash.common.store.asStoreProvider
@@ -65,8 +66,11 @@ class UiStore(context: Context) {
       key = "hide_app_icon",
       defaultValue =
         context.packageManager.getComponentEnabledSetting(context.mainActivityAlias).let { state ->
-          state != PackageManager.COMPONENT_ENABLED_STATE_ENABLED &&
-            state != PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+          tabbyMainActivityAliasHiddenByDefault(
+            componentState = state,
+            enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+          )
         },
     )
 

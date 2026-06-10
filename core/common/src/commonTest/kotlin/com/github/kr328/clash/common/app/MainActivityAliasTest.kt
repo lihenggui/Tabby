@@ -2,7 +2,9 @@ package com.github.kr328.clash.common.app
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class MainActivityAliasTest {
   @Test
@@ -72,6 +74,38 @@ class MainActivityAliasTest {
       )
     )
   }
+
+  @Test
+  fun treatsEnabledAndDefaultComponentStatesAsVisibleByDefault() {
+    assertFalse(
+      tabbyMainActivityAliasHiddenByDefault(
+        componentState = ENABLED_COMPONENT_STATE,
+        enabledState = ENABLED_COMPONENT_STATE,
+        defaultState = DEFAULT_COMPONENT_STATE,
+      )
+    )
+    assertFalse(
+      tabbyMainActivityAliasHiddenByDefault(
+        componentState = DEFAULT_COMPONENT_STATE,
+        enabledState = ENABLED_COMPONENT_STATE,
+        defaultState = DEFAULT_COMPONENT_STATE,
+      )
+    )
+  }
+
+  @Test
+  fun treatsOtherComponentStatesAsHiddenByDefault() {
+    assertTrue(
+      tabbyMainActivityAliasHiddenByDefault(
+        componentState = DISABLED_COMPONENT_STATE,
+        enabledState = ENABLED_COMPONENT_STATE,
+        defaultState = DEFAULT_COMPONENT_STATE,
+      )
+    )
+  }
 }
 
 private const val MAIN_ACTIVITY_NAME = "com.github.kr328.clash.app.MainActivity"
+private const val DEFAULT_COMPONENT_STATE = 0
+private const val ENABLED_COMPONENT_STATE = 1
+private const val DISABLED_COMPONENT_STATE = 2
