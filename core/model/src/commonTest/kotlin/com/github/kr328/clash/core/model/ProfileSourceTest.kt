@@ -106,4 +106,44 @@ class ProfileSourceTest {
       )
     )
   }
+
+  @Test
+  fun profileConfigurationFetchAcceptsOnlyHttpSourcesThatAreForcedOrUncached() {
+    assertTrue(
+      profileShouldFetchConfiguration(
+        source = "https://example.com/config.yaml",
+        force = false,
+        cachedConfigurationExists = false,
+      )
+    )
+    assertTrue(
+      profileShouldFetchConfiguration(
+        source = "HTTP://example.com/config.yaml",
+        force = true,
+        cachedConfigurationExists = true,
+      )
+    )
+
+    assertFalse(
+      profileShouldFetchConfiguration(
+        source = "https://example.com/config.yaml",
+        force = false,
+        cachedConfigurationExists = true,
+      )
+    )
+    assertFalse(
+      profileShouldFetchConfiguration(
+        source = "content://profiles/config.yaml",
+        force = true,
+        cachedConfigurationExists = false,
+      )
+    )
+    assertFalse(
+      profileShouldFetchConfiguration(
+        source = "",
+        force = true,
+        cachedConfigurationExists = false,
+      )
+    )
+  }
 }

@@ -13,6 +13,14 @@ fun profileShouldFetchSubscriptionUserInfo(type: Profile.Type, source: String): 
   return type == Profile.Type.Url && isHttpsProfileSource(source)
 }
 
+fun profileShouldFetchConfiguration(
+  source: String,
+  force: Boolean,
+  cachedConfigurationExists: Boolean,
+): Boolean {
+  return isHttpProfileSource(source) && (force || !cachedConfigurationExists)
+}
+
 fun isSupportedProfileSourceScheme(scheme: String?): Boolean {
   return scheme.equals("https", ignoreCase = true) ||
     scheme.equals("http", ignoreCase = true) ||

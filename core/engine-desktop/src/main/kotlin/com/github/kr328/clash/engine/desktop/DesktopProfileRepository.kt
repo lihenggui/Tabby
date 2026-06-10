@@ -6,6 +6,7 @@ import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
+import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -286,7 +287,7 @@ class DesktopProfileRepository(
     force: Boolean,
   ): ProfileFetchResult? {
     val config = profileDir.resolve(CONFIGURATION_FILE)
-    if (!isHttpProfileSource(source) || (!force && config.exists())) return null
+    if (!profileShouldFetchConfiguration(source, force, config.exists())) return null
 
     return networkClient.fetchProfile(source).also { result ->
       profileDir.createDirectories()
