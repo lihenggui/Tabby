@@ -14,6 +14,8 @@ import com.github.kr328.clash.common.network.TABBY_NETWORK_SATELLITE_TRANSPORT_M
 import com.github.kr328.clash.common.network.TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
 import com.github.kr328.clash.common.network.TabbyNetworkTransportState
 import com.github.kr328.clash.common.network.tabbyNetworkObservePriority
+import com.github.kr328.clash.common.network.tabbyNetworkSupportsSatelliteTransport
+import com.github.kr328.clash.common.network.tabbyNetworkSupportsUsbTransport
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.service.util.asSocketAddressText
 import java.net.InetAddress
@@ -138,12 +140,12 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
 
   @ChecksSdkIntAtLeast(api = TABBY_NETWORK_USB_TRANSPORT_MIN_SDK)
   private fun supportsUsbNetworkTransport(): Boolean {
-    return Build.VERSION.SDK_INT >= TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
+    return tabbyNetworkSupportsUsbTransport(Build.VERSION.SDK_INT)
   }
 
   @ChecksSdkIntAtLeast(api = TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK)
   private fun supportsSatelliteNetworkTransport(): Boolean {
-    return Build.VERSION.SDK_INT >= TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK
+    return tabbyNetworkSupportsSatelliteTransport(Build.VERSION.SDK_INT)
   }
 
   private fun notifyDnsChange() {

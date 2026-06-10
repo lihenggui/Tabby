@@ -24,13 +24,21 @@ fun tabbyNetworkObservePriority(
       transportState.hasVpnTransport -> 90
       transportState.hasWifiTransport -> 0
       transportState.hasEthernetTransport -> 1
-      platformSdk >= TABBY_NETWORK_USB_TRANSPORT_MIN_SDK && transportState.hasUsbTransport -> 2
+      tabbyNetworkSupportsUsbTransport(platformSdk) && transportState.hasUsbTransport -> 2
       transportState.hasBluetoothTransport -> 3
       transportState.hasCellularTransport -> 4
-      platformSdk >= TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK &&
-        transportState.hasSatelliteTransport -> 5
+      tabbyNetworkSupportsSatelliteTransport(platformSdk) && transportState.hasSatelliteTransport ->
+        5
       else -> 20
     }
 
   return transportPriority + if (isAvailable) 0 else 10
+}
+
+fun tabbyNetworkSupportsUsbTransport(platformSdk: Int): Boolean {
+  return platformSdk >= TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
+}
+
+fun tabbyNetworkSupportsSatelliteTransport(platformSdk: Int): Boolean {
+  return platformSdk >= TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK
 }
