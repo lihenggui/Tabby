@@ -1,5 +1,6 @@
 package com.github.kr328.clash.common.network
 
+import com.github.kr328.clash.common.util.IPNet
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -110,6 +111,53 @@ class TunPlatformRulesTest {
         dns = "0.0.0.0",
       ),
       tabbyTunDeviceText(allowIpv6 = true, dnsHijacking = true),
+    )
+  }
+
+  @Test
+  fun returnsIpv4OnlyBypassPrivateRoutesWhenIpv6IsDisabled() {
+    val routes = tabbyTunBypassPrivateRoutes(allowIpv6 = false)
+
+    assertEquals(74, routes.size)
+    assertEquals(IPNet.parse("1.0.0.0/8"), routes.first())
+    assertEquals(IPNet.parse("255.255.255.254/32"), routes.last())
+  }
+
+  @Test
+  fun appendsIpv6BypassPrivateRoutesWhenIpv6IsAllowed() {
+    val routes = tabbyTunBypassPrivateRoutes(allowIpv6 = true)
+
+    assertEquals(82, routes.size)
+    assertEquals(IPNet.parse("::/1"), routes[74])
+    assertEquals(IPNet.parse("fec0::/10"), routes.last())
+  }
+
+  @Test
+  fun buildsHttpProxyExclusionListFromBypassPrivateNetworkSetting() {
+    val remoteExclusions =
+      listOf("*zhihu.com", "*zhimg.com", "*jd.com", "100ime-iat-api.xfyun.cn", "*360buyimg.com")
+
+    assertEquals(
+      remoteExclusions,
+      tabbyTunHttpProxyExclusionList(bypassPrivateNetwork = false),
+    )
+    assertEquals(
+      remoteExclusions +
+        listOf(
+          "localhost",
+          "*.local",
+          "127.*",
+          "10.*",
+          "172.16.*",
+          "172.17.*",
+          "172.18.*",
+          "172.19.*",
+          "172.2*",
+          "172.30.*",
+          "172.31.*",
+          "192.168.*",
+        ),
+      tabbyTunHttpProxyExclusionList(bypassPrivateNetwork = true),
     )
   }
 }
