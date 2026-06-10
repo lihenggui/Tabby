@@ -6,7 +6,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
+import com.github.kr328.clash.common.compat.TABBY_SERIALIZABLE_EXTRA_TYPED_API_MIN_SDK
 import com.github.kr328.clash.common.compat.queryIntentActivitiesCompat
+import com.github.kr328.clash.common.compat.tabbySerializableExtraUsesTypedApi
 import com.github.kr328.clash.common.di.AppInfoProvider.Companion.instance as appInfoProvider
 import java.io.Serializable
 import kotlin.uuid.Uuid
@@ -64,7 +67,12 @@ fun Intent.setUUID(uuid: Uuid): Intent = apply { this.uuid = uuid }
 
 inline fun <reified T : Serializable> Intent.getSerializableCompat(key: String): T? =
   when {
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
-      getSerializableExtra(key, T::class.java)
+    usesTypedSerializableExtraApi() -> getSerializableExtra(key, T::class.java)
     else -> @Suppress("DEPRECATION") getSerializableExtra(key) as? T
   }
+
+@PublishedApi
+@ChecksSdkIntAtLeast(api = TABBY_SERIALIZABLE_EXTRA_TYPED_API_MIN_SDK)
+internal fun usesTypedSerializableExtraApi(): Boolean {
+  return tabbySerializableExtraUsesTypedApi(Build.VERSION.SDK_INT)
+}
