@@ -3,7 +3,9 @@ package com.github.kr328.clash.service
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpsProfileSource
+import com.github.kr328.clash.core.model.profileFromStoredProfileState
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -214,30 +216,12 @@ class ProfileManager(private val context: Context) :
     val imported = ImportedDao().queryByUUID(uuid)
     val pending = PendingDao().queryByUUID(uuid)
 
-    val active = store.activeProfile
-    val name = pending?.name ?: imported?.name ?: return null
-    val type = pending?.type ?: imported?.type ?: return null
-    val source = pending?.source ?: imported?.source ?: return null
-    val interval = pending?.interval ?: imported?.interval ?: return null
-    val upload = pending?.upload ?: imported?.upload ?: return null
-    val download = pending?.download ?: imported?.download ?: return null
-    val total = pending?.total ?: imported?.total ?: return null
-    val expire = pending?.expire ?: imported?.expire ?: return null
-
-    return Profile(
-      uuid,
-      name,
-      type,
-      source,
-      active != null && imported?.uuid == active,
-      interval,
-      upload,
-      download,
-      total,
-      expire,
-      resolveUpdatedAt(uuid),
-      imported != null,
-      pending != null,
+    return profileFromStoredProfileState(
+      uuid = uuid,
+      imported = imported?.toStoredProfile(),
+      pending = pending?.toStoredProfile(),
+      activeProfile = store.activeProfile,
+      updatedAt = resolveUpdatedAt(uuid),
     )
   }
 
@@ -271,4 +255,30 @@ class ProfileManager(private val context: Context) :
 
 private val json = Json {
   ignoreUnknownKeys = true
+}
+
+private fun Imported.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun Pending.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
 }
