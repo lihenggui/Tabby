@@ -3,9 +3,13 @@ package com.github.kr328.clash.common.document
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 
 class DocumentProviderRuleTest {
+  private val uuid = Uuid.parse("00000000-0000-0000-0000-000000000001")
+
   @Test
   fun nullOpenModeRequestsWriteByDefault() {
     assertTrue(tabbyDocumentOpenModeRequestsWrite(null))
@@ -118,6 +122,33 @@ class DocumentProviderRuleTest {
   @Test
   fun documentIdIsNotChildWhenItDoesNotStartWithParentDocumentId() {
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = "/other", documentId = "/profile/file"))
+  }
+
+  @Test
+  fun renamedDocumentIdReplacesLastRelativeSegment() {
+    val path =
+      Path(
+        uuid = uuid,
+        scope = Path.Scope.Providers,
+        relative = listOf("rules", "old.yaml"),
+      )
+
+    assertEquals(
+      "/$uuid/${Paths.PROVIDERS_ID}/rules/new.yaml",
+      tabbyRenamedDocumentId(path, "new.yaml"),
+    )
+  }
+
+  @Test
+  fun renamedDocumentIdRejectsNonRelativePaths() {
+    assertNull(tabbyRenamedDocumentId(Path(uuid = null, scope = null, relative = null), "new.yaml"))
+    assertNull(tabbyRenamedDocumentId(Path(uuid = uuid, scope = null, relative = null), "new.yaml"))
+    assertNull(
+      tabbyRenamedDocumentId(
+        Path(uuid = uuid, scope = Path.Scope.Providers, relative = null),
+        "new.yaml",
+      )
+    )
   }
 }
 

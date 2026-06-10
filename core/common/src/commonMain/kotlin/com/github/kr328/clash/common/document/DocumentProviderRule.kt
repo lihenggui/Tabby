@@ -51,3 +51,9 @@ fun tabbyDocumentIdIsChild(parentDocumentId: String?, documentId: String?): Bool
 
   return documentId.startsWith(parentDocumentId)
 }
+
+fun tabbyRenamedDocumentId(path: Path, displayName: String): String? {
+  val relative = path.relative ?: return null
+
+  return path.copy(relative = relative.dropLast(1) + displayName).toString()
+}

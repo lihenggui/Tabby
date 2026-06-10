@@ -13,6 +13,7 @@ import com.github.kr328.clash.common.document.tabbyDocumentIdIsChild
 import com.github.kr328.clash.common.document.tabbyDocumentOpenModeRequestsWrite
 import com.github.kr328.clash.common.document.tabbyDocumentPlatformFlags
 import com.github.kr328.clash.common.document.tabbyDocumentProviderRootFlags
+import com.github.kr328.clash.common.document.tabbyRenamedDocumentId
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
 import com.github.kr328.clash.service.document.Document
@@ -91,7 +92,7 @@ class FilesProvider : DocumentsProvider() {
     return runBlocking {
       val path = Paths.resolve(documentId ?: "/")
 
-      val relative = path.relative ?: throw IllegalArgumentException("unable to rename $documentId")
+      if (path.relative == null) throw IllegalArgumentException("unable to rename $documentId")
 
       val document = picker.pick(path, true)
 
@@ -105,7 +106,7 @@ class FilesProvider : DocumentsProvider() {
 
       document.file.renameTo(parent.resolve(name))
 
-      path.copy(relative = relative.dropLast(1) + name).toString()
+      tabbyRenamedDocumentId(path, name) ?: throw IllegalArgumentException("unable to rename $path")
     }
   }
 
