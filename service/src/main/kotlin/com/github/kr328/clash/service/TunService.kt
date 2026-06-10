@@ -25,6 +25,7 @@ import com.github.kr328.clash.common.network.tabbyTunDeviceText
 import com.github.kr328.clash.common.network.tabbyTunHttpProxyExclusionList
 import com.github.kr328.clash.common.network.tabbyTunShouldSetUnderlyingNetworks
 import com.github.kr328.clash.common.util.mainIntent
+import com.github.kr328.clash.core.model.accessControlPackagePlan
 import com.github.kr328.clash.service.clash.clashRuntime
 import com.github.kr328.clash.service.clash.module.AppListCacheModule
 import com.github.kr328.clash.service.clash.module.CloseModule
@@ -170,21 +171,20 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
           }
         }
 
-        // Access Control
-        when (store.accessControlMode) {
-          AcceptAll -> Unit
-          AcceptSelected -> {
-            (store.accessControlPackages + packageName).forEach {
-              runCatching { addAllowedApplication(it) }
-                .onFailure { e -> Log.e("Add allowed application $it failed: ${e.message}", e) }
-            }
-          }
-          DenySelected -> {
-            (store.accessControlPackages - packageName).forEach {
-              runCatching { addDisallowedApplication(it) }
-                .onFailure { e -> Log.e("Add disallowed application $it failed: ${e.message}", e) }
-            }
-          }
+        val accessControlPlan =
+          accessControlPackagePlan(
+            mode = store.accessControlMode,
+            selectedPackages = store.accessControlPackages,
+            ownPackageName = packageName,
+          )
+
+        accessControlPlan.allowedPackages.forEach {
+          runCatching { addAllowedApplication(it) }
+            .onFailure { e -> Log.e("Add allowed application $it failed: ${e.message}", e) }
+        }
+        accessControlPlan.disallowedPackages.forEach {
+          runCatching { addDisallowedApplication(it) }
+            .onFailure { e -> Log.e("Add disallowed application $it failed: ${e.message}", e) }
         }
 
         // Blocking
