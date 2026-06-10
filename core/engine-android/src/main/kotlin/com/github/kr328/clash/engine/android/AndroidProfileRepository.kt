@@ -3,6 +3,8 @@ package com.github.kr328.clash.engine.android
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.engine.api.ProfileRepository
+import com.github.kr328.clash.engine.api.ProfileRepositoryBroadcastEventKind
+import com.github.kr328.clash.engine.api.profileRepositoryRequiresProfileSnapshotRefreshFromPlatformPayload
 import com.github.kr328.clash.glue.remote.Broadcasts
 import com.github.kr328.clash.glue.remote.Remote
 import com.github.kr328.clash.glue.util.withProfile
@@ -73,10 +75,21 @@ class AndroidProfileRepository : ProfileRepository {
 }
 
 internal fun Broadcasts.Event.requiresProfileSnapshotRefresh(): Boolean =
+  profileRepositoryRequiresProfileSnapshotRefreshFromPlatformPayload(
+    event = this,
+    kind = Broadcasts.Event::profileRepositoryBroadcastEventKind,
+  )
+
+private fun Broadcasts.Event.profileRepositoryBroadcastEventKind():
+  ProfileRepositoryBroadcastEventKind =
   when (this) {
-    is Broadcasts.Event.ProfileChanged,
-    is Broadcasts.Event.ProfileLoaded,
-    is Broadcasts.Event.ProfileUpdateCompleted,
-    is Broadcasts.Event.ProfileUpdateFailed -> true
-    else -> false
+    Broadcasts.Event.ServiceRecreated -> ProfileRepositoryBroadcastEventKind.ServiceRecreated
+    Broadcasts.Event.Started -> ProfileRepositoryBroadcastEventKind.Started
+    is Broadcasts.Event.Stopped -> ProfileRepositoryBroadcastEventKind.Stopped
+    Broadcasts.Event.ProfileChanged -> ProfileRepositoryBroadcastEventKind.ProfileChanged
+    is Broadcasts.Event.ProfileUpdateCompleted ->
+      ProfileRepositoryBroadcastEventKind.ProfileUpdateCompleted
+    is Broadcasts.Event.ProfileUpdateFailed ->
+      ProfileRepositoryBroadcastEventKind.ProfileUpdateFailed
+    Broadcasts.Event.ProfileLoaded -> ProfileRepositoryBroadcastEventKind.ProfileLoaded
   }
