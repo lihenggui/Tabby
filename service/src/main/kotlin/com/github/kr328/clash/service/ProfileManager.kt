@@ -4,11 +4,11 @@ import android.content.Context
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.StoredProfile
-import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.profileClonedPendingProfile
 import com.github.kr328.clash.core.model.profileCreatedPendingProfile
 import com.github.kr328.clash.core.model.profileFromStoredProfileState
 import com.github.kr328.clash.core.model.profilePatchedPendingProfile
+import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
 import com.github.kr328.clash.core.model.profileUpdatedImportedProfile
 import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
@@ -115,7 +115,7 @@ class ProfileManager(private val context: Context) :
   override suspend fun update(uuid: Uuid) {
     scheduleUpdate(uuid, true)
     ImportedDao().queryByUUID(uuid)?.let {
-      if (it.type == Profile.Type.Url && isHttpsProfileSource(it.source)) {
+      if (profileShouldFetchSubscriptionUserInfo(it.type, it.source)) {
         updateFlow(it)
       }
     }

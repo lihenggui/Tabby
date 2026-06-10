@@ -64,4 +64,46 @@ class ProfileSourceTest {
     assertFalse(isSupportedProfileSourceScheme(" "))
     assertFalse(isSupportedProfileSourceScheme("file"))
   }
+
+  @Test
+  fun profileSubscriptionUserInfoFetchAcceptsOnlyUrlHttpsSources() {
+    assertTrue(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.Url,
+        source = "https://example.com/config.yaml",
+      )
+    )
+    assertTrue(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.Url,
+        source = "HTTPS://example.com/config.yaml",
+      )
+    )
+
+    assertFalse(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.Url,
+        source = "http://example.com/config.yaml",
+      )
+    )
+    assertFalse(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.Url,
+        source = "content://profiles/config.yaml",
+      )
+    )
+    assertFalse(profileShouldFetchSubscriptionUserInfo(type = Profile.Type.Url, source = ""))
+    assertFalse(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.File,
+        source = "https://example.com/config.yaml",
+      )
+    )
+    assertFalse(
+      profileShouldFetchSubscriptionUserInfo(
+        type = Profile.Type.External,
+        source = "https://example.com/config.yaml",
+      )
+    )
+  }
 }

@@ -9,11 +9,11 @@ import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpProfileSource
-import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
 import com.github.kr328.clash.core.model.profileAppliedImportedProfile
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
+import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
@@ -92,7 +92,7 @@ object ProfileProcessor {
 
             val old = ImportedDao().queryByUUID(snapshot.uuid)
             val subscriptionUserInfo =
-              if (snapshot.type == Profile.Type.Url && isHttpsProfileSource(snapshot.source)) {
+              if (profileShouldFetchSubscriptionUserInfo(snapshot.type, snapshot.source)) {
                 fetchedProfile?.subscriptionUserInfo
                   ?: context.fetchSubscriptionUserInfo(snapshot.source)
               } else {

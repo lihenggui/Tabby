@@ -9,6 +9,10 @@ fun isHttpsProfileSource(source: String): Boolean {
   return source.startsWith("https://", ignoreCase = true)
 }
 
+fun profileShouldFetchSubscriptionUserInfo(type: Profile.Type, source: String): Boolean {
+  return type == Profile.Type.Url && isHttpsProfileSource(source)
+}
+
 fun isSupportedProfileSourceScheme(scheme: String?): Boolean {
   return scheme.equals("https", ignoreCase = true) ||
     scheme.equals("http", ignoreCase = true) ||
