@@ -3,6 +3,8 @@ package com.github.kr328.clash.service
 import android.content.Context
 import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.service.TabbySelectorPersistenceAction
+import com.github.kr328.clash.common.service.tabbySelectorPersistenceAction
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.LogMessage
@@ -65,10 +67,13 @@ class ClashManager(private val context: Context) :
 
       Global.launch {
         try {
-          if (it) {
-            SelectionDao().setSelected(Selection(current, group, name))
-          } else {
-            SelectionDao().removeSelected(current, group)
+          when (tabbySelectorPersistenceAction(selectorPatched = it)) {
+            TabbySelectorPersistenceAction.PersistSelection -> {
+              SelectionDao().setSelected(Selection(current, group, name))
+            }
+            TabbySelectorPersistenceAction.RemoveSelection -> {
+              SelectionDao().removeSelected(current, group)
+            }
           }
         } catch (e: Exception) {
           Log.w("Persist selector failed", e)
