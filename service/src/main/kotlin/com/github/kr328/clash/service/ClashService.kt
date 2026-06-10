@@ -5,7 +5,9 @@ import android.os.Binder
 import android.os.IBinder
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.service.TabbyServiceCreateAction
+import com.github.kr328.clash.common.service.TabbyServiceNotificationMode
 import com.github.kr328.clash.common.service.tabbyServiceCreateAction
+import com.github.kr328.clash.common.service.tabbyServiceNotificationMode
 import com.github.kr328.clash.service.clash.clashRuntime
 import com.github.kr328.clash.service.clash.module.AppListCacheModule
 import com.github.kr328.clash.service.clash.module.CloseModule
@@ -37,8 +39,10 @@ class ClashService : BaseService() {
     val config = install(ConfigurationModule(self))
     val network = install(NetworkObserveModule(self))
 
-    if (store.dynamicNotification) install(DynamicNotificationModule(self))
-    else install(StaticNotificationModule(self))
+    when (tabbyServiceNotificationMode(store.dynamicNotification)) {
+      TabbyServiceNotificationMode.Dynamic -> install(DynamicNotificationModule(self))
+      TabbyServiceNotificationMode.Static -> install(StaticNotificationModule(self))
+    }
 
     install(AppListCacheModule(self))
     install(TimeZoneModule(self))
