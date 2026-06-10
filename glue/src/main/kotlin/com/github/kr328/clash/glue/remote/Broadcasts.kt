@@ -8,6 +8,9 @@ import android.content.IntentFilter
 import com.github.kr328.clash.common.compat.registerReceiverCompat
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.remote.TabbyRemoteBroadcastAction
+import com.github.kr328.clash.common.remote.tabbyRemoteBroadcastActionFromPlatformAction
+import com.github.kr328.clash.common.remote.tabbyRemoteBroadcastClashRunningState
 import com.github.kr328.clash.common.util.getSerializableCompat
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,34 +51,50 @@ class Broadcasts(private val context: Application) {
   private val broadcastReceiver =
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.`package` != context?.packageName) return
+        val receivedContext = context ?: return
+        val receivedIntent = intent ?: return
+        if (receivedIntent.`package` != receivedContext.packageName) return
 
-        when (intent?.action) {
-          Intents.ACTION_SERVICE_RECREATED -> {
-            clashRunning = false
+        val broadcastAction =
+          tabbyRemoteBroadcastActionFromPlatformAction(
+            action = receivedIntent.action,
+            serviceRecreatedAction = Intents.ACTION_SERVICE_RECREATED,
+            clashStartedAction = Intents.ACTION_CLASH_STARTED,
+            clashStoppedAction = Intents.ACTION_CLASH_STOPPED,
+            profileChangedAction = Intents.ACTION_PROFILE_CHANGED,
+            profileUpdateCompletedAction = Intents.ACTION_PROFILE_UPDATE_COMPLETED,
+            profileUpdateFailedAction = Intents.ACTION_PROFILE_UPDATE_FAILED,
+            profileLoadedAction = Intents.ACTION_PROFILE_LOADED,
+          )
+
+        broadcastAction?.let { action ->
+          tabbyRemoteBroadcastClashRunningState(action)?.let { clashRunning = it }
+        }
+
+        when (broadcastAction) {
+          TabbyRemoteBroadcastAction.ServiceRecreated -> {
             event.tryEmit(Event.ServiceRecreated)
           }
-          Intents.ACTION_CLASH_STARTED -> {
-            clashRunning = true
+          TabbyRemoteBroadcastAction.ClashStarted -> {
             event.tryEmit(Event.Started)
           }
-          Intents.ACTION_CLASH_STOPPED -> {
-            clashRunning = false
-            event.tryEmit(Event.Stopped(intent.getStringExtra(Intents.EXTRA_STOP_REASON)))
+          TabbyRemoteBroadcastAction.ClashStopped -> {
+            event.tryEmit(Event.Stopped(receivedIntent.getStringExtra(Intents.EXTRA_STOP_REASON)))
           }
-          Intents.ACTION_PROFILE_CHANGED -> event.tryEmit(Event.ProfileChanged)
-          Intents.ACTION_PROFILE_UPDATE_COMPLETED ->
+          TabbyRemoteBroadcastAction.ProfileChanged -> event.tryEmit(Event.ProfileChanged)
+          TabbyRemoteBroadcastAction.ProfileUpdateCompleted ->
             event.tryEmit(
-              Event.ProfileUpdateCompleted(intent.getSerializableCompat(Intents.EXTRA_UUID))
+              Event.ProfileUpdateCompleted(receivedIntent.getSerializableCompat(Intents.EXTRA_UUID))
             )
-          Intents.ACTION_PROFILE_UPDATE_FAILED ->
+          TabbyRemoteBroadcastAction.ProfileUpdateFailed ->
             event.tryEmit(
               Event.ProfileUpdateFailed(
-                intent.getSerializableCompat(Intents.EXTRA_UUID),
-                intent.getStringExtra(Intents.EXTRA_FAIL_REASON),
+                receivedIntent.getSerializableCompat(Intents.EXTRA_UUID),
+                receivedIntent.getStringExtra(Intents.EXTRA_FAIL_REASON),
               )
             )
-          Intents.ACTION_PROFILE_LOADED -> event.tryEmit(Event.ProfileLoaded)
+          TabbyRemoteBroadcastAction.ProfileLoaded -> event.tryEmit(Event.ProfileLoaded)
+          null -> Unit
         }
       }
     }
