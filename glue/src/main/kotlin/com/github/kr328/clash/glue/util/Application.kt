@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import com.github.kr328.clash.common.app.tabbyApkHasSupportedClashNativeLibrary
 import com.github.kr328.clash.common.log.Log
 import java.io.File
 import java.util.zip.ZipFile
@@ -71,18 +72,18 @@ fun Context.verifyApk(): Boolean {
     val info = applicationInfo
     val sources = info.splitSourceDirs ?: arrayOf(info.sourceDir) ?: return false
 
-    val regexNativeLibrary = "lib/(\\S+)/libclash.so".toRegex()
     val availableAbi = Build.SUPPORTED_ABIS.toSet()
-    val apkAbi =
+    val apkEntryNames =
       sources
         .asSequence()
         .filter { File(it).exists() }
         .flatMap { ZipFile(it).entries().asSequence() }
-        .mapNotNull { regexNativeLibrary.matchEntire(it.name) }
-        .mapNotNull { it.groups[1]?.value }
-        .toSet()
+        .map { it.name }
 
-    availableAbi.intersect(apkAbi).isNotEmpty()
+    tabbyApkHasSupportedClashNativeLibrary(
+      supportedAbis = availableAbi,
+      apkEntryNames = apkEntryNames,
+    )
   } catch (e: Exception) {
     Log.e("Verify apk failed: ${e.message}", e)
     false

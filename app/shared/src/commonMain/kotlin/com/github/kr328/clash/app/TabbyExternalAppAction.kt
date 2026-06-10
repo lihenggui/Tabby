@@ -1,0 +1,91 @@
+package com.github.kr328.clash.app
+
+import kotlin.uuid.Uuid
+
+sealed interface TabbyExternalAppAction {
+  data class InstallProfile(val requestAvailable: Boolean) : TabbyExternalAppAction
+
+  data class OpenProfileProperties(val uuid: Uuid?) : TabbyExternalAppAction
+
+  data object OpenLogs : TabbyExternalAppAction
+
+  data object OpenAppCrashed : TabbyExternalAppAction
+
+  data object OpenApkBroken : TabbyExternalAppAction
+}
+
+sealed interface TabbyExternalAppActionPlan {
+  data object InstallProfile : TabbyExternalAppActionPlan
+
+  data class OpenRoute(val routeAction: TabbyExternalRouteAction) : TabbyExternalAppActionPlan
+
+  data object Ignore : TabbyExternalAppActionPlan
+}
+
+enum class TabbyInitialExternalAppQueueAction {
+  Enqueue,
+  Ignore,
+}
+
+enum class TabbyExternalAppDispatchAction {
+  DispatchToConsumer,
+  Queue,
+}
+
+fun tabbyExternalAppActionFromString(
+  action: String?,
+  requestAvailable: Boolean,
+  profilePropertiesUuid: Uuid?,
+  installProfileAction: String,
+  profilePropertiesAction: String,
+  logsAction: String,
+  appCrashedAction: String,
+  apkBrokenAction: String,
+): TabbyExternalAppAction? =
+  when (action) {
+    installProfileAction -> TabbyExternalAppAction.InstallProfile(requestAvailable)
+    profilePropertiesAction -> TabbyExternalAppAction.OpenProfileProperties(profilePropertiesUuid)
+    logsAction -> TabbyExternalAppAction.OpenLogs
+    appCrashedAction -> TabbyExternalAppAction.OpenAppCrashed
+    apkBrokenAction -> TabbyExternalAppAction.OpenApkBroken
+    else -> null
+  }
+
+fun tabbyExternalAppActionPlan(action: TabbyExternalAppAction?): TabbyExternalAppActionPlan =
+  when (action) {
+    is TabbyExternalAppAction.InstallProfile ->
+      if (action.requestAvailable) {
+        TabbyExternalAppActionPlan.InstallProfile
+      } else {
+        TabbyExternalAppActionPlan.Ignore
+      }
+    is TabbyExternalAppAction.OpenProfileProperties ->
+      action.uuid?.let {
+        TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenProfileProperties(it))
+      } ?: TabbyExternalAppActionPlan.Ignore
+    TabbyExternalAppAction.OpenLogs ->
+      TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenLogs)
+    TabbyExternalAppAction.OpenAppCrashed ->
+      TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenAppCrashed)
+    TabbyExternalAppAction.OpenApkBroken ->
+      TabbyExternalAppActionPlan.OpenRoute(TabbyExternalRouteAction.OpenApkBroken)
+    null -> TabbyExternalAppActionPlan.Ignore
+  }
+
+fun tabbyInitialExternalAppQueueAction(
+  savedStateRestored: Boolean
+): TabbyInitialExternalAppQueueAction {
+  return if (savedStateRestored) {
+    TabbyInitialExternalAppQueueAction.Ignore
+  } else {
+    TabbyInitialExternalAppQueueAction.Enqueue
+  }
+}
+
+fun tabbyExternalAppDispatchAction(consumerAvailable: Boolean): TabbyExternalAppDispatchAction {
+  return if (consumerAvailable) {
+    TabbyExternalAppDispatchAction.DispatchToConsumer
+  } else {
+    TabbyExternalAppDispatchAction.Queue
+  }
+}

@@ -3,7 +3,10 @@ package com.github.kr328.clash.service.clash.module
 import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.core.content.getSystemService
+import com.github.kr328.clash.common.network.TABBY_TUN_CONNECTION_OWNER_UID_MIN_SDK
+import com.github.kr328.clash.common.network.tabbyTunCanQueryConnectionOwnerUid
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.util.parseInetSocketAddress
 import java.net.InetSocketAddress
@@ -25,10 +28,15 @@ class TunModule(private val vpn: VpnService) : Module<Unit>(vpn) {
   private val close = Channel<Unit>(Channel.CONFLATED)
 
   private fun queryUid(protocol: Int, source: InetSocketAddress, target: InetSocketAddress): Int {
-    if (Build.VERSION.SDK_INT < 29) return -1
+    if (!canQueryConnectionOwnerUid()) return -1
 
     return runCatching { connectivity.getConnectionOwnerUid(protocol, source, target) }
       .getOrElse { -1 }
+  }
+
+  @ChecksSdkIntAtLeast(api = TABBY_TUN_CONNECTION_OWNER_UID_MIN_SDK)
+  private fun canQueryConnectionOwnerUid(): Boolean {
+    return tabbyTunCanQueryConnectionOwnerUid(Build.VERSION.SDK_INT)
   }
 
   override suspend fun run() {

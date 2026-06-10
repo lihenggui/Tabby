@@ -7,7 +7,7 @@ import androidx.room3.RoomDatabase
 import androidx.room3.TypeConverter
 import androidx.room3.TypeConverters
 import com.github.kr328.clash.common.Global
-import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.core.model.Profile
 import java.lang.ref.SoftReference
 import kotlin.uuid.Uuid
 

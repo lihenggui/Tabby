@@ -2,12 +2,20 @@ package com.github.kr328.clash.service
 
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
-import com.github.kr328.clash.service.data.Database
+import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.StoredProfile
+import com.github.kr328.clash.core.model.profileClonedPendingProfile
+import com.github.kr328.clash.core.model.profileCreatedPendingProfile
+import com.github.kr328.clash.core.model.profileFromStoredProfileState
+import com.github.kr328.clash.core.model.profilePatchedPendingProfile
+import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
+import com.github.kr328.clash.core.model.profileUpdatedImportedProfile
+import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
-import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.data.ProfileDatabaseMigration
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.remote.IProfileManager
 import com.github.kr328.clash.service.store.ServiceStore
@@ -23,6 +31,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ProfileManager(private val context: Context) :
   IProfileManager, CoroutineScope by CoroutineScope(Dispatchers.IO) {
@@ -30,7 +40,7 @@ class ProfileManager(private val context: Context) :
 
   init {
     launch {
-      Database.database // .init
+      ProfileDatabaseMigration(context).migrateIfNeeded()
 
       ProfileReceiver.rescheduleAll(context)
     }
@@ -39,17 +49,7 @@ class ProfileManager(private val context: Context) :
   override suspend fun create(type: Profile.Type, name: String, source: String): Uuid {
     val uuid = generateProfileUUID()
     val pending =
-      Pending(
-        uuid = uuid,
-        name = name,
-        type = type,
-        source = source,
-        interval = 0,
-        upload = 0,
-        total = 0,
-        download = 0,
-        expire = 0,
-      )
+      profileCreatedPendingProfile(type = type, name = name, source = source).toPending(uuid)
 
     PendingDao().insert(pending)
 
@@ -70,18 +70,7 @@ class ProfileManager(private val context: Context) :
     val imported =
       ImportedDao().queryByUUID(uuid) ?: throw FileNotFoundException("profile $uuid not found")
 
-    val pending =
-      Pending(
-        uuid = newUUID,
-        name = imported.name,
-        type = Profile.Type.File,
-        source = imported.source,
-        interval = imported.interval,
-        upload = imported.upload,
-        total = imported.total,
-        download = imported.download,
-        expire = imported.expire,
-      )
+    val pending = profileClonedPendingProfile(imported.toStoredProfile()).toPending(newUUID)
 
     cloneImportedFiles(uuid, newUUID)
 
@@ -101,29 +90,23 @@ class ProfileManager(private val context: Context) :
 
       PendingDao()
         .insert(
-          Pending(
-            uuid = imported.uuid,
-            name = name,
-            type = imported.type,
-            source = source,
-            interval = interval,
-            upload = 0,
-            total = 0,
-            download = 0,
-            expire = 0,
-          )
+          profilePatchedPendingProfile(
+              current = imported.toStoredProfile(),
+              name = name,
+              source = source,
+              interval = interval,
+            )
+            .toPending(imported.uuid)
         )
     } else {
       val newPending =
-        pending.copy(
-          name = name,
-          source = source,
-          interval = interval,
-          upload = 0,
-          total = 0,
-          download = 0,
-          expire = 0,
-        )
+        profilePatchedPendingProfile(
+            current = pending.toStoredProfile(),
+            name = name,
+            source = source,
+            interval = interval,
+          )
+          .toPending(pending.uuid, createdAt = pending.createdAt)
 
       PendingDao().update(newPending)
     }
@@ -132,7 +115,7 @@ class ProfileManager(private val context: Context) :
   override suspend fun update(uuid: Uuid) {
     scheduleUpdate(uuid, true)
     ImportedDao().queryByUUID(uuid)?.let {
-      if (it.type == Profile.Type.Url && it.source.startsWith("https://", true)) {
+      if (profileShouldFetchSubscriptionUserInfo(it.type, it.source)) {
         updateFlow(it)
       }
     }
@@ -141,19 +124,13 @@ class ProfileManager(private val context: Context) :
   suspend fun updateFlow(old: Imported) {
     try {
       val userInfo = context.fetchSubscriptionUserInfo(old.source) ?: return
-      val new =
-        Imported(
-          old.uuid,
-          old.name,
-          old.type,
-          old.source,
-          old.interval,
-          userInfo.upload,
-          userInfo.download,
-          userInfo.total,
-          userInfo.expire,
-          old.createdAt,
+      val updated =
+        profileUpdatedImportedProfile(
+          imported = old.toStoredProfile(),
+          createdAt = old.createdAt,
+          subscriptionUserInfo = userInfo.toProfileSubscriptionUserInfo(),
         )
+      val new = updated.profile.toImported(old.uuid, updated.createdAt)
 
       ImportedDao().update(new)
 
@@ -180,61 +157,43 @@ class ProfileManager(private val context: Context) :
     ProfileProcessor.delete(context, uuid)
   }
 
-  override suspend fun queryByUUID(uuid: Uuid): Profile? {
-    return resolveProfile(uuid)
+  override suspend fun queryByUUID(uuid: Uuid): String? {
+    return resolveProfile(uuid)?.let { json.encodeToString(it) }
   }
 
-  override suspend fun queryAll(): List<Profile> {
+  override suspend fun queryAll(): String {
     val uuids =
       withContext(Dispatchers.IO) {
         (ImportedDao().queryAllUUIDs() + PendingDao().queryAllUUIDs()).distinct()
       }
 
-    return uuids.mapNotNull { resolveProfile(it) }
+    return json.encodeToString(uuids.mapNotNull { resolveProfile(it) })
   }
 
-  override suspend fun queryActive(): Profile? {
+  override suspend fun queryActive(): String? {
     val active = store.activeProfile ?: return null
 
     return if (ImportedDao().exists(active)) {
-      resolveProfile(active)
+      resolveProfile(active)?.let { json.encodeToString(it) }
     } else {
       null
     }
   }
 
-  override suspend fun setActive(profile: Profile) {
-    ProfileProcessor.active(context, profile.uuid)
+  override suspend fun setActive(uuid: Uuid) {
+    ProfileProcessor.active(context, uuid)
   }
 
   private suspend fun resolveProfile(uuid: Uuid): Profile? {
     val imported = ImportedDao().queryByUUID(uuid)
     val pending = PendingDao().queryByUUID(uuid)
 
-    val active = store.activeProfile
-    val name = pending?.name ?: imported?.name ?: return null
-    val type = pending?.type ?: imported?.type ?: return null
-    val source = pending?.source ?: imported?.source ?: return null
-    val interval = pending?.interval ?: imported?.interval ?: return null
-    val upload = pending?.upload ?: imported?.upload ?: return null
-    val download = pending?.download ?: imported?.download ?: return null
-    val total = pending?.total ?: imported?.total ?: return null
-    val expire = pending?.expire ?: imported?.expire ?: return null
-
-    return Profile(
-      uuid,
-      name,
-      type,
-      source,
-      active != null && imported?.uuid == active,
-      interval,
-      upload,
-      download,
-      total,
-      expire,
-      resolveUpdatedAt(uuid),
-      imported != null,
-      pending != null,
+    return profileFromStoredProfileState(
+      uuid = uuid,
+      imported = imported?.toStoredProfile(),
+      pending = pending?.toStoredProfile(),
+      activeProfile = store.activeProfile,
+      updatedAt = resolveUpdatedAt(uuid),
     )
   }
 
@@ -264,4 +223,67 @@ class ProfileManager(private val context: Context) :
       ProfileReceiver.scheduleNext(context, imported)
     }
   }
+}
+
+private val json = Json {
+  ignoreUnknownKeys = true
+}
+
+private fun Imported.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun Pending.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun StoredProfile.toPending(
+  uuid: Uuid,
+  createdAt: Long = System.currentTimeMillis(),
+): Pending {
+  return Pending(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+    createdAt = createdAt,
+  )
+}
+
+private fun StoredProfile.toImported(uuid: Uuid, createdAt: Long): Imported {
+  return Imported(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+    createdAt = createdAt,
+  )
 }

@@ -7,8 +7,17 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.core.content.getSystemService
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.network.TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK
+import com.github.kr328.clash.common.network.TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
+import com.github.kr328.clash.common.network.TabbyNetworkTransportState
+import com.github.kr328.clash.common.network.tabbyNetworkObservePriority
+import com.github.kr328.clash.common.network.tabbyNetworkObservedAvailability
+import com.github.kr328.clash.common.network.tabbyNetworkObservedDnsChange
+import com.github.kr328.clash.common.network.tabbyNetworkSupportsSatelliteTransport
+import com.github.kr328.clash.common.network.tabbyNetworkSupportsUsbTransport
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.service.util.asSocketAddressText
 import java.net.InetAddress
@@ -35,7 +44,12 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
     val losingMs: Long = 0,
     val dnsList: List<InetAddress> = emptyList(),
   ) {
-    fun isAvailable(): Boolean = losingMs < System.currentTimeMillis()
+    fun isAvailable(currentTimeMillis: Long): Boolean {
+      return tabbyNetworkObservedAvailability(
+        losingAtMillis = losingMs,
+        currentTimeMillis = currentTimeMillis,
+      )
+    }
   }
 
   private val networkInfos = ConcurrentHashMap<Network, NetworkInfo>()
@@ -108,24 +122,37 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
 
   private fun networkToInt(entry: Map.Entry<Network, NetworkInfo>): Int {
     val capabilities = connectivity.getNetworkCapabilities(entry.key)
-    // calculate priority based on transport type, available state
-    // lower value means higher priority
-    // wifi > ethernet > usb tethering > bluetooth tethering > cellular > satellite > other
-    return when {
-      capabilities == null -> 100
-      capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> 90
-      capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> 0
-      capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> 1
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_USB) -> 2
-      capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> 3
-      capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> 4
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM &&
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_SATELLITE) -> 5
-      // TRANSPORT_LOWPAN / TRANSPORT_THREAD / TRANSPORT_WIFI_AWARE are not for general
-      // internet access, which will not set as default route.
-      else -> 20
-    } + (if (entry.value.isAvailable()) 0 else 10)
+
+    return tabbyNetworkObservePriority(
+      transportState = capabilities?.toTabbyTransportState(),
+      platformSdk = Build.VERSION.SDK_INT,
+      isAvailable = entry.value.isAvailable(System.currentTimeMillis()),
+    )
+  }
+
+  private fun NetworkCapabilities.toTabbyTransportState(): TabbyNetworkTransportState {
+    return TabbyNetworkTransportState(
+      hasVpnTransport = hasTransport(NetworkCapabilities.TRANSPORT_VPN),
+      hasWifiTransport = hasTransport(NetworkCapabilities.TRANSPORT_WIFI),
+      hasEthernetTransport = hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET),
+      hasUsbTransport =
+        supportsUsbNetworkTransport() && hasTransport(NetworkCapabilities.TRANSPORT_USB),
+      hasBluetoothTransport = hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH),
+      hasCellularTransport = hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR),
+      hasSatelliteTransport =
+        supportsSatelliteNetworkTransport() &&
+          hasTransport(NetworkCapabilities.TRANSPORT_SATELLITE),
+    )
+  }
+
+  @ChecksSdkIntAtLeast(api = TABBY_NETWORK_USB_TRANSPORT_MIN_SDK)
+  private fun supportsUsbNetworkTransport(): Boolean {
+    return tabbyNetworkSupportsUsbTransport(Build.VERSION.SDK_INT)
+  }
+
+  @ChecksSdkIntAtLeast(api = TABBY_NETWORK_SATELLITE_TRANSPORT_MIN_SDK)
+  private fun supportsSatelliteNetworkTransport(): Boolean {
+    return tabbyNetworkSupportsSatelliteTransport(Build.VERSION.SDK_INT)
   }
 
   private fun notifyDnsChange() {
@@ -138,10 +165,15 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
         .orEmpty()
         .map { x -> x.asSocketAddressText(53) }
     val prevDnsList = curDnsList
-    if (dnsList.isNotEmpty() && prevDnsList != dnsList) {
-      Log.i("notifyDnsChange $prevDnsList -> $dnsList")
-      curDnsList = dnsList
-      Clash.notifyDnsChanged(dnsList)
+    val nextDnsList =
+      tabbyNetworkObservedDnsChange(
+        previousDnsServers = prevDnsList,
+        selectedDnsServers = dnsList,
+      )
+    if (nextDnsList != null) {
+      Log.i("notifyDnsChange $prevDnsList -> $nextDnsList")
+      curDnsList = nextDnsList
+      Clash.notifyDnsChanged(nextDnsList)
     }
   }
 

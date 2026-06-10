@@ -8,11 +8,16 @@ import android.provider.DocumentsContract.Document as D
 import android.provider.DocumentsContract.Root
 import android.provider.DocumentsProvider
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.document.Paths
+import com.github.kr328.clash.common.document.tabbyDocumentIdIsChild
+import com.github.kr328.clash.common.document.tabbyDocumentOpenModeRequestsWrite
+import com.github.kr328.clash.common.document.tabbyDocumentPlatformFlags
+import com.github.kr328.clash.common.document.tabbyDocumentProviderRootFlags
+import com.github.kr328.clash.common.document.tabbyRenamedDocumentId
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
 import com.github.kr328.clash.service.document.Document
 import com.github.kr328.clash.service.document.FileDocument
-import com.github.kr328.clash.service.document.Paths
 import com.github.kr328.clash.service.document.Picker
 import java.io.FileNotFoundException
 import kotlinx.coroutines.runBlocking
@@ -55,7 +60,7 @@ class FilesProvider : DocumentsProvider() {
     return runBlocking {
       val path = Paths.resolve(documentId ?: "/")
 
-      val document = picker.pick(path, mode?.requestWrite ?: true)
+      val document = picker.pick(path, tabbyDocumentOpenModeRequestsWrite(mode))
 
       require(document is FileDocument) { throw FileNotFoundException("invalid path $documentId") }
 
@@ -101,7 +106,7 @@ class FilesProvider : DocumentsProvider() {
 
       document.file.renameTo(parent.resolve(name))
 
-      path.copy(relative = path.relative.dropLast(1) + name).toString()
+      tabbyRenamedDocumentId(path, name) ?: throw IllegalArgumentException("unable to rename $path")
     }
   }
 
@@ -150,7 +155,11 @@ class FilesProvider : DocumentsProvider() {
   }
 
   override fun queryRoots(projection: Array<out String>?): Cursor {
-    val flags = Root.FLAG_LOCAL_ONLY or Root.FLAG_SUPPORTS_IS_CHILD
+    val flags =
+      tabbyDocumentProviderRootFlags(
+        localOnlyFlag = Root.FLAG_LOCAL_ONLY,
+        supportsIsChildFlag = Root.FLAG_SUPPORTS_IS_CHILD,
+      )
 
     return MatrixCursor(projection ?: DEFAULT_ROOT_COLUMNS).apply {
       newRow().apply {
@@ -166,22 +175,17 @@ class FilesProvider : DocumentsProvider() {
   }
 
   override fun isChildDocument(parentDocumentId: String?, documentId: String?): Boolean {
-    if (parentDocumentId == null || documentId == null) return false
-
-    return documentId.startsWith(parentDocumentId)
+    return tabbyDocumentIdIsChild(parentDocumentId, documentId)
   }
 
   private fun MatrixCursor.RowBuilder.applyDocument(document: Document): MatrixCursor.RowBuilder {
-    var flags = 0
-
-    document.flags.forEach {
-      flags =
-        when (it) {
-          Writable -> flags or D.FLAG_SUPPORTS_WRITE
-          Deletable -> flags or D.FLAG_SUPPORTS_DELETE
-          Virtual -> flags or FLAG_VIRTUAL
-        }
-    }
+    val flags =
+      tabbyDocumentPlatformFlags(
+        flags = document.flags,
+        writableFlag = D.FLAG_SUPPORTS_WRITE,
+        deletableFlag = D.FLAG_SUPPORTS_DELETE,
+        virtualFlag = FLAG_VIRTUAL,
+      )
 
     add(D.COLUMN_DISPLAY_NAME, document.name)
     add(D.COLUMN_MIME_TYPE, document.mimeType)
@@ -195,9 +199,4 @@ class FilesProvider : DocumentsProvider() {
   private fun resolveDocumentProjection(projection: Array<out String>?): Array<out String> {
     return projection ?: DEFAULT_DOCUMENT_COLUMNS
   }
-
-  private val String.requestWrite: Boolean
-    get() {
-      return contains("w", ignoreCase = true)
-    }
 }

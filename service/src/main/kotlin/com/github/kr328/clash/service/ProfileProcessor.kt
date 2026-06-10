@@ -4,25 +4,39 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.AppliedImportedProfile
+import com.github.kr328.clash.core.model.FetchStatus
+import com.github.kr328.clash.core.model.StoredProfile
+import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
+import com.github.kr328.clash.core.model.profileAppliedImportedProfile
+import com.github.kr328.clash.core.model.profileFetchConfigurationStatus
+import com.github.kr328.clash.core.model.profileFieldValidationError
+import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
+import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
+import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
+import com.github.kr328.clash.core.model.profileShouldForceFetchConfiguration
+import com.github.kr328.clash.core.model.profileShouldForceFetchValidationConfiguration
+import com.github.kr328.clash.network.ProfileFetchResult
+import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
-import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.service.util.fetchProfile
 import com.github.kr328.clash.service.util.fetchSubscriptionUserInfo
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.processingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
-import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 object ProfileProcessor {
   private val profileLock = Mutex()
@@ -48,17 +62,29 @@ object ProfileProcessor {
           pending
         }
 
-        val force = snapshot.type != Profile.Type.File
+        val force = profileShouldForceFetchConfiguration(snapshot.type)
         var cb = callback
+        val reportStatus: (FetchStatus) -> Unit = { status ->
+          try {
+            cb?.updateStatus(json.encodeToString(status))
+          } catch (e: Exception) {
+            cb = null
 
-        Clash.fetchAndValid(context.processingDir, snapshot.source, force) {
-            try {
-              cb?.updateStatus(it)
-            } catch (e: Exception) {
-              cb = null
+            Log.w("Report fetch status: $e", e)
+          }
+        }
+        val fetchedProfile =
+          context.fetchProfileConfigurationIfNeeded(snapshot.source, force, reportStatus)
 
-              Log.w("Report fetch status: $e", e)
-            }
+        Clash.fetchAndValid(
+            context.processingDir,
+            snapshot.source,
+            profileShouldForceFetchValidationConfiguration(
+              forceConfigurationFetch = force,
+              configurationFetched = fetchedProfile != null,
+            ),
+          ) {
+            reportStatus(it)
           }
           .await()
 
@@ -70,51 +96,22 @@ object ProfileProcessor {
             )
 
             val old = ImportedDao().queryByUUID(snapshot.uuid)
-            if (snapshot.type == Profile.Type.Url) {
-              val userInfo =
-                if (snapshot.source.startsWith("https://", true)) {
-                  context.fetchSubscriptionUserInfo(snapshot.source)
-                } else {
-                  null
-                }
-              val new =
-                Imported(
-                  snapshot.uuid,
-                  snapshot.name,
-                  snapshot.type,
-                  snapshot.source,
-                  snapshot.interval,
-                  userInfo?.upload ?: 0,
-                  userInfo?.download ?: 0,
-                  userInfo?.total ?: 0,
-                  userInfo?.expire ?: 0,
-                  old?.createdAt ?: System.currentTimeMillis(),
-                )
-              if (old != null) {
-                ImportedDao().update(new)
+            val subscriptionUserInfo =
+              if (profileShouldFetchSubscriptionUserInfo(snapshot.type, snapshot.source)) {
+                fetchedProfile?.subscriptionUserInfo
+                  ?: context.fetchSubscriptionUserInfo(snapshot.source)
               } else {
-                ImportedDao().insert(new)
+                null
               }
-
-              PendingDao().remove(snapshot.uuid)
-
-              context.pendingDir.resolve(snapshot.uuid.toString()).deleteRecursively()
-
-              context.sendProfileChanged(snapshot.uuid)
-            } else if (snapshot.type == Profile.Type.File) {
-              val new =
-                Imported(
-                  snapshot.uuid,
-                  snapshot.name,
-                  snapshot.type,
-                  snapshot.source,
-                  snapshot.interval,
-                  0,
-                  0,
-                  0,
-                  0,
-                  old?.createdAt ?: System.currentTimeMillis(),
-                )
+            val applied =
+              profileAppliedImportedProfile(
+                pending = snapshot.toStoredProfile(),
+                oldCreatedAt = old?.createdAt,
+                currentTimeMillis = System.currentTimeMillis(),
+                subscriptionUserInfo = subscriptionUserInfo?.toProfileSubscriptionUserInfo(),
+              )
+            if (applied != null) {
+              val new = applied.toImported(snapshot.uuid)
               if (old != null) {
                 ImportedDao().update(new)
               } else {
@@ -152,15 +149,27 @@ object ProfileProcessor {
         }
 
         var cb = callback
+        val reportStatus: (FetchStatus) -> Unit = { status ->
+          try {
+            cb?.updateStatus(json.encodeToString(status))
+          } catch (e: Exception) {
+            cb = null
 
-        Clash.fetchAndValid(context.processingDir, snapshot.source, true) {
-            try {
-              cb?.updateStatus(it)
-            } catch (e: Exception) {
-              cb = null
+            Log.w("Report fetch status: $e", e)
+          }
+        }
+        val fetchedProfile =
+          context.fetchProfileConfigurationIfNeeded(snapshot.source, force = true, reportStatus)
 
-              Log.w("Report fetch status: $e", e)
-            }
+        Clash.fetchAndValid(
+            context.processingDir,
+            snapshot.source,
+            profileShouldForceFetchValidationConfiguration(
+              forceConfigurationFetch = true,
+              configurationFetched = fetchedProfile != null,
+            ),
+          ) {
+            reportStatus(it)
           }
           .await()
 
@@ -220,18 +229,66 @@ object ProfileProcessor {
   }
 
   private fun Pending.enforceFieldValid() {
-    val scheme = source.toUri().scheme?.lowercase(Locale.getDefault())
+    val scheme = source.toUri().scheme
 
-    when {
-      name.isBlank() -> throw IllegalArgumentException("Empty name")
-
-      source.isEmpty() && type != Profile.Type.File -> throw IllegalArgumentException("Invalid url")
-
-      source.isNotEmpty() && scheme != "https" && scheme != "http" && scheme != "content" ->
-        throw IllegalArgumentException("Unsupported url $source")
-
-      interval != 0L && interval.milliseconds.inWholeMinutes < 15 ->
-        throw IllegalArgumentException("Invalid interval")
-    }
+    profileFieldValidationError(
+        type = type,
+        name = name,
+        sourceMissing = source.isEmpty(),
+        sourceSupported = source.isEmpty() || isSupportedProfileSourceScheme(scheme),
+        interval = interval,
+      )
+      ?.let { error ->
+        throw IllegalArgumentException(profileFieldValidationErrorMessage(error, source))
+      }
   }
+}
+
+private fun Pending.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun AppliedImportedProfile.toImported(uuid: Uuid): Imported {
+  return Imported(
+    uuid = uuid,
+    name = profile.name,
+    type = profile.type,
+    source = profile.source,
+    interval = profile.interval,
+    upload = profile.upload,
+    download = profile.download,
+    total = profile.total,
+    expire = profile.expire,
+    createdAt = createdAt,
+  )
+}
+
+private suspend fun Context.fetchProfileConfigurationIfNeeded(
+  source: String,
+  force: Boolean,
+  reportStatus: (FetchStatus) -> Unit,
+): ProfileFetchResult? {
+  val config = processingDir.resolve("config.yaml")
+  if (!profileShouldFetchConfiguration(source, force, config.exists())) return null
+
+  val uri = source.toUri()
+  reportStatus(profileFetchConfigurationStatus(uri.host))
+
+  return fetchProfile(source).also { result ->
+    config.parentFile?.mkdirs()
+    config.writeText(result.content)
+  }
+}
+
+private val json = Json {
+  ignoreUnknownKeys = true
 }

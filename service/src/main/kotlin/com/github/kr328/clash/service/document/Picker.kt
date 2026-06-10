@@ -3,11 +3,20 @@ package com.github.kr328.clash.service.document
 import android.content.Context
 import android.provider.DocumentsContract
 import com.github.kr328.clash.common.R as CommonR
+import com.github.kr328.clash.common.document.Path
+import com.github.kr328.clash.common.document.Paths
+import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentAllowsWritableOpen
+import com.github.kr328.clash.common.document.tabbyProfileConfigurationDocumentFlags
+import com.github.kr328.clash.common.document.tabbyProviderFileDocumentFlags
+import com.github.kr328.clash.common.document.tabbyVirtualDirectoryDocumentFlags
+import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.StoredProfile
+import com.github.kr328.clash.core.model.profileWritablePendingProfile
 import com.github.kr328.clash.service.R
+import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
-import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import java.io.FileNotFoundException
@@ -35,46 +44,55 @@ class Picker(private val context: Context) {
   }
 
   suspend fun pick(path: Path, writable: Boolean): Document {
-    if (path.uuid == null) {
+    val uuid = path.uuid
+
+    if (uuid == null) {
       return VirtualDocument(
         "",
         context.getString(CommonR.string.tabby),
         DocumentsContract.Document.MIME_TYPE_DIR,
         0,
         0,
-        setOf(Flag.Virtual),
+        tabbyVirtualDirectoryDocumentFlags(),
       )
     }
 
     if (writable) {
-      cloneToPending(path.uuid)
+      cloneToPending(uuid)
     }
 
-    val imported = ImportedDao().queryByUUID(path.uuid)
-    val pending = PendingDao().queryByUUID(path.uuid)
+    val imported = ImportedDao().queryByUUID(uuid)
+    val pending = PendingDao().queryByUUID(uuid)
 
     if (path.scope == null) {
       if (writable) throw IllegalArgumentException("invalid open mode")
 
       return VirtualDocument(
-        id = path.uuid.toString(),
+        id = uuid.toString(),
         name = pending?.name ?: imported?.name ?: throw FileNotFoundException("profile not found"),
         mimeType = DocumentsContract.Document.MIME_TYPE_DIR,
         size = 0,
         updatedAt = 0,
-        flags = setOf(Flag.Virtual),
+        flags = tabbyVirtualDirectoryDocumentFlags(),
       )
     }
 
-    if (path.relative == null) {
+    val relative = path.relative
+
+    if (relative == null) {
       if (path.scope == Path.Scope.Configuration) {
         val type =
           pending?.type ?: imported?.type ?: throw FileNotFoundException("profile not found")
 
-        if (writable && type != Profile.Type.File)
+        if (
+          writable &&
+            !tabbyProfileConfigurationDocumentAllowsWritableOpen(
+              profileIsFile = type == Profile.Type.File
+            )
+        )
           throw IllegalArgumentException("invalid open mode")
 
-        val flags: Set<Flag> = if (type == Profile.Type.Url) emptySet() else setOf(Flag.Writable)
+        val flags = tabbyProfileConfigurationDocumentFlags(profileIsUrl = type == Profile.Type.Url)
 
         return FileDocument(
           file =
@@ -97,7 +115,7 @@ class Picker(private val context: Context) {
             }.resolve("providers"),
           idOverride = Paths.PROVIDERS_ID,
           nameOverride = context.getString(R.string.provider_files),
-          flags = setOf(Flag.Virtual),
+          flags = tabbyVirtualDirectoryDocumentFlags(),
         )
       }
     }
@@ -112,8 +130,8 @@ class Picker(private val context: Context) {
             else -> throw FileNotFoundException("profile not found")
           }
           .resolve("providers")
-          .resolve(path.relative.joinToString(separator = "/")),
-      flags = setOf(Flag.Writable, Flag.Deletable),
+          .resolve(relative.joinToString(separator = "/")),
+      flags = tabbyProviderFileDocumentFlags(),
     )
   }
 
@@ -124,19 +142,7 @@ class Picker(private val context: Context) {
       ImportedDao().queryByUUID(uuid) ?: throw FileNotFoundException("profile not found")
 
     PendingDao()
-      .insert(
-        Pending(
-          imported.uuid,
-          imported.name,
-          imported.type,
-          imported.source,
-          imported.interval,
-          0,
-          0,
-          0,
-          0,
-        )
-      )
+      .insert(profileWritablePendingProfile(imported.toStoredProfile()).toPending(imported.uuid))
 
     val source = context.importedDir.resolve(uuid.toString())
     val target = context.pendingDir.resolve(uuid.toString())
@@ -144,4 +150,31 @@ class Picker(private val context: Context) {
     target.deleteRecursively()
     source.copyRecursively(target)
   }
+}
+
+private fun Imported.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun StoredProfile.toPending(uuid: Uuid): Pending {
+  return Pending(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
 }

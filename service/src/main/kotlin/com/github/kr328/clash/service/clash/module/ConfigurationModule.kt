@@ -5,6 +5,7 @@ import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.getSerializableCompat
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.profileShouldLoadConfiguration
 import com.github.kr328.clash.service.StatusProvider
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.SelectionDao
@@ -44,7 +45,14 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
       try {
         val current = store.activeProfile ?: throw NullPointerException("No profile selected")
 
-        if (current == loaded && changed != null && changed != loaded) continue
+        if (
+          !profileShouldLoadConfiguration(
+            currentProfile = current,
+            loadedProfile = loaded,
+            changedProfile = changed,
+          )
+        )
+          continue
 
         loaded = current
 

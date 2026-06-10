@@ -6,12 +6,12 @@ import android.content.Context
 import android.content.ServiceConnection
 import android.os.IBinder
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.remote.tabbyRemoteServiceShouldReportCrashOnDisconnect
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.glue.util.unbindServiceSilent
 import com.github.kr328.clash.service.RemoteService
 import com.github.kr328.clash.service.remote.IRemoteService
 import com.github.kr328.clash.service.remote.unwrap
-import kotlin.time.Duration.Companion.seconds
 
 class Service(private val context: Application, val crashed: () -> Unit) {
   val remote = Resource<IRemoteService>()
@@ -27,7 +27,12 @@ class Service(private val context: Application, val crashed: () -> Unit) {
       override fun onServiceDisconnected(name: ComponentName?) {
         remote.set(null)
 
-        if (System.currentTimeMillis() - lastCrashed < TOGGLE_CRASHED_INTERVAL) {
+        if (
+          tabbyRemoteServiceShouldReportCrashOnDisconnect(
+            lastDisconnectedAtMillis = lastCrashed,
+            currentTimeMillis = System.currentTimeMillis(),
+          )
+        ) {
           unbind()
 
           crashed()
@@ -53,9 +58,5 @@ class Service(private val context: Application, val crashed: () -> Unit) {
     context.unbindServiceSilent(connection)
 
     remote.set(null)
-  }
-
-  companion object {
-    private val TOGGLE_CRASHED_INTERVAL = 10.seconds.inWholeMilliseconds
   }
 }

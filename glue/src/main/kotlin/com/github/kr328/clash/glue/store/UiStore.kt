@@ -4,13 +4,17 @@ import android.content.Context
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.pm.PackageManager
 import com.github.kr328.clash.common.Global
+import com.github.kr328.clash.common.app.tabbyMainActivityAliasHiddenByDefault
 import com.github.kr328.clash.common.store.Store
+import com.github.kr328.clash.common.store.StoreProvider
 import com.github.kr328.clash.common.store.asStoreProvider
 import com.github.kr328.clash.common.util.mainActivityAlias
 import com.github.kr328.clash.common.util.unsafeLazy
+import com.github.kr328.clash.core.model.AccessControlSort
+import com.github.kr328.clash.core.model.DarkMode
 import com.github.kr328.clash.core.model.ProxySort
-import com.github.kr328.clash.glue.model.AppInfo
-import com.github.kr328.clash.glue.model.DarkMode
+import com.github.kr328.clash.settingsstore.StoreProviderMigration
+import com.github.kr328.clash.settingsstore.asSettingsStoreProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +22,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 
 class UiStore(context: Context) {
-  private val preferences = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
-  private val store = Store(preferences.asStoreProvider())
+  private val preferences =
+    context.getSharedPreferences(SETTINGS_PREFERENCE_NAME, Context.MODE_PRIVATE)
+  val storeProvider: StoreProvider = createStoreProvider(context, preferences)
+  private val store = Store(storeProvider)
 
   val valueState: StateFlow<ValueState> by unsafeLazy {
     val readValues = {
@@ -60,8 +66,11 @@ class UiStore(context: Context) {
       key = "hide_app_icon",
       defaultValue =
         context.packageManager.getComponentEnabledSetting(context.mainActivityAlias).let { state ->
-          state != PackageManager.COMPONENT_ENABLED_STATE_ENABLED &&
-            state != PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+          tabbyMainActivityAliasHiddenByDefault(
+            componentState = state,
+            enabledState = PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            defaultState = PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+          )
         },
     )
 
@@ -81,11 +90,11 @@ class UiStore(context: Context) {
 
   var proxyLastGroup: String by store.string(key = "proxy_last_group", defaultValue = "")
 
-  var accessControlSort: AppInfo.Sorter by
+  var accessControlSort: AccessControlSort by
     store.enum(
       key = "access_control_sort",
-      defaultValue = Label,
-      values = AppInfo.Sorter.entries.toTypedArray(),
+      defaultValue = AccessControlSort.Label,
+      values = AccessControlSort.entries.toTypedArray(),
     )
 
   var accessControlReverse: Boolean by
@@ -103,12 +112,42 @@ class UiStore(context: Context) {
     val proxyLine: Int,
     val proxySort: ProxySort,
     val proxyLastGroup: String,
-    val accessControlSort: AppInfo.Sorter,
+    val accessControlSort: AccessControlSort,
     val accessControlReverse: Boolean,
     val accessControlSystemApp: Boolean,
   )
 
   companion object {
-    private const val PREFERENCE_NAME = "ui"
+    private const val LEGACY_PREFERENCE_NAME = "ui"
+    private const val SETTINGS_PREFERENCE_NAME = "settings_ui"
+    private const val MIGRATED_KEY = "__migrated_from_shared_preferences_v1"
+
+    private fun createStoreProvider(
+      context: Context,
+      preferences: android.content.SharedPreferences,
+    ) =
+      preferences.asSettingsStoreProvider().also { destination ->
+        StoreProviderMigration(
+            source =
+              context
+                .getSharedPreferences(LEGACY_PREFERENCE_NAME, Context.MODE_PRIVATE)
+                .asStoreProvider(),
+            destination = destination,
+            migratedKey = MIGRATED_KEY,
+          )
+          .migrate {
+            boolean("enable_vpn", defaultValue = true)
+            string("dark_mode", defaultValue = DarkMode.Auto.name)
+            boolean("hide_app_icon", defaultValue = false)
+            boolean("hide_from_recents", defaultValue = false)
+            boolean("proxy_exclude_not_selectable", defaultValue = false)
+            int("proxy_line", defaultValue = 2)
+            string("proxy_sort", defaultValue = ProxySort.Default.name)
+            string("proxy_last_group", defaultValue = "")
+            string("access_control_sort", defaultValue = AccessControlSort.Label.name)
+            boolean("access_control_reverse", defaultValue = false)
+            boolean("access_control_system_app", defaultValue = false)
+          }
+      }
   }
 }

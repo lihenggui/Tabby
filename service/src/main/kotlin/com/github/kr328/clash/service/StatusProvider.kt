@@ -6,14 +6,24 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import com.github.kr328.clash.common.Global
+import com.github.kr328.clash.common.service.TabbyStatusProviderCallAction
+import com.github.kr328.clash.common.service.tabbyStatusProviderCallAction
 
 class StatusProvider : ContentProvider() {
   override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
-    return when (method) {
-      METHOD_CURRENT_PROFILE -> {
-        if (serviceRunning) Bundle().apply { putString("name", currentProfile) } else null
-      }
-      else -> super.call(method, arg, extras)
+    return when (
+      val action =
+        tabbyStatusProviderCallAction(
+          method = method,
+          currentProfileMethod = METHOD_CURRENT_PROFILE,
+          serviceRunning = serviceRunning,
+          currentProfileName = currentProfile,
+        )
+    ) {
+      is TabbyStatusProviderCallAction.CurrentProfile ->
+        Bundle().apply { putString("name", action.name) }
+      TabbyStatusProviderCallAction.NoResult -> null
+      TabbyStatusProviderCallAction.Delegate -> super.call(method, arg, extras)
     }
   }
 

@@ -1,6 +1,6 @@
 package com.github.kr328.clash.service.remote
 
-import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.kaidl.BinderInterface
 import kotlin.uuid.Uuid
 
@@ -20,11 +20,11 @@ interface IProfileManager {
 
   suspend fun update(uuid: Uuid)
 
-  suspend fun queryByUUID(uuid: Uuid): Profile?
+  suspend fun queryByUUID(uuid: Uuid): String?
 
-  suspend fun queryAll(): List<Profile>
+  suspend fun queryAll(): String
 
-  suspend fun queryActive(): Profile?
+  suspend fun queryActive(): String?
 
-  suspend fun setActive(profile: Profile)
+  suspend fun setActive(uuid: Uuid)
 }

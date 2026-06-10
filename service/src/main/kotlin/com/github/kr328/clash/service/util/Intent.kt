@@ -1,8 +1,12 @@
 package com.github.kr328.clash.service.util
 
 import android.content.Intent
+import com.github.kr328.clash.common.util.tabbyPackageNameFromUriPayload
 
 val Intent.packageName: String?
   get() {
-    return data?.takeIf { it.scheme == "package" }?.schemeSpecificPart
+    return tabbyPackageNameFromUriPayload(
+      scheme = data?.scheme,
+      schemeSpecificPart = data?.schemeSpecificPart,
+    )
   }

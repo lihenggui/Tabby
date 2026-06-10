@@ -1,0 +1,24 @@
+<resources>
+  <string name="default_">Default</string>
+  <string name="delay">Delay</string>
+  <string name="delay_test">Delay Test</string>
+  <string name="direct_mode">Direct Mode</string>
+  <string name="dont_modify">Do not modify</string>
+  <string name="doubles">Double</string>
+  <string name="filter">Filter</string>
+  <string name="global_mode">Global Mode</string>
+  <string name="layout">Layout</string>
+  <string name="mode">Mode</string>
+  <string name="mode_switch_tips">Valid only for current session</string>
+  <string name="more">More</string>
+  <string name="multiple">Multiple</string>
+  <string name="name">Name</string>
+  <string name="not_selectable">Not Selectable</string>
+  <string name="proxy">Proxy</string>
+  <string name="proxy_empty_tips">No groups can be displayed</string>
+  <string name="proxy_scroll_to_top">Scroll to top</string>
+  <string name="rule_mode">Rule Mode</string>
+  <string name="scroll_selected_to_top">Scroll Selected to Top</string>
+  <string name="single">Single</string>
+  <string name="sort">Sort</string>
+</resources>

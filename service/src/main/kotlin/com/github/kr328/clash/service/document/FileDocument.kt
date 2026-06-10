@@ -1,6 +1,8 @@
 package com.github.kr328.clash.service.document
 
 import android.provider.DocumentsContract
+import com.github.kr328.clash.common.document.Flag
+import com.github.kr328.clash.common.document.tabbyFileDocumentMimeType
 import java.io.File
 
 class FileDocument(
@@ -16,7 +18,11 @@ class FileDocument(
     get() = nameOverride ?: file.name
 
   override val mimeType: String
-    get() = if (file.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "text/plain"
+    get() =
+      tabbyFileDocumentMimeType(
+        isDirectory = file.isDirectory,
+        directoryMimeType = DocumentsContract.Document.MIME_TYPE_DIR,
+      )
 
   override val size: Long
     get() = file.length()

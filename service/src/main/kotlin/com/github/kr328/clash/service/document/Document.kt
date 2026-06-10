@@ -1,5 +1,7 @@
 package com.github.kr328.clash.service.document
 
+import com.github.kr328.clash.common.document.Flag
+
 sealed interface Document {
   val id: String
   val name: String

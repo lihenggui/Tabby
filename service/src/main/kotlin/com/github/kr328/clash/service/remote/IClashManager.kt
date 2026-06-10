@@ -1,29 +1,23 @@
 package com.github.kr328.clash.service.remote
 
 import com.github.kr328.clash.core.Clash
-import com.github.kr328.clash.core.model.ConfigurationOverride
 import com.github.kr328.clash.core.model.Provider
-import com.github.kr328.clash.core.model.ProviderList
-import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.ProxySort
-import com.github.kr328.clash.core.model.Traffic
-import com.github.kr328.clash.core.model.TunnelState
-import com.github.kr328.clash.core.model.UiConfiguration
 import com.github.kr328.kaidl.BinderInterface
 
 @BinderInterface
 interface IClashManager {
-  fun queryTunnelState(): TunnelState
+  fun queryTunnelState(): String
 
-  fun queryTrafficTotal(): Traffic
+  fun queryTrafficTotal(): Long
 
   fun queryProxyGroupNames(excludeNotSelectable: Boolean): List<String>
 
-  fun queryProxyGroup(name: String, proxySort: ProxySort): ProxyGroup
+  fun queryProxyGroup(name: String, proxySort: ProxySort): String
 
-  fun queryConfiguration(): UiConfiguration
+  fun queryConfiguration(): String
 
-  fun queryProviders(): ProviderList
+  fun queryProviders(): String
 
   fun patchSelector(group: String, name: String): Boolean
 
@@ -33,9 +27,9 @@ interface IClashManager {
 
   suspend fun updateProvider(type: Provider.Type, name: String)
 
-  fun queryOverride(slot: Clash.OverrideSlot): ConfigurationOverride
+  fun queryOverride(slot: Clash.OverrideSlot): String
 
-  fun patchOverride(slot: Clash.OverrideSlot, configuration: ConfigurationOverride)
+  fun patchOverride(slot: Clash.OverrideSlot, configuration: String)
 
   fun clearOverride(slot: Clash.OverrideSlot)
 

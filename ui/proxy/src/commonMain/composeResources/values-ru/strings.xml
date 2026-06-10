@@ -1,0 +1,24 @@
+<resources>
+  <string name="default_">По умолчанию</string>
+  <string name="delay">Задержка</string>
+  <string name="delay_test">Проверка задержки</string>
+  <string name="direct_mode">Прямой режим</string>
+  <string name="dont_modify">Не изменять</string>
+  <string name="doubles">Двойное</string>
+  <string name="filter">Фильтр</string>
+  <string name="global_mode">Глобальный режим</string>
+  <string name="layout">Отображение</string>
+  <string name="mode">Режим</string>
+  <string name="mode_switch_tips">Действует только для текущей сессии</string>
+  <string name="more">Ещё</string>
+  <string name="multiple">Множественное</string>
+  <string name="name">Название</string>
+  <string name="not_selectable">Not Selectable</string>
+  <string name="proxy">Прокси</string>
+  <string name="proxy_empty_tips">Нет групп для отображения</string>
+  <string name="proxy_scroll_to_top">Прокрутить вверх</string>
+  <string name="rule_mode">Режим правил</string>
+  <string name="scroll_selected_to_top">Прокрутить выбранное наверх</string>
+  <string name="single">Одиночное</string>
+  <string name="sort">Сортировка</string>
+</resources>

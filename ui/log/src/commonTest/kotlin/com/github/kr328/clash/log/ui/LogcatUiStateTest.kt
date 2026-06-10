@@ -1,0 +1,671 @@
+package com.github.kr328.clash.log.ui
+
+import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.log.model.LogFile
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class LogcatUiStateTest {
+  @Test
+  fun createsInitialLogcatUiState() {
+    assertEquals(LogcatUiState(), logcatInitialUiState())
+  }
+
+  @Test
+  fun createsInitialLogcatEventState() {
+    assertEquals(LogcatEventState.Idle, logcatInitialEventState())
+  }
+
+  @Test
+  fun exportPlatformSpecUsesStableDocumentMimeType() {
+    assertEquals(
+      LogcatExportPlatformSpec(exportMimeType = "text/plain"),
+      logcatExportPlatformSpec(),
+    )
+  }
+
+  @Test
+  fun logcatEventRouteEffectMapsEventStates() {
+    assertEquals(
+      LogcatEventRouteEffect.Ignore,
+      logcatEventRouteEffect(LogcatEventState.Idle),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.Close,
+      logcatEventRouteEffect(LogcatEventState.Close),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.InvalidFile,
+      logcatEventRouteEffect(LogcatEventState.InvalidFile),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.OpenLogs,
+      logcatEventRouteEffect(LogcatEventState.OpenLogs),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.RequestExport("clash-1234.log"),
+      logcatEventRouteEffect(LogcatEventState.RequestExport("clash-1234.log")),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.ExportResult(success = false, errorMessage = "write failed"),
+      logcatEventRouteEffect(
+        LogcatEventState.ExportResult(success = false, errorMessage = "write failed")
+      ),
+    )
+    assertEquals(
+      LogcatEventRouteEffect.ShowMessage("exported"),
+      logcatEventRouteEffect(LogcatEventState.ShowMessage("exported")),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionStartsStreamingWhenNoFileNameIsProvided() {
+    assertEquals(
+      LogcatInitialAction.StartStreaming,
+      logcatInitialAction(null),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionLoadsParsedLogFile() {
+    assertEquals(
+      LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234)),
+      logcatInitialAction("clash-1234.log"),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionRejectsInvalidFileName() {
+    assertEquals(
+      LogcatInitialAction.InvalidFile,
+      logcatInitialAction("clash.log"),
+    )
+  }
+
+  @Test
+  fun logcatInitialActionDeterminesStreamingState() {
+    assertEquals(
+      true,
+      logcatStreamingFromInitialAction(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      false,
+      logcatStreamingFromInitialAction(
+        LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234))
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStreamingFromInitialAction(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
+  fun logcatInitialStreamingParsesFileNameThroughInitialAction() {
+    assertEquals(true, logcatInitialStreaming(null))
+    assertEquals(false, logcatInitialStreaming("clash-1234.log"))
+    assertEquals(false, logcatInitialStreaming("clash.log"))
+  }
+
+  @Test
+  fun logcatInitialActionExposesOnlyValidCurrentFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      null,
+      logcatFileFromInitialAction(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      file,
+      logcatFileFromInitialAction(LogcatInitialAction.LoadFile(file)),
+    )
+    assertEquals(
+      null,
+      logcatFileFromInitialAction(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
+  fun logcatInitialFileParsesOnlyValidLogFileNames() {
+    assertEquals(null, logcatInitialFile(null))
+    assertEquals(LogFile("clash-1234.log", 1234), logcatInitialFile("clash-1234.log"))
+    assertEquals(null, logcatInitialFile("clash.log"))
+  }
+
+  @Test
+  fun logcatInitialEventStateOnlyRejectsInvalidFiles() {
+    assertEquals(
+      null,
+      logcatInitialEventState(LogcatInitialAction.StartStreaming),
+    )
+    assertEquals(
+      null,
+      logcatInitialEventState(LogcatInitialAction.LoadFile(LogFile("clash-1234.log", 1234))),
+    )
+    assertEquals(
+      LogcatEventState.InvalidFile,
+      logcatInitialEventState(LogcatInitialAction.InvalidFile),
+    )
+  }
+
+  @Test
+  fun logcatFailureEventStatesMapToRecoveryEvents() {
+    assertEquals(
+      LogcatEventState.InvalidFile,
+      logcatLoadFileFailureEventState(),
+    )
+    assertEquals(
+      LogcatEventState.OpenLogs,
+      logcatStartStreamingFailureEventState(),
+    )
+  }
+
+  @Test
+  fun consumedEventStateResetsToIdle() {
+    assertEquals(LogcatEventState.Idle, logcatConsumedEventState())
+  }
+
+  @Test
+  fun appendMessageKeepsMessagesWithinCapacity() {
+    val first = logMessage(1)
+    val second = logMessage(2)
+    val third = logMessage(3)
+
+    assertEquals(
+      listOf(second, third),
+      logcatMessagesAfterAppend(listOf(first, second), third, capacity = 2),
+    )
+  }
+
+  @Test
+  fun appendMessagePreservesMessagesBelowCapacity() {
+    val first = logMessage(1)
+    val second = logMessage(2)
+
+    assertEquals(
+      listOf(first, second),
+      logcatMessagesAfterAppend(listOf(first), second, capacity = 2),
+    )
+  }
+
+  @Test
+  fun appendMessageRejectsInvalidCapacity() {
+    assertFailsWith<IllegalArgumentException> {
+      logcatMessagesAfterAppend(emptyList(), logMessage(1), capacity = 0)
+    }
+  }
+
+  @Test
+  fun logcatCloseActionStopsStreamingAndOpensLogsWhenStreaming() {
+    assertEquals(
+      LogcatCloseAction.StopStreamingAndOpenLogs,
+      logcatCloseAction(LogcatUiState(streaming = true)),
+    )
+  }
+
+  @Test
+  fun logcatCloseActionClosesViewerWhenViewingLocalFile() {
+    assertEquals(
+      LogcatCloseAction.CloseViewer,
+      logcatCloseAction(LogcatUiState(streaming = false)),
+    )
+  }
+
+  @Test
+  fun logcatCloseEventStateMapsCloseActionsToUiEvents() {
+    assertEquals(
+      LogcatEventState.OpenLogs,
+      logcatCloseEventState(LogcatCloseAction.StopStreamingAndOpenLogs),
+    )
+    assertEquals(
+      LogcatEventState.Close,
+      logcatCloseEventState(LogcatCloseAction.CloseViewer),
+    )
+  }
+
+  @Test
+  fun logcatDeleteActionDeletesCurrentFileAndIgnoresMissingFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatDeleteAction.DeleteFile(file),
+      logcatDeleteAction(file),
+    )
+    assertEquals(
+      LogcatDeleteAction.Ignore,
+      logcatDeleteAction(null),
+    )
+  }
+
+  @Test
+  fun logcatDeleteEventStateClosesOnlyAfterDeletingAFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatEventState.Close,
+      logcatDeleteEventState(LogcatDeleteAction.DeleteFile(file)),
+    )
+    assertEquals(null, logcatDeleteEventState(LogcatDeleteAction.Ignore))
+  }
+
+  @Test
+  fun logcatRequestExportActionRequestsCurrentFileNameAndIgnoresMissingFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatRequestExportAction.RequestExport("clash-1234.log"),
+      logcatRequestExportAction(file),
+    )
+    assertEquals(
+      LogcatRequestExportAction.Ignore,
+      logcatRequestExportAction(null),
+    )
+  }
+
+  @Test
+  fun logcatRequestExportEventStateRequestsExportOnlyForExportAction() {
+    assertEquals(
+      LogcatEventState.RequestExport("clash-1234.log"),
+      logcatRequestExportEventState(LogcatRequestExportAction.RequestExport("clash-1234.log")),
+    )
+    assertEquals(null, logcatRequestExportEventState(LogcatRequestExportAction.Ignore))
+  }
+
+  @Test
+  fun logcatExportResultMapsDestinationSelection() {
+    assertEquals(
+      LogcatExportResult(destinationSelected = true),
+      logcatExportResult(destinationSelected = true),
+    )
+    assertEquals(
+      LogcatExportResult(destinationSelected = false),
+      logcatExportResult(destinationSelected = false),
+    )
+  }
+
+  @Test
+  fun logcatCopyMessagePayloadUsesStableLabel() {
+    assertEquals(
+      LogcatCopyMessagePayload(label = "log_message", text = "proxy selected"),
+      logcatCopyMessagePayload("proxy selected"),
+    )
+  }
+
+  @Test
+  fun logcatCopyMessagePayloadUsesLogMessageText() {
+    assertEquals(
+      LogcatCopyMessagePayload(label = "log_message", text = "message-1"),
+      logcatCopyMessagePayload(logMessage(1)),
+    )
+  }
+
+  @Test
+  fun logcatExportActionExportsCurrentFileOnlyWhenDestinationExists() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportAction.ExportFile(file),
+      logcatExportAction(
+        currentFile = file,
+        result = LogcatExportResult(destinationSelected = true),
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportAction(
+        currentFile = file,
+        result = LogcatExportResult(destinationSelected = false),
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportAction(
+        currentFile = null,
+        result = LogcatExportResult(destinationSelected = true),
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportDestinationSelectionExportsCurrentFileOnlyWhenDestinationSelected() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportAction.ExportFile(file),
+      logcatExportActionFromDestinationSelection(
+        currentFile = file,
+        destinationSelected = true,
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportActionFromDestinationSelection(
+        currentFile = file,
+        destinationSelected = false,
+      ),
+    )
+    assertEquals(
+      LogcatExportAction.Ignore,
+      logcatExportActionFromDestinationSelection(
+        currentFile = null,
+        destinationSelected = true,
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportDestinationActionKeepsSelectedDestinationWithCurrentFile() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportDestinationAction.ExportFile(
+        file = file,
+        destination = "content://logs/export",
+      ),
+      logcatExportDestinationAction(
+        currentFile = file,
+        destination = "content://logs/export",
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportDestinationActionIgnoresMissingFileOrDestination() {
+    val file = LogFile("clash-1234.log", 1234)
+
+    assertEquals(
+      LogcatExportDestinationAction.Ignore,
+      logcatExportDestinationAction(
+        currentFile = null,
+        destination = "content://logs/export",
+      ),
+    )
+    assertEquals(
+      LogcatExportDestinationAction.Ignore,
+      logcatExportDestinationAction<String>(
+        currentFile = file,
+        destination = null,
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportResultEventStateKeepsSemanticResultForRouteConsumption() {
+    assertEquals(
+      LogcatEventState.ExportResult(success = true, errorMessage = null),
+      logcatExportResultEventState(
+        success = true,
+        errorMessage = null,
+      ),
+    )
+    assertEquals(
+      LogcatEventState.ExportResult(success = false, errorMessage = "write failed"),
+      logcatExportResultEventState(
+        success = false,
+        errorMessage = "write failed",
+      ),
+    )
+  }
+
+  @Test
+  fun logcatExportResultMessageShowsSuccessOrFallbackErrorMessage() {
+    assertEquals(
+      "exported",
+      logcatExportResultMessage(
+        success = true,
+        errorMessage = null,
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
+    )
+    assertEquals(
+      "write failed",
+      logcatExportResultMessage(
+        success = false,
+        errorMessage = "write failed",
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
+    )
+    assertEquals(
+      "unknown",
+      logcatExportResultMessage(
+        success = false,
+        errorMessage = null,
+        exportedMessage = "exported",
+        unknownMessage = "unknown",
+      ),
+    )
+  }
+
+  @Test
+  fun logcatPollActionQueriesSnapshotsOnlyWhenStarted() {
+    assertEquals(
+      LogcatPollAction.QuerySnapshot(initialSnapshot = true),
+      logcatPollAction(started = true, initialSnapshot = true),
+    )
+    assertEquals(
+      LogcatPollAction.QuerySnapshot(initialSnapshot = false),
+      logcatPollAction(started = true, initialSnapshot = false),
+    )
+    assertEquals(
+      LogcatPollAction.Ignore,
+      logcatPollAction(started = false, initialSnapshot = true),
+    )
+  }
+
+  @Test
+  fun logcatStartedStateFromStartStopEventStartsStopsAndKeepsExistingState() {
+    assertEquals(
+      true,
+      logcatStartedStateFromStartStopEvent(
+        currentStarted = false,
+        isStartEvent = true,
+        isStopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStartedStateFromStartStopEvent(
+        currentStarted = true,
+        isStartEvent = false,
+        isStopEvent = true,
+      ),
+    )
+    assertEquals(
+      true,
+      logcatStartedStateFromStartStopEvent(
+        currentStarted = true,
+        isStartEvent = false,
+        isStopEvent = false,
+      ),
+    )
+    assertEquals(
+      false,
+      logcatStartedStateFromStartStopEvent(
+        currentStarted = false,
+        isStartEvent = false,
+        isStopEvent = false,
+      ),
+    )
+  }
+
+  @Test
+  fun logcatSnapshotActionPreservesStateAndInitialFlagWhenSnapshotIsMissing() {
+    val message = logMessage(1)
+    val state = LogcatUiState(messages = listOf(message))
+
+    assertEquals(
+      LogcatSnapshotAction(
+        state = state,
+        initialSnapshot = true,
+      ),
+      logcatSnapshotAction(
+        state = state,
+        initialSnapshot = true,
+        messages = null,
+      ),
+    )
+  }
+
+  @Test
+  fun logcatSnapshotActionReplacesMessagesAndClearsInitialFlagWhenSnapshotExists() {
+    val oldMessage = logMessage(1)
+    val newMessages = listOf(logMessage(2), logMessage(3))
+
+    assertEquals(
+      LogcatSnapshotAction(
+        state = LogcatUiState(messages = newMessages),
+        initialSnapshot = false,
+      ),
+      logcatSnapshotAction(
+        state = LogcatUiState(messages = listOf(oldMessage)),
+        initialSnapshot = true,
+        messages = newMessages,
+      ),
+    )
+  }
+
+  @Test
+  fun streamingUpdatesPreserveMessagesAndExportProgress() {
+    val message = logMessage(1)
+    val state =
+      LogcatUiState(
+          messages = listOf(message),
+          exportProgress = LogcatExportProgress(visible = true),
+        )
+        .withStreaming(false)
+
+    assertFalse(state.streaming)
+    assertEquals(listOf(message), state.messages)
+    assertTrue(state.exportProgress.visible)
+  }
+
+  @Test
+  fun initialActionUpdatesStreamingAndPreservesMessagesAndExportProgress() {
+    val message = logMessage(1)
+    val progress = LogcatExportProgress(visible = true)
+    val state = LogcatUiState(messages = listOf(message), exportProgress = progress)
+    val file = LogFile("clash-1234.log", 1234)
+
+    val streaming = state.withInitialAction(LogcatInitialAction.StartStreaming)
+    val localFile = state.withInitialAction(LogcatInitialAction.LoadFile(file))
+    val invalidFile = state.withInitialAction(LogcatInitialAction.InvalidFile)
+
+    assertTrue(streaming.streaming)
+    assertFalse(localFile.streaming)
+    assertFalse(invalidFile.streaming)
+    assertEquals(listOf(message), localFile.messages)
+    assertEquals(progress, localFile.exportProgress)
+  }
+
+  @Test
+  fun messagesUpdatesPreserveStreamingAndExportProgress() {
+    val progress = LogcatExportProgress(visible = true, max = 3)
+    val messages = listOf(logMessage(1), logMessage(2))
+    val state = LogcatUiState(streaming = false, exportProgress = progress).withMessages(messages)
+
+    assertFalse(state.streaming)
+    assertEquals(messages, state.messages)
+    assertEquals(progress, state.exportProgress)
+  }
+
+  @Test
+  fun exportStartShowsIndeterminateProgressWithMax() {
+    val state = LogcatUiState().withExportStarted(max = 4)
+
+    assertEquals(
+      LogcatExportProgress(
+        visible = true,
+        isIndeterminate = true,
+        progress = 0,
+        max = 4,
+      ),
+      state.exportProgress,
+    )
+  }
+
+  @Test
+  fun exportProgressSwitchesToDeterminateAndPreservesMax() {
+    val state = LogcatUiState().withExportStarted(max = 4).withExportProgress(progress = 2)
+
+    assertEquals(
+      LogcatExportProgress(
+        visible = true,
+        isIndeterminate = false,
+        progress = 2,
+        max = 4,
+      ),
+      state.exportProgress,
+    )
+  }
+
+  @Test
+  fun exportFinishResetsProgressOnly() {
+    val message = logMessage(1)
+    val state =
+      LogcatUiState(streaming = false, messages = listOf(message))
+        .withExportStarted(max = 1)
+        .withExportProgress(progress = 1)
+        .withExportFinished()
+
+    assertFalse(state.streaming)
+    assertEquals(listOf(message), state.messages)
+    assertEquals(LogcatExportProgress(), state.exportProgress)
+  }
+
+  @Test
+  fun autoScrollToLatestRequiresMessagesAndBottomViewport() {
+    assertTrue(logcatShouldAutoScrollToLatest(messageCount = 1, listAtBottom = true))
+    assertFalse(logcatShouldAutoScrollToLatest(messageCount = 0, listAtBottom = true))
+    assertFalse(logcatShouldAutoScrollToLatest(messageCount = 1, listAtBottom = false))
+  }
+
+  @Test
+  fun listViewportIsAtBottomWhenNoItemsAreVisible() {
+    assertTrue(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 0,
+        lastVisibleItemIndex = null,
+      )
+    )
+  }
+
+  @Test
+  fun listViewportIsAtBottomOnlyWhenLastItemFitsInsideViewport() {
+    assertTrue(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 2,
+        lastVisibleItemOffset = 80,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+    assertFalse(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 1,
+        lastVisibleItemOffset = 80,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+    assertFalse(
+      logcatListViewportIsAtBottom(
+        totalItemsCount = 3,
+        lastVisibleItemIndex = 2,
+        lastVisibleItemOffset = 90,
+        lastVisibleItemSize = 20,
+        viewportEndOffset = 100,
+      )
+    )
+  }
+
+  private fun logMessage(time: Long): LogMessage {
+    return LogMessage(LogMessage.Level.Info, "message-$time", time)
+  }
+}

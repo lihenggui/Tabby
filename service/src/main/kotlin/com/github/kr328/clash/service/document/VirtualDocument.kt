@@ -1,5 +1,7 @@
 package com.github.kr328.clash.service.document
 
+import com.github.kr328.clash.common.document.Flag
+
 class VirtualDocument(
   override val id: String,
   override val name: String,

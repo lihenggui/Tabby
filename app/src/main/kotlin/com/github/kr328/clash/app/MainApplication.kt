@@ -30,10 +30,9 @@ class MainApplication : Application() {
 
     Log.d("Process $processName started")
 
-    if (processName == packageName) {
-      Remote.launch()
-    } else {
-      sendServiceRecreated()
+    when (tabbyProcessStartupAction(processName, packageName)) {
+      TabbyProcessStartupAction.StartMainProcess -> Remote.launch()
+      TabbyProcessStartupAction.NotifyServiceRecreated -> sendServiceRecreated()
     }
   }
 
@@ -49,29 +48,32 @@ class MainApplication : Application() {
     clashDir.mkdirs()
 
     val updateDate = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
-    val geoipFile = File(clashDir, "geoip.metadb")
-    if (geoipFile.exists() && geoipFile.lastModified() < updateDate) {
-      geoipFile.delete()
-    }
-    if (!geoipFile.exists()) {
-      geoipFile.outputStream().use { assets.open("geoip.metadb").copyTo(it) }
-    }
+    tabbyGeoAssets().forEach { asset ->
+      val geoFile = File(clashDir, asset.outputName)
+      val initialAction =
+        tabbyGeoFileUpdateAction(
+          fileExists = geoFile.exists(),
+          fileLastModifiedMillis = geoFile.lastModified(),
+          packageLastUpdateMillis = updateDate,
+        )
 
-    val geositeFile = File(clashDir, "geosite.dat")
-    if (geositeFile.exists() && geositeFile.lastModified() < updateDate) {
-      geositeFile.delete()
-    }
-    if (!geositeFile.exists()) {
-      geositeFile.outputStream().use { assets.open("geosite.dat").copyTo(it) }
-    }
+      if (initialAction == TabbyGeoFileUpdateAction.DeleteStaleFile) geoFile.delete()
 
-    val asnFile = File(clashDir, "ASN.mmdb")
-    if (asnFile.exists() && asnFile.lastModified() < updateDate) {
-      asnFile.delete()
+      when (
+        tabbyGeoFileUpdateActionAfterStaleDelete(
+          initialAction = initialAction,
+          fileExistsAfterDelete = geoFile.exists(),
+        )
+      ) {
+        TabbyGeoFileUpdateAction.ExtractMissingFile -> extractGeoFile(asset, geoFile)
+        TabbyGeoFileUpdateAction.DeleteStaleFile,
+        TabbyGeoFileUpdateAction.Ignore -> Unit
+      }
     }
-    if (!asnFile.exists()) {
-      asnFile.outputStream().use { assets.open("ASN.mmdb").copyTo(it) }
-    }
+  }
+
+  private fun extractGeoFile(asset: TabbyGeoAsset, geoFile: File) {
+    geoFile.outputStream().use { assets.open(asset.assetName).copyTo(it) }
   }
 
   fun finalize() {

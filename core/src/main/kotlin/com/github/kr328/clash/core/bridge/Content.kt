@@ -3,6 +3,7 @@ package com.github.kr328.clash.core.bridge
 import androidx.annotation.Keep
 import androidx.core.net.toUri
 import com.github.kr328.clash.common.Global
+import com.github.kr328.clash.common.util.tabbyContentBridgeSupportsScheme
 import java.io.FileNotFoundException
 
 @Keep
@@ -11,7 +12,7 @@ object Content {
   fun open(url: String): Int {
     val uri = url.toUri()
 
-    if (uri.scheme != "content") {
+    if (!tabbyContentBridgeSupportsScheme(uri.scheme)) {
       throw UnsupportedOperationException("Unsupported scheme ${uri.scheme}")
     }
 

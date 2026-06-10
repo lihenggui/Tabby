@@ -15,19 +15,13 @@ import com.github.kr328.clash.glue.util.startClashService
 import com.github.kr328.clash.glue.util.stopClashService
 
 class TileService : android.service.quicksettings.TileService() {
-  private var currentProfile = ""
-  private var clashRunning = false
+  private var tileState = TabbyTileState()
 
   override fun onClick() {
-    val tile = qsTile ?: return
-
-    when (tile.state) {
-      Tile.STATE_INACTIVE -> {
-        startClashService()
-      }
-      Tile.STATE_ACTIVE -> {
-        stopClashService()
-      }
+    when (tabbyTileClickAction(qsTile?.tabbyTileClickState())) {
+      TabbyTileClickAction.StartClash -> startClashService()
+      TabbyTileClickAction.StopClash -> stopClashService()
+      TabbyTileClickAction.Ignore -> Unit
     }
   }
 
@@ -46,10 +40,7 @@ class TileService : android.service.quicksettings.TileService() {
       null,
     )
 
-    val name = StatusClient(this).currentProfile()
-
-    clashRunning = name != null
-    currentProfile = name.orEmpty()
+    tileState = tabbyTileInitialState(StatusClient(this).currentProfile())
 
     updateTile()
   }
@@ -62,10 +53,20 @@ class TileService : android.service.quicksettings.TileService() {
 
   private fun updateTile() {
     val tile = qsTile ?: return
+    val presentation = tabbyTilePresentation(tileState)
 
-    tile.state = if (clashRunning) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+    tile.state =
+      tabbyTilePresentationPlatformState(
+        presentation = presentation,
+        activePlatformState = Tile.STATE_ACTIVE,
+        inactivePlatformState = Tile.STATE_INACTIVE,
+      )
 
-    tile.label = currentProfile.ifEmpty { getText(CommonR.string.tabby) }
+    tile.label =
+      tabbyTilePresentationLabel(
+        presentation = presentation,
+        defaultLabel = getString(CommonR.string.tabby),
+      )
 
     tile.icon = Icon.createWithResource(this, CommonR.drawable.ic_tabby_small)
 
@@ -75,24 +76,35 @@ class TileService : android.service.quicksettings.TileService() {
   private val receiver =
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
-        when (intent?.action) {
-          Intents.ACTION_CLASH_STARTED -> {
-            clashRunning = true
-
-            currentProfile = ""
+        tileState =
+          when (val plan = tabbyTileBroadcastPlan(intent?.tabbyTileBroadcastAction())) {
+            is TabbyTileBroadcastPlan.Reduce -> reduceTabbyTileState(tileState, plan.event)
+            TabbyTileBroadcastPlan.LoadCurrentProfile ->
+              reduceTabbyTileState(
+                tileState,
+                tabbyTileProfileLoadedEvent(StatusClient(this@TileService).currentProfile()),
+              )
+            TabbyTileBroadcastPlan.Ignore -> return
           }
-          Intents.ACTION_CLASH_STOPPED,
-          Intents.ACTION_SERVICE_RECREATED -> {
-            clashRunning = false
-
-            currentProfile = ""
-          }
-          Intents.ACTION_PROFILE_LOADED -> {
-            currentProfile = StatusClient(this@TileService).currentProfile().orEmpty()
-          }
-        }
 
         updateTile()
       }
     }
+}
+
+private fun Intent.tabbyTileBroadcastAction(): TabbyTileBroadcastAction? =
+  tabbyTileBroadcastActionFromString(
+    action = action,
+    clashStartedAction = Intents.ACTION_CLASH_STARTED,
+    clashStoppedAction = Intents.ACTION_CLASH_STOPPED,
+    serviceRecreatedAction = Intents.ACTION_SERVICE_RECREATED,
+    profileLoadedAction = Intents.ACTION_PROFILE_LOADED,
+  )
+
+private fun Tile.tabbyTileClickState(): TabbyTileClickState? {
+  return tabbyTileClickStateFromPlatformState(
+    platformState = state,
+    activePlatformState = Tile.STATE_ACTIVE,
+    inactivePlatformState = Tile.STATE_INACTIVE,
+  )
 }
