@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.service.TabbyServiceCreateAction
+import com.github.kr328.clash.common.service.tabbyServiceCreateAction
 import com.github.kr328.clash.service.clash.clashRuntime
 import com.github.kr328.clash.service.clash.module.AppListCacheModule
 import com.github.kr328.clash.service.clash.module.CloseModule
@@ -68,7 +70,10 @@ class ClashService : BaseService() {
   override fun onCreate() {
     super.onCreate()
 
-    if (StatusProvider.serviceRunning) return stopSelf()
+    when (tabbyServiceCreateAction(StatusProvider.serviceRunning)) {
+      TabbyServiceCreateAction.StopDuplicate -> return stopSelf()
+      TabbyServiceCreateAction.StartService -> Unit
+    }
 
     StatusProvider.serviceRunning = true
 

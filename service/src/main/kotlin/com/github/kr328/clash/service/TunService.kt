@@ -16,6 +16,8 @@ import com.github.kr328.clash.common.network.tabbyTunDeviceText
 import com.github.kr328.clash.common.network.tabbyTunHttpProxyExclusionList
 import com.github.kr328.clash.common.network.tabbyTunNetworkPlan
 import com.github.kr328.clash.common.network.tabbyTunShouldSetUnderlyingNetworks
+import com.github.kr328.clash.common.service.TabbyServiceCreateAction
+import com.github.kr328.clash.common.service.tabbyServiceCreateAction
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.core.model.accessControlPackagePlan
 import com.github.kr328.clash.service.clash.clashRuntime
@@ -98,7 +100,10 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
   override fun onCreate() {
     super.onCreate()
 
-    if (StatusProvider.serviceRunning) return stopSelf()
+    when (tabbyServiceCreateAction(StatusProvider.serviceRunning)) {
+      TabbyServiceCreateAction.StopDuplicate -> return stopSelf()
+      TabbyServiceCreateAction.StartService -> Unit
+    }
 
     StatusProvider.serviceRunning = true
 
