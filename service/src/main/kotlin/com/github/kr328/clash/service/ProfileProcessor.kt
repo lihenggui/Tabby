@@ -9,6 +9,7 @@ import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
 import com.github.kr328.clash.core.model.profileAppliedImportedProfile
+import com.github.kr328.clash.core.model.profileFetchConfigurationStatus
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
@@ -280,14 +281,7 @@ private suspend fun Context.fetchProfileConfigurationIfNeeded(
   if (!profileShouldFetchConfiguration(source, force, config.exists())) return null
 
   val uri = source.toUri()
-  reportStatus(
-    FetchStatus(
-      action = FetchStatus.Action.FetchConfiguration,
-      args = listOf(uri.host.orEmpty()),
-      progress = -1,
-      max = -1,
-    )
-  )
+  reportStatus(profileFetchConfigurationStatus(uri.host))
 
   return fetchProfile(source).also { result ->
     config.parentFile?.mkdirs()

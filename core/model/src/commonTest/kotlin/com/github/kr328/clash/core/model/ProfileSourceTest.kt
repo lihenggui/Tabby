@@ -1,6 +1,7 @@
 package com.github.kr328.clash.core.model
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -144,6 +145,29 @@ class ProfileSourceTest {
         force = true,
         cachedConfigurationExists = false,
       )
+    )
+  }
+
+  @Test
+  fun profileConfigurationFetchStatusUsesSourceHostOrEmptyFallback() {
+    assertEquals(
+      FetchStatus(
+        action = FetchStatus.Action.FetchConfiguration,
+        args = listOf("example.com"),
+        progress = -1,
+        max = -1,
+      ),
+      profileFetchConfigurationStatus("example.com"),
+    )
+
+    assertEquals(
+      FetchStatus(
+        action = FetchStatus.Action.FetchConfiguration,
+        args = listOf(""),
+        progress = -1,
+        max = -1,
+      ),
+      profileFetchConfigurationStatus(null),
     )
   }
 

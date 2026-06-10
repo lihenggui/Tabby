@@ -21,6 +21,15 @@ fun profileShouldFetchConfiguration(
   return isHttpProfileSource(source) && (force || !cachedConfigurationExists)
 }
 
+fun profileFetchConfigurationStatus(sourceHost: String?): FetchStatus {
+  return FetchStatus(
+    action = FetchStatus.Action.FetchConfiguration,
+    args = listOf(sourceHost.orEmpty()),
+    progress = -1,
+    max = -1,
+  )
+}
+
 fun profileShouldForceFetchConfiguration(type: Profile.Type): Boolean {
   return type != Profile.Type.File
 }
