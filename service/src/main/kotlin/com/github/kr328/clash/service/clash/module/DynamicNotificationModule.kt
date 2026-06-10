@@ -12,6 +12,7 @@ import com.github.kr328.clash.common.compat.getColorCompat
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.service.tabbyScreenPowerEventFromPlatformAction
+import com.github.kr328.clash.common.service.tabbyServiceNotificationProfileTitle
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.common.util.ticker
 import com.github.kr328.clash.core.Clash
@@ -93,7 +94,12 @@ class DynamicNotificationModule(service: Service) : Module<Unit>(service) {
             ?.let { event -> shouldUpdate = event.isInteractive }
         }
         profileLoaded.onReceive {
-          builder.setContentTitle(StatusProvider.currentProfile ?: "Not selected")
+          builder.setContentTitle(
+            tabbyServiceNotificationProfileTitle(
+              profileName = StatusProvider.currentProfile,
+              defaultTitle = "Not selected",
+            )
+          )
         }
         if (shouldUpdate) {
           ticker.onReceive { update() }
