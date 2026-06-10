@@ -1,7 +1,8 @@
 package com.github.kr328.clash.profile.ui
 
 import androidx.compose.runtime.Composable
-import kotlin.time.Duration.Companion.milliseconds
+import com.github.kr328.clash.common.util.TabbyElapsedIntervalText
+import com.github.kr328.clash.common.util.tabbyElapsedIntervalText
 import org.jetbrains.compose.resources.stringResource
 import tabby.ui.shared.generated.resources.Res as SharedRes
 import tabby.ui.shared.generated.resources.format_days_ago
@@ -46,16 +47,14 @@ internal data class ElapsedTimeText(
 )
 
 internal fun elapsedTimeText(elapsedMillis: Long): ElapsedTimeText {
-  val duration = elapsedMillis.coerceAtLeast(0).milliseconds
-  val day = duration.inWholeDays
-  val hour = duration.inWholeHours
-  val minute = duration.inWholeMinutes
-
-  return when {
-    day > 0 -> ElapsedTimeText(token = ElapsedTimeTextToken.DaysAgo, value = day)
-    hour > 0 -> ElapsedTimeText(token = ElapsedTimeTextToken.HoursAgo, value = hour)
-    minute > 0 -> ElapsedTimeText(token = ElapsedTimeTextToken.MinutesAgo, value = minute)
-    else -> ElapsedTimeText(token = ElapsedTimeTextToken.Recently)
+  return when (val text = tabbyElapsedIntervalText(elapsedMillis)) {
+    is TabbyElapsedIntervalText.Days ->
+      ElapsedTimeText(token = ElapsedTimeTextToken.DaysAgo, value = text.count)
+    is TabbyElapsedIntervalText.Hours ->
+      ElapsedTimeText(token = ElapsedTimeTextToken.HoursAgo, value = text.count)
+    is TabbyElapsedIntervalText.Minutes ->
+      ElapsedTimeText(token = ElapsedTimeTextToken.MinutesAgo, value = text.count)
+    TabbyElapsedIntervalText.Recently -> ElapsedTimeText(token = ElapsedTimeTextToken.Recently)
   }
 }
 
