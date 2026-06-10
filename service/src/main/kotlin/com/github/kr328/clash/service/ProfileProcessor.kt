@@ -4,14 +4,19 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
+import com.github.kr328.clash.core.model.AppliedImportedProfile
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.ProfileFieldValidationError
+import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
+import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
+import com.github.kr328.clash.core.model.profileAppliedImportedProfile
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.network.ProfileFetchResult
+import com.github.kr328.clash.network.SubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -87,52 +92,22 @@ object ProfileProcessor {
             )
 
             val old = ImportedDao().queryByUUID(snapshot.uuid)
-            if (snapshot.type == Profile.Type.Url) {
-              val userInfo =
-                if (isHttpsProfileSource(snapshot.source)) {
-                  fetchedProfile?.subscriptionUserInfo
-                    ?: context.fetchSubscriptionUserInfo(snapshot.source)
-                } else {
-                  null
-                }
-              val new =
-                Imported(
-                  snapshot.uuid,
-                  snapshot.name,
-                  snapshot.type,
-                  snapshot.source,
-                  snapshot.interval,
-                  userInfo?.upload ?: 0,
-                  userInfo?.download ?: 0,
-                  userInfo?.total ?: 0,
-                  userInfo?.expire ?: 0,
-                  old?.createdAt ?: System.currentTimeMillis(),
-                )
-              if (old != null) {
-                ImportedDao().update(new)
+            val subscriptionUserInfo =
+              if (snapshot.type == Profile.Type.Url && isHttpsProfileSource(snapshot.source)) {
+                fetchedProfile?.subscriptionUserInfo
+                  ?: context.fetchSubscriptionUserInfo(snapshot.source)
               } else {
-                ImportedDao().insert(new)
+                null
               }
-
-              PendingDao().remove(snapshot.uuid)
-
-              context.pendingDir.resolve(snapshot.uuid.toString()).deleteRecursively()
-
-              context.sendProfileChanged(snapshot.uuid)
-            } else if (snapshot.type == Profile.Type.File) {
-              val new =
-                Imported(
-                  snapshot.uuid,
-                  snapshot.name,
-                  snapshot.type,
-                  snapshot.source,
-                  snapshot.interval,
-                  0,
-                  0,
-                  0,
-                  0,
-                  old?.createdAt ?: System.currentTimeMillis(),
-                )
+            val applied =
+              profileAppliedImportedProfile(
+                pending = snapshot.toStoredProfile(),
+                oldCreatedAt = old?.createdAt,
+                currentTimeMillis = System.currentTimeMillis(),
+                subscriptionUserInfo = subscriptionUserInfo?.toProfileSubscriptionUserInfo(),
+              )
+            if (applied != null) {
+              val new = applied.toImported(snapshot.uuid)
               if (old != null) {
                 ImportedDao().update(new)
               } else {
@@ -263,6 +238,43 @@ object ProfileProcessor {
       null -> Unit
     }
   }
+}
+
+private fun Pending.toStoredProfile(): StoredProfile {
+  return StoredProfile(
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun SubscriptionUserInfo.toProfileSubscriptionUserInfo(): ProfileSubscriptionUserInfo {
+  return ProfileSubscriptionUserInfo(
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+  )
+}
+
+private fun AppliedImportedProfile.toImported(uuid: Uuid): Imported {
+  return Imported(
+    uuid = uuid,
+    name = profile.name,
+    type = profile.type,
+    source = profile.source,
+    interval = profile.interval,
+    upload = profile.upload,
+    download = profile.download,
+    total = profile.total,
+    expire = profile.expire,
+    createdAt = createdAt,
+  )
 }
 
 private suspend fun Context.fetchProfileConfigurationIfNeeded(
