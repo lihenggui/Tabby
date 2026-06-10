@@ -153,4 +153,27 @@ class ProfileSourceTest {
     assertTrue(profileShouldForceFetchConfiguration(Profile.Type.Url))
     assertTrue(profileShouldForceFetchConfiguration(Profile.Type.External))
   }
+
+  @Test
+  fun profileValidationConfigurationFetchIsForcedOnlyWhenRequiredAndNotAlreadyFetched() {
+    assertTrue(
+      profileShouldForceFetchValidationConfiguration(
+        forceConfigurationFetch = true,
+        configurationFetched = false,
+      )
+    )
+
+    assertFalse(
+      profileShouldForceFetchValidationConfiguration(
+        forceConfigurationFetch = true,
+        configurationFetched = true,
+      )
+    )
+    assertFalse(
+      profileShouldForceFetchValidationConfiguration(
+        forceConfigurationFetch = false,
+        configurationFetched = false,
+      )
+    )
+  }
 }

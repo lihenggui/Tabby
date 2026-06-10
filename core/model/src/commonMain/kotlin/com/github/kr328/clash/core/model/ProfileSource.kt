@@ -25,6 +25,13 @@ fun profileShouldForceFetchConfiguration(type: Profile.Type): Boolean {
   return type != Profile.Type.File
 }
 
+fun profileShouldForceFetchValidationConfiguration(
+  forceConfigurationFetch: Boolean,
+  configurationFetched: Boolean,
+): Boolean {
+  return forceConfigurationFetch && !configurationFetched
+}
+
 fun isSupportedProfileSourceScheme(scheme: String?): Boolean {
   return scheme.equals("https", ignoreCase = true) ||
     scheme.equals("http", ignoreCase = true) ||

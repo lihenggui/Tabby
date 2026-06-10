@@ -14,6 +14,7 @@ import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
 import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
 import com.github.kr328.clash.core.model.profileShouldForceFetchConfiguration
+import com.github.kr328.clash.core.model.profileShouldForceFetchValidationConfiguration
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
@@ -77,7 +78,10 @@ object ProfileProcessor {
         Clash.fetchAndValid(
             context.processingDir,
             snapshot.source,
-            force && fetchedProfile == null,
+            profileShouldForceFetchValidationConfiguration(
+              forceConfigurationFetch = force,
+              configurationFetched = fetchedProfile != null,
+            ),
           ) {
             reportStatus(it)
           }
@@ -156,7 +160,14 @@ object ProfileProcessor {
         val fetchedProfile =
           context.fetchProfileConfigurationIfNeeded(snapshot.source, force = true, reportStatus)
 
-        Clash.fetchAndValid(context.processingDir, snapshot.source, fetchedProfile == null) {
+        Clash.fetchAndValid(
+            context.processingDir,
+            snapshot.source,
+            profileShouldForceFetchValidationConfiguration(
+              forceConfigurationFetch = true,
+              configurationFetched = fetchedProfile != null,
+            ),
+          ) {
             reportStatus(it)
           }
           .await()
