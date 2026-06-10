@@ -12,6 +12,7 @@ import com.github.kr328.clash.common.document.Paths
 import com.github.kr328.clash.common.document.tabbyDocumentIdIsChild
 import com.github.kr328.clash.common.document.tabbyDocumentOpenModeRequestsWrite
 import com.github.kr328.clash.common.document.tabbyDocumentPlatformFlags
+import com.github.kr328.clash.common.document.tabbyDocumentProviderRootFlags
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.PatternFileName
 import com.github.kr328.clash.service.document.Document
@@ -153,7 +154,11 @@ class FilesProvider : DocumentsProvider() {
   }
 
   override fun queryRoots(projection: Array<out String>?): Cursor {
-    val flags = Root.FLAG_LOCAL_ONLY or Root.FLAG_SUPPORTS_IS_CHILD
+    val flags =
+      tabbyDocumentProviderRootFlags(
+        localOnlyFlag = Root.FLAG_LOCAL_ONLY,
+        supportsIsChildFlag = Root.FLAG_SUPPORTS_IS_CHILD,
+      )
 
     return MatrixCursor(projection ?: DEFAULT_ROOT_COLUMNS).apply {
       newRow().apply {

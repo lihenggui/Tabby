@@ -57,6 +57,17 @@ class DocumentProviderRuleTest {
   }
 
   @Test
+  fun documentProviderRootFlagsExposeLocalOnlyChildSupport() {
+    assertEquals(
+      0b11,
+      tabbyDocumentProviderRootFlags(
+        localOnlyFlag = 0b01,
+        supportsIsChildFlag = 0b10,
+      ),
+    )
+  }
+
+  @Test
   fun nullDocumentIdsAreNotChildDocuments() {
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = null, documentId = "/profile"))
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = "/", documentId = null))

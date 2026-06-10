@@ -20,6 +20,10 @@ fun tabbyProviderFileDocumentFlags(): Set<Flag> {
   return setOf(Flag.Writable, Flag.Deletable)
 }
 
+fun tabbyDocumentProviderRootFlags(localOnlyFlag: Int, supportsIsChildFlag: Int): Int {
+  return localOnlyFlag or supportsIsChildFlag
+}
+
 fun tabbyDocumentIdIsChild(parentDocumentId: String?, documentId: String?): Boolean {
   if (parentDocumentId == null || documentId == null) return false
 
