@@ -9,6 +9,7 @@ import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.isHttpsProfileSource
+import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.service.data.Imported
@@ -23,7 +24,6 @@ import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.processingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
-import java.util.Locale
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
@@ -243,15 +243,14 @@ object ProfileProcessor {
   }
 
   private fun Pending.enforceFieldValid() {
-    val scheme = source.toUri().scheme?.lowercase(Locale.getDefault())
+    val scheme = source.toUri().scheme
 
     when (
       profileFieldValidationError(
         type = type,
         name = name,
         sourceMissing = source.isEmpty(),
-        sourceSupported =
-          source.isEmpty() || scheme == "https" || scheme == "http" || scheme == "content",
+        sourceSupported = source.isEmpty() || isSupportedProfileSourceScheme(scheme),
         interval = interval,
       )
     ) {

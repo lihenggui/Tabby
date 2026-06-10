@@ -46,4 +46,22 @@ class ProfileSourceTest {
     assertFalse(isHttpsProfileSource(" https://example.com/config.yaml"))
     assertFalse(isHttpsProfileSource("\thttps://example.com/config.yaml"))
   }
+
+  @Test
+  fun supportedProfileSourceSchemeAcceptsHttpHttpsAndContentCaseInsensitively() {
+    assertTrue(isSupportedProfileSourceScheme("http"))
+    assertTrue(isSupportedProfileSourceScheme("https"))
+    assertTrue(isSupportedProfileSourceScheme("content"))
+    assertTrue(isSupportedProfileSourceScheme("HTTP"))
+    assertTrue(isSupportedProfileSourceScheme("HTTPS"))
+    assertTrue(isSupportedProfileSourceScheme("CONTENT"))
+  }
+
+  @Test
+  fun supportedProfileSourceSchemeRejectsMissingBlankAndOtherSchemes() {
+    assertFalse(isSupportedProfileSourceScheme(null))
+    assertFalse(isSupportedProfileSourceScheme(""))
+    assertFalse(isSupportedProfileSourceScheme(" "))
+    assertFalse(isSupportedProfileSourceScheme("file"))
+  }
 }

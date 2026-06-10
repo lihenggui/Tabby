@@ -8,3 +8,9 @@ fun isHttpProfileSource(source: String): Boolean {
 fun isHttpsProfileSource(source: String): Boolean {
   return source.startsWith("https://", ignoreCase = true)
 }
+
+fun isSupportedProfileSourceScheme(scheme: String?): Boolean {
+  return scheme.equals("https", ignoreCase = true) ||
+    scheme.equals("http", ignoreCase = true) ||
+    scheme.equals("content", ignoreCase = true)
+}
