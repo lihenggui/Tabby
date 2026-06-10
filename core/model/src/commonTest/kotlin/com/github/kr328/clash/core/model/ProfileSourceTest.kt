@@ -146,4 +146,11 @@ class ProfileSourceTest {
       )
     )
   }
+
+  @Test
+  fun profileConfigurationFetchIsForcedOnlyForNonFileProfiles() {
+    assertFalse(profileShouldForceFetchConfiguration(Profile.Type.File))
+    assertTrue(profileShouldForceFetchConfiguration(Profile.Type.Url))
+    assertTrue(profileShouldForceFetchConfiguration(Profile.Type.External))
+  }
 }

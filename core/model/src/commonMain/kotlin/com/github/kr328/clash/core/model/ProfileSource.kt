@@ -21,6 +21,10 @@ fun profileShouldFetchConfiguration(
   return isHttpProfileSource(source) && (force || !cachedConfigurationExists)
 }
 
+fun profileShouldForceFetchConfiguration(type: Profile.Type): Boolean {
+  return type != Profile.Type.File
+}
+
 fun isSupportedProfileSourceScheme(scheme: String?): Boolean {
   return scheme.equals("https", ignoreCase = true) ||
     scheme.equals("http", ignoreCase = true) ||

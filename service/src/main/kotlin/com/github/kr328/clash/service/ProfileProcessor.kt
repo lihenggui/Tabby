@@ -6,7 +6,6 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.AppliedImportedProfile
 import com.github.kr328.clash.core.model.FetchStatus
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
 import com.github.kr328.clash.core.model.profileAppliedImportedProfile
@@ -14,6 +13,7 @@ import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
 import com.github.kr328.clash.core.model.profileShouldFetchSubscriptionUserInfo
+import com.github.kr328.clash.core.model.profileShouldForceFetchConfiguration
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.network.toProfileSubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
@@ -60,7 +60,7 @@ object ProfileProcessor {
           pending
         }
 
-        val force = snapshot.type != Profile.Type.File
+        val force = profileShouldForceFetchConfiguration(snapshot.type)
         var cb = callback
         val reportStatus: (FetchStatus) -> Unit = { status ->
           try {

@@ -7,6 +7,7 @@ import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.profileFieldValidationError
 import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.core.model.profileShouldFetchConfiguration
+import com.github.kr328.clash.core.model.profileShouldForceFetchConfiguration
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -214,7 +215,7 @@ class DesktopProfileRepository(
           fetchProfileConfiguration(
             source = pending.source,
             profileDir = processingDir,
-            force = pending.type != Profile.Type.File,
+            force = profileShouldForceFetchConfiguration(pending.type),
           )
         validateProfileDirectory(processingDir)
 
