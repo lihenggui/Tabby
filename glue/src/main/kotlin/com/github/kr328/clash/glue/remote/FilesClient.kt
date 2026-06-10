@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract as DC
 import com.github.kr328.clash.common.constants.Authorities
+import com.github.kr328.clash.common.document.tabbyDocumentListSortKey
 import com.github.kr328.clash.glue.util.copyContentTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ class FilesClient(private val context: Context) {
                 )
                 .also { cursor.moveToNext() }
             }
-            .sortedWith(compareBy({ !it.isDirectory }, { it.name }))
+            .sortedWith(compareBy { tabbyDocumentListSortKey(it.isDirectory, it.name) })
         }
         .orEmpty()
     }

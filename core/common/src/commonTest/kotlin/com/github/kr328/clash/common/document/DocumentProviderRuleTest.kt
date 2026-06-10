@@ -68,6 +68,24 @@ class DocumentProviderRuleTest {
   }
 
   @Test
+  fun documentListSortKeyOrdersDirectoriesBeforeFilesAndThenByName() {
+    val documents =
+      listOf(
+        TestDocument(name = "z-file.yaml", isDirectory = false),
+        TestDocument(name = "b-dir", isDirectory = true),
+        TestDocument(name = "a-file.yaml", isDirectory = false),
+        TestDocument(name = "a-dir", isDirectory = true),
+      )
+
+    assertEquals(
+      listOf("a-dir", "b-dir", "a-file.yaml", "z-file.yaml"),
+      documents
+        .sortedWith(compareBy { tabbyDocumentListSortKey(it.isDirectory, it.name) })
+        .map(TestDocument::name),
+    )
+  }
+
+  @Test
   fun nullDocumentIdsAreNotChildDocuments() {
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = null, documentId = "/profile"))
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = "/", documentId = null))
@@ -84,3 +102,5 @@ class DocumentProviderRuleTest {
     assertFalse(tabbyDocumentIdIsChild(parentDocumentId = "/other", documentId = "/profile/file"))
   }
 }
+
+private data class TestDocument(val name: String, val isDirectory: Boolean)

@@ -24,6 +24,22 @@ fun tabbyDocumentProviderRootFlags(localOnlyFlag: Int, supportsIsChildFlag: Int)
   return localOnlyFlag or supportsIsChildFlag
 }
 
+data class TabbyDocumentListSortKey(val directoryRank: Int, val name: String) :
+  Comparable<TabbyDocumentListSortKey> {
+  override fun compareTo(other: TabbyDocumentListSortKey): Int {
+    return compareValuesBy(
+      this,
+      other,
+      TabbyDocumentListSortKey::directoryRank,
+      TabbyDocumentListSortKey::name,
+    )
+  }
+}
+
+fun tabbyDocumentListSortKey(isDirectory: Boolean, name: String): TabbyDocumentListSortKey {
+  return TabbyDocumentListSortKey(directoryRank = if (isDirectory) 0 else 1, name = name)
+}
+
 fun tabbyDocumentIdIsChild(parentDocumentId: String?, documentId: String?): Boolean {
   if (parentDocumentId == null || documentId == null) return false
 
