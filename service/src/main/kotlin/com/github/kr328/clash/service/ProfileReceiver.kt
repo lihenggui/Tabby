@@ -12,7 +12,9 @@ import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.componentName
 import com.github.kr328.clash.common.util.setUUID
+import com.github.kr328.clash.core.model.ProfileReceiverStartAction
 import com.github.kr328.clash.core.model.profileAutoUpdateScheduleDelayMillis
+import com.github.kr328.clash.core.model.profileReceiverStartAction
 import com.github.kr328.clash.core.model.profileSupportsAutoUpdateSchedule
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
@@ -23,11 +25,14 @@ import kotlinx.coroutines.sync.withLock
 
 class ProfileReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
-    when (intent.action) {
-      Intent.ACTION_BOOT_COMPLETED,
-      Intent.ACTION_MY_PACKAGE_REPLACED,
-      Intent.ACTION_TIMEZONE_CHANGED,
-      Intent.ACTION_TIME_CHANGED -> {
+    when (
+      profileReceiverStartAction(
+        action = intent.action,
+        scheduleTriggerActions = PROFILE_SCHEDULE_TRIGGER_ACTIONS,
+        requestUpdateAction = Intents.ACTION_PROFILE_REQUEST_UPDATE,
+      )
+    ) {
+      ProfileReceiverStartAction.ScheduleUpdates -> {
         Global.launch {
           reset()
 
@@ -38,15 +43,24 @@ class ProfileReceiver : BroadcastReceiver() {
           context.startForegroundService(service)
         }
       }
-      Intents.ACTION_PROFILE_REQUEST_UPDATE -> {
+      ProfileReceiverStartAction.RequestUpdate -> {
         val redirect = intent.setComponent(ProfileWorker::class.componentName)
 
         context.startForegroundService(redirect)
       }
+      ProfileReceiverStartAction.Ignore -> Unit
     }
   }
 
   companion object {
+    private val PROFILE_SCHEDULE_TRIGGER_ACTIONS =
+      setOf(
+        Intent.ACTION_BOOT_COMPLETED,
+        Intent.ACTION_MY_PACKAGE_REPLACED,
+        Intent.ACTION_TIMEZONE_CHANGED,
+        Intent.ACTION_TIME_CHANGED,
+      )
+
     private val lock = Mutex()
     private var initialized: Boolean = false
 

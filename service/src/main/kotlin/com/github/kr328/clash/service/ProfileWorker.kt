@@ -17,6 +17,8 @@ import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.mainIntent
 import com.github.kr328.clash.common.util.setUUID
 import com.github.kr328.clash.common.util.uuid
+import com.github.kr328.clash.core.model.ProfileWorkerStartAction
+import com.github.kr328.clash.core.model.profileWorkerStartAction
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.util.sendProfileUpdateCompleted
 import com.github.kr328.clash.service.util.sendProfileUpdateFailed
@@ -62,15 +64,21 @@ class ProfileWorker : BaseService() {
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     super.onStartCommand(intent, flags, startId)
 
-    when (intent?.action) {
-      Intents.ACTION_PROFILE_REQUEST_UPDATE -> {
-        intent.uuid?.also {
+    when (
+      profileWorkerStartAction(
+        action = intent?.action,
+        requestUpdateAction = Intents.ACTION_PROFILE_REQUEST_UPDATE,
+        scheduleUpdatesAction = Intents.ACTION_PROFILE_SCHEDULE_UPDATES,
+      )
+    ) {
+      ProfileWorkerStartAction.RequestUpdate -> {
+        intent?.uuid?.also {
           val job = launch { run(it) }
 
           jobs.add(job)
         }
       }
-      Intents.ACTION_PROFILE_SCHEDULE_UPDATES -> {
+      ProfileWorkerStartAction.ScheduleUpdates -> {
         val job = launch {
           ProfileReceiver.rescheduleAll(service)
 
@@ -79,6 +87,7 @@ class ProfileWorker : BaseService() {
 
         jobs.add(job)
       }
+      ProfileWorkerStartAction.Ignore -> Unit
     }
 
     return START_NOT_STICKY
