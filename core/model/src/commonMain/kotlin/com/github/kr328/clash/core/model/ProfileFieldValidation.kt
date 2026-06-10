@@ -7,6 +7,18 @@ enum class ProfileFieldValidationError {
   InvalidInterval,
 }
 
+fun profileFieldValidationErrorMessage(
+  error: ProfileFieldValidationError,
+  source: String,
+): String {
+  return when (error) {
+    ProfileFieldValidationError.EmptyName -> "Empty name"
+    ProfileFieldValidationError.MissingSource -> "Invalid url"
+    ProfileFieldValidationError.UnsupportedSource -> "Unsupported url $source"
+    ProfileFieldValidationError.InvalidInterval -> "Invalid interval"
+  }
+}
+
 fun profileFieldValidationError(
   type: Profile.Type,
   name: String,

@@ -7,7 +7,6 @@ import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.AppliedImportedProfile
 import com.github.kr328.clash.core.model.FetchStatus
 import com.github.kr328.clash.core.model.Profile
-import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpProfileSource
@@ -15,6 +14,7 @@ import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.isSupportedProfileSourceScheme
 import com.github.kr328.clash.core.model.profileAppliedImportedProfile
 import com.github.kr328.clash.core.model.profileFieldValidationError
+import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.network.ProfileFetchResult
 import com.github.kr328.clash.network.SubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
@@ -220,23 +220,16 @@ object ProfileProcessor {
   private fun Pending.enforceFieldValid() {
     val scheme = source.toUri().scheme
 
-    when (
-      profileFieldValidationError(
+    profileFieldValidationError(
         type = type,
         name = name,
         sourceMissing = source.isEmpty(),
         sourceSupported = source.isEmpty() || isSupportedProfileSourceScheme(scheme),
         interval = interval,
       )
-    ) {
-      ProfileFieldValidationError.EmptyName -> throw IllegalArgumentException("Empty name")
-      ProfileFieldValidationError.MissingSource -> throw IllegalArgumentException("Invalid url")
-      ProfileFieldValidationError.UnsupportedSource ->
-        throw IllegalArgumentException("Unsupported url $source")
-      ProfileFieldValidationError.InvalidInterval ->
-        throw IllegalArgumentException("Invalid interval")
-      null -> Unit
-    }
+      ?.let { error ->
+        throw IllegalArgumentException(profileFieldValidationErrorMessage(error, source))
+      }
   }
 }
 

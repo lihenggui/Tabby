@@ -5,6 +5,38 @@ import kotlin.test.assertEquals
 
 class ProfileFieldValidationTest {
   @Test
+  fun profileFieldValidationErrorMessageMatchesExistingExceptions() {
+    assertEquals(
+      "Empty name",
+      profileFieldValidationErrorMessage(
+        error = ProfileFieldValidationError.EmptyName,
+        source = "https://example.com/config.yaml",
+      ),
+    )
+    assertEquals(
+      "Invalid url",
+      profileFieldValidationErrorMessage(
+        error = ProfileFieldValidationError.MissingSource,
+        source = "",
+      ),
+    )
+    assertEquals(
+      "Unsupported url ftp://example.com/config.yaml",
+      profileFieldValidationErrorMessage(
+        error = ProfileFieldValidationError.UnsupportedSource,
+        source = "ftp://example.com/config.yaml",
+      ),
+    )
+    assertEquals(
+      "Invalid interval",
+      profileFieldValidationErrorMessage(
+        error = ProfileFieldValidationError.InvalidInterval,
+        source = "https://example.com/config.yaml",
+      ),
+    )
+  }
+
+  @Test
   fun profileFieldValidationAcceptsFileWithoutSourceAndUrlWithSupportedSource() {
     assertEquals(
       null,

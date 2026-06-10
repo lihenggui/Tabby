@@ -5,6 +5,7 @@ import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.ProfileFieldValidationError
 import com.github.kr328.clash.core.model.isHttpProfileSource
 import com.github.kr328.clash.core.model.profileFieldValidationError
+import com.github.kr328.clash.core.model.profileFieldValidationErrorMessage
 import com.github.kr328.clash.database.DesktopDatabaseDriverFactory
 import com.github.kr328.clash.database.ProfileDatabase
 import com.github.kr328.clash.database.ProfileEntity
@@ -385,18 +386,13 @@ class DesktopProfileRepository(
       )
 
     if (validationError == ProfileFieldValidationError.EmptyName) {
-      throw IllegalArgumentException("Empty name")
+      throw IllegalArgumentException(profileFieldValidationErrorMessage(validationError, source))
     }
 
     if (type == Profile.Type.External) unsupported()
 
-    when (validationError) {
-      ProfileFieldValidationError.MissingSource -> throw IllegalArgumentException("Invalid url")
-      ProfileFieldValidationError.UnsupportedSource ->
-        throw IllegalArgumentException("Unsupported url $source")
-      ProfileFieldValidationError.InvalidInterval ->
-        throw IllegalArgumentException("Invalid interval")
-      else -> Unit
+    validationError?.let { error ->
+      throw IllegalArgumentException(profileFieldValidationErrorMessage(error, source))
     }
   }
 
