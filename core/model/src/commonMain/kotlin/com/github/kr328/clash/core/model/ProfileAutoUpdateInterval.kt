@@ -22,6 +22,10 @@ fun isValidProfileAutoUpdateIntervalMillis(interval: Long): Boolean {
   return interval == 0L || interval >= MINIMUM_PROFILE_AUTO_UPDATE_INTERVAL_MILLIS
 }
 
+fun profileSupportsAutoUpdateSchedule(type: Profile.Type): Boolean {
+  return type != Profile.Type.File
+}
+
 fun profileAutoUpdateScheduleDelayMillis(
   interval: Long,
   currentTimeMillis: Long,

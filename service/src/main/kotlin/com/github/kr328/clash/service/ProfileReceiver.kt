@@ -12,8 +12,8 @@ import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.componentName
 import com.github.kr328.clash.common.util.setUUID
-import com.github.kr328.clash.core.model.Profile
 import com.github.kr328.clash.core.model.profileAutoUpdateScheduleDelayMillis
+import com.github.kr328.clash.core.model.profileSupportsAutoUpdateSchedule
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.util.importedDir
@@ -60,7 +60,7 @@ class ProfileReceiver : BroadcastReceiver() {
       ImportedDao()
         .queryAllUUIDs()
         .mapNotNull { ImportedDao().queryByUUID(it) }
-        .filter { it.type != Profile.Type.File }
+        .filter { profileSupportsAutoUpdateSchedule(it.type) }
         .forEach { scheduleNext(context, it) }
     }
 

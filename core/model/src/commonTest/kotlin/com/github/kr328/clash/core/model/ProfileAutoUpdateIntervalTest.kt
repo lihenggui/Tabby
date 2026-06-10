@@ -51,6 +51,17 @@ class ProfileAutoUpdateIntervalTest {
   }
 
   @Test
+  fun profileAutoUpdateScheduleSupportsRemoteProfileTypes() {
+    assertTrue(profileSupportsAutoUpdateSchedule(Profile.Type.Url))
+    assertTrue(profileSupportsAutoUpdateSchedule(Profile.Type.External))
+  }
+
+  @Test
+  fun profileAutoUpdateScheduleSkipsFileProfiles() {
+    assertFalse(profileSupportsAutoUpdateSchedule(Profile.Type.File))
+  }
+
+  @Test
   fun profileAutoUpdateScheduleDelayReturnsRemainingDelayOrImmediateDelay() {
     assertEquals(
       300_000L,
