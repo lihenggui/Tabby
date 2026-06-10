@@ -14,6 +14,7 @@ import com.github.kr328.clash.common.network.TABBY_NETWORK_SATELLITE_TRANSPORT_M
 import com.github.kr328.clash.common.network.TABBY_NETWORK_USB_TRANSPORT_MIN_SDK
 import com.github.kr328.clash.common.network.TabbyNetworkTransportState
 import com.github.kr328.clash.common.network.tabbyNetworkObservePriority
+import com.github.kr328.clash.common.network.tabbyNetworkObservedDnsChange
 import com.github.kr328.clash.common.network.tabbyNetworkSupportsSatelliteTransport
 import com.github.kr328.clash.common.network.tabbyNetworkSupportsUsbTransport
 import com.github.kr328.clash.core.Clash
@@ -158,10 +159,15 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
         .orEmpty()
         .map { x -> x.asSocketAddressText(53) }
     val prevDnsList = curDnsList
-    if (dnsList.isNotEmpty() && prevDnsList != dnsList) {
-      Log.i("notifyDnsChange $prevDnsList -> $dnsList")
-      curDnsList = dnsList
-      Clash.notifyDnsChanged(dnsList)
+    val nextDnsList =
+      tabbyNetworkObservedDnsChange(
+        previousDnsServers = prevDnsList,
+        selectedDnsServers = dnsList,
+      )
+    if (nextDnsList != null) {
+      Log.i("notifyDnsChange $prevDnsList -> $nextDnsList")
+      curDnsList = nextDnsList
+      Clash.notifyDnsChanged(nextDnsList)
     }
   }
 
