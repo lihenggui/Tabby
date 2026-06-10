@@ -5,6 +5,34 @@ import kotlin.test.assertEquals
 
 class InstalledAppCacheTest {
   @Test
+  fun mapsPlatformFieldsToInstalledAppInfo() {
+    assertEquals(
+      TabbyInstalledAppInfo(
+        uid = 1000,
+        packageName = "org.example.app",
+        sharedUserId = "org.example.shared",
+      ),
+      tabbyInstalledAppInfoFromPlatformFields(
+        uid = 1000,
+        packageName = "org.example.app",
+        sharedUserId = "org.example.shared",
+      ),
+    )
+  }
+
+  @Test
+  fun dropsPlatformFieldsWithoutUid() {
+    assertEquals(
+      null,
+      tabbyInstalledAppInfoFromPlatformFields(
+        uid = null,
+        packageName = "org.example.app",
+        sharedUserId = "org.example.shared",
+      ),
+    )
+  }
+
+  @Test
   fun usesPackageNameForAppsWithoutSharedUserId() {
     assertEquals(
       listOf(1001 to "org.example.single"),

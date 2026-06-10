@@ -6,6 +6,20 @@ data class TabbyInstalledAppInfo(
   val sharedUserId: String? = null,
 )
 
+fun tabbyInstalledAppInfoFromPlatformFields(
+  uid: Int?,
+  packageName: String,
+  sharedUserId: String?,
+): TabbyInstalledAppInfo? {
+  return uid?.let {
+    TabbyInstalledAppInfo(
+      uid = it,
+      packageName = packageName,
+      sharedUserId = sharedUserId,
+    )
+  }
+}
+
 fun tabbyInstalledAppCacheEntries(apps: List<TabbyInstalledAppInfo>): List<Pair<Int, String>> {
   return apps
     .groupBy { it.uniqueUidName }

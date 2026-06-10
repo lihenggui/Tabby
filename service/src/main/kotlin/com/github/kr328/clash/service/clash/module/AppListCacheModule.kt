@@ -2,9 +2,8 @@ package com.github.kr328.clash.service.clash.module
 
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageInfo
-import com.github.kr328.clash.common.app.TabbyInstalledAppInfo
 import com.github.kr328.clash.common.app.tabbyInstalledAppCacheEntries
+import com.github.kr328.clash.common.app.tabbyInstalledAppInfoFromPlatformFields
 import com.github.kr328.clash.common.compat.getInstalledPackagesCompat
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
@@ -16,7 +15,13 @@ class AppListCacheModule(service: Service) : Module<Unit>(service) {
   private fun reload() {
     val packages =
       tabbyInstalledAppCacheEntries(
-        service.packageManager.getInstalledPackagesCompat(0).mapNotNull { it.toInstalledAppInfo() }
+        service.packageManager.getInstalledPackagesCompat(0).mapNotNull {
+          tabbyInstalledAppInfoFromPlatformFields(
+            uid = it.applicationInfo?.uid,
+            packageName = it.packageName,
+            sharedUserId = it.sharedUserId,
+          )
+        }
       )
 
     Clash.notifyInstalledAppsChanged(packages)
@@ -40,14 +45,4 @@ class AppListCacheModule(service: Service) : Module<Unit>(service) {
       delay(10.seconds)
     }
   }
-}
-
-private fun PackageInfo.toInstalledAppInfo(): TabbyInstalledAppInfo? {
-  val applicationInfo = applicationInfo ?: return null
-
-  return TabbyInstalledAppInfo(
-    uid = applicationInfo.uid,
-    packageName = packageName,
-    sharedUserId = sharedUserId,
-  )
 }
