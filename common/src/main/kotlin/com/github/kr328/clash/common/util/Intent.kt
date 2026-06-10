@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
+import com.github.kr328.clash.common.app.TabbyLauncherActivitySpec
+import com.github.kr328.clash.common.app.tabbyMainActivityAliasFromLauncherActivities
 import com.github.kr328.clash.common.compat.TABBY_SERIALIZABLE_EXTRA_TYPED_API_MIN_SDK
 import com.github.kr328.clash.common.compat.queryIntentActivitiesCompat
 import com.github.kr328.clash.common.compat.tabbySerializableExtraUsesTypedApi
@@ -28,14 +30,17 @@ val Context.mainActivityAlias: ComponentName
 
     return packageManager
       .queryIntentActivitiesCompat(launcherIntent, resolveFlags)
-      .firstNotNullOfOrNull { resolveInfo ->
+      .asSequence()
+      .map { resolveInfo ->
         val activityInfo = resolveInfo.activityInfo
-        if (activityInfo.targetActivity == mainActivityName) {
-          ComponentName(activityInfo.packageName, activityInfo.name)
-        } else {
-          null
-        }
+        TabbyLauncherActivitySpec(
+          packageName = activityInfo.packageName,
+          name = activityInfo.name,
+          targetActivity = activityInfo.targetActivity,
+        )
       }
+      .let { tabbyMainActivityAliasFromLauncherActivities(mainActivityName, it) }
+      ?.let { ComponentName(it.packageName, it.name) }
       ?: error("Launcher alias targeting $mainActivityName is not declared in AndroidManifest.xml")
   }
 
