@@ -5,6 +5,31 @@ import kotlin.test.assertEquals
 
 class AccessControlPackageTest {
   @Test
+  fun usesAdaptiveIconForegroundOnlyWhenBackgroundIsMissing() {
+    assertEquals(
+      false,
+      accessControlShouldUseAdaptiveIconForeground(
+        isAdaptiveIcon = false,
+        hasBackground = false,
+      ),
+    )
+    assertEquals(
+      false,
+      accessControlShouldUseAdaptiveIconForeground(
+        isAdaptiveIcon = true,
+        hasBackground = true,
+      ),
+    )
+    assertEquals(
+      true,
+      accessControlShouldUseAdaptiveIconForeground(
+        isAdaptiveIcon = true,
+        hasBackground = false,
+      ),
+    )
+  }
+
+  @Test
   fun mapsPlatformPayloadToAccessControlPackage() {
     assertEquals(
       AccessControlPackage(

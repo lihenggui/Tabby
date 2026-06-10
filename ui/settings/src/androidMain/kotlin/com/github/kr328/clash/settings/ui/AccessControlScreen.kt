@@ -287,8 +287,14 @@ private fun PackageInfo.toAccessControlApp(pm: PackageManager): AndroidAccessCon
 
 private val Drawable.foreground: Drawable
   get() {
-    if (this is AdaptiveIconDrawable && this.background == null) {
-      return this.foreground
+    val adaptiveIcon = this as? AdaptiveIconDrawable
+    if (
+      accessControlShouldUseAdaptiveIconForeground(
+        isAdaptiveIcon = adaptiveIcon != null,
+        hasBackground = adaptiveIcon?.background != null,
+      )
+    ) {
+      return checkNotNull(adaptiveIcon).foreground
     }
     return this
   }
