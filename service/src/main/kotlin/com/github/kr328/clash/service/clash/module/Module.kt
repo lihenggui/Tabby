@@ -8,6 +8,8 @@ import android.content.IntentFilter
 import com.github.kr328.clash.common.compat.registerReceiverCompat
 import com.github.kr328.clash.common.constants.Permissions
 import com.github.kr328.clash.common.log.Log
+import com.github.kr328.clash.common.service.TabbyModuleBroadcastReceiveAction
+import com.github.kr328.clash.common.service.tabbyModuleBroadcastReceiveAction
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -35,13 +37,19 @@ sealed class Module<E>(val service: Service) {
     val receiver =
       object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-          if (context == null || intent == null) {
-            channel.close()
+          when (
+            tabbyModuleBroadcastReceiveAction(
+              hasReceiver = context != null,
+              hasPayload = intent != null,
+            )
+          ) {
+            TabbyModuleBroadcastReceiveAction.Deliver -> channel.trySend(checkNotNull(intent))
+            TabbyModuleBroadcastReceiveAction.CloseChannel -> {
+              channel.close()
 
-            return
+              return
+            }
           }
-
-          channel.trySend(intent)
         }
       }
 
