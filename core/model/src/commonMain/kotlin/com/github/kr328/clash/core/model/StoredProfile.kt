@@ -39,6 +39,23 @@ fun profilePatchedPendingProfile(
 
 data class AppliedImportedProfile(val profile: StoredProfile, val createdAt: Long)
 
+fun profileUpdatedImportedProfile(
+  imported: StoredProfile,
+  createdAt: Long,
+  subscriptionUserInfo: ProfileSubscriptionUserInfo,
+): AppliedImportedProfile {
+  return AppliedImportedProfile(
+    profile =
+      imported.copy(
+        upload = subscriptionUserInfo.upload,
+        download = subscriptionUserInfo.download,
+        total = subscriptionUserInfo.total,
+        expire = subscriptionUserInfo.expire,
+      ),
+    createdAt = createdAt,
+  )
+}
+
 fun profileAppliedImportedProfile(
   pending: StoredProfile,
   oldCreatedAt: Long?,

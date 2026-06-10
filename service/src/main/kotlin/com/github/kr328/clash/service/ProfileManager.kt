@@ -3,10 +3,13 @@ package com.github.kr328.clash.service
 import android.content.Context
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.model.Profile
+import com.github.kr328.clash.core.model.ProfileSubscriptionUserInfo
 import com.github.kr328.clash.core.model.StoredProfile
 import com.github.kr328.clash.core.model.isHttpsProfileSource
 import com.github.kr328.clash.core.model.profileFromStoredProfileState
 import com.github.kr328.clash.core.model.profilePatchedPendingProfile
+import com.github.kr328.clash.core.model.profileUpdatedImportedProfile
+import com.github.kr328.clash.network.SubscriptionUserInfo
 import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -141,19 +144,13 @@ class ProfileManager(private val context: Context) :
   suspend fun updateFlow(old: Imported) {
     try {
       val userInfo = context.fetchSubscriptionUserInfo(old.source) ?: return
-      val new =
-        Imported(
-          old.uuid,
-          old.name,
-          old.type,
-          old.source,
-          old.interval,
-          userInfo.upload,
-          userInfo.download,
-          userInfo.total,
-          userInfo.expire,
-          old.createdAt,
+      val updated =
+        profileUpdatedImportedProfile(
+          imported = old.toStoredProfile(),
+          createdAt = old.createdAt,
+          subscriptionUserInfo = userInfo.toProfileSubscriptionUserInfo(),
         )
+      val new = updated.profile.toImported(old.uuid, updated.createdAt)
 
       ImportedDao().update(new)
 
@@ -293,5 +290,29 @@ private fun StoredProfile.toPending(
     total = total,
     expire = expire,
     createdAt = createdAt,
+  )
+}
+
+private fun StoredProfile.toImported(uuid: Uuid, createdAt: Long): Imported {
+  return Imported(
+    uuid = uuid,
+    name = name,
+    type = type,
+    source = source,
+    interval = interval,
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
+    createdAt = createdAt,
+  )
+}
+
+private fun SubscriptionUserInfo.toProfileSubscriptionUserInfo(): ProfileSubscriptionUserInfo {
+  return ProfileSubscriptionUserInfo(
+    upload = upload,
+    download = download,
+    total = total,
+    expire = expire,
   )
 }
